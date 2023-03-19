@@ -5,7 +5,7 @@ using System.Threading;
 
 namespace Clearcove.Logging
 {
-    public sealed class Logger
+    public sealed class Logger : IDisposable
     {
         #region Log File Writing
         public static bool Listening { get; private set; }
@@ -82,7 +82,7 @@ namespace Clearcove.Logging
         public readonly string Name;
         public EventHandler<LogMessageInfo> LogMessageAdded;
         private bool _startedErrorShown = false;
-
+        private bool disposedValue;
         public const string DEBUG = "DEBUG";
         public const string INFO = "INFO";
         public const string WARN = "WARN";
@@ -153,6 +153,35 @@ namespace Clearcove.Logging
             }
 
             return false;
+        }
+
+        private void Dispose(bool disposing)
+        {
+            if (!disposedValue)
+            {
+                if (disposing)
+                {
+                    // TODO: dispose managed state (managed objects)
+                }
+
+                // TODO: free unmanaged resources (unmanaged objects) and override finalizer
+                // TODO: set large fields to null
+                disposedValue = true;
+            }
+        }
+
+        // // TODO: override finalizer only if 'Dispose(bool disposing)' has code to free unmanaged resources
+        // ~Logger()
+        // {
+        //     // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
+        //     Dispose(disposing: false);
+        // }
+
+        public void Dispose()
+        {
+            // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
+            Dispose(disposing: true);
+            GC.SuppressFinalize(this);
         }
     }
 

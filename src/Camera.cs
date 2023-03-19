@@ -1,15 +1,7 @@
 ﻿using Clearcove.Logging;
-using Microsoft.VisualBasic;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
-using System.Security.Cryptography.X509Certificates;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace YGR
 {
@@ -28,14 +20,11 @@ namespace YGR
 
         private DateTime _lastTS;
 
-        Logger _logger;
-
         int _coolDownCounter = 0;
         int _coolDown = 10;
 
-        public Camera(Logger logger, Vector2 pos, int res_x, int res_y)
+        public Camera(Vector2 pos, int res_x, int res_y)
         {
-            _logger = logger;
             _rect = new Rectangle((int)(pos.X - res_x/2), (int)(pos.Y - res_y/2), res_x, res_y);
             _newRect = _rect;
 
@@ -63,9 +52,9 @@ namespace YGR
             resetAnimation(dt);
         }
 
-        public void MoveByManual(Vector2 dPos, float dt)
+        public void UpdateManual(Vector2 dPos, float dt)
         {
-            if (coolDown()) return;
+            //if (coolDown()) return;
 
             Vector2 input = Vector2.Zero;
             KeyboardState keyboard = Keyboard.GetState();
@@ -99,7 +88,7 @@ namespace YGR
                 _newRect.X = (int)(_rect.X + _dPos.X);
                 _newRect.Y = (int)(_rect.Y + _dPos.Y);
                 resetAnimation(dt);
-                //_logger.Debug("set new position diff: " + _dPos.ToString());
+                Logger.Debug("set new position diff: " + _dPos.ToString());
             }
         }
 

@@ -2,8 +2,32 @@
 
 using System;
 using System.IO;
-using Clearcove.Logging;
 using Microsoft.VisualBasic;
+
+public static class Logger
+{
+    private static Clearcove.Logging.Logger _logger = new Clearcove.Logging.Logger("ygdrasil");
+
+    public static void Info(string message)
+    {
+        _logger.Info(message);
+    }
+
+    public static void Debug(string message)
+    {
+        _logger.Debug(message);
+    }
+
+    public static void Error(string message)
+    {
+        _logger.Error(message);
+    }
+
+    public static void Warn(string message)
+    {
+        _logger.Warn(message);
+    }
+}
 
 class Program
 {
@@ -26,21 +50,20 @@ class Program
             time.Millisecond.ToString() + 
             random.Next().ToString() + 
             "].log");
-        Logger.BatchInterval = 1500;
-        Logger.LogToConsole = false;  // Print log entries to console (optional).
-        Logger.IgnoreDebug = false;
-        Logger.Start(targetLogFile); // Loggers will complain if you skip initialization
+        Clearcove.Logging.Logger.BatchInterval = 1500;
+        Clearcove.Logging.Logger.LogToConsole = false;  // Print log entries to console (optional).
+        Clearcove.Logging.Logger.IgnoreDebug = false;
+        Clearcove.Logging.Logger.Start(targetLogFile); // Loggers will complain if you skip initialization
 
         try
         {
-            var logger = new Logger("yigdrasil_logger");
-            logger.Info("=================== " + time.ToLongDateString() + " | " + time.ToLongTimeString() + " ===================");
-            var game = new YGR.Game1(logger);
+            Logger.Info("=================== " + time.ToLongDateString() + " | " + time.ToLongTimeString() + " ===================");
+            var game = new YGR.Game1();
             game.Run();
         }
         finally
         {
-            Logger.ShutDown();
+            Clearcove.Logging.Logger.ShutDown();
         }
     }
 }
