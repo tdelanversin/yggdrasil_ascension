@@ -1,9 +1,11 @@
-﻿
-
+﻿using Microsoft.VisualBasic;
 using System;
 using System.IO;
-using Microsoft.VisualBasic;
 
+/// <summary>
+/// This class instanciates a Logger and makes it available everywhere
+/// <param>Usage: just type Logger.Info(...) or Logger.Debug(...) anywhere in the program</param>
+/// </summary>
 public static class Logger
 {
     private static Clearcove.Logging.Logger _logger = new Clearcove.Logging.Logger("ygdrasil");
@@ -21,6 +23,7 @@ public static class Logger
     public static void Error(string message)
     {
         _logger.Error(message);
+        throw new Exception();
     }
 
     public static void Warn(string message)
@@ -52,7 +55,7 @@ class Program
             "].log");
         Clearcove.Logging.Logger.BatchInterval = 1500;
         Clearcove.Logging.Logger.LogToConsole = false;  // Print log entries to console (optional).
-        Clearcove.Logging.Logger.IgnoreDebug = false;
+        Clearcove.Logging.Logger.IgnoreDebug = true;
         Clearcove.Logging.Logger.Start(targetLogFile); // Loggers will complain if you skip initialization
 
         try
