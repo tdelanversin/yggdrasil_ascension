@@ -8,18 +8,24 @@ namespace YGR
     /// <summary>
     /// Class <c>Y_ConnectorFactory</c> contains methods to create instances of all available connectors.
     /// </summary>
-    public class Y_ConnectorFactory
+    public static class Factory_Connectors
     {
-        Texture2D _hConnector;
-        Texture2D _vConnector;
+        private static bool _initialized = false;
+        private static Texture2D _hConnector;
+        private static Texture2D _vConnector;
 
-        public Y_ConnectorFactory(ContentManager content)
+        public static void Initialize(ContentManager content)
         {
             _vConnector = content.Load<Texture2D>("v_connector");
             _hConnector = content.Load<Texture2D>("h_connector");
         }
 
-        public Y_Connector VConnector(string name)
+        private static void check()
+        {
+            if (!_initialized) Logger.Error("Factory_Connectors not initialized: call Factory_Rooms.Initialize(ContentManager) somewhere!");
+        }
+
+        public static Y_Connector VConnector(string name)
         {
             return new Y_Connector(
                 /* name of the connector */
@@ -63,7 +69,7 @@ namespace YGR
             );
         }
 
-        public Y_Connector HConnector(string name)
+        public static Y_Connector HConnector(string name)
         {
             return new Y_Connector(
                 name,

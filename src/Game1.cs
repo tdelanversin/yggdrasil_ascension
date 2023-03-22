@@ -25,8 +25,6 @@ namespace YGR
         Y_Sprite _player;
         List<Y_Connector> _connectors;
         Dictionary<string, Y_Room> _rooms;
-        Y_ConnectorFactory _connectorFactory;
-        Y_RoomFactory _roomFactory;
 
         public Game1()
         {
@@ -44,24 +42,23 @@ namespace YGR
             _camera = new Y_Camera(new Vector2(RES_X / 2, RES_Y / 2), RES_X, RES_Y);
             Logger.Info("Set resolution to " + RES_X.ToString() + "x" + RES_Y.ToString());
 
+            Factory_Rooms.Initialize(Content);
+            Factory_Connectors.Initialize(Content);
+
             base.Initialize();
         }
 
         protected override void LoadContent()
         {
             _spriteBatch = new SpriteBatch(GraphicsDevice);
-
             _background = Content.Load<Texture2D>("background");
 
-            _connectorFactory = new Y_ConnectorFactory(Content);
-            _roomFactory = new Y_RoomFactory(Content);
-
             _rooms = new Dictionary<string, Y_Room> {
-                { "room_center", _roomFactory.Room_0("room_center") },
-                { "room_right", _roomFactory.Room_1("room_right") },
-                { "room_left", _roomFactory.Room_2("room_left") },
-                { "room_bottom", _roomFactory.Room_1("room_bottom") },
-                { "room_top", _roomFactory.Room_1("room_top") },
+                { "room_center", Factory_Rooms.Room_0("room_center") },
+                { "room_right", Factory_Rooms.Room_1("room_right") },
+                { "room_left", Factory_Rooms.Room_2("room_left") },
+                { "room_bottom", Factory_Rooms.Room_1("room_bottom") },
+                { "room_top", Factory_Rooms.Room_1("room_top") },
             };
 
             _player = new Y_Sprite(
@@ -79,10 +76,10 @@ namespace YGR
 
             Random random = new Random(3);
             _connectors = new List<Y_Connector> { 
-                _connectorFactory.HConnector("con_center_right").Connect(X_ConnectorSide.Left, _rooms["room_center"], X_ConnectorSide.Right, _rooms["room_right"], random),
-                _connectorFactory.HConnector("con_center_left").Connect(X_ConnectorSide.Right, _rooms["room_center"], X_ConnectorSide.Left, _rooms["room_left"], random),
-                _connectorFactory.VConnector("con_center_bottom").Connect(X_ConnectorSide.Top, _rooms["room_center"], X_ConnectorSide.Bottom, _rooms["room_bottom"], random),
-                _connectorFactory.VConnector("con_center_top").Connect(X_ConnectorSide.Bottom, _rooms["room_center"], X_ConnectorSide.Top, _rooms["room_top"], random)
+                Factory_Connectors.HConnector("con_center_right").Connect(X_ConnectorSide.Left, _rooms["room_center"], X_ConnectorSide.Right, _rooms["room_right"], random),
+                Factory_Connectors.HConnector("con_center_left").Connect(X_ConnectorSide.Right, _rooms["room_center"], X_ConnectorSide.Left, _rooms["room_left"], random),
+                Factory_Connectors.VConnector("con_center_bottom").Connect(X_ConnectorSide.Top, _rooms["room_center"], X_ConnectorSide.Bottom, _rooms["room_bottom"], random),
+                Factory_Connectors.VConnector("con_center_top").Connect(X_ConnectorSide.Bottom, _rooms["room_center"], X_ConnectorSide.Top, _rooms["room_top"], random)
             };
 
             _rooms["room_center"].SetBackgroundColor(Color.LightSalmon);
