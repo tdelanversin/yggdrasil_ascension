@@ -1,27 +1,38 @@
 ﻿using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using System.Collections.Generic;
+using System.ComponentModel;
 
 namespace YGR
 {
     /// <summary>
     /// Class <c>Y_RoomFactory</c> contains methods to create instances of every available room.
     /// </summary>
-    public class Y_RoomFactory
+    public static class Factory_Rooms
     {
-        Texture2D _room_0;
-        Texture2D _room_1;
-        Texture2D _room_2;
+        private static bool _initialized = false;
+        private static Texture2D _room_0;
+        private static Texture2D _room_1;
+        private static Texture2D _room_2;
 
-        public Y_RoomFactory(ContentManager content)
+        public static void Initialize(ContentManager content)
         {
             _room_0 = content.Load<Texture2D>("room_0");
             _room_1 = content.Load<Texture2D>("room_1");
             _room_2 = content.Load<Texture2D>("room_2");
+
+            _initialized = true;
         }
 
-        public Y_Room Room_0(string name)
+        private static void check()
         {
+            if (!_initialized) Logger.Error("Factory_Rooms not initialized: call Factory_Rooms.Initialize(ContentManager) somewhere!");
+        }
+
+        public static Y_Room Room_0(string name)
+        {
+            check();
+
             return new Y_Room(
                 /* name of the room */
                 name,
@@ -50,8 +61,10 @@ namespace YGR
             );
         }
 
-        public Y_Room Room_1(string name)
+        public static Y_Room Room_1(string name)
         {
+            check();
+
             return new Y_Room(
                 name,
                 _room_1,
@@ -74,8 +87,10 @@ namespace YGR
             );
         }
 
-        public Y_Room Room_2(string name)
+        public static Y_Room Room_2(string name)
         {
+            check();
+
             return new Y_Room(
                 name,
                 _room_2,
