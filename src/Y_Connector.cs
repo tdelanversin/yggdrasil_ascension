@@ -156,42 +156,12 @@ namespace YGR
                 _outlineClosed.DrawOutline(gameTime, globalOffset, spriteBatch);
             }
 
-            Texture2D tex = new Texture2D(spriteBatch.GraphicsDevice, 1, 1, false, SurfaceFormat.Color);
-            tex.SetData(new[] { Color.White });
-            int distance = 15;
-            var angle = 0;
-
             int size = 15;
-            spriteBatch.Draw(
-                tex,
-                new Rectangle((int)(ConnectorLeftOrBottom.X + globalOffset.X - size/2), (int)(ConnectorLeftOrBottom.Y + globalOffset.Y - size/2), distance, 15),
-                null,
-                Color.Yellow,
-                angle,
-                new Vector2(0, 0),
-                SpriteEffects.None, 0
-            );
+            Factory_Debug.DrawPoint((int)(ConnectorRightOrTop.X + globalOffset.X), (int)(ConnectorRightOrTop.Y + globalOffset.Y), size, Color.Green, spriteBatch);
+            Factory_Debug.DrawPoint((int)(ConnectorLeftOrBottom.X + globalOffset.X), (int)(ConnectorLeftOrBottom.Y + globalOffset.Y), size, Color.Yellow, spriteBatch);
 
-            spriteBatch.Draw(
-                tex,
-                new Rectangle((int)(ConnectorRightOrTop.X + globalOffset.X - size/2), (int)(ConnectorRightOrTop.Y + globalOffset.Y - size/2), distance, 15),
-                null,
-                Color.Green,
-                angle,
-                new Vector2(0, 0),
-                SpriteEffects.None, 0
-            );
-
-            drawRectangle(globalOffset, spriteBatch, tex, LeftOrBottomPlatform, Color.Blue, 5);
-            drawRectangle(globalOffset, spriteBatch, tex, RightOrTopPlatform, Color.Green, 5);
-        }
-
-        private void drawRectangle(Vector2 globalOffset, SpriteBatch spriteBatch, Texture2D pointTex, Rectangle rect, Color color, int lineWidth)
-        {
-            spriteBatch.Draw(pointTex, new Rectangle(rect.X + (int)globalOffset.X, rect.Y + (int)globalOffset.Y, lineWidth, rect.Height + lineWidth), color);
-            spriteBatch.Draw(pointTex, new Rectangle(rect.X + (int)globalOffset.X, rect.Y + (int)globalOffset.Y, rect.Width + lineWidth, lineWidth), color);
-            spriteBatch.Draw(pointTex, new Rectangle(rect.X + (int)globalOffset.X + rect.Width, rect.Y + (int)globalOffset.Y, lineWidth, rect.Height + lineWidth), color);
-            spriteBatch.Draw(pointTex, new Rectangle(rect.X + (int)globalOffset.X, rect.Y + (int)globalOffset.Y + rect.Height, rect.Width + lineWidth, lineWidth), color);
+            Factory_Debug.DrawRectangle(LeftOrBottomPlatform.X + (int)globalOffset.X, LeftOrBottomPlatform.Y + (int)globalOffset.Y, LeftOrBottomPlatform.Width, LeftOrBottomPlatform.Height, 5, Color.Blue, spriteBatch);
+            Factory_Debug.DrawRectangle(RightOrTopPlatform.X + (int)globalOffset.X, RightOrTopPlatform.Y + (int)globalOffset.Y, RightOrTopPlatform.Width, RightOrTopPlatform.Height, 5, Color.Green, spriteBatch);
         }
 
         /// <summary>

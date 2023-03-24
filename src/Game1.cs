@@ -44,6 +44,7 @@ namespace YGR
 
             Factory_Rooms.Initialize(Content);
             Factory_Connectors.Initialize(Content);
+            Factory_Debug.Initialize(Content);
 
             base.Initialize();
         }

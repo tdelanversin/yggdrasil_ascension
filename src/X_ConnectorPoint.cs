@@ -41,11 +41,6 @@ namespace YGR
         /// <param name="spriteBatch">Active Monogame SpriteBatch</param>
         public void DrawOutline(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)
         {
-            Texture2D tex = new Texture2D(spriteBatch.GraphicsDevice, 1, 1, false, SurfaceFormat.Color);
-            tex.SetData(new[] { Color.White });
-            int distance = 5;
-            var angle = 0;
-
             var color = Color.White;
             switch (ConnectorSide)
             {
@@ -63,7 +58,7 @@ namespace YGR
                     break;
             }
 
-            spriteBatch.Draw(tex, new Rectangle((int)(Point.X + globalOffset.X), (int)(Point.Y + globalOffset.Y), distance, 5), null, color, angle, new Vector2(0, 0), SpriteEffects.None, 0);
+            Factory_Debug.DrawPoint((int)(Point.X + globalOffset.X), (int)(Point.Y + globalOffset.Y), 5, Color.Yellow, spriteBatch);
         }
     }
 }
