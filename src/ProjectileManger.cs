@@ -46,6 +46,8 @@ namespace YGR
                 projectile.Update(gameTime);
             }
 
+            // TODO: Add projectile collision detection
+
             _projectiles.RemoveAll(projectile => projectile._timeCreated + _maxlifetime < gameTime.TotalGameTime.TotalMilliseconds);
         }
 
