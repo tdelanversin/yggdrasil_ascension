@@ -14,6 +14,7 @@ namespace YGR
         float _velocity;
         float _frameDuration;
         int _animationIndex;
+        IShooter _gun;
 
         IWalkable _currentRoom;
         X_ConnectorSide _lastSide;
@@ -25,7 +26,8 @@ namespace YGR
             Vector2 position,
             IWalkable startRoom,
             float frameDuration,
-            Dictionary<string, int[]> animations
+            Dictionary<string, int[]> animations,
+            IShooter gun
             )
         {
             _sprite = texture;
@@ -35,6 +37,7 @@ namespace YGR
             _position = position;
             _animationIndex = 0;
             _currentRoom = startRoom;
+            _gun = gun;
         }
 
         /// <summary>
@@ -45,6 +48,7 @@ namespace YGR
         {
             Vector2 input = Vector2.Zero;
             KeyboardState keyboard = Keyboard.GetState();
+            MouseState mouse = Mouse.GetState();
 
             if (keyboard.IsKeyDown(Keys.Right)) input.X += 1;
             if (keyboard.IsKeyDown(Keys.Left)) input.X -= 1;
@@ -62,6 +66,17 @@ namespace YGR
             _position = _currentRoom.Clamp(_window, _position, dp, ref who, ref where);
 
             if (who != null) Logger.Debug("collided with someone at location " + where.ToString());
+
+            /* ================================================ */
+            /* Detect player shooting and spawn projectiles     */
+            /* ================================================ */
+
+            if (mouse.LeftButton == ButtonState.Pressed)
+            {
+                var d = (mouse.Position.ToVector2() - _position);
+                d.Normalize();
+                _gun.Shoot(gameTime, _position, d);
+            }
 
             /* ================================================ */
             /* TODO: add collision detection with other sprites */
