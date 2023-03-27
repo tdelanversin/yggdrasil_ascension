@@ -134,14 +134,14 @@ namespace YGR
             {
                 room.Draw(gameTime, zero, _spriteBatch);
                 // uncomment for debugging
-                //room.DrawOutline(gameTime, zero, _spriteBatch);
+                room.DrawOutline(gameTime, zero, _spriteBatch);
             }
 
             foreach (var con in _connectors)
             {
                 con.Draw(gameTime, zero, _spriteBatch);
                 // uncomment for debugging
-                //con.DrawOutline(gameTime, zero, _spriteBatch);
+                con.DrawOutline(gameTime, zero, _spriteBatch);
             }
 
             ProjectileManager.Draw(gameTime, zero, _spriteBatch);

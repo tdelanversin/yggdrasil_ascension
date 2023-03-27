@@ -17,11 +17,14 @@ namespace YGR
         public bool _isEnemy { get; set; }
         public string Name { get; set; }
 
+        private IWalkable _room;
+
 
         public X_StarterProjectile(
             Vector2 position,
             Vector2 direction,
-            double timeCreated
+            double timeCreated,
+            IWalkable room
         ) {
             _sprite = ProjectileManager.projectile_textures["default_projectile"];
             _window = new Rectangle(0, 0, 64, 64);
@@ -32,10 +35,13 @@ namespace YGR
             _timeCreated = timeCreated;
             _isEnemy = false;
             Name = "StarterProjectile";
+            _room = room;
         }
 
         public void Update(GameTime gameTime) {
-            _position += _direction * (float)(_speed * gameTime.ElapsedGameTime.TotalMilliseconds);
+            IWalkable who = null;
+            Vector2 where = Vector2.Zero;
+            _position = _room.Clamp(_window, _position, _direction * (float)(_speed * gameTime.ElapsedGameTime.TotalMilliseconds), ref who, ref where );
             _animationIndex = (int)(5 - (gameTime.TotalGameTime.TotalMilliseconds - _timeCreated) / 300);
         }
 

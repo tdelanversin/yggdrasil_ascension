@@ -75,7 +75,7 @@ namespace YGR
             {
                 var d = (mouse.Position.ToVector2() - _position);
                 d.Normalize();
-                _gun.Shoot(gameTime, _position, d);
+                _gun.Shoot(gameTime, _position, d, _currentRoom);
             }
 
             /* ================================================ */
