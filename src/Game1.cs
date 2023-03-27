@@ -45,6 +45,7 @@ namespace YGR
             Factory_Rooms.Initialize(Content);
             Factory_Connectors.Initialize(Content);
             Factory_Debug.Initialize(Content);
+            ProjectileManager.Initialize(Content);
 
             base.Initialize();
         }
@@ -72,8 +73,9 @@ namespace YGR
                 new Dictionary<string, int[]> {
                     { "stand", new int[] { 0, 1, 8, 9 } },
                     { "walk_left", new int[] { 2, 3, 4 } },
-                    { "walk_right", new int[] { 5, 6, 7 } }
-                });
+                    { "walk_right", new int[] { 5, 6, 7 } }},
+                new Y_StarterGun()
+            );
 
             Random random = new Random(3);
             _connectors = new List<Y_Connector> { 
@@ -96,6 +98,8 @@ namespace YGR
             _camera.UpdateManual(new Vector2(100, 100), 500);
             _camera.Update(gameTime);
             _player.Update(gameTime);
+
+            ProjectileManager.Update(gameTime);
 
             foreach(var con in _connectors)
             {
@@ -139,6 +143,8 @@ namespace YGR
                 // uncomment for debugging
                 //con.DrawOutline(gameTime, zero, _spriteBatch);
             }
+
+            ProjectileManager.Draw(gameTime, zero, _spriteBatch);
 
             _player.Draw(gameTime, zero, _spriteBatch);
 
