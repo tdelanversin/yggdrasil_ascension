@@ -17,8 +17,8 @@ namespace YGR
         private GraphicsDeviceManager _graphics;
         private SpriteBatch _spriteBatch;
 
-        private const int RES_X = 2200;
-        private const int RES_Y = 1200;
+        private const int RES_X = 1920;
+        private const int RES_Y = 1000;
 
         Texture2D _background;
         Y_Camera _camera;
