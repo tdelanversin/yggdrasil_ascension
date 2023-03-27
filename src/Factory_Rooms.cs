@@ -6,7 +6,7 @@ using System.ComponentModel;
 namespace YGR
 {
     /// <summary>
-    /// Class <c>Y_RoomFactory</c> contains methods to create instances of every available room.
+    /// Class <c>Factory_Rooms</c> contains methods to create instances of every available room.
     /// </summary>
     public static class Factory_Rooms
     {

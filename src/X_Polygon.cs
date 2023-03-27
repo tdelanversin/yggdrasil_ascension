@@ -71,11 +71,10 @@ namespace YGR
                     Vector2 w = _vertices[j][i - 1];
                     Vector2 dw = _vertices[j][i] - w;
 
-                    Texture2D tex = new Texture2D(spriteBatch.GraphicsDevice, 1, 1, false, SurfaceFormat.Color);
-                    tex.SetData(new[] { Color.White });
                     int distance = (int)dw.Length();
                     var angle = (float)Math.Atan2(dw.Y, dw.X);
-                    spriteBatch.Draw(tex, new Rectangle((int)(w.X + globalOffset.X), (int)(w.Y + globalOffset.Y), distance, 3), null, Color.Red, angle, new Vector2(0, 0), SpriteEffects.None, 0);
+                    int lineWidth = 5;
+                    Factory_Debug.DrawLine((int)(w.X + globalOffset.X), (int)(w.Y + globalOffset.Y), distance, angle, lineWidth, Color.Red, spriteBatch);
                 }
             }
         }

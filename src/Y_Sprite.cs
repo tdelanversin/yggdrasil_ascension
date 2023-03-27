@@ -1,6 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using System;
 using System.Collections.Generic;
 
 namespace YGR
@@ -14,18 +15,22 @@ namespace YGR
         float _velocity;
         float _frameDuration;
         int _animationIndex;
+        IShooter _gun;
+        PlayerIndex? _playerIndex;
 
         IWalkable _currentRoom;
         X_ConnectorSide _lastSide;
 
         public Y_Sprite(
+            PlayerIndex? playerIndex,
             Texture2D texture, 
             Rectangle window,
             float velocity,
             Vector2 position,
             IWalkable startRoom,
             float frameDuration,
-            Dictionary<string, int[]> animations
+            Dictionary<string, int[]> animations,
+            IShooter gun
             )
         {
             _sprite = texture;
@@ -35,6 +40,8 @@ namespace YGR
             _position = position;
             _animationIndex = 0;
             _currentRoom = startRoom;
+            _gun = gun;
+            _playerIndex = playerIndex;
         }
 
         /// <summary>
@@ -44,12 +51,61 @@ namespace YGR
         public void Update(GameTime gameTime)
         {
             Vector2 input = Vector2.Zero;
-            KeyboardState keyboard = Keyboard.GetState();
+            MouseState mouse = Mouse.GetState();
 
-            if (keyboard.IsKeyDown(Keys.Right)) input.X += 1;
-            if (keyboard.IsKeyDown(Keys.Left)) input.X -= 1;
-            if (keyboard.IsKeyDown(Keys.Down)) input.Y += 1;
-            if (keyboard.IsKeyDown(Keys.Up)) input.Y -= 1;
+            if(_playerIndex == null)
+            {
+                KeyboardState keyboard = Keyboard.GetState();
+                if (keyboard.IsKeyDown(Keys.Right)) input.X += 1;
+                if (keyboard.IsKeyDown(Keys.Left)) input.X -= 1;
+                if (keyboard.IsKeyDown(Keys.Down)) input.Y += 1;
+                if (keyboard.IsKeyDown(Keys.Up)) input.Y -= 1;
+
+                /* ================================================ */
+                /* Detect player shooting and spawn projectiles     */
+                /* ================================================ */
+
+                if (mouse.LeftButton == ButtonState.Pressed)
+                {
+                    var d = (mouse.Position.ToVector2() - _position);
+                    d.Normalize();
+                    _gun.Shoot(gameTime, _position, d, _currentRoom);
+                }
+            }
+            else
+            {
+                GamePadState gpState = GamePad.GetState(_playerIndex.Value);
+                if (gpState.IsButtonDown(Buttons.LeftThumbstickRight)) input.X += 1;
+                if (gpState.IsButtonDown(Buttons.LeftThumbstickLeft)) input.X -= 1;
+                if (gpState.IsButtonDown(Buttons.LeftThumbstickDown)) input.Y += 1;
+                if (gpState.IsButtonDown(Buttons.LeftThumbstickUp)) input.Y -= 1;
+
+                if (gpState.IsButtonDown(Buttons.RightShoulder) || gpState.IsButtonDown(Buttons.RightTrigger))
+                {
+                    Vector2 shootDir = Vector2.One;
+                    if (
+                        gpState.IsButtonDown(Buttons.RightThumbstickRight) ||
+                        gpState.IsButtonDown(Buttons.RightThumbstickLeft) ||
+                        gpState.IsButtonDown(Buttons.RightThumbstickDown) ||
+                        gpState.IsButtonDown(Buttons.RightThumbstickUp) 
+                    )
+                    {
+                        shootDir.X *= gpState.ThumbSticks.Right.X;
+                        shootDir.Y *= -gpState.ThumbSticks.Right.Y;
+                        shootDir.Normalize();
+                    }
+                    else
+                    {
+                        shootDir.X = -1.0f;
+                        shootDir.Y = 0.0f;
+                    }
+
+                    //var d = (mouse.Position.ToVector2() - _position);
+                    //d.Normalize();
+                    _gun.Shoot(gameTime, _position, shootDir, _currentRoom);
+                }
+
+            }
 
             if (input.LengthSquared() > 1) input.Normalize();
 
@@ -80,9 +136,7 @@ namespace YGR
                      * TODO: this is sensitive to movement speed!!!
                      */
                     var oldRoom = _currentRoom.Name;
-                    _currentRoom.ResetBackgroundColor();
                     _currentRoom = connector.GetRoom(_lastSide);
-                    _currentRoom.SetBackgroundColor(Color.Orange);
                     Logger.Info("Move from room [" + oldRoom + "] to room [" + _currentRoom.Name + "]");
                 }
                 else
@@ -103,19 +157,12 @@ namespace YGR
                         if (conn.IsInside(_position))
                         {
                             var oldRoom = _currentRoom.Name;
-                            _currentRoom.ResetBackgroundColor();
                             _currentRoom = conn;
-                            _currentRoom.SetBackgroundColor(Color.LightBlue);
                             Logger.Info("Move from room [" + oldRoom + "] to room [" + _currentRoom.Name + "]");
                         }
                         break;
                     }
                 }
-            }
-            else if(whatAreYou == X_LevelElements.Victim)
-            {
-                // this would be another sprite
-                // perhaps with regular sprites, don't do anything
             }
         }
 
