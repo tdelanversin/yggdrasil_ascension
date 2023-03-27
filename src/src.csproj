@@ -9,7 +9,6 @@
   <PropertyGroup>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <ApplicationIcon>Icon.ico</ApplicationIcon>
-    <StartupObject>YRG.Csv_reader</StartupObject>
   </PropertyGroup>
   <ItemGroup>
     <None Remove="Icon.ico" />
