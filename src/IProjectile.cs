@@ -9,12 +9,13 @@ namespace YGR
 {
     public interface IProjectile
     {
-        public Texture2D _sprite { get; set; }
-        public Rectangle _window { get; set; }
-        public Vector2 _position { get; set; }
-        public Vector2 _direction { get; set; }
-        public double _timeCreated { get; set; }
-        public bool _isEnemy { get; set; }
+        //public Texture2D _sprite { get; set; }
+        //public Rectangle _window { get; set; }
+        //public Vector2 _position { get; set; }
+        //public Vector2 _direction { get; set; }
+        public double TimeCreated { get; set; }
+
+        //public bool _isEnemy { get; set; }
         public string Name { get; set; }
         public bool DeleteNext { get; set; }
 

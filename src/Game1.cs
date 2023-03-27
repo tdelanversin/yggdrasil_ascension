@@ -17,14 +17,14 @@ namespace YGR
         private GraphicsDeviceManager _graphics;
         private SpriteBatch _spriteBatch;
 
-        private const int RES_X = 1920;
-        private const int RES_Y = 1080;
+        private const int RES_X = 2200;
+        private const int RES_Y = 1200;
 
         Texture2D _background;
         Y_Camera _camera;
-        Y_Sprite _player;
-        List<Y_Connector> _connectors;
-        Dictionary<string, Y_Room> _rooms;
+        IList<Y_Sprite> _player;
+        IList<Y_Connector> _connectors;
+        IDictionary<string, Y_Room> _rooms;
 
         public Game1()
         {
@@ -63,19 +63,36 @@ namespace YGR
                 { "room_top", Factory_Rooms.Room_1("room_top") },
             };
 
-            _player = new Y_Sprite(
-                Content.Load<Texture2D>("tester"),
-                new Rectangle(0, 0, 73, 102),
-                400.0f,
-                new Vector2(200, 450),
-                _rooms["room_center"],
-                200.0f,
-                new Dictionary<string, int[]> {
-                    { "stand", new int[] { 0, 1, 8, 9 } },
-                    { "walk_left", new int[] { 2, 3, 4 } },
-                    { "walk_right", new int[] { 5, 6, 7 } }},
-                new Y_StarterGun()
-            );
+            _player = new List<Y_Sprite>{
+                new Y_Sprite(
+                    PlayerIndex.One,
+                    Content.Load<Texture2D>("tester"),
+                    new Rectangle(0, 0, 73, 102),
+                    400.0f,
+                    new Vector2(200, 350),
+                    _rooms["room_center"],
+                    200.0f,
+                    new Dictionary<string, int[]> {
+                        { "stand", new int[] { 0, 1, 8, 9 } },
+                        { "walk_left", new int[] { 2, 3, 4 } },
+                        { "walk_right", new int[] { 5, 6, 7 } }},
+                    new Y_StarterGun()
+                ),
+                new Y_Sprite(
+                    PlayerIndex.Two,
+                    Content.Load<Texture2D>("tester"),
+                    new Rectangle(0, 0, 73, 102),
+                    400.0f,
+                    new Vector2(200, 500),
+                    _rooms["room_center"],
+                    200.0f,
+                    new Dictionary<string, int[]> {
+                        { "stand", new int[] { 0, 1, 8, 9 } },
+                        { "walk_left", new int[] { 2, 3, 4 } },
+                        { "walk_right", new int[] { 5, 6, 7 } }},
+                    new Y_StarterGun()
+                )
+            };
 
             Random random = new Random(3);
             _connectors = new List<Y_Connector> { 
@@ -84,8 +101,6 @@ namespace YGR
                 Factory_Connectors.VConnector("con_center_bottom").Connect(X_ConnectorSide.Top, _rooms["room_center"], X_ConnectorSide.Bottom, _rooms["room_bottom"], random),
                 Factory_Connectors.VConnector("con_center_top").Connect(X_ConnectorSide.Bottom, _rooms["room_center"], X_ConnectorSide.Top, _rooms["room_top"], random)
             };
-
-            _rooms["room_center"].SetBackgroundColor(Color.LightSalmon);
         }
 
         protected override void Update(GameTime gameTime)
@@ -97,7 +112,11 @@ namespace YGR
 
             _camera.UpdateManual(new Vector2(100, 100), 500);
             _camera.Update(gameTime);
-            _player.Update(gameTime);
+
+            foreach(var player in _player)
+            {
+                player.Update(gameTime);
+            }
 
             ProjectileManager.Update(gameTime);
 
@@ -134,19 +153,22 @@ namespace YGR
             {
                 room.Draw(gameTime, zero, _spriteBatch);
                 // uncomment for debugging
-                room.DrawOutline(gameTime, zero, _spriteBatch);
+                //room.DrawOutline(gameTime, zero, _spriteBatch);
             }
 
             foreach (var con in _connectors)
             {
                 con.Draw(gameTime, zero, _spriteBatch);
                 // uncomment for debugging
-                con.DrawOutline(gameTime, zero, _spriteBatch);
+                //con.DrawOutline(gameTime, zero, _spriteBatch);
             }
 
             ProjectileManager.Draw(gameTime, zero, _spriteBatch);
 
-            _player.Draw(gameTime, zero, _spriteBatch);
+            foreach(var player in _player)
+            {
+                player.Draw(gameTime, zero, _spriteBatch);
+            }
 
             _spriteBatch.End();
 
