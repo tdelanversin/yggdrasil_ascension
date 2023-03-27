@@ -18,6 +18,7 @@ namespace YGR
         public string Name { get; set; }
 
         private IWalkable _room;
+        public bool DeleteNext { get; set; }
 
 
         public X_StarterProjectile(
@@ -36,12 +37,17 @@ namespace YGR
             _isEnemy = false;
             Name = "StarterProjectile";
             _room = room;
+            DeleteNext = false;
         }
 
         public void Update(GameTime gameTime) {
             IWalkable who = null;
             Vector2 where = Vector2.Zero;
             _position = _room.Clamp(_window, _position, _direction * (float)(_speed * gameTime.ElapsedGameTime.TotalMilliseconds), ref who, ref where );
+            if(who != null)
+            {
+                DeleteNext = true;
+            }
             _animationIndex = (int)(5 - (gameTime.TotalGameTime.TotalMilliseconds - _timeCreated) / 300);
         }
 

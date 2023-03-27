@@ -48,7 +48,7 @@ namespace YGR
 
             // TODO: Add projectile collision detection
 
-            _projectiles.RemoveAll(projectile => projectile._timeCreated + _maxlifetime < gameTime.TotalGameTime.TotalMilliseconds);
+            _projectiles.RemoveAll(projectile => (projectile._timeCreated + _maxlifetime < gameTime.TotalGameTime.TotalMilliseconds) || projectile.DeleteNext);
         }
 
         public static void Draw(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)
