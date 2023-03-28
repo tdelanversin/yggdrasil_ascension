@@ -10,17 +10,18 @@ namespace YGR
 
         public Y_StarterGun() {}
 
-        public void Shoot(GameTime gameTime, Vector2 origin, Vector2 direction, IWalkable room) {
+        public void Shoot(GameTime gameTime, Vector2 origin, Vector2 direction, IWalkable room, IGameElement who) {
             if (lastShot == 0.0f || gameTime.TotalGameTime.TotalMilliseconds - lastShot > shotDelay) {
                 lastShot = gameTime.TotalGameTime.TotalMilliseconds;
 
-                var projectile = new X_StarterProjectile(
+                var projectile = new Y_StarterProjectile(
                     origin,
                     direction,
                     gameTime.TotalGameTime.TotalMilliseconds,
-                    room
+                    room,
+                    who
                 );
-                ProjectileManager.AddProjectile(projectile);
+                X_ProjectileManager.AddProjectile(projectile);
             }
         }
     }
@@ -32,17 +33,18 @@ namespace YGR
 
         public Y_SimpleEnemyGun() {}
 
-        public void Shoot(GameTime gameTime, Vector2 origin, Vector2 direction, IWalkable room) {
+        public void Shoot(GameTime gameTime, Vector2 origin, Vector2 direction, IWalkable room, IGameElement who) {
             if (lastShot == 0.0f || gameTime.TotalGameTime.TotalMilliseconds - lastShot > shotDelay) {
                 lastShot = gameTime.TotalGameTime.TotalMilliseconds;
 
-                var projectile = new X_StarterProjectile(
+                var projectile = new Y_StarterProjectile(
                     origin,
                     direction,
                     gameTime.TotalGameTime.TotalMilliseconds,
-                    room
+                    room,
+                    who
                 );
-                ProjectileManager.AddProjectile(projectile);
+                X_ProjectileManager.AddProjectile(projectile);
             }
         }
     }

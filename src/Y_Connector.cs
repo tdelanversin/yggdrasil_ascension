@@ -18,12 +18,11 @@ namespace YGR
         Closed
     }
 
-    public class Y_Connector : IWalkable, ICollidable
+    public class Y_Connector : IWalkable
     {
         /* The X position of the connector in global coordinates */
-        public int PosX { get; set; }
+        public Vector2 Position { get; set; }
         /* The Y position of the connector in global coordinates */
-        public int PosY { get; set; }
         public Y_ConnectorDirection Direction { get; }
         /* The left or the bottom point that has to match the room connection point */
         public Vector2 ConnectorLeftOrBottom { get; }
@@ -67,6 +66,9 @@ namespace YGR
         int _coolDownCounter = 0;
         int _coolDown = 8;
 
+        public IList<IProjectile> Projectiles { get; }
+        public IList<IVictim> Victims { get; }
+
         public Y_Connector(
             string name,
             Y_ConnectorDirection direction,
@@ -109,6 +111,9 @@ namespace YGR
             {
                 _animationIndex = 4;
             }
+
+            Projectiles = new List<IProjectile>();
+            Victims = new List<IVictim>();
         }
 
         /// <summary>
@@ -145,7 +150,7 @@ namespace YGR
         /// <param name="spriteBatch">Active Monogame SpriteBatch</param>
         public void DrawOutline(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)
         {
-            globalOffset = new Vector2(PosX, PosY);
+            globalOffset = new Vector2(Position.X, Position.Y);
 
             if (State == Y_ConnectorState.Opened)
             {
@@ -174,7 +179,7 @@ namespace YGR
         {
             spriteBatch.Draw(
                 _texture,
-                new Rectangle(PosX, PosY, _window.Width, _window.Height),
+                new Rectangle((int)Position.X, (int)Position.Y, _window.Width, _window.Height),
                 new Rectangle(_animationIndex * _window.Width, 0, _window.Width, _window.Height),
                 BackgroundColor
             );
@@ -213,11 +218,11 @@ namespace YGR
 
             if(State == Y_ConnectorState.Closed)
             {
-                where = _outlineClosed.Clamp(pos, dp + offset, new Vector2(-PosX, -PosY), ref collision);
+                where = _outlineClosed.Clamp(pos, dp + offset, -Position, ref collision);
             }
             else
             {
-                where = _outlineOpened.Clamp(pos, dp + offset, new Vector2(-PosX, -PosY), ref collision);
+                where = _outlineOpened.Clamp(pos, dp + offset, -Position, ref collision);
             }
             Vector2 newPos = where - offset;
 
@@ -341,12 +346,16 @@ namespace YGR
             if (hCheck1)
             {
                 // compute global coordinates for connector (top-left corner of the texture)
-                PosX = room1.PosX + (int)connectorPoint1.Point.X - (int)ConnectorRightOrTop.X;
-                PosY = room1.PosY + (int)connectorPoint1.Point.Y - (int)ConnectorRightOrTop.Y;
+                Position = new Vector2(
+                    room1.Position.X + (int)connectorPoint1.Point.X - (int)ConnectorRightOrTop.X,
+                    room1.Position.Y + (int)connectorPoint1.Point.Y - (int)ConnectorRightOrTop.Y
+                );
 
                 // compute global coordinates for the other room (top-left corner of the texture)
-                room2.PosX = room1.PosX - room2.Width - SpacingDistance;
-                room2.PosY = PosY + (int)ConnectorRightOrTop.Y - (int)connectorPoint2.Point.Y;
+                room2.Position = new Vector2(
+                    room1.Position.X - room2.Width - SpacingDistance,
+                    Position.Y + (int)ConnectorRightOrTop.Y - (int)connectorPoint2.Point.Y
+                );
 
                 // add the connector to the two rooms
                 room1.AddConnector(this);
@@ -360,12 +369,16 @@ namespace YGR
             else if (hCheck2)
             {
                 // compute global coordinates for connector (top-left corner of the texture)
-                PosX = room1.PosX + (int)connectorPoint1.Point.X - (int)ConnectorLeftOrBottom.X; 
-                PosY = room1.PosY + (int)connectorPoint1.Point.Y - (int)ConnectorLeftOrBottom.Y;
+                Position = new Vector2(
+                    room1.Position.X + (int)connectorPoint1.Point.X - (int)ConnectorLeftOrBottom.X,
+                    room1.Position.Y + (int)connectorPoint1.Point.Y - (int)ConnectorLeftOrBottom.Y
+                ); 
 
                 // compute global coordinates for the other room (top-left corner of the texture)
-                room2.PosX = room1.PosX + room1.Width + SpacingDistance;
-                room2.PosY = PosY + (int)ConnectorRightOrTop.Y - (int)connectorPoint2.Point.Y;
+                room2.Position = new Vector2(
+                    room1.Position.X + room1.Width + SpacingDistance,
+                    Position.Y + (int)ConnectorRightOrTop.Y - (int)connectorPoint2.Point.Y
+                );
 
                 // add the connector to the two rooms
                 room1.AddConnector(this);
@@ -379,12 +392,16 @@ namespace YGR
             else if (vCheck1)
             {
                 // compute global coordinates for connector (top-left corner of the texture)
-                PosX = room1.PosX + (int)connectorPoint1.Point.X - (int)ConnectorRightOrTop.X;
-                PosY = room1.PosY + (int)connectorPoint1.Point.Y - (int)ConnectorRightOrTop.Y;
+                Position = new Vector2(
+                    room1.Position.X + (int)connectorPoint1.Point.X - (int)ConnectorRightOrTop.X,
+                    room1.Position.Y + (int)connectorPoint1.Point.Y - (int)ConnectorRightOrTop.Y
+                );
 
                 // compute global coordinates for the other room (top-left corner of the texture)
-                room2.PosX = PosX + (int)ConnectorRightOrTop.X - (int)connectorPoint2.Point.X;
-                room2.PosY = room1.PosY + room1.Height + SpacingDistance;
+                room2.Position = new Vector2(
+                    Position.X + (int)ConnectorRightOrTop.X - (int)connectorPoint2.Point.X,
+                    room1.Position.Y + room1.Height + SpacingDistance
+                );
 
                 // add the connector to the two rooms
                 room1.AddConnector(this);
@@ -398,12 +415,16 @@ namespace YGR
             else if (vCheck2)
             {
                 // compute global coordinates for connector (top-left corner of the texture)
-                PosX = room1.PosX + (int)connectorPoint1.Point.X - (int)ConnectorLeftOrBottom.X;
-                PosY = room1.PosY + (int)connectorPoint1.Point.Y - (int)ConnectorLeftOrBottom.Y;
+                Position = new Vector2(
+                    room1.Position.X + (int)connectorPoint1.Point.X - (int)ConnectorLeftOrBottom.X,
+                    room1.Position.Y + (int)connectorPoint1.Point.Y - (int)ConnectorLeftOrBottom.Y
+                );
 
                 // compute global coordinates for the other room (top-left corner of the texture)
-                room2.PosX = PosX + (int)ConnectorRightOrTop.X - (int)connectorPoint2.Point.X;
-                room2.PosY = room1.PosY - room2.Height - SpacingDistance;
+                room2.Position = new Vector2(
+                    Position.X + (int)ConnectorRightOrTop.X - (int)connectorPoint2.Point.X,
+                    room1.Position.Y - room2.Height - SpacingDistance
+                );
 
                 // add the connector to the two rooms
                 room1.AddConnector(this);
@@ -427,8 +448,8 @@ namespace YGR
         /// <returns>Returns true if the player is on either of the entrance pads of the connector</returns>
         public bool IsOnPad(Vector2 point, ref X_ConnectorSide side)
         {
-            int localX = (int)point.X - PosX;
-            int localY = (int)point.Y - PosY;
+            int localX = (int)(point.X - Position.X);
+            int localY = (int)(point.Y - Position.Y);
             if(LeftOrBottomPlatform.Contains(localX, localY))
             {
                 if (Direction == Y_ConnectorDirection.Horizontal) side = X_ConnectorSide.Left;
@@ -453,9 +474,16 @@ namespace YGR
         /// <returns>Returns true if the player is inside the actual rectangle of the connector</returns>
         public bool IsInside(Vector2 point)
         {
-            int localX = (int)point.X - PosX;
-            int localY = (int)point.Y - PosY;
+            int localX = (int)(point.X - Position.X);
+            int localY = (int)(point.Y - Position.Y);
             return _rectangle.Contains(localX, localY);
+        }
+
+        public bool Intersects(Rectangle other)
+        {
+            // TODO: this one needs to deal with the tiles of the walls
+            // then goto X_CollisionManager and do sofisticated tile collision detection with the relevant tiles
+            return other.Intersects(GetRect());
         }
 
         /// <summary>
@@ -488,6 +516,11 @@ namespace YGR
         public X_LevelElements WhatAreYou()
         {
             return X_LevelElements.Connector;
+        }
+
+        public Rectangle GetRect()
+        {
+            return new Rectangle((int)Position.X - _window.Width / 2, (int)Position.Y - _window.Height / 2, _window.Width, _window.Height);
         }
     }
 }
