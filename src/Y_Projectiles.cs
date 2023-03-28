@@ -29,7 +29,7 @@ namespace YGR
             IWalkable room,
             IGameElement who
         ) {
-            _sprite = X_ProjectileManager.projectile_textures["default_projectile"];
+            _sprite = Manager_Projectile.projectile_textures["default_projectile"];
             _window = new Rectangle(0, 0, 64, 64);
             _animationIndex = 0;
             Position = position;

@@ -212,7 +212,7 @@ namespace YGR
 
                 if (victim.Intersects(rect))
                 {
-                    Rectangle intersect = X_CollisionManager.Intersect(rect, victim.GetRect());
+                    Rectangle intersect = Manager_Collision.Intersect(rect, victim.GetRect());
                     who = victim;
                     where = new Vector2(intersect.X + intersect.Width / 2, intersect.Y + intersect.Height / 2);
                     return true;

@@ -61,7 +61,7 @@ class Program
         try
         {
             Logger.Info("=================== " + time.ToLongDateString() + " | " + time.ToLongTimeString() + " ===================");
-            var game = new YGR.Game1();
+            var game = new YGR.A_Yggdrasil();
             game.Run();
         }
         finally

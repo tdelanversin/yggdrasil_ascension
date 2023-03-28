@@ -9,7 +9,7 @@ namespace YGR
     /// <summary>
     /// Class <c>Factory_Projectiles</c> contains methods to create instances of <c>Y_Projectiles</c>.
     /// </summary>
-    public static class X_ProjectileManager
+    public static class Manager_Projectile
     {
         public static Dictionary<string, Texture2D> projectile_textures;
         private static List<IProjectile> _projectiles = new List<IProjectile>();

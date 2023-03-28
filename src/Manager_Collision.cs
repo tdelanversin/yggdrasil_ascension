@@ -13,7 +13,7 @@ namespace YGR
     // Youtube tutorial
     // https://www.youtube.com/watch?v=8JJ-4JgR7Dg
 
-    public static class X_CollisionManager
+    public static class Manager_Collision
     {
         public static Rectangle Intersect(Rectangle rect1, Rectangle rect2)
         {

@@ -21,7 +21,7 @@ namespace YGR
                     room,
                     who
                 );
-                X_ProjectileManager.AddProjectile(projectile);
+                Manager_Projectile.AddProjectile(projectile);
             }
         }
     }
@@ -44,7 +44,7 @@ namespace YGR
                     room,
                     who
                 );
-                X_ProjectileManager.AddProjectile(projectile);
+                Manager_Projectile.AddProjectile(projectile);
             }
         }
     }
