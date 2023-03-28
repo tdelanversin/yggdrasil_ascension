@@ -7,7 +7,7 @@ namespace YGR
     /// <summary>
     /// Class <c>Y_Camera</c> is a primitive implementation of a camera view that can pan using W,A,S,D. It pans with some simple animation.
     /// </summary>
-    public class Y_Camera : ICamera
+    public class Y_Camera
     {
         // Global X position
         public int PosX { get { return _rect.X; } }

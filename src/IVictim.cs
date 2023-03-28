@@ -9,7 +9,9 @@
 
 namespace YGR
 {
-    public interface IVictim
+    public interface IVictim : IGameElement
     {
+        public int LifePoints { get; set; }
+        public bool HitInLastLoop { get; set; }
     }
 }

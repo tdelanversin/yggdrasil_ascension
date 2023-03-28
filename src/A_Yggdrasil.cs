@@ -10,7 +10,7 @@ using Color = Microsoft.Xna.Framework.Color;
 namespace YGR
 {
 
-    public class Game1 : Game
+    public class A_Yggdrasil : Game
     {
         public Clearcove.Logging.Logger logger;
 
@@ -26,7 +26,7 @@ namespace YGR
         IList<Y_Connector> _connectors;
         IDictionary<string, Y_Room> _rooms;
 
-        public Game1()
+        public A_Yggdrasil()
         {
             _graphics = new GraphicsDeviceManager(this);
             Content.RootDirectory = "Content";
@@ -45,7 +45,7 @@ namespace YGR
             Factory_Rooms.Initialize(Content);
             Factory_Connectors.Initialize(Content);
             Factory_Debug.Initialize(Content);
-            ProjectileManager.Initialize(Content);
+            Manager_Projectile.Initialize(Content);
 
             base.Initialize();
         }
@@ -83,7 +83,7 @@ namespace YGR
                     Content.Load<Texture2D>("tester"),
                     new Rectangle(0, 0, 73, 102),
                     400.0f,
-                    new Vector2(200, 500),
+                    new Vector2(170, 500),
                     _rooms["room_center"],
                     200.0f,
                     new Dictionary<string, int[]> {
@@ -118,7 +118,7 @@ namespace YGR
                 player.Update(gameTime);
             }
 
-            ProjectileManager.Update(gameTime);
+            Manager_Projectile.Update(gameTime);
 
             foreach(var con in _connectors)
             {
@@ -153,21 +153,23 @@ namespace YGR
             {
                 room.Draw(gameTime, zero, _spriteBatch);
                 // uncomment for debugging
-                //room.DrawOutline(gameTime, zero, _spriteBatch);
+                room.DrawOutline(gameTime, zero, _spriteBatch);
             }
 
             foreach (var con in _connectors)
             {
                 con.Draw(gameTime, zero, _spriteBatch);
                 // uncomment for debugging
-                //con.DrawOutline(gameTime, zero, _spriteBatch);
+                con.DrawOutline(gameTime, zero, _spriteBatch);
             }
 
-            ProjectileManager.Draw(gameTime, zero, _spriteBatch);
+            Manager_Projectile.Draw(gameTime, zero, _spriteBatch);
+            Manager_Projectile.DrawOutline(gameTime, zero, _spriteBatch);
 
-            foreach(var player in _player)
+            foreach (var player in _player)
             {
                 player.Draw(gameTime, zero, _spriteBatch);
+                player.DrawOutline(gameTime, zero, _spriteBatch);
             }
 
             _spriteBatch.End();

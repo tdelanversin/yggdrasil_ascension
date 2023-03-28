@@ -7,7 +7,7 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace YGR
 {
-    public interface IProjectile
+    public interface IProjectile : IGameElement
     {
         //public Texture2D _sprite { get; set; }
         //public Rectangle _window { get; set; }
@@ -19,7 +19,7 @@ namespace YGR
         public string Name { get; set; }
         public bool DeleteNext { get; set; }
 
-        public void Update(GameTime gameTime);
-        public void Draw(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch);
+        //public void Update(GameTime gameTime);
+        //public void Draw(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch);
     }
 }

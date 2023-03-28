@@ -1,17 +1,19 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics.Metrics;
 using System.Linq;
+using System.Runtime.Intrinsics.Arm;
 
 namespace YGR
 {
     public class Y_Room : IWalkable
     {
         // The global X position
-        public int PosX { get; set; }
+        public Vector2 Position { get; set; }
         // The global y position
-        public int PosY { get; set; }
         // The total width of the texture
         public int Width { get { return _walls.Width; } }
         // The total height of the texture
@@ -29,6 +31,9 @@ namespace YGR
         private Texture2D _walls;
         // The polygon for the collision detection for the IWalkable
         private X_Polygon _outline;
+
+        public IList<IProjectile> Projectiles { get; }
+        public IList<IVictim> Victims { get; }
         
         public Y_Room(
             string name,
@@ -37,8 +42,7 @@ namespace YGR
             Dictionary<X_ConnectorSide, int[,]> connectorPoints
         )
         {
-            PosX = 0;
-            PosY = 0;
+            Position = Vector2.Zero;
             Name = name;
             BackgroundColor = Color.White;
 
@@ -63,6 +67,9 @@ namespace YGR
                     );
                 }
             }
+
+            Projectiles = new List<IProjectile>();
+            Victims = new List<IVictim>();
         }
 
         /// <summary>
@@ -83,13 +90,13 @@ namespace YGR
         /// <param name="spriteBatch">Active Monogame SpriteBatch</param>
         public void DrawOutline(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)
         {
-            _outline.DrawOutline(gameTime, new Vector2(PosX, PosY), spriteBatch);
+            _outline.DrawOutline(gameTime, Position, spriteBatch);
 
             foreach(var side in _connectorPoints.Values)
             {
                 foreach(var con in side)
                 {
-                    con.DrawOutline(gameTime, new Vector2(PosX, PosY), spriteBatch);
+                    con.DrawOutline(gameTime, Position, spriteBatch);
                 }
             }
         }
@@ -104,7 +111,7 @@ namespace YGR
         {
             spriteBatch.Draw(
                 _walls,
-                new Rectangle(PosX, PosY, _walls.Bounds.Size.X, _walls.Bounds.Size.Y),
+                new Rectangle((int)Position.X, (int)Position.Y, _walls.Bounds.Size.X, _walls.Bounds.Size.Y),
                 new Rectangle(0, 0, _walls.Bounds.Size.X, _walls.Bounds.Size.Y),
                 BackgroundColor
             );
@@ -167,9 +174,10 @@ namespace YGR
         /// <returns></returns>
         public Vector2 Clamp(Rectangle rect, Vector2 pos, Vector2 dp, ref IWalkable who, ref Vector2 where)
         {
+            // check collision with the room walls
             bool collision = false;
             Vector2 offset = new Vector2(Math.Sign(dp.X) * rect.Width / 2, Math.Sign(dp.Y) * rect.Height / 2);
-            where = _outline.Clamp(pos, dp + offset, new Vector2(-PosX, -PosY), ref collision);
+            where = _outline.Clamp(pos, dp + offset, -Position, ref collision);
             Vector2 newPos = where - offset;
 
             if (collision)
@@ -183,6 +191,13 @@ namespace YGR
             return newPos;
         }
 
+        public bool Intersects(Rectangle other)
+        {
+            // TODO: this one needs to deal with the tiles of the walls
+            // then goto X_CollisionManager and do sofisticated tile collision detection with the relevant tiles
+            return other.Intersects(GetRect());
+        }
+
         /// <summary>
         /// This method is the standard ILevelElement WhatAreYou
         /// </summary>
@@ -190,6 +205,11 @@ namespace YGR
         public X_LevelElements WhatAreYou()
         {
             return X_LevelElements.Room;
+        }
+
+        public Rectangle GetRect()
+        {
+            return new Rectangle((int)Position.X, (int)Position.Y, Width, Height);
         }
     }
 }
