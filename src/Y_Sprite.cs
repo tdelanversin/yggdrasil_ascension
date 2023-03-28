@@ -135,21 +135,19 @@ namespace YGR
                 input.Normalize();
             }
 
-            if(_playerIndex == PlayerIndex.One) { 
-                // only check collision if we actually have some input...
-                float deltaTime = (float)gameTime.ElapsedGameTime.TotalSeconds;
-                Vector2 dp = input * deltaTime * _velocity;
+            // only check collision if we actually have some input...
+            float deltaTime = (float)gameTime.ElapsedGameTime.TotalSeconds;
+            Vector2 dp = input * deltaTime * _velocity;
 
-                Vector2 where = Vector2.Zero;
-                IGameElement with;
-                if(!checkColWSprite(dp, out with, out where)){
-                    // this is the collision detection with the room and the connectors
-                    IWalkable who = null;
-                    Rectangle rect = new Rectangle((int)Position.X, (int)Position.Y, _window.Width, _window.Height);
-                    Position = _currentRoom.Clamp(rect, Position, dp, ref who, ref where);
+            Vector2 where = Vector2.Zero;
+            IGameElement with;
+            if(!checkColWSprite(dp, out with, out where)){
+                // this is the collision detection with the room and the connectors
+                IWalkable who = null;
+                Rectangle rect = new Rectangle((int)Position.X, (int)Position.Y, _window.Width, _window.Height);
+                Position = _currentRoom.Clamp(rect, Position, dp, ref who, ref where);
 
-                    if (who != null) Logger.Debug("collided with some room at location " + where.ToString());
-                }
+                if (who != null) Logger.Debug("collided with some room at location " + where.ToString());
             }
 
             // check where we are in

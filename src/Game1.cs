@@ -153,23 +153,23 @@ namespace YGR
             {
                 room.Draw(gameTime, zero, _spriteBatch);
                 // uncomment for debugging
-                room.DrawOutline(gameTime, zero, _spriteBatch);
+                //room.DrawOutline(gameTime, zero, _spriteBatch);
             }
 
             foreach (var con in _connectors)
             {
                 con.Draw(gameTime, zero, _spriteBatch);
                 // uncomment for debugging
-                con.DrawOutline(gameTime, zero, _spriteBatch);
+                //con.DrawOutline(gameTime, zero, _spriteBatch);
             }
 
             X_ProjectileManager.Draw(gameTime, zero, _spriteBatch);
-            X_ProjectileManager.DrawOutline(gameTime, zero, _spriteBatch);
+            //X_ProjectileManager.DrawOutline(gameTime, zero, _spriteBatch);
 
             foreach(var player in _player)
             {
                 player.Draw(gameTime, zero, _spriteBatch);
-                player.DrawOutline(gameTime, zero, _spriteBatch);
+                //player.DrawOutline(gameTime, zero, _spriteBatch);
             }
 
             _spriteBatch.End();
