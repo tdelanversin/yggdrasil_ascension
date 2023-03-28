@@ -54,7 +54,7 @@ class Program
             random.Next().ToString() + 
             "].log");
         Clearcove.Logging.Logger.BatchInterval = 1500;
-        Clearcove.Logging.Logger.LogToConsole = false;  // Print log entries to console (optional).
+        Clearcove.Logging.Logger.LogToConsole = true;  // Print log entries to console (optional).
         Clearcove.Logging.Logger.IgnoreDebug = true;
         Clearcove.Logging.Logger.Start(targetLogFile); // Loggers will complain if you skip initialization
 
