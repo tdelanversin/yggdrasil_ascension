@@ -13,30 +13,11 @@ namespace YGR
     /// </summary>
     public static class Factory_Rooms
     {
-
-        private static Csv_reader csv_reader = new();
-        private static Level _level;
         private static bool _initialized = false;
 
         private static Texture2D _room_0;
         private static Texture2D _room_1;
         private static Texture2D _room_2;
-        public static void collision_init()
-        {
-            var x=_level.x;
-            var y=_level.y;
-            var width=_level.width;
-            var height=_level.height;
-            var collision_values = Csv_reader.Csvread();
-            Logger.Info("yuhuuuuuuuuuuuuuuuu" + collision_values[0]);
-            X_Polygon[][] outline=new X_Polygon[collision_values.Length][];
-            for (int i=0; i < collision_values.Length; i++)
-            {
-                var collision = collision_values[i];
-                X_Polygon tile = new X_Polygon(new float[,] { { x + i }, { x + i }, { x + i }, { x + i } });
-
-            }
-        }
 
         public static void Initialize(ContentManager content)
         {
@@ -54,7 +35,6 @@ namespace YGR
 
         public static Y_Room Room_0(string name)
         {
-            collision_init();
             check();
             return new Y_Room(
                 /* name of the room */
@@ -66,13 +46,13 @@ namespace YGR
                     new float[][,] {
                         /*outer border*/
 
-                        //new float[,] {{ 40.0f, 51.0f }, { 40.0f , 1045.0f }, { 1884.0f , 1045.0f }, { 1884.0f, 51.0f } },
-                        ///*vertical rectangle on the left*/
-                        //new float[,] {{ 298.0f, 278.0f }, { 300.0f, 816.0f }, { 419.0f, 816.0f }, { 419, 278.0f } },
-                        ///*horizontal rectangle in the middle*/
-                        //new float[,] {{ 573.0f, 441.0f }, { 573.0f, 608.0f }, { 1482.0f, 611.0f }, { 1482, 441.0f } },
-                        ///*circular cylinder on the bottom right*/
-                        //new float[,] {{ 1653.0f, 739.0f }, { 1615.0f, 752.0f }, { 1600.0f, 796.0f }, { 1618, 860.0f }, { 1655, 868.0f }, { 1697.0f, 858.0f }, { 1712.0f, 796.0f }, { 1685.0f, 750.0f } }
+                        new float[,] {{ 40.0f, 51.0f }, { 40.0f , 1045.0f }, { 1884.0f , 1045.0f }, { 1884.0f, 51.0f } },
+                        /*vertical rectangle on the left*/
+                        new float[,] {{ 298.0f, 278.0f }, { 300.0f, 816.0f }, { 419.0f, 816.0f }, { 419, 278.0f } },
+                        /*horizontal rectangle in the middle*/
+                        new float[,] {{ 573.0f, 441.0f }, { 573.0f, 608.0f }, { 1482.0f, 611.0f }, { 1482, 441.0f } },
+                        /*circular cylinder on the bottom right*/
+                        new float[,] {{ 1653.0f, 739.0f }, { 1615.0f, 752.0f }, { 1600.0f, 796.0f }, { 1618, 860.0f }, { 1655, 868.0f }, { 1697.0f, 858.0f }, { 1712.0f, 796.0f }, { 1685.0f, 750.0f } }
                 }),
                 /* attaching points for connectors */
                 new Dictionary<X_ConnectorSide, int[,]>
