@@ -31,15 +31,14 @@ namespace YGR
             Rectangle target, 
             out Point contactPoint,
             out Vector2 contactNormal,
-            out float u
+            out float uHit
         )
         {
             contactPoint = Point.Zero;
             contactNormal = Vector2.Zero;
-            u = 0.0f;
+            uHit = 0.0f;
 
             // preassign stuff
-            Vector2 vContactPoint = Vector2.Zero;
             Vector2 rayOrigin = new Vector2(origin.X, origin.Y);
             Vector2 invDir = new Vector2(1.0f / dir.X, 1.0f / dir.Y);
             Vector2 targetPos = new Vector2(target.Location.X, target.Location.Y);
@@ -49,6 +48,9 @@ namespace YGR
             Vector2 tNear = (targetPos - rayOrigin) * invDir;
             Vector2 tFar = (targetPos + targetSize - rayOrigin) * invDir;
 
+            if (Single.IsInfinity(tFar.Y) || Single.IsInfinity(tFar.X)) return false;
+            if (Single.IsInfinity(tNear.Y) || Single.IsInfinity(tNear.X)) return false;
+
             // sort distances => swap variables without temp var
             if (tNear.X > tFar.X) (tNear.X, tFar.X) = (tFar.X, tNear.X);
             if (tNear.Y > tFar.Y) (tNear.Y, tFar.Y) = (tFar.Y, tNear.Y);
@@ -56,7 +58,58 @@ namespace YGR
             // early rejection
             if (tNear.X > tFar.Y || tNear.Y > tFar.X) return false;
 
+            // closest contact
+            uHit = Math.Max(tNear.X, tNear.Y);
+
+            // furthest contact
+            float uHitFar = Math.Min(tFar.X, tFar.Y);
+
+            // if we are behind ourselves
+            if (uHit < 0) return false;
+
+            // calculate the contact point
+            contactPoint = (origin.ToVector2() + uHit * dir).ToPoint();
+
+            // calculate the normal vector
+            if(tNear.X > tNear.Y)
+            {
+                if (invDir.X < 0) contactNormal = new Vector2(1, 0);
+                else contactNormal = new Vector2(-1, 0);
+            }
+            else if(tNear.X < tNear.Y)
+            {
+                if (invDir.Y < 0) contactNormal = new Vector2(0, 1);
+                else contactNormal = new Vector2(0, -1);
+            }
+
             return true;
+        }
+
+        public static bool DynamicRectVsRect(
+            Rectangle movingRect, 
+            Vector2 velocity,
+            int timeStep, 
+            Rectangle staticRect, 
+            out Point contactPoint, 
+            out Vector2 contactNormal, 
+            out float uHit
+        )
+        {
+            contactPoint = Point.Zero;
+            contactNormal = Vector2.Zero;
+            uHit = 0;
+
+            if (velocity.X == 0 && velocity.Y == 0) return false;
+
+            Rectangle expanded = new Rectangle(
+                staticRect.X - movingRect.Width / 2, staticRect.Y - movingRect.Height / 2, 
+                staticRect.Width + movingRect.Width, staticRect.Height + staticRect.Height);
+
+            Point origin = new Point(movingRect.X + movingRect.Width / 2, movingRect.Y + movingRect.Height / 2);
+            if (RayVsRect(origin, velocity * timeStep, expanded, out contactPoint, out contactNormal, out uHit)) 
+                return (uHit >= 0.0f && uHit <= 1.0f);
+
+            return false;
         }
     }
 }

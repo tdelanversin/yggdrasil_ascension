@@ -14,18 +14,6 @@ using System.Security.Cryptography.X509Certificates;
 
 namespace YGR
 {
-    internal sealed class Door
-    {
-        public string id;
-        public string iid;
-        public string layer;
-        public int x;
-        public int y;
-        public int width;
-        public int height;
-        public int color;
-    }
-
     public class Y_LdtkRoom : IWalkable
     {
         public string Name { get; set; }
@@ -39,12 +27,7 @@ namespace YGR
 
         private int[][] _collisionTemplate;
         private Rectangle[,] _collisionModel;
-        private string _resourceFile;
         private string _location;
-        private string _dataFile;
-
-        IList<Door> _doors;
-        IList<string> _layers;
 
         public Y_LdtkRoom(
             string name,
@@ -59,7 +42,6 @@ namespace YGR
             TileWidth = tileWidth;
             TileHeight = tileHeight;
 
-            _resourceFile = resourceFile;
             if (location[location.Length - 1] != '/') _location = location + '/'; else _location = location;
             if(_location.Substring(0, 2) != "./") _location = "./" + _location;
 
@@ -67,42 +49,17 @@ namespace YGR
             Victims = new List<IVictim>();
 
             load();
-            Logger.Info("done");
         }
 
         private void load()
         {
-            // load data
-            using (var zip = ZipFile.OpenRead(_location + _resourceFile))
+            string[] lines = File.ReadAllLines(_location + "Collisions.csv");
+            _collisionTemplate = new int[lines.Length][];
+            int counter = 0;
+            foreach (var line in lines)
             {
-                foreach (var entry in zip.Entries)
-                {
-                    if (entry.Name == "Collisions.csv")
-                    {
-                        entry.ExtractToFile("temp", true);
-                        string[] lines = File.ReadAllLines("temp");
-                        _collisionTemplate = new int[lines.Length][];
-                        int counter = 0;
-                        foreach (var line in lines)
-                        {
-                            _collisionTemplate[counter] = line.Split(',').Where(i => i != "").Select(int.Parse).ToArray();
-                            counter++;
-                        }
-                    }
-                    else if(entry.Name == "data.json")
-                    {
-                        entry.ExtractToFile("temp", true);
-                        using (StreamReader stream = new StreamReader("temp"))
-                        {
-                            string json = stream.ReadToEnd();
-                            dynamic array = JsonConvert.DeserializeObject(json);
-                            //_items = JsonConvert.DeserializeObject<List<Item>>(json);
-                            Width = array.width;
-                            Height = array.height;
-                            _doors = JsonConvert.DeserializeObject<List<Door>>(array.entities.Door.ToString());
-                        }
-                    }
-                }
+                _collisionTemplate[counter] = line.Split(',').Where(i => i != "").Select(int.Parse).ToArray();
+                counter++;
             }
 
             // create collision model

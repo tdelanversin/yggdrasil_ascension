@@ -1,0 +1,48 @@
+{
+	"identifier": "World_Level_0",
+	"uniqueIdentifer": "6c85c6a0-c640-11ed-9392-adb2e1f4ba24",
+	"x": -800,
+	"y": 384,
+	"width": 368,
+	"height": 352,
+	"bgColor": "#404255",
+	"neighbourLevels": [],
+	"customFields" : {},
+	"layers": [
+		"Default_ground.png",
+		"Collisions.png",
+		"Custom_grounds.png",
+		"Custom_tiles.png",
+		"Wall_outlines.png"
+	],
+	"entities": {
+		"Door": [
+			{
+				"id": "Door",
+				"iid": "e4661990-c640-11ed-9392-c92ee2030d92",
+				"layer": "Entities",
+				"x": 360,
+				"y": 56,
+				"width": 16,
+				"height": 16,
+				"color": 16759620,
+				"customFields": {
+					"lockedWith": null
+				}
+			},
+			{
+				"id": "Door",
+				"iid": "673fc2c0-c640-11ed-9392-9fc9a58f4316",
+				"layer": "Entities",
+				"x": 72,
+				"y": 344,
+				"width": 16,
+				"height": 16,
+				"color": 16759620,
+				"customFields": {
+					"lockedWith": null
+				}
+			}
+		]
+	}
+}
