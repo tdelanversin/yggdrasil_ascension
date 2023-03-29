@@ -80,25 +80,29 @@ namespace YGR
 
     public class Y_FunkyGun : IShooter
     {
-        double timeSinceShot = 0.0f;
-        bool shoot = false;
-        Vector2 _origin;
-        Vector2 _direction;
+        double timeSinceShot = 1001;
+        Vector2 _origin = new Vector2(0, 0);
+        Vector2 _direction = new Vector2(0, 0);
         IWalkable _room;
         IGameElement _who;
 
         static int shotDelay = 1000;
         // bulletArray is a 2D array of booleans that represent the shape of the bullet spray patter
         static double shotSpread = .1;
-        static bool[,] bulletArray = {{false, true, false},
-                                      {true, false, true},
-                                      {false, true, false},
-                                      {true, false, true},
-                                      {false, true, false},
-                                      {true, false, true},
-                                      {false, true, false}};
+        // static bool[,] bulletArray = {{false, true, false},
+        //                               {true, false, true},
+        //                               {false, true, false}};
+        static bool[,] bulletArray = {{ false, false, true, false, false },
+                                    { false, true, false, true, false },
+                                    { false, true, false, true, false },
+                                    { false, true, false, true, false },
+                                    { false, true, false, true, false },
+                                    { false, true, false, true, false },
+                                    { true, false, true, false, true },
+                                    { false, true, false, true, false }};
         // shotSpeeds is an array of doubles that represent the time in milliseconds that each bullet row should be fired
-        static double[] shotSpeeds = { 0.0, 60.0, 120.0, 180.0, 240.0, 300.0, 360.0 };
+        // static double[] shotSpeeds = { 0.0, 60.0, 120.0 };
+        static double[] shotSpeeds = { 0.0, 60.0, 120.0, 180.0, 240.0, 300.0, 360.0, 420.0 };
 
         public Y_FunkyGun() { }
 
@@ -108,7 +112,6 @@ namespace YGR
                 return;
 
             timeSinceShot = 0.0f;
-            shoot = true;
             _origin = origin;
             _direction = direction;
             _room = room;
@@ -117,48 +120,48 @@ namespace YGR
 
         public void Update(GameTime gameTime)
         {
-            if (shoot)
+            if (timeSinceShot >= shotDelay)
+                return;
+
+            var lastUpdate = timeSinceShot;
+            timeSinceShot += gameTime.ElapsedGameTime.TotalMilliseconds;
+
+            if (lastUpdate >= shotSpeeds[shotSpeeds.GetLength(0) - 1])
+                return;
+
+            for (int i = 0; i < shotSpeeds.GetLength(0); ++i)
             {
-                var lastUpdate = timeSinceShot;
-                var thisUpdate = timeSinceShot + gameTime.ElapsedGameTime.TotalMilliseconds;
-                for (int i = 0; i < shotSpeeds.GetLength(0); ++i)
+                if (lastUpdate > shotSpeeds[i] || timeSinceShot <= shotSpeeds[i])
+                    continue;
+
+                double timedelta = timeSinceShot - shotSpeeds[i];
+                double spread = -bulletArray.GetLength(1) / 2 * shotSpread;
+                for (int j = 0; j < bulletArray.GetLength(1); j++)
                 {
-                    if (lastUpdate <= shotSpeeds[i] && thisUpdate > shotSpeeds[i])
+                    if (!bulletArray[i, j])
                     {
-                        double timedelta = shotSpeeds[i] - lastUpdate;
-                        double spread = -bulletArray.GetLength(1) / 2 * shotSpread;
-                        for (int j = 0; j < bulletArray.GetLength(1); j++)
-                        {
-                            if (bulletArray[i, j])
-                            {
-                                var new_dir = new Vector2(
-                                    (float)(_direction.X * Math.Cos(spread) - _direction.Y * Math.Sin(spread)),
-                                    (float)(_direction.X * Math.Sin(spread) + _direction.Y * Math.Cos(spread))
-                                );
-                                var new_origin = new Vector2(
-                                    (float)(_origin.X + timedelta * new_dir.X),
-                                    (float)(_origin.Y + timedelta * new_dir.Y)
-                                );
-                                var projectile = new Y_ShotGunProjectile(
-                                    new_origin,
-                                    new_dir,
-                                    gameTime.TotalGameTime.TotalMilliseconds,
-                                    _room,
-                                    _who
-                                );
-                                Manager_Projectile.AddProjectile(projectile);
-                            }
-                            spread += shotSpread;
-                        }
+                        spread += shotSpread;
+                        continue;
                     }
+
+                    var new_dir = new Vector2(
+                        (float)(_direction.X * Math.Cos(spread) - _direction.Y * Math.Sin(spread)),
+                        (float)(_direction.X * Math.Sin(spread) + _direction.Y * Math.Cos(spread))
+                    );
+                    var new_origin = new Vector2(
+                        (float)(_origin.X + timedelta * new_dir.X),
+                        (float)(_origin.Y + timedelta * new_dir.Y)
+                    );
+                    var projectile = new Y_ShotGunProjectile(
+                        new_origin,
+                        new_dir,
+                        gameTime.TotalGameTime.TotalMilliseconds,
+                        _room,
+                        _who
+                    );
+                    Manager_Projectile.AddProjectile(projectile);
+                    spread += shotSpread;
                 }
-            }
-            if (timeSinceShot < shotDelay)
-            {
-                timeSinceShot += gameTime.ElapsedGameTime.TotalMilliseconds;
-            } else
-            {
-                shoot = false;
             }
         }
 
