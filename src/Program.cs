@@ -41,7 +41,7 @@ class Program
         var time = DateAndTime.Now;
         var random = new Random();
         var targetLogFile = new FileInfo(
-#if TEST
+#if COLLISION_TEST
             "./test_[" +
 #else
             "./log_[" +

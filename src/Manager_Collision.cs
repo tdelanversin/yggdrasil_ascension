@@ -48,8 +48,8 @@ namespace YGR
             Vector2 tNear = (targetPos - rayOrigin) * invDir;
             Vector2 tFar = (targetPos + targetSize - rayOrigin) * invDir;
 
-            if (Single.IsInfinity(tFar.Y) || Single.IsInfinity(tFar.X)) return false;
-            if (Single.IsInfinity(tNear.Y) || Single.IsInfinity(tNear.X)) return false;
+            //if (Single.IsInfinity(tFar.Y) || Single.IsInfinity(tFar.X)) return false;
+            //if (Single.IsInfinity(tNear.Y) || Single.IsInfinity(tNear.X)) return false;
 
             // sort distances => swap variables without temp var
             if (tNear.X > tFar.X) (tNear.X, tFar.X) = (tFar.X, tNear.X);
@@ -105,7 +105,10 @@ namespace YGR
                 staticRect.X - movingRect.Width / 2, staticRect.Y - movingRect.Height / 2, 
                 staticRect.Width + movingRect.Width, staticRect.Height + movingRect.Height);
 
-            Point origin = new Point(movingRect.X + movingRect.Width / 2, movingRect.Y + movingRect.Height / 2);
+            Point origin = new Point(
+                movingRect.X + movingRect.Width / 2 + Math.Sign(velocity.X), 
+                movingRect.Y + movingRect.Height / 2 + Math.Sign(velocity.Y)
+            );
             if (RayVsRect(origin, velocity * timeStep, expanded, out contactPoint, out contactNormal, out uHit)) 
                 return (uHit >= 0.0f && uHit <= 1.0f);
 
@@ -129,7 +132,16 @@ namespace YGR
                 velocity += contactNormal * v;
                 return true;
             }
+            return false;
+        }
 
+        public static bool ResolveSortedRectVsRect(
+            Rectangle movingRect,
+            ref Vector2 velocity,
+            int timeStep,
+            Rectangle staticRect
+        )
+        {
             return false;
         }
     }
