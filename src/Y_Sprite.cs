@@ -212,9 +212,9 @@ namespace YGR
 
                 if (victim.Intersects(rect))
                 {
-                    Rectangle intersect = Manager_Collision.Intersect(rect, victim.GetRect());
-                    who = victim;
-                    where = new Vector2(intersect.X + intersect.Width / 2, intersect.Y + intersect.Height / 2);
+                    //Rectangle intersect = Manager_Collision.Intersect(rect, victim.GetRect());
+                    //who = victim;
+                    //where = new Vector2(intersect.X + intersect.Width / 2, intersect.Y + intersect.Height / 2);
                     return true;
                 }
             }

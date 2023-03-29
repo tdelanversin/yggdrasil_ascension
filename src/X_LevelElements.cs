@@ -9,6 +9,7 @@
         Room = 0,
         Connector,
         Victim,
-        Projectile
+        Projectile,
+        Collision
     }
 }
