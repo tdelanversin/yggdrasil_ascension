@@ -130,6 +130,9 @@ namespace YGR
                 }
             }
 
+            // update gun for special shooting effects
+            _gun.Update(gameTime);
+
             if (input.LengthSquared() > 1)
             {
                 input.Normalize();
