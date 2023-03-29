@@ -14,9 +14,24 @@ using Color = Microsoft.Xna.Framework.Color;
 using System.IO;
 using Microsoft.VisualBasic.FileIO;
 using System.IO.Compression;
+using System.Runtime.InteropServices;
+using System.Linq;
+using Assimp.Configs;
 
 namespace YGR
 {
+    public struct Set
+    {
+        public float Distance;
+        public Vector2 ContactNormal;
+        public float UHit;
+
+        public Set(float dist, Vector2 contactNormal, float uHit)
+        {
+            Distance = dist; ContactNormal = contactNormal; UHit = uHit;
+        }
+    }
+
     public struct Line
     {
         public Point origin;
@@ -31,16 +46,17 @@ namespace YGR
         private const int RES_X = 1920;
         private const int RES_Y = 1000;
 
-        private Y_LdtkRoom _room;
+        private Y_TestRoom _room;
         private Y_Sprite _player;
 
         private Rectangle[] _rects;
         Color[] _rectColors;
         Point[] _contactPoints;
+        Vector2[] _contactNormals;
 
         private Rectangle _myRect;
         private Vector2 _velocity;
-        private IList<KeyValuePair<float, Rectangle>> _collidedRects;
+        private IList<Tuple<Rectangle, Rectangle>> _collidedRects;
         private float _uHit;
 
         public A_CollisionTest()
@@ -70,7 +86,7 @@ namespace YGR
             _spriteBatch = new SpriteBatch(GraphicsDevice);
             //string[] lines = File.ReadAllLines("./Level/Level_0/Collisions.csv");
 
-            _room = new Y_LdtkRoom("hello", "Room_0.zip", tileWidth:40, tileHeight:40);
+            _room = new Y_TestRoom("hello", "Room_0.zip", tileWidth:40, tileHeight:40);
 
 
             _player = new Y_Sprite(
@@ -113,14 +129,19 @@ namespace YGR
                 new Rectangle(400, 700, 200, 200),
                 new Rectangle(600, 700, 200, 200),
                 new Rectangle(800, 700, 200, 200),
+                new Rectangle(800, 500, 200, 200),
+                new Rectangle(800, 300, 200, 200),
+                new Rectangle(800, 100, 200, 200)
              };
 
             _rectColors = new Color[_rects.Length];
             _contactPoints = new Point[_rects.Length];
+            _contactNormals = new Vector2[_rects.Length];
             for(int i=0; i<_rectColors.Length; ++i)
             {
                 _rectColors[i] = Color.Red;
                 _contactPoints[i] = Point.Zero;
+                _contactNormals[i] = Vector2.Zero;
             }
 
             Mouse.SetPosition(175, 380);
@@ -152,20 +173,131 @@ namespace YGR
             if(vel.Length() != 0.0f) vel.Normalize();
             _velocity += vel * 0.05f; // * gameTime.ElapsedGameTime.Milliseconds;
 
-            for(int i=0; i<_rects.Length; ++i)
+            float uHit;
+
+            List<Set> collidedTop = new List<Set>();
+            List<Set> collidedRight = new List<Set>();
+            List<Set> collidedBottom = new List<Set>();
+            List<Set> collidedLeft = new List<Set>();
+            List<Set> collided = new List<Set>();
+            for (int i=0; i<_rects.Length; ++i)
             {
-                bool result = Manager_Collision.ResolveDynamicRectVsRect(
-                    _myRect, ref _velocity, timeStep, _rects[i]);
+                bool result = Manager_Collision.DynamicRectVsRect(
+                    ref _myRect, _velocity, timeStep, 
+                    ref _rects[i], out _contactPoints[i], out _contactNormals[i], out uHit);
+                //ref _myRect, ref _velocity, timeStep, ref _rects[i]);
 
                 if (result)
                 {
+                    Vector2 om = new Vector2(_myRect.Width / 2, _myRect.Height / 2);
+                    Vector2 on = new Vector2(_rects[i].Width / 2, _rects[i].Height / 2);
+                    float dist = (_myRect.Location.ToVector2() + om - _rects[i].Location.ToVector2() + on).LengthSquared();
+                    collided.Add(new Set(dist, _contactNormals[i], uHit));
+                    //if (_contactNormals[i].X > 0 && _contactNormals[i].Y == 0)
+                    //{
+                    //    //right
+                    //    collidedRight.Add(new Set(dist, _contactNormals[i], uHit));
+                    //}
+                    //else if (_contactNormals[i].X < 0 && _contactNormals[i].Y == 0)
+                    //{
+                    //    //left
+                    //    collidedLeft.Add(new Set(dist, _contactNormals[i], uHit));
+                    //}
+                    //else if (_contactNormals[i].X == 0 && _contactNormals[i].Y > 0)
+                    //{
+                    //    // Bottom
+                    //    collidedBottom.Add(new Set(dist, _contactNormals[i], uHit));
+                    //}
+                    //else
+                    //{
+                    //    // Top
+                    //    collidedTop.Add(new Set(dist, _contactNormals[i], uHit));
+                    //}
+
                     //_collidedRects.Add(new KeyValuePair<float, Rectangle>(uHit, _rects[i]));
                     _rectColors[i] = Color.Yellow;
                 }
-                else _rectColors[i] = Color.Red;
+                else
+                {
+                    _rectColors[i] = Color.Red;
+                    _contactPoints[i] = Point.Zero;
+                }
             }
 
+            //int lastX = int.MinValue;
+            //int lastY = int.MinValue;
+            //Vector2 dv = Vector2.Zero;
+            //bool top = false;
+            //bool left = false;
+            //Vector2 temp1 = Vector2.Zero;
+            //Vector2 temp2 = Vector2.Zero;
+            //if (collidedTop.Count() > 0)
+            //{
+            //    var m = collidedTop.MinBy(x => x.Distance);
+            //    Vector2 v = new Vector2(Math.Abs(_velocity.X), Math.Abs(_velocity.Y)) * (1 - m.UHit);
+            //    temp1 = m.ContactNormal * v;
+            //    Logger.Info("+++++++++++++++" + temp1.ToString() + "          " + _myRect.Location.ToString());
+            //    dv += temp1;
+            //    top = true;
+            //}
+            //if (collidedLeft.Count() > 0)
+            //{
+            //    var m = collidedLeft.MinBy(x => x.Distance);
+            //    Vector2 v = new Vector2(Math.Abs(_velocity.X), Math.Abs(_velocity.Y)) * (1 - m.UHit);
+            //    temp2 = m.ContactNormal * v;
+            //    Logger.Info("..............." + temp2.ToString() + "          " + _myRect.Location.ToString());
+            //    dv += temp2;
+            //    left = true;
+            //}
+            //if (collidedBottom.Count() > 0)
+            //{
+            //    var m = collidedBottom.MaxBy(x => x.X);
+            //    Vector2 v = new Vector2(Math.Abs(_velocity.X), Math.Abs(_velocity.Y)) * (1 - m.UHit);
+            //    _velocity += m.ContactNormal * v;
+            //}
+            //if (collidedRight.Count() > 0)
+            //{
+            //    var m = collidedRight.MaxBy(x => x.X);
+            //    Vector2 v = new Vector2(Math.Abs(_velocity.X), Math.Abs(_velocity.Y)) * (1 - m.UHit);
+            //    _velocity += m.ContactNormal * v;
+            //}
+
+
+            //if (collided.Count() > 1)
+            //{
+            //    var m = collided.MinBy(x => x.UHit);
+            //    Vector2 v = new Vector2(Math.Abs(_velocity.X), Math.Abs(_velocity.Y)) * (1 - m.UHit);
+            //    _velocity += m.ContactNormal * v;
+            //}
+            //if (collided.Count() > 0)
+            //{
+            //    var m = collided.MinBy(x => x.UHit);
+            //    Vector2 v = new Vector2(Math.Abs(_velocity.X), Math.Abs(_velocity.Y)) * (1 - m.UHit);
+            //    _velocity += m.ContactNormal * v;
+            //}
+
+            collided.Sort((x,y) => Math.Sign(y.UHit - x.UHit));
+
+            foreach(var col in collided)
+            {
+                //var m = collided.MinBy(x => x.UHit);
+                Vector2 v = new Vector2(Math.Abs(_velocity.X), Math.Abs(_velocity.Y)) * (1 - col.UHit);
+                _velocity += col.ContactNormal * v;
+            }
+
+            //if(top && left)
+            //{
+            //    int blub = 0;
+            //}
+            //_velocity += dv;
             _myRect.Location += (_velocity * timeStep).ToPoint();
+
+            //Logger.Info("######################### " + dv.ToString() + "          " + _myRect.Location.ToString() + "           " + _velocity.ToString() + "      " + (_velocity * timeStep).ToString());
+
+            if (_myRect.X > RES_X-_myRect.Width) _myRect.X = RES_X-_myRect.Width;
+            if (_myRect.X < 0) _myRect.X = 0;
+            if (_myRect.Y > RES_Y-_myRect.Height) _myRect.Y = RES_Y-_myRect.Height;
+            if (_myRect.Y < 0) _myRect.Y = 0;
 
             base.Update(gameTime);
         }

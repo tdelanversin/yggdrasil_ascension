@@ -26,9 +26,9 @@ namespace YGR
         }
 
         public static bool RayVsRect(
-            Point origin, 
-            Vector2 dir, 
-            Rectangle target, 
+            ref Point origin, 
+            ref Vector2 dir, 
+            ref Rectangle target, 
             out Point contactPoint,
             out Vector2 contactNormal,
             out float uHit
@@ -86,10 +86,10 @@ namespace YGR
         }
 
         public static bool DynamicRectVsRect(
-            Rectangle movingRect, 
+            ref Rectangle movingRect, 
             Vector2 velocity,
             int timeStep, 
-            Rectangle staticRect, 
+            ref Rectangle staticRect, 
             out Point contactPoint, 
             out Vector2 contactNormal,
             out float uHit
@@ -109,24 +109,25 @@ namespace YGR
                 movingRect.X + movingRect.Width / 2 + Math.Sign(velocity.X), 
                 movingRect.Y + movingRect.Height / 2 + Math.Sign(velocity.Y)
             );
-            if (RayVsRect(origin, velocity * timeStep, expanded, out contactPoint, out contactNormal, out uHit)) 
+            Vector2 newVelocity = velocity * timeStep;
+            if (RayVsRect(ref origin, ref newVelocity, ref expanded, out contactPoint, out contactNormal, out uHit)) 
                 return (uHit >= 0.0f && uHit <= 1.0f);
 
             return false;
         }
 
         public static bool ResolveDynamicRectVsRect(
-            Rectangle movingRect,
+            ref Rectangle movingRect,
             ref Vector2 velocity,
             int timeStep,
-            Rectangle staticRect
+            ref Rectangle staticRect
         )
         {
             Point contactPoint;
             Vector2 contactNormal;
             float uHit;
 
-            if(DynamicRectVsRect(movingRect, velocity, timeStep, staticRect, out contactPoint, out contactNormal, out uHit))
+            if(DynamicRectVsRect(ref movingRect, velocity, timeStep, ref staticRect, out contactPoint, out contactNormal, out uHit))
             {
                 Vector2 v = new Vector2(Math.Abs(velocity.X), Math.Abs(velocity.Y)) * (1 - uHit);
                 velocity += contactNormal * v;
@@ -136,10 +137,10 @@ namespace YGR
         }
 
         public static bool ResolveSortedRectVsRect(
-            Rectangle movingRect,
+            ref Rectangle movingRect,
             ref Vector2 velocity,
             int timeStep,
-            Rectangle staticRect
+            ref Rectangle staticRect
         )
         {
             return false;

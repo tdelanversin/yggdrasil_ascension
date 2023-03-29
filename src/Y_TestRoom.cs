@@ -14,7 +14,7 @@ using System.Security.Cryptography.X509Certificates;
 
 namespace YGR
 {
-    public class Y_LdtkRoom : IWalkable
+    public class Y_TestRoom : IWalkable
     {
         public string Name { get; set; }
         public Vector2 Position { get; set; }
@@ -29,7 +29,7 @@ namespace YGR
         private Rectangle[,] _collisionModel;
         private string _location;
 
-        public Y_LdtkRoom(
+        public Y_TestRoom(
             string name,
             string resourceFile,
             int tileWidth = 16,
