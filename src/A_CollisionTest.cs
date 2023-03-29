@@ -123,6 +123,8 @@ namespace YGR
             _contactNormals = new Vector2[_rects.Length];
             _contactPoints = new Point[_rects.Length];
             _uHits = new float[_rects.Length];
+
+            Mouse.SetPosition(175, 380);
         }
 
         protected override void Update(GameTime gameTime)
@@ -136,23 +138,31 @@ namespace YGR
             var mouse = Mouse.GetState();
             //_line.direction = (mouse.Position - _line.origin).ToVector2();
 
-            Vector2 acc = (mouse.Position - _myRect.Location).ToVector2();
-            acc.Normalize();
-            _velocity += acc * 100.0f * gameTime.ElapsedGameTime.Milliseconds;
+            int timeStep = gameTime.ElapsedGameTime.Milliseconds;
+            Vector2 vel = (mouse.Position - (_myRect.Location + new Point(_myRect.Width/2, _myRect.Height/2))).ToVector2();
+            if(vel.Length() != 0.0f) vel.Normalize();
+            _velocity += vel * 0.01f; // * gameTime.ElapsedGameTime.Milliseconds;
 
             for(int i=0; i<_rects.Length; ++i)
             {
-                bool result = Manager_Collision.RayVsRect(
-                    _line.origin, _line.direction, _rects[i], out _contactPoints[i], out _contactNormals[i], out _uHits[i]);
+                bool result = Manager_Collision.DynamicRectVsRect(
+                    _myRect, _velocity, timeStep, _rects[i],
+                    out _contactPoints[i], out _contactNormals[i], out _uHits[i]
+                );
+
                 if (result)
                 {
+                    _velocity = Vector2.Zero;
                     _rectColors[i] = Color.Yellow;
                 }
-                else
-                {
+                else { 
+                    _contactNormals[i] = Vector2.Zero;
+                    _contactPoints[i] = Point.Zero;
                     _rectColors[i] = Color.Red;
                 }
             }
+
+            _myRect.Location += (_velocity * timeStep).ToPoint();
 
             base.Update(gameTime);
         }

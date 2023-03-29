@@ -62,7 +62,7 @@ namespace YGR
             uHit = Math.Max(tNear.X, tNear.Y);
 
             // furthest contact
-            float uHitFar = Math.Min(tFar.X, tFar.Y);
+            //float uHitFar = Math.Min(tFar.X, tFar.Y);
 
             // if we are behind ourselves
             if (uHit < 0) return false;
@@ -91,7 +91,7 @@ namespace YGR
             int timeStep, 
             Rectangle staticRect, 
             out Point contactPoint, 
-            out Vector2 contactNormal, 
+            out Vector2 contactNormal,
             out float uHit
         )
         {
@@ -103,11 +103,32 @@ namespace YGR
 
             Rectangle expanded = new Rectangle(
                 staticRect.X - movingRect.Width / 2, staticRect.Y - movingRect.Height / 2, 
-                staticRect.Width + movingRect.Width, staticRect.Height + staticRect.Height);
+                staticRect.Width + movingRect.Width, staticRect.Height + movingRect.Height);
 
             Point origin = new Point(movingRect.X + movingRect.Width / 2, movingRect.Y + movingRect.Height / 2);
             if (RayVsRect(origin, velocity * timeStep, expanded, out contactPoint, out contactNormal, out uHit)) 
                 return (uHit >= 0.0f && uHit <= 1.0f);
+
+            return false;
+        }
+
+        public static bool ResolveDynamicRectVsRect(
+            Rectangle movingRect,
+            ref Vector2 velocity,
+            int timeStep,
+            Rectangle staticRect
+        )
+        {
+            Point contactPoint;
+            Vector2 contactNormal;
+            float uHit;
+
+            if(DynamicRectVsRect(movingRect, velocity, timeStep, staticRect, out contactPoint, out contactNormal, out uHit))
+            {
+                Vector2 v = new Vector2(Math.Abs(velocity.X), Math.Abs(velocity.Y)) * (1 - uHit);
+                velocity += contactNormal * v;
+                return true;
+            }
 
             return false;
         }
