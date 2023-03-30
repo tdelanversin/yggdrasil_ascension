@@ -1,5 +1,6 @@
 using Microsoft.Xna.Framework;
 using System.Collections.Generic;
+using System.Linq;
 using System;
 #nullable enable
 
@@ -126,7 +127,8 @@ namespace YGR
             var lastUpdate = timeSinceShot;
             timeSinceShot += gameTime.ElapsedGameTime.TotalMilliseconds;
 
-            if (lastUpdate >= shotSpeeds[shotSpeeds.GetLength(0) - 1])
+            shotSpeeds.Last();
+            if (lastUpdate >= shotSpeeds.Last())
                 return;
 
             for (int i = 0; i < shotSpeeds.GetLength(0); ++i)
