@@ -11,7 +11,6 @@ namespace YGR
         Texture2D _sprite;
         Rectangle _window;
         Dictionary<string, int[]> _animations;
-        float _velocity;
         float _frameDuration;
         int _animationIndex;
         IShooter _gun;
@@ -23,14 +22,19 @@ namespace YGR
         int _maxHitCounter;
 
         public Vector2 Position { get; private set; }
+        public Rectangle Rect { get; private set; }
         public int LifePoints { get; set; }
         public bool HitInLastLoop { get; set; }
+        public Vector2 Velocity { get; set; }
+        public Vector2 Acceleration { get; set; }
+        public Vector2 MaxVelocity { get; set; }
 
         public Y_Sprite(
             PlayerIndex? playerIndex,
             Texture2D texture, 
             Rectangle window,
-            float velocity,
+            float acceleration,
+            float maxVelocity,
             Vector2 position,
             IWalkable startRoom,
             float frameDuration,
@@ -41,8 +45,6 @@ namespace YGR
             _sprite = texture;
             _window = window;
             _animations = animations;
-            _velocity = velocity;
-            Position = position;
             _animationIndex = 0;
             _currentRoom = startRoom;
             _gun = gun;
@@ -51,10 +53,19 @@ namespace YGR
             _hitCounter = 0;
             _maxHitCounter = 750 / 16;
 
+            Velocity = Vector2.Zero;
+            Acceleration = Vector2.One * acceleration;
+            MaxVelocity = Vector2.One * maxVelocity;
+            Position = position;
+            Rect = new Rectangle(
+                (int)position.X - _window.Width/2,
+                (int)position.Y - _window.Height/2,
+                _window.Width, _window.Height
+            );
             LifePoints = 100;
             HitInLastLoop = false;
 
-            startRoom.Victims.Add(this);
+            //startRoom.Victims.Add(this);
         }
 
         public X_LevelElements WhatAreYou()
@@ -137,18 +148,21 @@ namespace YGR
 
             // only check collision if we actually have some input...
             float deltaTime = (float)gameTime.ElapsedGameTime.TotalSeconds;
-            Vector2 dp = input * deltaTime * _velocity;
+            Velocity += input * deltaTime * Acceleration;
+            Vector2.Clamp(Velocity, -MaxVelocity, MaxVelocity);
 
-            Vector2 where = Vector2.Zero;
-            IGameElement with;
-            if(!checkColWSprite(dp, out with, out where)){
-                // this is the collision detection with the room and the connectors
-                IWalkable who = null;
-                Rectangle rect = new Rectangle((int)Position.X, (int)Position.Y, _window.Width, _window.Height);
-                Position = _currentRoom.Clamp(rect, Position, dp, ref who, ref where);
+            
 
-                if (who != null) Logger.Debug("collided with some room at location " + where.ToString());
-            }
+            //Vector2 where = Vector2.Zero;
+            //IGameElement with;
+            //if(!checkColWSprite(Velocity, out with, out where)){
+            //    // this is the collision detection with the room and the connectors
+            //    IWalkable who = null;
+            //    Rectangle rect = new Rectangle((int)Position.X, (int)Position.Y, _window.Width, _window.Height);
+            //    Position = _currentRoom.Clamp(rect, Position, Velocity, ref who, ref where);
+
+            //    if (who != null) Logger.Debug("collided with some room at location " + where.ToString());
+            //}
 
             // check where we are in
             var whatAreYou = _currentRoom.WhatAreYou();
@@ -197,39 +211,39 @@ namespace YGR
             }
         }
 
-        private bool checkColWSprite(Vector2 dp, out IGameElement who, out Vector2 where)
-        {
-            // check collision with some victims
-            Rectangle rect = GetRect();
-            rect.X += (int)Math.Ceiling(dp.X + Math.Sign(dp.X));
-            rect.Y += (int)Math.Ceiling(dp.Y + Math.Sign(dp.Y));
+        //private bool checkColWSprite(Vector2 dp, out IGameElement who, out Vector2 where)
+        //{
+        //    // check collision with some victims
+        //    Rectangle rect = GetRect();
+        //    rect.X += (int)Math.Ceiling(dp.X + Math.Sign(dp.X));
+        //    rect.Y += (int)Math.Ceiling(dp.Y + Math.Sign(dp.Y));
 
-            where = Vector2.Zero;
-            who = null;
-            foreach (var victim in _currentRoom.Victims)
-            {
-                if (victim == this) continue;
+        //    where = Vector2.Zero;
+        //    who = null;
+        //    foreach (var victim in _currentRoom.Victims)
+        //    {
+        //        if (victim == this) continue;
 
-                if (victim.Intersects(rect))
-                {
-                    //Rectangle intersect = Manager_Collision.Intersect(rect, victim.GetRect());
-                    //who = victim;
-                    //where = new Vector2(intersect.X + intersect.Width / 2, intersect.Y + intersect.Height / 2);
-                    return true;
-                }
-            }
-            Position += dp;
-            return false;
-        }
+        //        if (victim.Intersects(rect))
+        //        {
+        //            //Rectangle intersect = Manager_Collision.Intersect(rect, victim.GetRect());
+        //            //who = victim;
+        //            //where = new Vector2(intersect.X + intersect.Width / 2, intersect.Y + intersect.Height / 2);
+        //            return true;
+        //        }
+        //    }
+        //    Position += dp;
+        //    return false;
+        //}
 
-        public Rectangle GetRect()
-        {
-            return new Rectangle((int)Position.X - _window.Width/2, (int)Position.Y - _window.Height/2, _window.Width, _window.Height);
-        }
+        //public Rectangle GetRect()
+        //{
+        //    return new Rectangle((int)Position.X - _window.Width/2, (int)Position.Y - _window.Height/2, _window.Width, _window.Height);
+        //}
 
         public bool Intersects(Rectangle other)
         {
-            return other.Intersects(GetRect());
+            return other.Intersects(Rect);
         }
 
         /// <summary>

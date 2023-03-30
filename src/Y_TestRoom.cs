@@ -28,6 +28,7 @@ namespace YGR
         private int[][] _collisionTemplate;
         private Rectangle[,] _collisionModel;
         private string _location;
+        private Color[,] _collisionRectColors;
 
         public Y_TestRoom(
             string name,
@@ -73,6 +74,8 @@ namespace YGR
                     _collisionModel[x, y] = new Rectangle(x * TileWidth, y * TileHeight, TileWidth, TileHeight);
                 }
             }
+
+            _collisionRectColors = new Color[_collisionModel.GetLength(0), _collisionModel.GetLength(1)];
         }
 
         /// <summary>
@@ -142,6 +145,41 @@ namespace YGR
             // TODO: this one needs to deal with the tiles of the walls
             // then goto X_CollisionManager and do sofisticated tile collision detection with the relevant tiles
             return other.Intersects(GetRect());
+        }
+
+        public bool Intersects(ref Rectangle movingRect, ref Vector2 velocity, int timeStep)
+        {
+            Point contactPoint;
+            Vector2 contactNormal;
+            float uHit;
+            List<Manager_Collision.Set> collided = new List<Manager_Collision.Set>();
+            for (int x = 0; x < _collisionModel.GetLength(0); ++x)
+            {
+                for(int y=0; y<_collisionModel.GetLength(1); ++y)
+                {
+                    bool result = Manager_Collision.DynamicRectVsRect(
+                    ref movingRect, velocity, timeStep,
+                    ref _collisionModel[x, y], out contactPoint, out contactNormal, out uHit);
+
+                    if (result)
+                    {
+                        collided.Add(new Manager_Collision.Set(contactNormal, uHit));
+                        _collisionRectColors[x,y] = Color.Yellow;
+                    }
+                    else
+                    {
+                        _collisionRectColors[x, y] = Color.Red;
+                    }
+                }
+            }
+
+            foreach (var col in collided)
+            {
+                Vector2 v = new Vector2(Math.Abs(velocity.X), Math.Abs(velocity.Y)) * (1 - col.UHit);
+                velocity += col.ContactNormal * v;
+            }
+
+            return collided.Count() > 0;
         }
 
         /// <summary>

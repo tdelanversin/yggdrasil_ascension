@@ -7,6 +7,11 @@ using System.Threading.Tasks;
 
 namespace YGR
 {
+    public interface ICollidable
+    {
+
+    }
+
     // Implement these kinds of things:
     // https://github.com/OneLoneCoder/Javidx9/blob/master/PixelGameEngine/SmallerProjects/OneLoneCoder_PGE_Rectangles.cpp
 
@@ -15,6 +20,17 @@ namespace YGR
 
     public static class Manager_Collision
     {
+        public struct Set
+        {
+            public Vector2 ContactNormal;
+            public float UHit;
+
+            public Set(Vector2 contactNormal, float uHit)
+            {
+                ContactNormal = contactNormal; UHit = uHit;
+            }
+        }
+
         public static bool PointVsRect(Vector2 p, Rectangle rect)
         {
             return rect.Contains(p);
@@ -47,6 +63,7 @@ namespace YGR
             // calculate intersections ray to rectangle
             Vector2 tNear = (targetPos - rayOrigin) * invDir;
             Vector2 tFar = (targetPos + targetSize - rayOrigin) * invDir;
+
 
             //if (Single.IsInfinity(tFar.Y) || Single.IsInfinity(tFar.X)) return false;
             //if (Single.IsInfinity(tNear.Y) || Single.IsInfinity(tNear.X)) return false;
