@@ -166,6 +166,96 @@ namespace YGR
                 }
             }
         }
+    }
+
+    public class Y_WideGun : IShooter
+    {
+        double timeSinceShot = 1001;
+        Vector2 _origin = new Vector2(0, 0);
+        Vector2 _direction = new Vector2(0, 0);
+        IWalkable _room;
+        IGameElement _who;
+
+        static int shotDelay = 1000;
+        // static bool[,] bulletArray = {{false, true, false},
+        //                               {true, false, true},
+        //                               {false, true, false}};
+        static bool[,] bulletArray = {{ false, false, true, false, false },
+                                    { false, true, false, true, false },
+                                    { false, true, false, true, false },
+                                    { false, true, false, true, false },
+                                    { false, true, false, true, false },
+                                    { false, true, false, true, false },
+                                    { true, false, true, false, true },
+                                    { false, true, false, true, false }};
+        // shotSpeeds is an array of doubles that represent the time in milliseconds that each bullet row should be fired
+        // static double[] shotSpeeds = { 0.0, 60.0, 120.0 };
+        static double[] shotSpeeds = { 30.0, 60.0, 120.0, 180.0, 240.0, 300.0, 360.0, 420.0 };
+        static double[] positionShift = { 50, 20, 0, -20, -50 };
+        static double[] shotSpread = { 0, 0, 0, 0, 0 };
+
+
+        public Y_WideGun() { }
+
+        public void Shoot(GameTime gameTime, Vector2 origin, Vector2 direction, IWalkable room, IGameElement who)
+        {
+            if (timeSinceShot < shotDelay)
+                return;
+
+            timeSinceShot = 0.0f;
+            _origin = origin;
+            _direction = direction;
+            _room = room;
+            _who = who;
+        }
+
+        public void Update(GameTime gameTime)
+        {
+            if (timeSinceShot >= shotDelay)
+                return;
+
+            var lastUpdate = timeSinceShot;
+            timeSinceShot += gameTime.ElapsedGameTime.TotalMilliseconds;
+
+            shotSpeeds.Last();
+            if (lastUpdate >= shotSpeeds.Last())
+                return;
+
+            for (int i = 0; i < shotSpeeds.GetLength(0); ++i)
+            {
+                if (lastUpdate > shotSpeeds[i] || timeSinceShot <= shotSpeeds[i])
+                    continue;
+
+                double timedelta = timeSinceShot - shotSpeeds[i];
+                for (int j = 0; j < bulletArray.GetLength(1); j++)
+                {
+                    if (!bulletArray[i, j])
+                        continue;
+
+                    var spread = shotSpread[j];
+                    var shift = positionShift[j];
+
+                    var new_dir = new Vector2(
+                        (float)(_direction.X * Math.Cos(spread) - _direction.Y * Math.Sin(spread)),
+                        (float)(_direction.X * Math.Sin(spread) + _direction.Y * Math.Cos(spread))
+                    );
+
+                    var perp = new Vector2(-new_dir.Y, new_dir.X);
+                    var new_origin = new Vector2(
+                        (float)(_origin.X + timedelta * new_dir.X + shift * perp.X),
+                        (float)(_origin.Y + timedelta * new_dir.Y + shift * perp.Y)
+                    );
+                    var projectile = new Y_ShotGunProjectile(
+                        new_origin,
+                        new_dir,
+                        gameTime.TotalGameTime.TotalMilliseconds,
+                        _room,
+                        _who
+                    );
+                    Manager_Projectile.AddProjectile(projectile);
+                }
+            }
+        }
 
 
         public class Y_SimpleEnemyGun : IShooter
