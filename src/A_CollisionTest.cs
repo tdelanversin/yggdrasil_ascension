@@ -1,7 +1,7 @@
-﻿#define T_LARGE
+﻿//#define T_LARGE
 //#define T_60
 //#define T_40
-//#define T_30
+#define T_30
 
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -104,8 +104,9 @@ namespace YGR
                     Content.Load<Texture2D>("tester_30"),
                     new Rectangle(0, 0, 21, 30),
 #endif
-                    400.0f,
-                    100.0f,
+                    0.004f, // acceleration
+                    0.004f,   // deceleration
+                    0.75f,  // max acceleration
                     new Vector2(200, 350),
                     _room,
                     200.0f,
@@ -216,6 +217,8 @@ namespace YGR
             //if (_myRect.Y > RES_Y-_myRect.Height) _myRect.Y = RES_Y-_myRect.Height;
             //if (_myRect.Y < 0) _myRect.Y = 0;
 
+            Manager_Projectile.Update(gameTime);
+
             base.Update(gameTime);
         }
 
@@ -231,8 +234,11 @@ namespace YGR
             _room.Draw(gameTime, Vector2.Zero, _spriteBatch);
             _room.DrawOutline(gameTime, Vector2.Zero, _spriteBatch);
 
-            //_player.Draw(gameTime, Vector2.Zero, _spriteBatch);
+            _player.Draw(gameTime, Vector2.Zero, _spriteBatch);
             _player.DrawOutline(gameTime, Vector2.Zero, _spriteBatch);
+
+            Manager_Projectile.Draw(gameTime, Vector2.Zero, _spriteBatch);
+            Manager_Projectile.DrawOutline(gameTime, Vector2.Zero, _spriteBatch);
 
             //Factory_Debug.DrawLine(
             //    _line.origin.X, _line.origin.Y, (int)_line.direction.Length(),

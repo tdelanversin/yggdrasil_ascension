@@ -486,6 +486,13 @@ namespace YGR
             return other.Intersects(GetRect());
         }
 
+        public bool Intersects(ref Rectangle movingRect, ref Vector2 velocity, int timeStepMS, out Point contactPoint, out Vector2 contactNormal)
+        {
+            contactPoint = Point.Zero;
+            contactNormal = Vector2.Zero;
+            return false;
+        }
+
         /// <summary>
         /// This method returns the room on the X_ConnectorSide that is passed as parameter
         /// </summary>

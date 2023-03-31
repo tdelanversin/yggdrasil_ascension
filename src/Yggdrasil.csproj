@@ -13,6 +13,11 @@
   <ItemGroup>
     <None Remove="Icon.ico" />
     <None Remove="Icon.bmp" />
+    <None Remove="Rooms\Collisions2.csv" />
+    <None Remove="Rooms\Collisions3.csv" />
+    <None Remove="Rooms\Collisions4.csv" />
+    <None Remove="Rooms\Collisions5.csv" />
+    <None Remove="Rooms\Collisions6.csv" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Icon.ico" />

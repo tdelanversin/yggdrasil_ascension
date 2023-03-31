@@ -15,6 +15,6 @@ namespace YGR
         public Vector2 Clamp(Rectangle rect, Vector2 pos, Vector2 dp, ref IWalkable who, ref Vector2 where);
         public IList<IProjectile> Projectiles { get; }
         public IList<IVictim> Victims { get; }
-        public bool Intersects(ref Rectangle movingRect, ref Vector2 velocity, int timeStep);
+        public bool Intersects(ref Rectangle movingRect, ref Vector2 velocity, int timeStepMS, out Point contactPoint, out Vector2 contactNormal);
     }
 }

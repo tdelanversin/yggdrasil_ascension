@@ -198,6 +198,13 @@ namespace YGR
             return other.Intersects(GetRect());
         }
 
+        public bool Intersects(ref Rectangle movingRect, ref Vector2 velocity, int timeStepMS, out Point contactPoint, out Vector2 contactNormal)
+        {
+            contactNormal = Vector2.Zero;
+            contactPoint = Point.Zero;
+            return false;
+        }
+
         /// <summary>
         /// This method is the standard ILevelElement WhatAreYou
         /// </summary>
