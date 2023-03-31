@@ -15,6 +15,5 @@ namespace YGR
         public void Draw(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch);
         public X_LevelElements WhatAreYou();
         public Rectangle GetRect();
-        public bool Intersects(Rectangle rect);
     }
 }

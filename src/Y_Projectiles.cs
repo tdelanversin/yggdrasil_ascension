@@ -59,7 +59,7 @@ namespace YGR
             Vector2 contactNormal;
             Point contactPoint;
             int deltaTime = (int)gameTime.ElapsedGameTime.TotalMilliseconds;
-            if (_room.Intersects(ref _rect, ref _speed, deltaTime, out contactPoint, out contactNormal))
+            if (_room.Collision.Intersect(ref _rect, ref _speed, deltaTime, out contactPoint, out contactNormal))
             {
                 DeleteNext = true;
                 Logger.Info("impacted at " + contactPoint.ToString());
@@ -113,16 +113,16 @@ namespace YGR
         bool checkColWPlayer()
         {
             Rectangle rect = GetRect();
-            foreach(var victim in _room.Victims)
-            {
-                if (victim == _who) continue;
+            //foreach(var victim in _room.Victims)
+            //{
+            //    if (victim == _who) continue;
 
-                if (victim.Intersects(rect))
-                {
-                    victim.HitInLastLoop = true;
-                    return true;
-                }
-            }
+            //    if (victim.Intersects(rect))
+            //    {
+            //        victim.HitInLastLoop = true;
+            //        return true;
+            //    }
+            //}
             return false;
         }
 

@@ -6,7 +6,7 @@ using System.Collections.Generic;
 
 namespace YGR
 {
-    public class Y_Sprite : IVictim
+    public class Y_CollisionModelSampleSprite : IVictim
     {
         Texture2D _sprite;
         Rectangle _window;
@@ -24,13 +24,14 @@ namespace YGR
         public Vector2 Position { get; private set; }
         public int LifePoints { get; set; }
         public bool HitInLastLoop { get; set; }
+
         private Rectangle _rect;
         private Vector2 _velocity;
         private Vector2 _acceleration;
         private Vector2 _deceleration;
         private Vector2 _maxVelocity;
 
-        public Y_Sprite(
+        public Y_CollisionModelSampleSprite(
             PlayerIndex? playerIndex,
             Texture2D texture,
             Rectangle window,

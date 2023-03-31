@@ -1,22 +1,12 @@
 ﻿//#define T_LARGE
 //#define T_60
-//#define T_40
-#define T_30
+#define T_40
+//#define T_30
 
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using System.Collections.Generic;
-using System;
-
-using Rectangle = Microsoft.Xna.Framework.Rectangle;
-using Color = Microsoft.Xna.Framework.Color;
-using System.IO;
-using Microsoft.VisualBasic.FileIO;
-using System.IO.Compression;
-using System.Runtime.InteropServices;
-using System.Linq;
-using Assimp.Configs;
 
 namespace YGR
 {
@@ -35,8 +25,8 @@ namespace YGR
         private const int RES_X = 1920;
         private const int RES_Y = 1000;
 
-        private Y_TestRoom _room;
-        private Y_Sprite _player;
+        private Y_CollisionModelSampleRoom _room;
+        private Y_CollisionModelSampleSprite _player;
 
         public A_CollisionTest()
         {
@@ -65,10 +55,13 @@ namespace YGR
             _spriteBatch = new SpriteBatch(GraphicsDevice);
             //string[] lines = File.ReadAllLines("./Level/Level_0/Collisions.csv");
 
-            _room = new Y_TestRoom("hello", "Collisions2.csv", tileWidth:40, tileHeight:40);
+            _room = new Y_CollisionModelSampleRoom(
+                "hello",
+                new X_CollisionModelRoom("Rooms/Collisions.csv", 40, 40, new Point(0,0))
+                );
 
 
-            _player = new Y_Sprite(
+            _player = new Y_CollisionModelSampleSprite(
                     null,
 #if T_LARGE
                     Content.Load<Texture2D>("tester"),

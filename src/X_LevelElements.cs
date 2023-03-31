@@ -10,6 +10,6 @@
         Connector,
         Victim,
         Projectile,
-        Collision
+        CollisionTester
     }
 }

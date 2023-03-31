@@ -1,9 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace YGR
 {
@@ -20,14 +18,18 @@ namespace YGR
 
     public static class Manager_Collision
     {
-        public struct Set
+        public readonly static DateTime StartTime = DateTime.Now;
+
+        public struct Record
         {
             public Vector2 ContactNormal;
+            public Point ContactPoint;
             public float UHit;
+            public double TimeStampMS;
 
-            public Set(Vector2 contactNormal, float uHit)
+            public Record(double timeStampMS, Point contactPoint, Vector2 contactNormal, float uHit)
             {
-                ContactNormal = contactNormal; UHit = uHit;
+                TimeStampMS = timeStampMS; ContactPoint = contactPoint; ContactNormal = contactNormal; UHit = uHit;
             }
         }
 
@@ -127,40 +129,67 @@ namespace YGR
                 movingRect.Y + movingRect.Height / 2 + Math.Sign(velocity.Y)
             );
             Vector2 newVelocity = velocity * timeStep;
-            if (RayVsRect(ref origin, ref newVelocity, ref expanded, out contactPoint, out contactNormal, out uHit)) 
+            if (RayVsRect(ref origin, ref newVelocity, ref expanded, out contactPoint, out contactNormal, out uHit))
+            {
+                contactPoint.X -= (int)contactNormal.X * movingRect.Width / 2;
+                contactPoint.Y -= (int)contactNormal.Y * movingRect.Height / 2;
                 return (uHit >= 0.0f && uHit <= 1.0f);
+            }
 
             return false;
         }
 
-        public static bool ResolveDynamicRectVsRect(
-            ref Rectangle movingRect,
+        public static void ResolveDynamicRectVsRect(
             ref Vector2 velocity,
-            int timeStep,
-            ref Rectangle staticRect
+            ref List<Manager_Collision.Record> records
         )
         {
+            foreach(var rec in records)
+            {
+                Vector2 v = new Vector2(Math.Abs(velocity.X), Math.Abs(velocity.Y)) * (1 - rec.UHit);
+                velocity += rec.ContactNormal * v;
+            }
+        }
+
+        public static bool DynamicRectVsRects(
+            ref Rectangle movingRect,
+            ref Vector2 velocity,
+            int timeStepMS,
+            Rectangle[] staticRects,
+            Color[] staticRectsColor,
+            Color? hit,
+            Color? miss,
+            out List<Record> collided
+        )
+        {
+            if (!(staticRectsColor.Length == 0 || (staticRectsColor.Length == staticRects.Length && hit != null && miss != null)))
+                Logger.Error("Colors array must be of same length as rect array or empty");
+
             Point contactPoint;
             Vector2 contactNormal;
+            collided = new List<Record>();
+
             float uHit;
-
-            if(DynamicRectVsRect(ref movingRect, velocity, timeStep, ref staticRect, out contactPoint, out contactNormal, out uHit))
+            for (int i = 0; i < staticRects.Length; ++i)
             {
-                Vector2 v = new Vector2(Math.Abs(velocity.X), Math.Abs(velocity.Y)) * (1 - uHit);
-                velocity += contactNormal * v;
-                return true;
-            }
-            return false;
-        }
+                bool result = DynamicRectVsRect(
+                    ref movingRect, velocity, timeStepMS,
+                    ref staticRects[i], out contactPoint, out contactNormal, out uHit);
 
-        public static bool ResolveSortedRectVsRect(
-            ref Rectangle movingRect,
-            ref Vector2 velocity,
-            int timeStep,
-            ref Rectangle staticRect
-        )
-        {
-            return false;
+                if (result)
+                {
+                    collided.Add(new Record((DateTime.Now - StartTime).TotalMilliseconds, contactPoint, contactNormal, uHit));
+                    if (staticRectsColor.Length > 0) staticRectsColor[i] = (hit != null) ? hit.Value : Color.Red;
+                }
+                else
+                {
+                    if (staticRectsColor.Length > 0) staticRectsColor[i] = (hit != null) ? miss.Value : Color.Green;
+                }
+            }
+
+            ResolveDynamicRectVsRect(ref velocity, ref collided);
+
+            return collided.Count > 0;
         }
     }
 }

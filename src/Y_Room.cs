@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Diagnostics.Metrics;
 using System.Linq;
 using System.Runtime.Intrinsics.Arm;
+using Yggdrasil;
 
 namespace YGR
 {
@@ -24,6 +25,7 @@ namespace YGR
         public string Name { get; }
         // the background color as required by IDrawable
         private Color BackgroundColor { get; set; }
+        public ICollisionModel Collision { get; }
 
         // The list with all connector points located on the walls of this room
         private Dictionary<X_ConnectorSide, List<X_ConnectorPoint>> _connectorPoints;

@@ -3,6 +3,7 @@ using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using System.Collections.Generic;
 using System;
+using Yggdrasil;
 
 namespace YGR
 {
@@ -44,6 +45,7 @@ namespace YGR
         public Y_Room LeftOrBottomRoom { get; private set; }
         /* The Y_Room attached on the right or the top side */
         public Y_Room RightOrTopRoom { get; private set; }
+        public ICollisionModel Collision { get; }
 
         // outline of the connector (the same as the texture size)
         // use this to check if a point is on the connector or not
