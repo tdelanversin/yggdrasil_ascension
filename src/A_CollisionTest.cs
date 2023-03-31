@@ -20,17 +20,6 @@ using Assimp.Configs;
 
 namespace YGR
 {
-    //public struct Set
-    //{
-    //    public float Distance;
-    //    public Vector2 ContactNormal;
-    //    public float UHit;
-
-    //    public Set(float dist, Vector2 contactNormal, float uHit)
-    //    {
-    //        Distance = dist; ContactNormal = contactNormal; UHit = uHit;
-    //    }
-    //}
 
     public struct Line
     {
@@ -48,16 +37,6 @@ namespace YGR
 
         private Y_TestRoom _room;
         private Y_Sprite _player;
-
-        //private Rectangle[] _rects;
-        //Color[] _rectColors;
-        //Point[] _contactPoints;
-        //Vector2[] _contactNormals;
-
-        //private Rectangle _myRect;
-        //private Vector2 _velocity;
-        //private IList<Tuple<Rectangle, Rectangle>> _collidedRects;
-        //private float _uHit;
 
         public A_CollisionTest()
         {
@@ -86,7 +65,7 @@ namespace YGR
             _spriteBatch = new SpriteBatch(GraphicsDevice);
             //string[] lines = File.ReadAllLines("./Level/Level_0/Collisions.csv");
 
-            _room = new Y_TestRoom("hello", "Room_0.zip", tileWidth:40, tileHeight:40);
+            _room = new Y_TestRoom("hello", "Collisions2.csv", tileWidth:40, tileHeight:40);
 
 
             _player = new Y_Sprite(
@@ -117,105 +96,12 @@ namespace YGR
                     new Y_StarterGun()
                 );
 
-            //_line = new Line();
-            //_line.origin = new Point(150, 350);
-            //_line.direction = new Vector2(1, 1);
-
-            //_myRect = new Rectangle(120, 350, 50, 60);
-            //_velocity = Vector2.Zero;
-
-            //_rects = new Rectangle[] {
-            //    new Rectangle(200, 150, 150, 250),
-            //    new Rectangle(380, 400, 200, 100),
-            //    new Rectangle(200, 700, 200, 200),
-            //    new Rectangle(400, 700, 200, 200),
-            //    new Rectangle(600, 700, 200, 200),
-            //    new Rectangle(800, 700, 200, 200),
-            //    new Rectangle(800, 500, 200, 200),
-            //    new Rectangle(800, 300, 200, 200),
-            //    new Rectangle(800, 100, 200, 200)
-            // };
-
-            //_rectColors = new Color[_rects.Length];
-            //_contactPoints = new Point[_rects.Length];
-            //_contactNormals = new Vector2[_rects.Length];
-            //for(int i=0; i<_rectColors.Length; ++i)
-            //{
-            //    _rectColors[i] = Color.Red;
-            //    _contactPoints[i] = Point.Zero;
-            //    _contactNormals[i] = Vector2.Zero;
-            //}
-
             Mouse.SetPosition(175, 380);
         }
 
         protected override void Update(GameTime gameTime)
         {
-            //if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
-            //    Exit();
-
-            //_room.Update(gameTime);
             _player.Update(gameTime);
-
-            //var mouse = Mouse.GetState();
-
-            //_line.direction = (mouse.Position - _line.origin).ToVector2();
-
-            //Vector2 input = Vector2.Zero;
-            //KeyboardState keyboard = Keyboard.GetState();
-            //if (keyboard.IsKeyDown(Keys.Right)) input.X += 1;
-            //if (keyboard.IsKeyDown(Keys.Left)) input.X -= 1;
-            //if (keyboard.IsKeyDown(Keys.Down)) input.Y += 1;
-            //if (keyboard.IsKeyDown(Keys.Up)) input.Y -= 1;
-
-            //if(input.Length() != 0) input.Normalize();
-
-            //int timeStep = gameTime.ElapsedGameTime.Milliseconds;
-            //_velocity += input * 0.005f * timeStep;
-
-
-
-            //float uHit;
-            //List<Set> collided = new List<Set>();
-            //for (int i=0; i<_rects.Length; ++i)
-            //{
-            //    bool result = Manager_Collision.DynamicRectVsRect(
-            //        ref _myRect, _velocity, timeStep, 
-            //        ref _rects[i], out _contactPoints[i], out _contactNormals[i], out uHit);
-            //    //ref _myRect, ref _velocity, timeStep, ref _rects[i]);
-
-            //    if (result)
-            //    {
-            //        Vector2 om = new Vector2(_myRect.Width / 2, _myRect.Height / 2);
-            //        Vector2 on = new Vector2(_rects[i].Width / 2, _rects[i].Height / 2);
-            //        float dist = (_myRect.Location.ToVector2() + om - _rects[i].Location.ToVector2() + on).LengthSquared();
-            //        collided.Add(new Set(dist, _contactNormals[i], uHit));
-            //        _rectColors[i] = Color.Yellow;
-            //    }
-            //    else
-            //    {
-            //        _rectColors[i] = Color.Red;
-            //        _contactPoints[i] = Point.Zero;
-            //    }
-            //}
-
-            //collided.Sort((x,y) => Math.Sign(y.UHit - x.UHit));
-
-            //foreach(var col in collided)
-            //{
-            //    //var m = collided.MinBy(x => x.UHit);
-            //    Vector2 v = new Vector2(Math.Abs(_velocity.X), Math.Abs(_velocity.Y)) * (1 - col.UHit);
-            //    _velocity += col.ContactNormal * v;
-            //}
-
-            //_myRect.Location += (_velocity * timeStep).ToPoint();
-
-            //Logger.Info("######################### " + dv.ToString() + "          " + _myRect.Location.ToString() + "           " + _velocity.ToString() + "      " + (_velocity * timeStep).ToString());
-
-            //if (_myRect.X > RES_X-_myRect.Width) _myRect.X = RES_X-_myRect.Width;
-            //if (_myRect.X < 0) _myRect.X = 0;
-            //if (_myRect.Y > RES_Y-_myRect.Height) _myRect.Y = RES_Y-_myRect.Height;
-            //if (_myRect.Y < 0) _myRect.Y = 0;
 
             Manager_Projectile.Update(gameTime);
 
@@ -239,30 +125,6 @@ namespace YGR
 
             Manager_Projectile.Draw(gameTime, Vector2.Zero, _spriteBatch);
             Manager_Projectile.DrawOutline(gameTime, Vector2.Zero, _spriteBatch);
-
-            //Factory_Debug.DrawLine(
-            //    _line.origin.X, _line.origin.Y, (int)_line.direction.Length(),
-            //    (float)Math.Atan2(_line.direction.Y, _line.direction.X),
-            //    3, Color.Blue, _spriteBatch
-            //);
-
-            //for (int i = 0; i < _rects.Length; ++i)
-            //{
-            //    Factory_Debug.DrawRectangle(
-            //        _rects[i].X, _rects[i].Y,
-            //        _rects[i].Width, _rects[i].Height,
-            //        3, _rectColors[i], _spriteBatch
-            //    );
-
-            //    Factory_Debug.DrawPoint(
-            //        _contactPoints[i].X, _contactPoints[i].Y, 15, Color.Blue, _spriteBatch);
-            //}
-
-            //Factory_Debug.DrawRectangle(
-            //        _myRect.X, _myRect.Y,
-            //        _myRect.Width, _myRect.Height,
-            //        3, Color.Blue, _spriteBatch
-            //    );
 
             _spriteBatch.End();
 

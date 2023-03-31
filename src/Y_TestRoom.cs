@@ -30,6 +30,7 @@ namespace YGR
         private int[,] _collisionModel;
         private string _location;
         private Color[] _collisionRectColors;
+        private string _resourceFile;
 
         public Y_TestRoom(
             string name,
@@ -43,6 +44,7 @@ namespace YGR
             Name = name;
             TileWidth = tileWidth;
             TileHeight = tileHeight;
+            _resourceFile = resourceFile;
 
             if (location[location.Length - 1] != '/') _location = location + '/'; else _location = location;
             if (_location.Substring(0, 2) != "./") _location = "./" + _location;
@@ -55,7 +57,7 @@ namespace YGR
 
         private void load()
         {
-            string[] lines = File.ReadAllLines(_location + "Collisions.csv");
+            string[] lines = File.ReadAllLines(_location + _resourceFile);
             _collisionTemplate = new int[lines.Length][];
             int counter = 0;
             foreach (var line in lines)
@@ -65,24 +67,6 @@ namespace YGR
             }
 
             var components = fitRectangles(_collisionTemplate);
-
-            // get all components and their tiles
-            //Dictionary<int, List<Tuple<int, int>>> components = new Dictionary<int, List<Tuple<int, int>>>();
-            //for (int x = 1; x < _collisionTemplate.Length; ++x)
-            //{
-            //    for (int y = 1; y < _collisionTemplate[x].Length; ++y)
-            //    {
-            //        if (_collisionTemplate[x][y] != 0)
-            //        {
-            //            int key = _collisionTemplate[x][y];
-            //            List<Tuple<int, int>> list;
-            //            if (!components.TryGetValue(key, out list))
-            //                components.Add(key, new List<Tuple<int, int>> { new Tuple<int, int>(x, y) });
-            //            else
-            //                list.Add(new Tuple<int, int>(x, y));
-            //        }
-            //    }
-            //}
 
             createCollisionModelRectangles(components);
 
@@ -119,9 +103,6 @@ namespace YGR
                             pattern[x][y + 1] = key;
                         y++;
                     }
-                    // check if top and bottom is free. If not, put back 1, otherwise, leave it
-                    //if (!(((x + 1 < pattern.Length && pattern[x][y] == 0) || x + 1 >= pattern.Length) && ((x - 1 >= 0 && pattern[x - 1][y] == 0) || x - 1 < 0)))
-                    //    pattern[x][y] = 1;
                     key++;
                     y++;
                 }
@@ -224,64 +205,6 @@ namespace YGR
             _collisionRectangles = rects.ToArray();
         }
 
-        //private void createCollisionModelRectangles2(Dictionary<int, List<Tuple<int, int>>> components)
-        //{
-        //    _collisionModel = new int[_collisionTemplate.Length, _collisionTemplate[0].Length];
-        //    _collisionRectangles = new List<Rectangle>();
-
-        //    // get outer hull of every component in rectangles
-        //    foreach (var component in components)
-        //    {
-        //        int direction = 0;
-        //        List<Tuple<int, int>> c = component.Value;
-        //        while (c.Count() > 0)
-        //        {
-        //            int interval = 1;
-        //            if (direction == 0)
-        //            {
-        //                // we go in x direction, sort by y so that all tiles with the same y are in one row
-        //                c.Sort((x, y) => y.Item2.CompareTo(x.Item2));
-        //                // go trough the list until the y changes
-        //                int yCoord = c[0].Item2;
-        //                while (interval < c.Count())
-        //                {
-        //                    if (interval > c.Count()-1 || c[interval].Item2 != yCoord) break;
-        //                    interval++;
-        //                }
-        //                int xCoord = c[0].Item1 * TileWidth;
-        //                yCoord *= TileHeight;
-        //                int width = (c[interval-1].Item1 - c[0].Item1 + 1) * TileWidth;
-        //                int height = TileHeight;
-        //                _collisionRectangles.Add(new Rectangle(xCoord, yCoord, width, height));
-        //            }
-        //            else
-        //            {
-        //                // we go in y direction, sort by x so that all tiles with the same x are in one row
-        //                c.Sort((x, y) => y.Item1.CompareTo(x.Item1));
-        //                // go trough the list until the x changes
-        //                int xCoord = c[0].Item1;
-        //                while (interval < c.Count())
-        //                {
-        //                    if (interval > c.Count()-1 || c[interval].Item1 != xCoord) break;
-        //                    interval++;
-        //                }
-        //                int yCoord = c[0].Item2 * TileHeight;
-        //                xCoord *= TileWidth;
-        //                int width = TileWidth;
-        //                int height = (c[interval-1].Item2 - c[0].Item2 + 1) * TileHeight;
-        //                _collisionRectangles.Add(new Rectangle(xCoord, yCoord, width, height));
-        //            }
-
-        //            // switch the direction
-        //            direction = (direction + 1) % 2;
-        //            // transfer indices to model
-        //            for (int i = 0; i < interval; ++i)
-        //                _collisionModel[c[i].Item1, c[i].Item2] = _collisionRectangles.Count() - 1;
-        //            c.RemoveRange(0, interval);
-        //        }
-        //    }
-        //}
-
         private void output(int[][] pattern, string name)
         {
             using (StreamWriter writer = new StreamWriter(_location + name))
@@ -292,50 +215,6 @@ namespace YGR
                     writer.WriteLine(s);
                 }
             }
-        }
-
-        public void transf(int[][] pattern)
-        {
-            int counter = 2;
-            for(int x=1; x<pattern.Length; ++x)
-            {
-                for(int y=1; y<pattern[x].Length; ++y)
-                {
-                    if (pattern[x][y] == 1)
-                    {
-                        if (pattern[x][y - 1] != 0 || pattern[x - 1][y] != 0)
-                        {
-                            if(pattern[x][y - 1] < pattern[x - 1][y])
-                            {
-                                pattern[x][y] = pattern[x - 1][y];
-                                elevate(pattern, x, y - 1, pattern[x - 1][y]);
-                            }
-                            else
-                            {
-                                pattern[x][y] = pattern[x][y - 1];
-                                elevate(pattern, x - 1, y, pattern[x][y - 1]);
-                            }
-                        }
-                        else
-                        {
-                            pattern[x][y] = counter;
-                            counter++;
-                        }
-                    }
-                }
-            }
-        }
-
-        public void elevate(int[][] pattern, int x, int y, int newValue)
-        {
-            if (x < 0 || x >= pattern.Length || y < 0 || y >= pattern[0].Length) return;
-            if (pattern[x][y] == 0 || pattern[x][y] == newValue) return;
-            pattern[x][y] = newValue;
-
-            elevate(pattern, x - 1, y, newValue);
-            elevate(pattern, x + 1, y, newValue);
-            elevate(pattern, x, y - 1, newValue);
-            elevate(pattern, x, y + 1, newValue);
         }
 
         /// <summary>

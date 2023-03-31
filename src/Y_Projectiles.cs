@@ -16,11 +16,13 @@ namespace YGR
         public Rectangle _window;
         private int _animationIndex;
         private Vector2 _direction;
-        private double _speed;
+        private Vector2 _speed;
         private bool _isEnemy;
         private IWalkable _room;
         X_ConnectorSide _lastSide;
         private IGameElement _who;
+
+        private Rectangle _rect;
 
         public Y_StarterProjectile(
             Vector2 position,
@@ -34,31 +36,36 @@ namespace YGR
             _animationIndex = 0;
             Position = position;
             _direction = direction;
-            _speed = 1;
+            _speed = Vector2.One * direction;
             TimeCreated = timeCreated;
             _isEnemy = false;
             Name = "StarterProjectile";
             _room = room;
             DeleteNext = false;
 
+            _rect = new Rectangle((int)position.X, (int)position.Y, _window.Width, _window.Height);
+
             _room.Projectiles.Add(this);
             _who = who;
         }
 
         public void Update(GameTime gameTime) {
-            IWalkable who = null;
-            Vector2 where = Vector2.Zero;
             if (checkColWPlayer())
             {
                 DeleteNext = true;
                 return;
             }
 
-            Position = _room.Clamp(_window, Position, _direction * (float)(_speed * gameTime.ElapsedGameTime.TotalMilliseconds), ref who, ref where );
-            if(who != null)
+            Vector2 contactNormal;
+            Point contactPoint;
+            int deltaTime = (int)gameTime.ElapsedGameTime.TotalMilliseconds;
+            if (_room.Intersects(ref _rect, ref _speed, deltaTime, out contactPoint, out contactNormal))
             {
                 DeleteNext = true;
+                Logger.Info("impacted at " + contactPoint.ToString());
             }
+
+            _rect.Location += (_speed * deltaTime).ToPoint();
             _animationIndex = (int)(5 - (gameTime.TotalGameTime.TotalMilliseconds - TimeCreated) / 300);
 
             var whatAreYou = _room.WhatAreYou();
@@ -121,8 +128,8 @@ namespace YGR
 
         public void Draw(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch) {
             var destinationRectangle = new Rectangle(
-                (int)(Position.X - globalOffset.X - _window.Width / 2),
-                (int)(Position.Y - globalOffset.Y - _window.Height / 2),
+                _rect.X - (int)globalOffset.X,
+                _rect.Y - (int)globalOffset.Y,
                 _window.Width,
                 _window.Height
             );
@@ -149,7 +156,7 @@ namespace YGR
         /// <param name="spriteBatch">Mogogame SpriteBatch</param>
         void IGameElement.DrawOutline(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)
         {
-            Factory_Debug.DrawRectangle((int)Position.X - _window.Width/2, (int)Position.Y - _window.Height/2, _window.Width, _window.Height, 3, Color.BlueViolet, spriteBatch);
+            Factory_Debug.DrawRectangle(_rect.X, _rect.Y, _window.Width, _window.Height, 3, Color.BlueViolet, spriteBatch);
         }
 
         public bool Intersects(Rectangle other)
@@ -164,7 +171,7 @@ namespace YGR
 
         public Rectangle GetRect()
         {
-            return new Rectangle((int)Position.X - _window.Width/2, (int)Position.Y - _window.Height/2, _window.Width, _window.Height);
+            return _rect;
         }
 
         public X_LevelElements WhatAreYou()
