@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace YGR
 {
-    public class Y_CollisionModelSampleRoom : IWalkable
+    public class Y_CMRoom : IWalkable
     {
         public string Name { get; set; }
         public Vector2 Position { get; set; }
@@ -16,7 +16,7 @@ namespace YGR
 
         private Rectangle _rect;
 
-        public Y_CollisionModelSampleRoom(
+        public Y_CMRoom(
             string name,
             ICollisionModel collision
         )

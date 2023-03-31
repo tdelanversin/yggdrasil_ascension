@@ -1,5 +1,6 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using SharpDX;
 using System;
 using System.Collections.Generic;
 
@@ -190,6 +191,108 @@ namespace YGR
             ResolveDynamicRectVsRect(ref velocity, ref collided);
 
             return collided.Count > 0;
+        }
+
+        public static bool DynamicRectVsRects(
+            ref Rectangle movingRect,
+            ref Vector2 velocity,
+            int timeStepMS,
+            Rectangle[] staticRects,
+            out List<Record> collided
+        )
+        {   Point contactPoint;
+            Vector2 contactNormal;
+            collided = new List<Record>();
+
+            float uHit;
+            for (int i = 0; i < staticRects.Length; ++i)
+            {
+                bool result = DynamicRectVsRect(
+                    ref movingRect, velocity, timeStepMS,
+                    ref staticRects[i], out contactPoint, out contactNormal, out uHit);
+
+                if (result) collided.Add(new Record((DateTime.Now - StartTime).TotalMilliseconds, contactPoint, contactNormal, uHit));
+            }
+
+            ResolveDynamicRectVsRect(ref velocity, ref collided);
+
+            return collided.Count > 0;
+        }
+
+        public static bool FastRectVsRect(
+            ref Rectangle myRect,
+            Vector2 velocity,
+            int timeStep,
+            ref Rectangle otherRect,
+            out Point contactPoint,
+            out Vector2 contactNormal
+        )
+        {
+            contactPoint = Point.Zero;
+            contactNormal = Vector2.Zero;
+            Rectangle inter = Rectangle.Intersect(myRect, otherRect);
+
+            bool collision = inter.Width != 0 || inter.Height != 0;
+
+            contactPoint.X = inter.X + inter.Width / 2;
+            contactPoint.Y = inter.Y + inter.Height / 2;
+            contactNormal = -velocity;
+            contactNormal.Normalize();
+
+            return collision;
+        }
+
+        public static bool FastRectVsRects(
+            ref Rectangle myRect,
+            Vector2 velocity,
+            int timeStep,
+            Rectangle[] staticRects,
+            Color[] staticRectsColor,
+            Color? hit,
+            Color? miss,
+            out List<Record> collided
+        )
+        {
+            Point contactPoint;
+            Vector2 contactNormal;
+            collided = new List<Record>();
+            for (int i = 0; i < staticRects.Length; ++i)
+            {
+                bool result = FastRectVsRect(ref myRect, velocity, timeStep, ref staticRects[i], out contactPoint, out contactNormal);
+                {
+                    if (result)
+                    {
+                        collided.Add(new Record((DateTime.Now - StartTime).TotalMilliseconds, contactPoint, contactNormal, 0));
+                        if (staticRectsColor.Length > 0) staticRectsColor[i] = (hit != null) ? hit.Value : Color.Red;
+                    }
+                    else
+                    {
+                        if (staticRectsColor.Length > 0) staticRectsColor[i] = (hit != null) ? miss.Value : Color.Green;
+                    }
+                }
+            }
+
+            return collided.Count > 0;
+        }
+
+        public static bool FastRectVsRects(
+            ref Rectangle myRect,
+            Vector2 velocity,
+            int timeStep,
+            Rectangle[] staticRects,
+            out Point contactPoint,
+            out Vector2 contactNormal
+        )
+        {
+            contactPoint = Point.Zero;
+            contactNormal = Vector2.Zero;
+            for (int i = 0; i < staticRects.Length; ++i)
+            {
+                if (FastRectVsRect(ref myRect, velocity, timeStep, ref staticRects[i], out contactPoint, out contactNormal))
+                    return true;
+            }
+
+            return false;
         }
     }
 }

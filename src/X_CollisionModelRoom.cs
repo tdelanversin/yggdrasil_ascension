@@ -28,7 +28,7 @@ namespace YGR
             int tileWidth,
             int tileHeight,
             Point location,
-            double drawTimeoutMS = 1000.0
+            double drawTimeoutMS = 250
         )
         {
             _tileWidth = tileWidth;
@@ -242,11 +242,8 @@ namespace YGR
             }
 
             _records.RemoveAll(rec => (rec.TimeStampMS + _drawTimeoutMS < (DateTime.Now - Manager_Collision.StartTime).TotalMilliseconds));
-            //foreach (var rec in _records)
-            //{
-            if (_records.Count() > 0)
+            foreach (var rec in _records)
             {
-                var rec = _records.Last();
                 Factory_Debug.DrawPoint(
                     rec.ContactPoint.X, rec.ContactPoint.Y, 11, Color.Magenta, spriteBatch);
 
@@ -255,7 +252,6 @@ namespace YGR
                     (int)rec.ContactNormal.Y + rec.ContactPoint.Y,
                     25, (float)Math.Atan2(rec.ContactNormal.Y, rec.ContactNormal.X),
                     3, Color.Yellow, spriteBatch);
-                //}
             }
         }
 
@@ -271,35 +267,40 @@ namespace YGR
             contactNormal = Vector2.Zero;
             //float uHit;
             List<Manager_Collision.Record> collided;
+            bool collision = Manager_Collision.DynamicRectVsRects(ref movingRect, ref velocity, timeStepMS, _collisionRectangles, out collided);
+
+            if(collision) unifyCollisions(ref collided, ref velocity, ref movingRect, out contactPoint, out contactNormal);
+
+            return collision;
+        }
+
+        public bool Intersect2(ref Rectangle movingRect, ref Vector2 velocity, int timeStepMS, out Point contactPoint, out Vector2 contactNormal)
+        {
+            contactPoint = Point.Zero;
+            contactNormal = Vector2.Zero;
+            //float uHit;
+            List<Manager_Collision.Record> collided;
             bool collision = Manager_Collision.DynamicRectVsRects(
-                ref movingRect, ref velocity, timeStepMS, 
+                ref movingRect, ref velocity, timeStepMS,
                 _collisionRectangles, _collisionRectColors, Color.Yellow, Color.Green,
                 out collided
             );
 
-            if (collision)
-            {
-                if (collided.Count > 1)
-                {
-                    foreach (var col in collided)
-                    {
-                        contactNormal += col.ContactNormal;
-                    }
-                    contactNormal.Normalize();
-                    contactPoint.X = (int)contactNormal.X * movingRect.Width / 2 + Math.Sign(contactNormal.X) * movingRect.Location.X;
-                    contactPoint.Y = (int)contactNormal.Y * movingRect.Height / 2 + Math.Sign(contactNormal.Y) * movingRect.Location.Y;
+            if (collision) unifyCollisions(ref collided, ref velocity, ref movingRect, out contactPoint, out contactNormal);
 
-                    _records.Add(new Manager_Collision.Record(
-                        (DateTime.Now - Manager_Collision.StartTime).TotalMilliseconds,
-                        contactPoint, contactNormal, 0));
-                }
-                else
-                {
-                    _records.AddRange(collided);
-                    contactNormal = collided.First().ContactNormal;
-                    contactPoint = collided.First().ContactPoint;
-                }
-            }
+            return collision;
+        }
+
+        public bool IntersectFast2(ref Rectangle movingRect, ref Vector2 velocity, int timeStepMS, out Point contactPoint, out Vector2 contactNormal)
+        {
+            contactPoint = Point.Zero;
+            contactNormal = Vector2.Zero;
+            List<Manager_Collision.Record> collided;
+            bool collision = Manager_Collision.FastRectVsRects(
+                ref movingRect, velocity, timeStepMS, _collisionRectangles, _collisionRectColors, 
+                Color.Yellow, Color.Green, out collided);
+
+            if(collision) unifyCollisions(ref collided, ref velocity, ref movingRect, out contactPoint, out contactNormal);
 
             return collision;
         }
@@ -308,7 +309,44 @@ namespace YGR
         {
             contactPoint = Point.Zero;
             contactNormal = Vector2.Zero;
-            return false;
+
+            bool result = Manager_Collision.FastRectVsRects(ref movingRect, velocity, timeStepMS, _collisionRectangles, out contactPoint, out contactNormal);
+
+            if (result)
+            {
+                _records.Add(new Manager_Collision.Record(
+                        (DateTime.Now - Manager_Collision.StartTime).TotalMilliseconds,
+                        contactPoint, contactNormal, 0));
+            }
+
+            return result;
+        }
+
+        private void unifyCollisions(ref List<Manager_Collision.Record> collisions, ref Vector2 velocity, ref Rectangle movingRect, out Point contactPoint, out Vector2 contactNormal)
+        {
+            if (collisions.Count > 1)
+            {
+                contactNormal = Vector2.Zero;
+                foreach (var col in collisions)
+                {
+                    contactNormal += col.ContactNormal;
+                }
+                contactNormal.Normalize();
+
+                Point offset = (new Vector2(movingRect.Width / 2, movingRect.Height / 2) * -contactNormal).ToPoint();
+                contactPoint.X = movingRect.Location.X + movingRect.Width / 2 + offset.X;
+                contactPoint.Y = movingRect.Location.Y + movingRect.Height / 2 + offset.Y;
+
+                _records.Add(new Manager_Collision.Record(
+                    (DateTime.Now - Manager_Collision.StartTime).TotalMilliseconds,
+                    contactPoint, contactNormal, 0));
+            }
+            else
+            {
+                _records.AddRange(collisions);
+                contactNormal = collisions.First().ContactNormal;
+                contactPoint = collisions.First().ContactPoint;
+            }
         }
     }
 }

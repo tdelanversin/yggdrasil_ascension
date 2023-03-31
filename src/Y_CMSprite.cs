@@ -6,7 +6,7 @@ using System.Collections.Generic;
 
 namespace YGR
 {
-    public class Y_CollisionModelSampleSprite : IVictim
+    public class Y_CMSprite : IVictim
     {
         Texture2D _sprite;
         Rectangle _window;
@@ -31,7 +31,7 @@ namespace YGR
         private Vector2 _deceleration;
         private Vector2 _maxVelocity;
 
-        public Y_CollisionModelSampleSprite(
+        public Y_CMSprite(
             PlayerIndex? playerIndex,
             Texture2D texture,
             Rectangle window,
@@ -109,9 +109,9 @@ namespace YGR
 
                 if (mouse.LeftButton == ButtonState.Pressed)
                 {
-                    var d = (mouse.Position.ToVector2() - Position);
+                    var d = (mouse.Position.ToVector2() - _rect.Location.ToVector2());
                     d.Normalize();
-                    _gun.Shoot(gameTime, _rect.Location.ToVector2(), d, _currentRoom, this);
+                    _gun.Shoot(gameTime, _rect.Location.ToVector2() + new Vector2(_rect.Width / 2, _rect.Height / 2), d, _currentRoom, this);
                 }
             }
             else
@@ -142,7 +142,7 @@ namespace YGR
                         shootDir.Y = 0.0f;
                     }
 
-                    _gun.Shoot(gameTime, _rect.Location.ToVector2(), shootDir, _currentRoom, this);
+                    _gun.Shoot(gameTime, _rect.Location.ToVector2() + new Vector2(_rect.Width/2, _rect.Height/2), shootDir, _currentRoom, this);
                 }
             }
 
@@ -168,7 +168,7 @@ namespace YGR
 
             Vector2 contactNormal;
             Point contactPoint;
-            if (_currentRoom.Collision.Intersect(ref _rect, ref _velocity, deltaTime, out contactPoint, out contactNormal))
+            if (_currentRoom.Collision.Intersect2(ref _rect, ref _velocity, deltaTime, out contactPoint, out contactNormal))
             {
                 Logger.Info("impacted at " + contactPoint.ToString());
             }

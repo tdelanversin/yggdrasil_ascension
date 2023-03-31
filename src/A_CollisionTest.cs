@@ -25,8 +25,8 @@ namespace YGR
         private const int RES_X = 1920;
         private const int RES_Y = 1000;
 
-        private Y_CollisionModelSampleRoom _room;
-        private Y_CollisionModelSampleSprite _player;
+        private Y_CMRoom _room;
+        private Y_CMSprite _player;
 
         public A_CollisionTest()
         {
@@ -55,13 +55,13 @@ namespace YGR
             _spriteBatch = new SpriteBatch(GraphicsDevice);
             //string[] lines = File.ReadAllLines("./Level/Level_0/Collisions.csv");
 
-            _room = new Y_CollisionModelSampleRoom(
+            _room = new Y_CMRoom(
                 "hello",
                 new X_CollisionModelRoom("Rooms/Collisions.csv", 40, 40, new Point(0,0))
                 );
 
 
-            _player = new Y_CollisionModelSampleSprite(
+            _player = new Y_CMSprite(
                     null,
 #if T_LARGE
                     Content.Load<Texture2D>("tester"),

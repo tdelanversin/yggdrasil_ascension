@@ -43,7 +43,7 @@ namespace YGR
             _room = room;
             DeleteNext = false;
 
-            _rect = new Rectangle((int)position.X, (int)position.Y, _window.Width, _window.Height);
+            _rect = new Rectangle((int)position.X - _window.Width/2, (int)position.Y - _window.Height/2, _window.Width, _window.Height);
 
             _room.Projectiles.Add(this);
             _who = who;
@@ -59,7 +59,7 @@ namespace YGR
             Vector2 contactNormal;
             Point contactPoint;
             int deltaTime = (int)gameTime.ElapsedGameTime.TotalMilliseconds;
-            if (_room.Collision.Intersect(ref _rect, ref _speed, deltaTime, out contactPoint, out contactNormal))
+            if (_room.Collision.IntersectFast2(ref _rect, ref _speed, deltaTime, out contactPoint, out contactNormal))
             {
                 DeleteNext = true;
                 Logger.Info("impacted at " + contactPoint.ToString());
@@ -112,8 +112,8 @@ namespace YGR
 
         bool checkColWPlayer()
         {
-            Rectangle rect = GetRect();
-            //foreach(var victim in _room.Victims)
+            //Rectangle rect = GetRect();
+            //foreach (var victim in _room.Victims)
             //{
             //    if (victim == _who) continue;
 
