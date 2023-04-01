@@ -80,7 +80,7 @@ namespace YGR
                     new Rectangle(0, 0, 21, 30),
 #endif
                     0.004f, // acceleration
-                    0.1f / i,  // max velocity
+                    0.4f / i,  // max velocity
                     new Vector2(200*i, 350),
                     _room,
                     200.0f,

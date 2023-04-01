@@ -15,7 +15,7 @@ namespace YGR
         public readonly static DateTime StartTime = DateTime.Now;
         public static Color HitColor = Color.Red;
         public static Color MissColor = Color.Green;
-        public static int DrawTimeoutMS = 1000;
+        public static int DrawTimeoutMS = 250;
 
         public struct Record
         {
@@ -87,7 +87,7 @@ namespace YGR
                 if (invDir.X < 0) contactNormal = new Vector2(1, 0);
                 else contactNormal = new Vector2(-1, 0);
             }
-            else if(tNear.X < tNear.Y)
+            else if(tNear.X <= tNear.Y)
             {
                 if (invDir.Y < 0) contactNormal = new Vector2(0, 1);
                 else contactNormal = new Vector2(0, -1);
