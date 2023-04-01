@@ -126,7 +126,7 @@ namespace YGR
                 {
                     var d = (mouse.Position.ToVector2() - Rect.Location.ToVector2());
                     d.Normalize();
-                    _gun.Shoot(gameTime, Rect.Location.ToVector2() + new Vector2(Rect.Width / 2, Rect.Height / 2), d, Room, this);
+                    //_gun.Shoot(gameTime, Rect.Location.ToVector2() + new Vector2(Rect.Width / 2, Rect.Height / 2), d, Room, this);
                 }
             }
             else
@@ -229,7 +229,7 @@ namespace YGR
         /// <param name="spriteBatch">Mogogame SpriteBatch</param>
         public void DrawOutline(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)
         {
-            Factory_Debug.DrawRectangle(Rect.X, Rect.Y, Rect.Width, Rect.Height, 3, Color.OrangeRed, spriteBatch);
+            Factory_Debug.DrawRectangle(Rect.X, Rect.Y, Rect.Width, Rect.Height, 1, Color.OrangeRed, spriteBatch);
             Collision.DrawOutline(gameTime, globalOffset, spriteBatch);
         }
     }

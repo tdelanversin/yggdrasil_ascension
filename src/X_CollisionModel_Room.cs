@@ -239,7 +239,7 @@ namespace YGR
                         _collisionRectangles[i].Y + _location.Y,
                         _collisionRectangles[i].Width,
                         _collisionRectangles[i].Height,
-                        3, color, spriteBatch);
+                        1, color, spriteBatch);
             }
 
             _records.RemoveAll(rec => (rec.TimeStampMS + Manager_Collision.DrawTimeoutMS < (DateTime.Now - Manager_Collision.StartTime).TotalMilliseconds));

@@ -48,7 +48,7 @@ namespace YGR
                     contactNormal.Add(Vector2.Zero);
                     me.Velocity = myVelocity;
                     victim.Velocity = otherVelocity;
-                    Logger.Info("impacted with someone at " + contactPoint.ToString());
+                    Logger.Info("impacted with someone at " + point.ToString());
 
                     _records.Add(new Manager_Collision.Record(
                         (DateTime.Now - Manager_Collision.StartTime).TotalMilliseconds,
@@ -64,7 +64,7 @@ namespace YGR
                 contactPoint.Add(point);
                 contactNormal.Add(normal);
                 me.Velocity = myVelocity;
-                Logger.Info("impacted at " + contactPoint.ToString() + " with room " + me.Room.Name);
+                Logger.Info("impacted at " + point.ToString() + " with room " + me.Room.Name);
             }
 
             Rectangle rect = me.Rect;

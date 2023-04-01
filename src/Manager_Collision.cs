@@ -15,7 +15,7 @@ namespace YGR
         public readonly static DateTime StartTime = DateTime.Now;
         public static Color HitColor = Color.Red;
         public static Color MissColor = Color.Green;
-        public static int DrawTimeoutMS = 250;
+        public static int DrawTimeoutMS = 1000;
 
         public struct Record
         {
@@ -115,10 +115,10 @@ namespace YGR
             Rectangle expanded = new Rectangle(
                 staticRect.X - movingRect.Width / 2, staticRect.Y - movingRect.Height / 2, 
                 staticRect.Width + movingRect.Width, staticRect.Height + movingRect.Height);
-
+            
             Point origin = new Point(
-                movingRect.X + movingRect.Width / 2 + Math.Sign(velocity.X), 
-                movingRect.Y + movingRect.Height / 2 + Math.Sign(velocity.Y)
+                movingRect.X + movingRect.Width / 2, // + Math.Sign(velocity.X),
+                movingRect.Y + movingRect.Height / 2 // + Math.Sign(velocity.Y)
             );
             Vector2 newVelocity = velocity * timeStepMS;
             if (RayVsRect(ref origin, ref newVelocity, ref expanded, out contactPoint, out contactNormal, out uHit))

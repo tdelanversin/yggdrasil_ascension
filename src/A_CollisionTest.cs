@@ -1,7 +1,7 @@
 ﻿//#define T_LARGE
 //#define T_60
-#define T_40
-//#define T_30
+//#define T_40
+#define T_30
 
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -55,7 +55,7 @@ namespace YGR
 
             _room = new Y_CMRoom(
                 "hello",
-                new X_CollisionModel_Room("Rooms/Collisions.csv", 40, 40, new Point(0,0))
+                new X_CollisionModel_Room("Rooms/Collisions2.csv", 40, 40, new Point(0,0))
                 );
 
             _player = new List<Y_CMSprite>();
@@ -80,7 +80,7 @@ namespace YGR
                     new Rectangle(0, 0, 21, 30),
 #endif
                     0.004f, // acceleration
-                    0.5f / i,  // max velocity
+                    0.1f / i,  // max velocity
                     new Vector2(200*i, 350),
                     _room,
                     200.0f,
