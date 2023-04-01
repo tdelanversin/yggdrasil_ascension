@@ -18,8 +18,11 @@ namespace YGR
 
         public static void Initialize(ContentManager content)
         {
-            projectile_textures = new Dictionary<string, Texture2D>();
-            projectile_textures["default_projectile"] = content.Load<Texture2D>("projectile");
+            projectile_textures = new Dictionary<string, Texture2D>()
+            {
+                { "default_projectile", content.Load<Texture2D>("projectile") },
+                { "smaller_projectile", content.Load<Texture2D>("smaller_projectile")}
+            };
 
             _initialized = true;
         }

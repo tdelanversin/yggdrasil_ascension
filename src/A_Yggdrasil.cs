@@ -78,7 +78,7 @@ namespace YGR
                         { "stand", new int[] { 0, 1, 8, 9 } },
                         { "walk_left", new int[] { 2, 3, 4 } },
                         { "walk_right", new int[] { 5, 6, 7 } }},
-                    new Y_StarterGun()
+                    new Y_WideGun()
                 ),
                 new Y_Sprite(
                     PlayerIndex.Two,
