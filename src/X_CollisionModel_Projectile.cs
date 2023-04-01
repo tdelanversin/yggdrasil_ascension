@@ -42,12 +42,12 @@ namespace YGR
                 result = Manager_Collision.MovingRectVsMovingRectFast(
                     ref myRect, ref myVelocity, Mass,
                     ref otherRect, ref otherVelocity, victim.Collision.Mass,
-                    Cr, timeStepMS, out point);
+                    Cr, timeStepMS, out point, out normal);
                 if (result)
                 {
                     who.Add(victim);
                     contactPoint.Add(point);
-                    contactNormal.Add(Vector2.Zero);
+                    contactNormal.Add(normal);
                     me.Velocity = Vector2.Zero;
                     victim.Velocity = otherVelocity;
                     Logger.Info("impacted with someone at " + point.ToString());

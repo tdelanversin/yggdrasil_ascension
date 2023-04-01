@@ -64,7 +64,7 @@ namespace YGR
             {
                 _player.Add(
                 new Y_CMSprite(
-                    new X_CollisionModel_Victim(1.0f*i /* mass */, 1.0f /* elastic impact */),
+                    new X_CollisionModel_Victim(1.0f*i /* mass */, 0.0f /* elastic impact */),
                     null,
 #if T_LARGE
                     Content.Load<Texture2D>("tester"),

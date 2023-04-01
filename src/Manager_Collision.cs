@@ -187,8 +187,6 @@ namespace YGR
             out Vector2 contactNormal
         )
         {
-            contactPoint = Point.Zero;
-            contactNormal = Vector2.Zero;
             Rectangle inter = Rectangle.Intersect(myRect, otherRect);
 
             bool collision = inter.Width != 0 || inter.Height != 0;
@@ -232,9 +230,9 @@ namespace YGR
             ref Rectangle myRect, ref Vector2 myVelocity, float myMass,
             ref Rectangle otherRect, ref Vector2 otherVelocity, float otherMass,
             float cr, int timeStepMS,
-            out Point contactPoint)
+            out Point contactPoint, out Vector2 contactNormal)
         {
-            Vector2 contactNormal = Vector2.Zero;
+            contactNormal = Vector2.Zero;
             float uHit = 0;
             // first assume that the other one is static with respect to the relative speed
             bool contact = DynamicRectVsStaticRect(
@@ -252,15 +250,17 @@ namespace YGR
             myVelocity = myNewVelocity;
             otherVelocity = otherNewVelocity;
 
+            Vector2 v = new Vector2(Math.Abs(myVelocity.X), Math.Abs(myVelocity.Y)) * (1 - uHit);
+            myVelocity += contactNormal * v;
+
             return true;
         }
 
         public static bool MovingRectVsMovingRectFast(ref Rectangle myRect, ref Vector2 myVelocity, float myMass,
             ref Rectangle otherRect, ref Vector2 otherVelocity, float otherMass,
             float cr, int timeStepMS,
-            out Point contactPoint)
+            out Point contactPoint, out Vector2 contactNormal)
         {
-            Vector2 contactNormal;
             bool contact = FastRectVsRect(
                 ref myRect, myVelocity - otherVelocity, timeStepMS, 
                 ref otherRect, out contactPoint, out contactNormal);

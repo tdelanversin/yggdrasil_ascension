@@ -27,6 +27,7 @@ namespace YGR
 
             bool result = false;
             Point point;
+            Vector2 normal;
             Rectangle myRect = me.Rect;
             Vector2 myVelocity = me.Velocity;
             Rectangle otherRect;
@@ -40,12 +41,12 @@ namespace YGR
                 result = Manager_Collision.MovingRectVsMovingRect(
                     ref myRect, ref myVelocity, Mass,
                     ref otherRect, ref otherVelocity, victim.Collision.Mass,
-                    Cr, timeStepMS, out point);
+                    Cr, timeStepMS, out point, out normal);
                 if (result)
                 {
                     who.Add(victim);
                     contactPoint.Add(point);
-                    contactNormal.Add(Vector2.Zero);
+                    contactNormal.Add(normal);
                     me.Velocity = myVelocity;
                     victim.Velocity = otherVelocity;
                     Logger.Info("impacted with someone at " + point.ToString());
@@ -56,7 +57,6 @@ namespace YGR
                 }
             }
 
-            Vector2 normal;
             if (me.Room.Collision.Intersect(ref myRect, ref myVelocity, timeStepMS, out point, out normal))
             {
                 result = true;
