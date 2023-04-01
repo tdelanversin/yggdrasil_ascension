@@ -170,32 +170,34 @@ namespace YGR
 
 
             /* ##########################################################################
-             * Speed and velocity handling
+             * Speed and velocity handling based on control input
+             *  => must happen before collision handling <=
              * ########################################################################## */
-            int deltaTime = gameTime.ElapsedGameTime.Milliseconds;
+            int timeStepMS = gameTime.ElapsedGameTime.Milliseconds;
             //Logger.Info(Velocity.ToString() + "    " + MaxVelocity.ToString());
             if (controls)
             {
-                Velocity += input * _acceleration * deltaTime;
+                Velocity += input * _acceleration * timeStepMS;
             }
             else
             {
                 Velocity = new Vector2(
-                    Math.Sign(Velocity.X) * Math.Max(0.0f, Math.Abs(Velocity.X) - _deceleration.X * deltaTime),
-                    Math.Sign(Velocity.Y) * Math.Max(0.0f, Math.Abs(Velocity.Y) - _deceleration.Y * deltaTime));
+                    Math.Sign(Velocity.X) * Math.Max(0.0f, Math.Abs(Velocity.X) - _deceleration.X * timeStepMS),
+                    Math.Sign(Velocity.Y) * Math.Max(0.0f, Math.Abs(Velocity.Y) - _deceleration.Y * timeStepMS));
             }
             Velocity = Vector2.Clamp(Velocity, -_maxVelocity, _maxVelocity);
 
             /* ##########################################################################
-             * Collision with everything handling
+             * Collision with everything handling (takes care of location update as well)
              * ########################################################################## */
             IList<Vector2> contactNormal;
             IList<Point> contactPoint;
             IList<IGameElement> who;
-            if(Collision.Intersect(this, deltaTime, out contactPoint, out contactNormal, out who))
+            if(Collision.Intersect(this, timeStepMS, out contactPoint, out contactNormal, out who))
             {
                 Logger.Info("Collided with something");
             }
+            /* ########################################################################## */
         }
 
         /// <summary>

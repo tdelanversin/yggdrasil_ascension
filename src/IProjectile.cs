@@ -1,5 +1,4 @@
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
 
 /*
  * Interface to be implemented by all elements that are a projectile

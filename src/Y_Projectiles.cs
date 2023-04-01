@@ -1,6 +1,5 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using System;
 using System.Collections.Generic;
 #nullable enable
 
@@ -52,15 +51,15 @@ namespace YGR
         }
 
         public void Update(GameTime gameTime) {
-            int deltaTime = (int)gameTime.ElapsedGameTime.TotalMilliseconds;
+            int timeStepMS = (int)gameTime.ElapsedGameTime.TotalMilliseconds;
 
             /* ##########################################################################
-             * Collision with everything handling
+             * Collision with everything handling (takes care of location update as well)
              * ########################################################################## */
             IList<Vector2> contactNormal;
             IList<Point> contactPoint;
             IList<IGameElement> who;
-            if (Collision.Intersect(this, deltaTime, out contactPoint, out contactNormal, out who))
+            if (Collision.Intersect(this, timeStepMS, out contactPoint, out contactNormal, out who))
             {
                 Logger.Info("Collided with something");
                 foreach(var obj in who)
@@ -71,6 +70,7 @@ namespace YGR
                     }
                 }
             }
+            /* ########################################################################## */
 
             _animationIndex = (int)(5 - (gameTime.TotalGameTime.TotalMilliseconds - TimeCreated) / 300);
 
@@ -147,16 +147,6 @@ namespace YGR
         void IGameElement.DrawOutline(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)
         {
             Factory_Debug.DrawRectangle(Rect.X, Rect.Y, _window.Width, _window.Height, 3, Color.BlueViolet, spriteBatch);
-        }
-
-        public bool Intersects(Rectangle other)
-        {
-            return false;
-        }
-
-        public Vector2 IntersectionPoint(Vector2 pos, Vector2 dp)
-        {
-            return Vector2.Zero;
         }
 
         public X_LevelElements WhatAreYou()

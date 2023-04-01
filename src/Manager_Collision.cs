@@ -1,17 +1,9 @@
 ﻿using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
-using SharpDX;
 using System;
 using System.Collections.Generic;
-using System.Reflection.Metadata.Ecma335;
 
 namespace YGR
 {
-    public interface ICollidable
-    {
-
-    }
-
     // Implement these kinds of things:
     // https://github.com/OneLoneCoder/Javidx9/blob/master/PixelGameEngine/SmallerProjects/OneLoneCoder_PGE_Rectangles.cpp
 

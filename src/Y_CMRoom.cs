@@ -35,7 +35,6 @@ namespace YGR
         /// <param name="gameTime">Monogame GameTime</param>
         public void Update(GameTime gameTime)
         {
-
         }
 
         /// <summary>

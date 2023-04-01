@@ -1,9 +1,5 @@
 ﻿using Microsoft.Xna.Framework;
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace YGR
 {
@@ -14,7 +10,7 @@ namespace YGR
 
         public X_CollisionModel_Projectile(float mass, float cr)
         {
-            Mass = mass;
+            Mass = (mass == 0) ? float.Epsilon : mass;
             Cr = cr;
         }
 

@@ -51,9 +51,7 @@ namespace YGR
 
         protected override void LoadContent()
         {
-            //TextFieldParser parser = Content.Load<TextFieldParser>("Level_0/Collisions.csv");
             _spriteBatch = new SpriteBatch(GraphicsDevice);
-            //string[] lines = File.ReadAllLines("./Level/Level_0/Collisions.csv");
 
             _room = new Y_CMRoom(
                 "hello",
