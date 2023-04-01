@@ -24,9 +24,9 @@ namespace YGR
         public Vector2 Position { get; private set; }
         public int LifePoints { get; set; }
         public bool HitInLastLoop { get; set; }
-        public X_CollisionModelVictim Collision { get; }
+        public X_CollisionModel_Victim Collision { get; }
 
-        public Rectangle Rect { get; private set; }
+        public Rectangle Rect { get; set; }
         public Vector2 Velocity { get; set; }
 
         private Vector2 _acceleration;

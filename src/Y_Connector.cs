@@ -45,11 +45,11 @@ namespace YGR
         public Y_Room LeftOrBottomRoom { get; private set; }
         /* The Y_Room attached on the right or the top side */
         public Y_Room RightOrTopRoom { get; private set; }
-        public X_CollisionModelRoom Collision { get; }
+        public X_CollisionModel_Room Collision { get; }
 
         // outline of the connector (the same as the texture size)
         // use this to check if a point is on the connector or not
-        public Rectangle Rect { get; private set; }
+        public Rectangle Rect { get; set; }
         // essentially the same as _rectangle but should be used for the sprite animations
         Rectangle _window;
         

@@ -57,7 +57,7 @@ namespace YGR
 
             _room = new Y_CMRoom(
                 "hello",
-                new X_CollisionModelRoom("Rooms/Collisions.csv", 40, 40, new Point(0,0))
+                new X_CollisionModel_Room("Rooms/Collisions.csv", 40, 40, new Point(0,0))
                 );
 
             _player = new List<Y_CMSprite>();
@@ -66,7 +66,7 @@ namespace YGR
             {
                 _player.Add(
                 new Y_CMSprite(
-                    new X_CollisionModelVictim(1.0f*i /* mass */, 1.0f /* elastic impact */),
+                    new X_CollisionModel_Victim(1.0f*i /* mass */, 1.0f /* elastic impact */),
                     null,
 #if T_LARGE
                     Content.Load<Texture2D>("tester"),
@@ -82,7 +82,7 @@ namespace YGR
                     new Rectangle(0, 0, 21, 30),
 #endif
                     0.004f, // acceleration
-                    0.4f,  // max velocity
+                    0.5f / i,  // max velocity
                     new Vector2(200*i, 350),
                     _room,
                     200.0f,

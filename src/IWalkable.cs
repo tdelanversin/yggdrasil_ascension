@@ -11,7 +11,7 @@ namespace YGR
     public interface IWalkable : IGameElement
     {
         public string Name { get; }
-        public X_CollisionModelRoom Collision { get; }
+        public X_CollisionModel_Room Collision { get; }
         public void SetBackgroundColor(Color color);
         public void ResetBackgroundColor();
         public IList<IProjectile> Projectiles { get; }

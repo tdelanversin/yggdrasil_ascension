@@ -24,9 +24,9 @@ namespace YGR
         public Vector2 Position { get; private set; }
         public int LifePoints { get; set; }
         public bool HitInLastLoop { get; set; }
-        public X_CollisionModelVictim Collision { get; }
+        public X_CollisionModel_Victim Collision { get; }
         public Vector2 Velocity { get; set; }
-        public Rectangle Rect { get; private set; }
+        public Rectangle Rect { get; set; }
 
         private Vector2 _acceleration;
         private Vector2 _deceleration;
@@ -37,7 +37,7 @@ namespace YGR
         private int _controlLayout;
 
         public Y_CMSprite(
-            X_CollisionModelVictim collision,
+            X_CollisionModel_Victim collision,
             PlayerIndex? playerIndex,
             Texture2D texture,
             Rectangle window,
@@ -127,7 +127,7 @@ namespace YGR
                 {
                     var d = (mouse.Position.ToVector2() - Rect.Location.ToVector2());
                     d.Normalize();
-                    //_gun.Shoot(gameTime, Rect.Location.ToVector2() + new Vector2(Rect.Width / 2, Rect.Height / 2), d, Room, this);
+                    _gun.Shoot(gameTime, Rect.Location.ToVector2() + new Vector2(Rect.Width / 2, Rect.Height / 2), d, Room, this);
                 }
             }
             else
@@ -186,41 +186,16 @@ namespace YGR
             }
             Velocity = Vector2.Clamp(Velocity, -_maxVelocity, _maxVelocity);
 
+            /* ##########################################################################
+             * Collision with everything handling
+             * ########################################################################## */
             IList<Vector2> contactNormal;
             IList<Point> contactPoint;
             IList<IGameElement> who;
-            Rectangle rect = Rect;
-            Vector2 velocity = Velocity;
-
             if(Collision.Intersect(this, deltaTime, out contactPoint, out contactNormal, out who))
             {
                 Logger.Info("Collided with something");
             }
-
-            ///* ##########################################################################
-            // * Collision with other victim-sprites handling
-            // * ########################################################################## */
-            //foreach (var victim in Room.Victims)
-            //{
-            //    if(victim.Collision.Intersect(this, deltaTime, out contactPoint))
-            //    {
-            //        Logger.Info("impacted with someone");
-            //    }
-            //}
-
-            ///* ##########################################################################
-            // * Collision with the room handling
-            // * ########################################################################## */
-            //Vector2 velocity = Velocity;
-            //if (Room.Collision.Intersect2(ref rect, ref velocity, deltaTime, out contactPoint, out contactNormal))
-            //{
-            //    Velocity = velocity;
-            //    Logger.Info("impacted at " + contactPoint.ToString());
-            //}
-
-            //Velocity += input * deltaTime * _acceleration;
-            rect.Location += (Velocity * deltaTime).ToPoint();
-            Rect = rect;
         }
 
         /// <summary>

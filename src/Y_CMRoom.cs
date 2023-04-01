@@ -12,12 +12,12 @@ namespace YGR
         public IList<IVictim> Victims { get; }
         public int Width { get; private set; }
         public int Height { get; private set; }
-        public X_CollisionModelRoom Collision { get; }
-        public Rectangle Rect { get; private set; }
+        public X_CollisionModel_Room Collision { get; }
+        public Rectangle Rect { get; set; }
 
         public Y_CMRoom(
             string name,
-            X_CollisionModelRoom collision
+            X_CollisionModel_Room collision
         )
         {
             Position = Vector2.Zero;

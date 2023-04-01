@@ -15,7 +15,7 @@ namespace YGR
     {
         public int LifePoints { get; set; }
         public bool HitInLastLoop { get; set; }
-        public X_CollisionModelVictim Collision { get; }
+        public X_CollisionModel_Victim Collision { get; }
         public Vector2 Velocity { get; set; }
         public IWalkable Room { get; set; }
     }

@@ -8,7 +8,7 @@ using System.Linq;
 
 namespace YGR
 {
-    public class X_CollisionModelRoom
+    public class X_CollisionModel_Room
     {
         private int[][] _collisionTemplate;
         private Rectangle[] _collisionRectangles;
@@ -23,7 +23,7 @@ namespace YGR
 
         private List<Manager_Collision.Record> _records;
 
-        public X_CollisionModelRoom(
+        public X_CollisionModel_Room(
             string resourceFile,
             int tileWidth,
             int tileHeight,
@@ -279,7 +279,7 @@ namespace YGR
                 out collided
             );
 
-            if (collision) unifyCollisions(ref collided, ref velocity, ref movingRect, out contactPoint, out contactNormal);
+            if (collision) unifyCollisions(ref collided, ref movingRect, out contactPoint, out contactNormal);
 
             return collision;
         }
@@ -292,12 +292,12 @@ namespace YGR
             bool collision = Manager_Collision.FastRectVsStaticRects(
                 ref movingRect, velocity, timeStepMS, _collisionRectangles, _collisionRectanglesHit, out collided);
 
-            if(collision) unifyCollisions(ref collided, ref velocity, ref movingRect, out contactPoint, out contactNormal);
+            if(collision) unifyCollisions(ref collided, ref movingRect, out contactPoint, out contactNormal);
 
             return collision;
         }
 
-        private void unifyCollisions(ref List<Manager_Collision.Record> collisions, ref Vector2 velocity, ref Rectangle movingRect, out Point contactPoint, out Vector2 contactNormal)
+        private void unifyCollisions(ref List<Manager_Collision.Record> collisions, ref Rectangle movingRect, out Point contactPoint, out Vector2 contactNormal)
         {
             if (collisions.Count > 1)
             {

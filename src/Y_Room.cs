@@ -25,8 +25,8 @@ namespace YGR
         public string Name { get; }
         // the background color as required by IDrawable
         private Color BackgroundColor { get; set; }
-        public X_CollisionModelRoom Collision { get; }
-        public Rectangle Rect { get; private set; }
+        public X_CollisionModel_Room Collision { get; }
+        public Rectangle Rect { get; set; }
 
         // The list with all connector points located on the walls of this room
         private Dictionary<X_ConnectorSide, List<X_ConnectorPoint>> _connectorPoints;

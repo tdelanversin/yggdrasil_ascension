@@ -1,5 +1,4 @@
 ﻿using Microsoft.Xna.Framework;
-using SharpDX;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,18 +7,18 @@ using System.Threading.Tasks;
 
 namespace YGR
 {
-    public class X_CollisionModelVictim
+    public class X_CollisionModel_Projectile
     {
         public float Mass { get; }
         public float Cr { get; }
 
-        public X_CollisionModelVictim(float mass, float cr) 
+        public X_CollisionModel_Projectile(float mass, float cr)
         {
             Mass = mass;
             Cr = cr;
         }
 
-        public bool Intersect(IVictim me, int timeStepMS, out IList<Point> contactPoint, out IList<Vector2> contactNormal, out IList<IGameElement> who)
+        public bool Intersect(IProjectile me, int timeStepMS, out IList<Point> contactPoint, out IList<Vector2> contactNormal, out IList<IGameElement> who)
         {
             who = new List<IGameElement>();
             contactPoint = new List<Point>();
@@ -34,9 +33,11 @@ namespace YGR
             Vector2 otherVelocity;
             foreach (var victim in me.Room.Victims)
             {
+                if (victim == me.WhoFiredMe) continue;
+
                 otherRect = victim.Rect;
                 otherVelocity = victim.Velocity;
-                result = Manager_Collision.MovingRectVsMovingRect(
+                result = Manager_Collision.MovingRectVsMovingRectFast(
                     ref myRect, ref myVelocity, Mass,
                     ref otherRect, ref otherVelocity, victim.Collision.Mass,
                     Cr, timeStepMS, out point);
@@ -45,45 +46,30 @@ namespace YGR
                     who.Add(victim);
                     contactPoint.Add(point);
                     contactNormal.Add(Vector2.Zero);
-                    me.Velocity = myVelocity;
+                    me.Velocity = Vector2.Zero;
                     victim.Velocity = otherVelocity;
                     Logger.Info("impacted with someone at " + contactPoint.ToString());
                 }
             }
 
-            if (me.Room.Collision.Intersect(ref myRect, ref myVelocity, timeStepMS, out point, out normal))
+            if (me.Room.Collision.IntersectFast(ref myRect, ref myVelocity, timeStepMS, out point, out normal))
             {
                 result = true;
                 who.Add(me.Room);
                 contactPoint.Add(point);
                 contactNormal.Add(normal);
-                me.Velocity = myVelocity;
+                me.Velocity = Vector2.Zero;
                 Logger.Info("impacted at " + contactPoint.ToString() + " with room " + me.Room.Name);
             }
 
-            ///* ##########################################################################
-            // * Collision with other victim-sprites handling
-            // * ########################################################################## */
-            //Vector2 contactNormal;
-            //Point contactPoint;
-            //Rectangle rect = Rect;
-            //foreach (var victim in _room.Victims)
-            //{
-            //    if (victim.Collision.Intersect(this, deltaTime, out contactPoint))
-            //    {
-            //        Logger.Info("impacted with someone");
-            //    }
-            //}
+            if (result)
+            {
+                me.DeleteNext = true;
+            }
 
-            ///* ##########################################################################
-            // * Collision with the room handling
-            // * ########################################################################## */
-            //Vector2 velocity = Velocity;
-            //if (_room.Collision.Intersect2(ref rect, ref velocity, deltaTime, out contactPoint, out contactNormal))
-            //{
-            //    Velocity = velocity;
-            //    Logger.Info("impacted at " + contactPoint.ToString());
-            //}
+            Rectangle rect = me.Rect;
+            rect.Location += (me.Velocity * timeStepMS).ToPoint();
+            me.Rect = rect;
 
             return result;
         }
