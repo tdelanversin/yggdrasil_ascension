@@ -48,8 +48,8 @@ namespace YGR
             Vector2 tNear = (targetPos - rayOrigin) * invDir;
             Vector2 tFar = (targetPos + targetSize - rayOrigin) * invDir;
 
-            if (Single.IsInfinity(tFar.Y) || Single.IsInfinity(tFar.X)) return false;
-            if (Single.IsInfinity(tNear.Y) || Single.IsInfinity(tNear.X)) return false;
+            //if (Single.IsInfinity(tFar.Y) || Single.IsInfinity(tFar.X)) return false;
+            //if (Single.IsInfinity(tNear.Y) || Single.IsInfinity(tNear.X)) return false;
 
             // sort distances => swap variables without temp var
             if (tNear.X > tFar.X) (tNear.X, tFar.X) = (tFar.X, tNear.X);
@@ -76,7 +76,7 @@ namespace YGR
                 if (invDir.X < 0) contactNormal = new Vector2(1, 0);
                 else contactNormal = new Vector2(-1, 0);
             }
-            else if(tNear.X < tNear.Y)
+            else if(tNear.X <= tNear.Y)
             {
                 if (invDir.Y < 0) contactNormal = new Vector2(0, 1);
                 else contactNormal = new Vector2(0, -1);

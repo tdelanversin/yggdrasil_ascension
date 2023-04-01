@@ -139,9 +139,21 @@ namespace YGR
             //_line.direction = (mouse.Position - _line.origin).ToVector2();
 
             int timeStep = gameTime.ElapsedGameTime.Milliseconds;
-            Vector2 vel = (mouse.Position - (_myRect.Location + new Point(_myRect.Width/2, _myRect.Height/2))).ToVector2();
-            if(vel.Length() != 0.0f) vel.Normalize();
-            _velocity += vel * 0.01f; // * gameTime.ElapsedGameTime.Milliseconds;
+
+            var keyboard = Keyboard.GetState();
+            Vector2 input = Vector2.Zero;
+
+            if (keyboard.IsKeyDown(Keys.D)) input.X += 1;
+            if (keyboard.IsKeyDown(Keys.A)) input.X -= 1;
+            if (keyboard.IsKeyDown(Keys.S)) input.Y += 1;
+            if (keyboard.IsKeyDown(Keys.W)) input.Y -= 1;
+
+            if (input.Length() > 0)
+                input.Normalize();
+            _velocity = input * 1 * gameTime.ElapsedGameTime.Milliseconds;
+
+            if(_velocity.Length() != 0.0f) _velocity.Normalize();
+            _velocity *= 0.1f; // * gameTime.ElapsedGameTime.Milliseconds;
 
             for(int i=0; i<_rects.Length; ++i)
             {
@@ -152,7 +164,8 @@ namespace YGR
 
                 if (result)
                 {
-                    _velocity = Vector2.Zero;
+                    Manager_Collision.ResolveDynamicRectVsRect(_myRect, ref _velocity, timeStep, _rects[i]);
+                    //_velocity = Vector2.Zero;
                     _rectColors[i] = Color.Yellow;
                 }
                 else { 
