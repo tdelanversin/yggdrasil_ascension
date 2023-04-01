@@ -26,7 +26,7 @@ namespace YGR
         private const int RES_Y = 1000;
 
         private Y_CMRoom _room;
-        private Y_CMSprite _player;
+        private List<Y_CMSprite> _player;
 
         public A_CollisionTest()
         {
@@ -60,8 +60,13 @@ namespace YGR
                 new X_CollisionModelRoom("Rooms/Collisions.csv", 40, 40, new Point(0,0))
                 );
 
+            _player = new List<Y_CMSprite>();
 
-            _player = new Y_CMSprite(
+            for(int i=1; i<=2; ++i)
+            {
+                _player.Add(
+                new Y_CMSprite(
+                    new X_CollisionModelVictim(1.0f*i /* mass */, 1.0f /* elastic impact */),
                     null,
 #if T_LARGE
                     Content.Load<Texture2D>("tester"),
@@ -77,24 +82,28 @@ namespace YGR
                     new Rectangle(0, 0, 21, 30),
 #endif
                     0.004f, // acceleration
-                    0.004f,   // deceleration
-                    0.75f,  // max acceleration
-                    new Vector2(200, 350),
+                    0.4f,  // max velocity
+                    new Vector2(200*i, 350),
                     _room,
                     200.0f,
                     new Dictionary<string, int[]> {
-                        { "stand", new int[] { 0, 1, 8, 9 } },
-                        { "walk_left", new int[] { 2, 3, 4 } },
-                        { "walk_right", new int[] { 5, 6, 7 } }},
-                    new Y_StarterGun()
-                );
+                                    { "stand", new int[] { 0, 1, 8, 9 } },
+                                    { "walk_left", new int[] { 2, 3, 4 } },
+                                    { "walk_right", new int[] { 5, 6, 7 } }},
+                    new Y_StarterGun(),
+                    i // control input
+                ));
+            }
 
             Mouse.SetPosition(175, 380);
         }
 
         protected override void Update(GameTime gameTime)
         {
-            _player.Update(gameTime);
+            foreach(var player in _player)
+            {
+                player.Update(gameTime);
+            }
 
             Manager_Projectile.Update(gameTime);
 
@@ -113,8 +122,11 @@ namespace YGR
             _room.Draw(gameTime, Vector2.Zero, _spriteBatch);
             _room.DrawOutline(gameTime, Vector2.Zero, _spriteBatch);
 
-            _player.Draw(gameTime, Vector2.Zero, _spriteBatch);
-            _player.DrawOutline(gameTime, Vector2.Zero, _spriteBatch);
+            foreach(var player in _player)
+            {
+                player.Draw(gameTime, Vector2.Zero, _spriteBatch);
+                player.DrawOutline(gameTime, Vector2.Zero, _spriteBatch);
+            }
 
             Manager_Projectile.Draw(gameTime, Vector2.Zero, _spriteBatch);
             Manager_Projectile.DrawOutline(gameTime, Vector2.Zero, _spriteBatch);

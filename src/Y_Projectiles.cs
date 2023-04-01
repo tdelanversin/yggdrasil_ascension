@@ -22,7 +22,7 @@ namespace YGR
         X_ConnectorSide _lastSide;
         private IGameElement _who;
 
-        private Rectangle _rect;
+        public Rectangle Rect { get; set; }
 
         public Y_StarterProjectile(
             Vector2 position,
@@ -43,7 +43,7 @@ namespace YGR
             _room = room;
             DeleteNext = false;
 
-            _rect = new Rectangle((int)position.X - _window.Width/2, (int)position.Y - _window.Height/2, _window.Width, _window.Height);
+            Rect = new Rectangle((int)position.X - _window.Width/2, (int)position.Y - _window.Height/2, _window.Width, _window.Height);
 
             _room.Projectiles.Add(this);
             _who = who;
@@ -59,13 +59,15 @@ namespace YGR
             Vector2 contactNormal;
             Point contactPoint;
             int deltaTime = (int)gameTime.ElapsedGameTime.TotalMilliseconds;
-            if (_room.Collision.IntersectFast2(ref _rect, ref _speed, deltaTime, out contactPoint, out contactNormal))
+            Rectangle rect = Rect;
+            if (_room.Collision.IntersectFast(ref rect, ref _speed, deltaTime, out contactPoint, out contactNormal))
             {
                 DeleteNext = true;
                 Logger.Info("impacted at " + contactPoint.ToString());
             }
 
-            _rect.Location += (_speed * deltaTime).ToPoint();
+            rect.Location += (_speed * deltaTime).ToPoint();
+            Rect = rect;
             _animationIndex = (int)(5 - (gameTime.TotalGameTime.TotalMilliseconds - TimeCreated) / 300);
 
             var whatAreYou = _room.WhatAreYou();
@@ -128,8 +130,8 @@ namespace YGR
 
         public void Draw(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch) {
             var destinationRectangle = new Rectangle(
-                _rect.X - (int)globalOffset.X,
-                _rect.Y - (int)globalOffset.Y,
+                Rect.X - (int)globalOffset.X,
+                Rect.Y - (int)globalOffset.Y,
                 _window.Width,
                 _window.Height
             );
@@ -156,7 +158,7 @@ namespace YGR
         /// <param name="spriteBatch">Mogogame SpriteBatch</param>
         void IGameElement.DrawOutline(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)
         {
-            Factory_Debug.DrawRectangle(_rect.X, _rect.Y, _window.Width, _window.Height, 3, Color.BlueViolet, spriteBatch);
+            Factory_Debug.DrawRectangle(Rect.X, Rect.Y, _window.Width, _window.Height, 3, Color.BlueViolet, spriteBatch);
         }
 
         public bool Intersects(Rectangle other)
@@ -167,11 +169,6 @@ namespace YGR
         public Vector2 IntersectionPoint(Vector2 pos, Vector2 dp)
         {
             return Vector2.Zero;
-        }
-
-        public Rectangle GetRect()
-        {
-            return _rect;
         }
 
         public X_LevelElements WhatAreYou()

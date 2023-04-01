@@ -45,11 +45,11 @@ namespace YGR
         public Y_Room LeftOrBottomRoom { get; private set; }
         /* The Y_Room attached on the right or the top side */
         public Y_Room RightOrTopRoom { get; private set; }
-        public ICollisionModel Collision { get; }
+        public X_CollisionModelRoom Collision { get; }
 
         // outline of the connector (the same as the texture size)
         // use this to check if a point is on the connector or not
-        Rectangle _rectangle;
+        public Rectangle Rect { get; private set; }
         // essentially the same as _rectangle but should be used for the sprite animations
         Rectangle _window;
         
@@ -103,7 +103,7 @@ namespace YGR
             _animations = animations;
             _window = window;
 
-            _rectangle = _window;
+            Rect = _window;
 
             if(State == Y_ConnectorState.Closed)
             {
@@ -478,7 +478,7 @@ namespace YGR
         {
             int localX = (int)(point.X - Position.X);
             int localY = (int)(point.Y - Position.Y);
-            return _rectangle.Contains(localX, localY);
+            return Rect.Contains(localX, localY);
         }
 
         public bool Intersects(Rectangle other)

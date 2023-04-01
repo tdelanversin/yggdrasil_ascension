@@ -12,13 +12,12 @@ namespace YGR
         public IList<IVictim> Victims { get; }
         public int Width { get; private set; }
         public int Height { get; private set; }
-        public ICollisionModel Collision { get; }
-
-        private Rectangle _rect;
+        public X_CollisionModelRoom Collision { get; }
+        public Rectangle Rect { get; private set; }
 
         public Y_CMRoom(
             string name,
-            ICollisionModel collision
+            X_CollisionModelRoom collision
         )
         {
             Position = Vector2.Zero;
@@ -26,8 +25,7 @@ namespace YGR
             Collision = collision;
             Projectiles = new List<IProjectile>();
             Victims = new List<IVictim>();
-
-            _rect = new Rectangle(0, 0, Width, Height);
+            Rect = new Rectangle(0, 0, Width, Height);
         }
 
 
@@ -84,11 +82,6 @@ namespace YGR
         public X_LevelElements WhatAreYou()
         {
             return X_LevelElements.CollisionTester;
-        }
-
-        public Rectangle GetRect()
-        {
-            return _rect;
         }
     }
 }

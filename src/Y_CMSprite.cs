@@ -16,7 +16,7 @@ namespace YGR
         IShooter _gun;
         PlayerIndex? _playerIndex;
 
-        IWalkable _currentRoom;
+        public IWalkable Room { get; set; }
         X_ConnectorSide _lastSide;
         int _hitCounter;
         int _maxHitCounter;
@@ -24,52 +24,62 @@ namespace YGR
         public Vector2 Position { get; private set; }
         public int LifePoints { get; set; }
         public bool HitInLastLoop { get; set; }
+        public X_CollisionModelVictim Collision { get; }
+        public Vector2 Velocity { get; set; }
+        public Rectangle Rect { get; private set; }
 
-        private Rectangle _rect;
-        private Vector2 _velocity;
         private Vector2 _acceleration;
         private Vector2 _deceleration;
         private Vector2 _maxVelocity;
+        private float _mass;
+        private float _cr;
+
+        private int _controlLayout;
 
         public Y_CMSprite(
+            X_CollisionModelVictim collision,
             PlayerIndex? playerIndex,
             Texture2D texture,
             Rectangle window,
             float acceleration,
-            float deceleration,
             float maxVelocity,
             Vector2 position,
             IWalkable startRoom,
             float frameDuration,
             Dictionary<string, int[]> animations,
-            IShooter gun
+            IShooter gun,
+            int controlLayout = 1
             )
         {
             _sprite = texture;
             _window = window;
             _animations = animations;
             _animationIndex = 0;
-            _currentRoom = startRoom;
+            Room = startRoom;
             _gun = gun;
             _playerIndex = playerIndex;
+            _controlLayout = controlLayout;
 
             _hitCounter = 0;
             _maxHitCounter = 750 / 16;
 
-            _velocity = Vector2.Zero;
+            Velocity = Vector2.Zero;
             _acceleration = Vector2.One * acceleration;
-            _deceleration = Vector2.One * deceleration;
+            _deceleration = Vector2.One * acceleration;
             _maxVelocity = Vector2.One * maxVelocity;
             Position = position;
-            _rect = new Rectangle(
+            Rect = new Rectangle(
                 (int)position.X - _window.Width/2,
                 (int)position.Y - _window.Height/2,
                 _window.Width, _window.Height
             );
+
             LifePoints = 100;
             HitInLastLoop = false;
 
-            //startRoom.Victims.Add(this);
+            Collision = collision;
+
+            Room.Victims.Add(this);
         }
 
         public X_LevelElements WhatAreYou()
@@ -98,20 +108,26 @@ namespace YGR
             if(_playerIndex == null)
             {
                 KeyboardState keyboard = Keyboard.GetState();
-                if (keyboard.IsKeyDown(Keys.D)) input.X += 1;
-                if (keyboard.IsKeyDown(Keys.A)) input.X -= 1;
-                if (keyboard.IsKeyDown(Keys.S)) input.Y += 1;
-                if (keyboard.IsKeyDown(Keys.W)) input.Y -= 1;
-
-                /* ================================================ */
-                /* Detect player shooting and spawn projectiles     */
-                /* ================================================ */
+                if (_controlLayout == 1)
+                {
+                    if (keyboard.IsKeyDown(Keys.D)) input.X += 1;
+                    if (keyboard.IsKeyDown(Keys.A)) input.X -= 1;
+                    if (keyboard.IsKeyDown(Keys.S)) input.Y += 1;
+                    if (keyboard.IsKeyDown(Keys.W)) input.Y -= 1;
+                }
+                else
+                {
+                    if (keyboard.IsKeyDown(Keys.Right)) input.X += 1;
+                    if (keyboard.IsKeyDown(Keys.Left)) input.X -= 1;
+                    if (keyboard.IsKeyDown(Keys.Down)) input.Y += 1;
+                    if (keyboard.IsKeyDown(Keys.Up)) input.Y -= 1;
+                }
 
                 if (mouse.LeftButton == ButtonState.Pressed)
                 {
-                    var d = (mouse.Position.ToVector2() - _rect.Location.ToVector2());
+                    var d = (mouse.Position.ToVector2() - Rect.Location.ToVector2());
                     d.Normalize();
-                    _gun.Shoot(gameTime, _rect.Location.ToVector2() + new Vector2(_rect.Width / 2, _rect.Height / 2), d, _currentRoom, this);
+                    //_gun.Shoot(gameTime, Rect.Location.ToVector2() + new Vector2(Rect.Width / 2, Rect.Height / 2), d, Room, this);
                 }
             }
             else
@@ -142,7 +158,7 @@ namespace YGR
                         shootDir.Y = 0.0f;
                     }
 
-                    _gun.Shoot(gameTime, _rect.Location.ToVector2() + new Vector2(_rect.Width/2, _rect.Height/2), shootDir, _currentRoom, this);
+                    _gun.Shoot(gameTime, Rect.Location.ToVector2() + new Vector2(Rect.Width/2, Rect.Height/2), shootDir, Room, this);
                 }
             }
 
@@ -152,34 +168,59 @@ namespace YGR
                 input.Normalize();
             }
 
-            // only check collision if we actually have some input...
+
+            /* ##########################################################################
+             * Speed and velocity handling
+             * ########################################################################## */
             int deltaTime = gameTime.ElapsedGameTime.Milliseconds;
             //Logger.Info(Velocity.ToString() + "    " + MaxVelocity.ToString());
             if (controls)
             {
-                _velocity += input * _acceleration * deltaTime;
+                Velocity += input * _acceleration * deltaTime;
             }
             else
             {
-                _velocity.X = Math.Sign(_velocity.X) * Math.Max(0.0f, Math.Abs(_velocity.X) - _deceleration.X * deltaTime);
-                _velocity.Y = Math.Sign(_velocity.Y) * Math.Max(0.0f, Math.Abs(_velocity.Y) - _deceleration.Y * deltaTime);
+                Velocity = new Vector2(
+                    Math.Sign(Velocity.X) * Math.Max(0.0f, Math.Abs(Velocity.X) - _deceleration.X * deltaTime),
+                    Math.Sign(Velocity.Y) * Math.Max(0.0f, Math.Abs(Velocity.Y) - _deceleration.Y * deltaTime));
             }
-            _velocity = Vector2.Clamp(_velocity, -_maxVelocity, _maxVelocity);
+            Velocity = Vector2.Clamp(Velocity, -_maxVelocity, _maxVelocity);
 
-            Vector2 contactNormal;
-            Point contactPoint;
-            if (_currentRoom.Collision.Intersect2(ref _rect, ref _velocity, deltaTime, out contactPoint, out contactNormal))
+            IList<Vector2> contactNormal;
+            IList<Point> contactPoint;
+            IList<IGameElement> who;
+            Rectangle rect = Rect;
+            Vector2 velocity = Velocity;
+
+            if(Collision.Intersect(this, deltaTime, out contactPoint, out contactNormal, out who))
             {
-                Logger.Info("impacted at " + contactPoint.ToString());
+                Logger.Info("Collided with something");
             }
 
-            //_velocity += input * deltaTime * _acceleration;
-            _rect.Location += (_velocity * deltaTime).ToPoint();
-        }
+            ///* ##########################################################################
+            // * Collision with other victim-sprites handling
+            // * ########################################################################## */
+            //foreach (var victim in Room.Victims)
+            //{
+            //    if(victim.Collision.Intersect(this, deltaTime, out contactPoint))
+            //    {
+            //        Logger.Info("impacted with someone");
+            //    }
+            //}
 
-        public bool Intersects(Rectangle other)
-        {
-            return other.Intersects(_rect);
+            ///* ##########################################################################
+            // * Collision with the room handling
+            // * ########################################################################## */
+            //Vector2 velocity = Velocity;
+            //if (Room.Collision.Intersect2(ref rect, ref velocity, deltaTime, out contactPoint, out contactNormal))
+            //{
+            //    Velocity = velocity;
+            //    Logger.Info("impacted at " + contactPoint.ToString());
+            //}
+
+            //Velocity += input * deltaTime * _acceleration;
+            rect.Location += (Velocity * deltaTime).ToPoint();
+            Rect = rect;
         }
 
         /// <summary>
@@ -196,8 +237,7 @@ namespace YGR
                 color = Color.OrangeRed;
             }
             spriteBatch.Draw(
-                _sprite,
-                _rect,
+                _sprite, Rect,
                 new Rectangle(_animationIndex * _window.Width, 0, _window.Width, _window.Height),
                 color
             );
@@ -211,12 +251,7 @@ namespace YGR
         /// <param name="spriteBatch">Mogogame SpriteBatch</param>
         public void DrawOutline(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)
         {
-            Factory_Debug.DrawRectangle(_rect.X, _rect.Y, _rect.Width, _rect.Height, 3, Color.OrangeRed, spriteBatch);
-        }
-
-        public Rectangle GetRect()
-        {
-            return _rect;
+            Factory_Debug.DrawRectangle(Rect.X, Rect.Y, Rect.Width, Rect.Height, 3, Color.OrangeRed, spriteBatch);
         }
     }
 }

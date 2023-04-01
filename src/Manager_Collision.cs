@@ -3,6 +3,7 @@ using Microsoft.Xna.Framework.Graphics;
 using SharpDX;
 using System;
 using System.Collections.Generic;
+using System.Reflection.Metadata.Ecma335;
 
 namespace YGR
 {
@@ -20,6 +21,8 @@ namespace YGR
     public static class Manager_Collision
     {
         public readonly static DateTime StartTime = DateTime.Now;
+        public static Color HitColor = Color.Red;
+        public static Color MissColor = Color.Green;
 
         public struct Record
         {
@@ -37,11 +40,6 @@ namespace YGR
         public static bool PointVsRect(Vector2 p, Rectangle rect)
         {
             return rect.Contains(p);
-        }
-
-        public static bool RectVsRect(Rectangle rect1, Rectangle rect2)
-        {
-            return rect1.Intersects(rect2);
         }
 
         public static bool RayVsRect(
@@ -105,10 +103,10 @@ namespace YGR
             return true;
         }
 
-        public static bool DynamicRectVsRect(
+        public static bool DynamicRectVsStaticRect(
             ref Rectangle movingRect, 
             Vector2 velocity,
-            int timeStep, 
+            int timeStepMS, 
             ref Rectangle staticRect, 
             out Point contactPoint, 
             out Vector2 contactNormal,
@@ -129,7 +127,7 @@ namespace YGR
                 movingRect.X + movingRect.Width / 2 + Math.Sign(velocity.X), 
                 movingRect.Y + movingRect.Height / 2 + Math.Sign(velocity.Y)
             );
-            Vector2 newVelocity = velocity * timeStep;
+            Vector2 newVelocity = velocity * timeStepMS;
             if (RayVsRect(ref origin, ref newVelocity, ref expanded, out contactPoint, out contactNormal, out uHit))
             {
                 contactPoint.X -= (int)contactNormal.X * movingRect.Width / 2;
@@ -140,9 +138,9 @@ namespace YGR
             return false;
         }
 
-        public static void ResolveDynamicRectVsRect(
+        public static void ResolveDynamicRectVsStaticRect(
             ref Vector2 velocity,
-            ref List<Manager_Collision.Record> records
+            ref List<Record> records
         )
         {
             foreach(var rec in records)
@@ -152,18 +150,16 @@ namespace YGR
             }
         }
 
-        public static bool DynamicRectVsRects(
+        public static bool DynamicRectVsStaticRects(
             ref Rectangle movingRect,
             ref Vector2 velocity,
             int timeStepMS,
             Rectangle[] staticRects,
-            Color[] staticRectsColor,
-            Color? hit,
-            Color? miss,
+            bool[] staticRectsHit,
             out List<Record> collided
         )
         {
-            if (!(staticRectsColor.Length == 0 || (staticRectsColor.Length == staticRects.Length && hit != null && miss != null)))
+            if (!(staticRects.Length == 0 || (staticRects.Length == staticRects.Length)))
                 Logger.Error("Colors array must be of same length as rect array or empty");
 
             Point contactPoint;
@@ -173,48 +169,18 @@ namespace YGR
             float uHit;
             for (int i = 0; i < staticRects.Length; ++i)
             {
-                bool result = DynamicRectVsRect(
+                bool result = DynamicRectVsStaticRect(
                     ref movingRect, velocity, timeStepMS,
                     ref staticRects[i], out contactPoint, out contactNormal, out uHit);
 
                 if (result)
                 {
                     collided.Add(new Record((DateTime.Now - StartTime).TotalMilliseconds, contactPoint, contactNormal, uHit));
-                    if (staticRectsColor.Length > 0) staticRectsColor[i] = (hit != null) ? hit.Value : Color.Red;
-                }
-                else
-                {
-                    if (staticRectsColor.Length > 0) staticRectsColor[i] = (hit != null) ? miss.Value : Color.Green;
+                    if (staticRectsHit.Length > 0) staticRectsHit[i] = true;
                 }
             }
 
-            ResolveDynamicRectVsRect(ref velocity, ref collided);
-
-            return collided.Count > 0;
-        }
-
-        public static bool DynamicRectVsRects(
-            ref Rectangle movingRect,
-            ref Vector2 velocity,
-            int timeStepMS,
-            Rectangle[] staticRects,
-            out List<Record> collided
-        )
-        {   Point contactPoint;
-            Vector2 contactNormal;
-            collided = new List<Record>();
-
-            float uHit;
-            for (int i = 0; i < staticRects.Length; ++i)
-            {
-                bool result = DynamicRectVsRect(
-                    ref movingRect, velocity, timeStepMS,
-                    ref staticRects[i], out contactPoint, out contactNormal, out uHit);
-
-                if (result) collided.Add(new Record((DateTime.Now - StartTime).TotalMilliseconds, contactPoint, contactNormal, uHit));
-            }
-
-            ResolveDynamicRectVsRect(ref velocity, ref collided);
+            ResolveDynamicRectVsStaticRect(ref velocity, ref collided);
 
             return collided.Count > 0;
         }
@@ -222,7 +188,7 @@ namespace YGR
         public static bool FastRectVsRect(
             ref Rectangle myRect,
             Vector2 velocity,
-            int timeStep,
+            int timeStepMS,
             ref Rectangle otherRect,
             out Point contactPoint,
             out Vector2 contactNormal
@@ -242,14 +208,12 @@ namespace YGR
             return collision;
         }
 
-        public static bool FastRectVsRects(
+        public static bool FastRectVsStaticRects(
             ref Rectangle myRect,
             Vector2 velocity,
-            int timeStep,
+            int timeStepMS,
             Rectangle[] staticRects,
-            Color[] staticRectsColor,
-            Color? hit,
-            Color? miss,
+            bool[] staticRectsHit,
             out List<Record> collided
         )
         {
@@ -258,16 +222,12 @@ namespace YGR
             collided = new List<Record>();
             for (int i = 0; i < staticRects.Length; ++i)
             {
-                bool result = FastRectVsRect(ref myRect, velocity, timeStep, ref staticRects[i], out contactPoint, out contactNormal);
+                bool result = FastRectVsRect(ref myRect, velocity, timeStepMS, ref staticRects[i], out contactPoint, out contactNormal);
                 {
                     if (result)
                     {
                         collided.Add(new Record((DateTime.Now - StartTime).TotalMilliseconds, contactPoint, contactNormal, 0));
-                        if (staticRectsColor.Length > 0) staticRectsColor[i] = (hit != null) ? hit.Value : Color.Red;
-                    }
-                    else
-                    {
-                        if (staticRectsColor.Length > 0) staticRectsColor[i] = (hit != null) ? miss.Value : Color.Green;
+                        if (staticRectsHit.Length > 0) staticRectsHit[i] = true;
                     }
                 }
             }
@@ -275,24 +235,31 @@ namespace YGR
             return collided.Count > 0;
         }
 
-        public static bool FastRectVsRects(
-            ref Rectangle myRect,
-            Vector2 velocity,
-            int timeStep,
-            Rectangle[] staticRects,
-            out Point contactPoint,
-            out Vector2 contactNormal
-        )
+        public static bool MovingRectVsMovingRect(
+            ref Rectangle myRect, ref Vector2 myVelocity, float myMass,
+            ref Rectangle otherRect, ref Vector2 otherVelocity, float otherMass,
+            float cr, int timeStepMS,
+            out Point contactPoint)
         {
-            contactPoint = Point.Zero;
-            contactNormal = Vector2.Zero;
-            for (int i = 0; i < staticRects.Length; ++i)
-            {
-                if (FastRectVsRect(ref myRect, velocity, timeStep, ref staticRects[i], out contactPoint, out contactNormal))
-                    return true;
-            }
+            Vector2 contactNormal = Vector2.Zero;
+            float uHit = 0;
+            // first assume that the other one is static with respect to the relative speed
+            bool contact = DynamicRectVsStaticRect(
+                ref myRect, myVelocity - otherVelocity, timeStepMS, ref otherRect, 
+                out contactPoint, out contactNormal, out uHit);
 
-            return false;
+            if (!contact) return false;
+
+            // then resolve the speeds according to the elastic impact rules
+            float massSum = myMass + otherMass;
+            Vector2 f = myMass * myVelocity + otherMass * otherVelocity;
+            Vector2 myNewVelocity = (cr * otherMass * (otherVelocity - myVelocity) + f) / massSum;
+            Vector2 otherNewVelocity = (cr * myMass * (myVelocity - otherVelocity) + f) / massSum;
+
+            myVelocity = myNewVelocity;
+            otherVelocity = otherNewVelocity;
+
+            return true;
         }
     }
 }
