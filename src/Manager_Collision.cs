@@ -15,6 +15,7 @@ namespace YGR
         public readonly static DateTime StartTime = DateTime.Now;
         public static Color HitColor = Color.Red;
         public static Color MissColor = Color.Green;
+        public static int DrawTimeoutMS = 250;
 
         public struct Record
         {

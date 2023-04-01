@@ -26,8 +26,7 @@ namespace YGR
             string resourceFile,
             int tileWidth,
             int tileHeight,
-            Point location,
-            double drawTimeoutMS = 250
+            Point location
         )
         {
             _tileWidth = tileWidth;
@@ -43,7 +42,6 @@ namespace YGR
             load();
 
             _location = location;
-            _drawTimeoutMS = drawTimeoutMS;
             _records = new List<Manager_Collision.Record>();
         }
 
@@ -246,7 +244,7 @@ namespace YGR
                         3, color, spriteBatch);
             }
 
-            _records.RemoveAll(rec => (rec.TimeStampMS + _drawTimeoutMS < (DateTime.Now - Manager_Collision.StartTime).TotalMilliseconds));
+            _records.RemoveAll(rec => (rec.TimeStampMS + Manager_Collision.DrawTimeoutMS < (DateTime.Now - Manager_Collision.StartTime).TotalMilliseconds));
             foreach (var rec in _records)
             {
                 Factory_Debug.DrawPoint(

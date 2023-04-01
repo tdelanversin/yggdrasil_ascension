@@ -1,4 +1,6 @@
 ﻿using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
+using System;
 using System.Collections.Generic;
 
 namespace YGR
@@ -8,10 +10,13 @@ namespace YGR
         public float Mass { get; }
         public float Cr { get; }
 
+        private List<Manager_Collision.Record> _records;
+
         public X_CollisionModel_Victim(float mass, float cr) 
         {
             Mass = (mass == 0) ? float.Epsilon : mass;
             Cr = cr;
+            _records = new List<Manager_Collision.Record>();
         }
 
         public bool Intersect(IVictim me, int timeStepMS, out IList<Point> contactPoint, out IList<Vector2> contactNormal, out IList<IGameElement> who)
@@ -22,7 +27,6 @@ namespace YGR
 
             bool result = false;
             Point point;
-            Vector2 normal;
             Rectangle myRect = me.Rect;
             Vector2 myVelocity = me.Velocity;
             Rectangle otherRect;
@@ -45,9 +49,14 @@ namespace YGR
                     me.Velocity = myVelocity;
                     victim.Velocity = otherVelocity;
                     Logger.Info("impacted with someone at " + contactPoint.ToString());
+
+                    _records.Add(new Manager_Collision.Record(
+                        (DateTime.Now - Manager_Collision.StartTime).TotalMilliseconds,
+                        point, Vector2.Zero, 0));
                 }
             }
 
+            Vector2 normal;
             if (me.Room.Collision.Intersect(ref myRect, ref myVelocity, timeStepMS, out point, out normal))
             {
                 result = true;
@@ -63,6 +72,16 @@ namespace YGR
             me.Rect = rect;
 
             return result;
+        }
+
+        public void DrawOutline(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)
+        {
+            _records.RemoveAll(rec => (rec.TimeStampMS + Manager_Collision.DrawTimeoutMS < (DateTime.Now - Manager_Collision.StartTime).TotalMilliseconds));
+            foreach (var rec in _records)
+            {
+                Factory_Debug.DrawPoint(
+                    rec.ContactPoint.X, rec.ContactPoint.Y, 17, Color.Cyan, spriteBatch);
+            }
         }
     }
 }

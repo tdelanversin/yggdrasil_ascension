@@ -147,6 +147,7 @@ namespace YGR
         void IGameElement.DrawOutline(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)
         {
             Factory_Debug.DrawRectangle(Rect.X, Rect.Y, _window.Width, _window.Height, 3, Color.BlueViolet, spriteBatch);
+            Collision.DrawOutline(gameTime, globalOffset, spriteBatch);
         }
 
         public X_LevelElements WhatAreYou()

@@ -229,6 +229,7 @@ namespace YGR
         public void DrawOutline(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)
         {
             Factory_Debug.DrawRectangle(Rect.X, Rect.Y, Rect.Width, Rect.Height, 3, Color.OrangeRed, spriteBatch);
+            Collision.DrawOutline(gameTime, globalOffset, spriteBatch);
         }
     }
 }
