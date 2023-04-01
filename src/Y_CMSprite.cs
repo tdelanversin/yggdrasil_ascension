@@ -11,7 +11,6 @@ namespace YGR
         Texture2D _sprite;
         Rectangle _window;
         Dictionary<string, int[]> _animations;
-        float _frameDuration;
         int _animationIndex;
         IShooter _gun;
         PlayerIndex? _playerIndex;
@@ -161,6 +160,8 @@ namespace YGR
                     _gun.Shoot(gameTime, Rect.Location.ToVector2() + new Vector2(Rect.Width/2, Rect.Height/2), shootDir, Room, this);
                 }
             }
+
+            _gun.Update(gameTime);
 
             if (input != Vector2.Zero) controls = true;
             if (input.LengthSquared() > 1)

@@ -162,16 +162,18 @@ namespace YGR
         public string Name { get; set; }
         public double TimeCreated { get; set; }
         public Vector2 Position { get; private set; }
+        public X_CollisionModel_Projectile Collision { get; }
+        public Vector2 Velocity { get; set; }
+        public IWalkable Room { get; set; }
+        public Rectangle Rect { get; set; }
+        public IGameElement WhoFiredMe { get; }
 
         private Texture2D _sprite;
         public Rectangle _window;
         private int _animationIndex;
         private Vector2 _direction;
-        private double _speed;
         private bool _isEnemy;
-        private IWalkable _room;
         X_ConnectorSide _lastSide;
-        private IGameElement _who;
 
         public Y_ShotGunProjectile(
             Vector2 position,
@@ -185,37 +187,56 @@ namespace YGR
             _animationIndex = 0;
             Position = position;
             _direction = direction;
-            _speed = .7;
+            Velocity = 0.7f * direction;
             TimeCreated = timeCreated;
             _isEnemy = false;
             Name = "StarterProjectile";
-            _room = room;
+            Room = room;
             DeleteNext = false;
+            Collision = new X_CollisionModel_Projectile(0.1f, 1.0f);
 
-            _room.Projectiles.Add(this);
-            _who = who;
+            Rect = new Rectangle((int)position.X - _window.Width / 2, (int)position.Y - _window.Height / 2, _window.Width, _window.Height);
+            Room.Projectiles.Add(this);
+            WhoFiredMe = who;
+
         }
 
         public void Update(GameTime gameTime) {
-            IWalkable who = null;
-            Vector2 where = Vector2.Zero;
-            if (checkColWPlayer())
+
+            /* ##########################################################################
+             * Collision with everything handling (takes care of location update as well)
+             * ########################################################################## */
+            IList<Vector2> contactNormal;
+            IList<Point> contactPoint;
+            IList<IGameElement> who;
+            int timeStepMS = (int)gameTime.ElapsedGameTime.TotalMilliseconds;
+            if (Collision.Intersect(this, timeStepMS, out contactPoint, out contactNormal, out who))
             {
-                DeleteNext = true;
-                return;
+                Logger.Info("Collided with something");
+                foreach (var obj in who)
+                {
+                    if (obj.WhatAreYou() == X_LevelElements.Victim)
+                    {
+                        ((IVictim)obj).HitInLastLoop = true;
+                    }
+                }
             }
 
-            Position = _room.Clamp(_window, Position, _direction * (float)(_speed * gameTime.ElapsedGameTime.TotalMilliseconds), ref who, ref where );
-            if(who != null)
-            {
-                DeleteNext = true;
-            }
+            // ========== Old way: ==========
+            //Position = _room.Clamp(_window, Position, _direction * (float)(_speed * gameTime.ElapsedGameTime.TotalMilliseconds), ref who, ref where );
+            //if(who != null)
+            //{
+            //    DeleteNext = true;
+            //}
+
+            /* ########################################################################## */
+
             _animationIndex = (int)(5 - (gameTime.TotalGameTime.TotalMilliseconds - TimeCreated) / 300);
 
-            var whatAreYou = _room.WhatAreYou();
+            var whatAreYou = Room.WhatAreYou();
             if (whatAreYou == X_LevelElements.Connector)
             {
-                var connector = (Y_Connector)_room;
+                var connector = (Y_Connector)Room;
                 // check if we are still inside the room
                 if (!connector.IsInside(Position))
                 {
@@ -223,9 +244,9 @@ namespace YGR
                     /*
                      * TODO: this is sensitive to movement speed!!!
                      */
-                    var oldRoom = _room.Name;
-                    _room = connector.GetRoom(_lastSide);
-                    Logger.Info("Projectile moves from room [" + oldRoom + "] to room [" + _room.Name + "]");
+                    var oldRoom = Room.Name;
+                    Room = connector.GetRoom(_lastSide);
+                    Logger.Info("Projectile moves from room [" + oldRoom + "] to room [" + Room.Name + "]");
                 }
                 else
                 {
@@ -237,16 +258,16 @@ namespace YGR
             {
                 // check if we are inside one of the connector pads
                 // if we are => switch the room
-                var room = (Y_Room)_room;
+                var room = (Y_Room)Room;
                 foreach (var conn in room.Connectors)
                 {
                     if (conn.IsOnPad(Position, ref _lastSide))
                     {
                         if (conn.IsInside(Position))
                         {
-                            var oldRoom = _room.Name;
-                            _room = conn;
-                            Logger.Info("Projectile move from room [" + oldRoom + "] to room [" + _room.Name + "]");
+                            var oldRoom = Room.Name;
+                            Room = conn;
+                            Logger.Info("Projectile move from room [" + oldRoom + "] to room [" + Room.Name + "]");
                         }
                         break;
                     }
@@ -254,26 +275,10 @@ namespace YGR
             }
         }
 
-        bool checkColWPlayer()
-        {
-            Rectangle rect = GetRect();
-            foreach(var victim in _room.Victims)
-            {
-                if (victim == _who) continue;
-
-                if (victim.Intersects(rect))
-                {
-                    victim.HitInLastLoop = true;
-                    return true;
-                }
-            }
-            return false;
-        }
-
         public void Draw(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch) {
             var destinationRectangle = new Rectangle(
-                (int)(Position.X - globalOffset.X - _window.Width / 2),
-                (int)(Position.Y - globalOffset.Y - _window.Height / 2),
+                Rect.X - (int)globalOffset.X,
+                Rect.Y - (int)globalOffset.Y,
                 _window.Width,
                 _window.Height
             );
@@ -300,22 +305,7 @@ namespace YGR
         /// <param name="spriteBatch">Mogogame SpriteBatch</param>
         void IGameElement.DrawOutline(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)
         {
-            Factory_Debug.DrawRectangle((int)Position.X - _window.Width/2, (int)Position.Y - _window.Height/2, _window.Width, _window.Height, 3, Color.BlueViolet, spriteBatch);
-        }
-
-        public bool Intersects(Rectangle other)
-        {
-            return false;
-        }
-
-        public Vector2 IntersectionPoint(Vector2 pos, Vector2 dp)
-        {
-            return Vector2.Zero;
-        }
-
-        public Rectangle GetRect()
-        {
-            return new Rectangle((int)Position.X - _window.Width/2, (int)Position.Y - _window.Height/2, _window.Width, _window.Height);
+            Factory_Debug.DrawRectangle(Rect.X, Rect.Y, Rect.Width, Rect.Height, 3, Color.BlueViolet, spriteBatch);
         }
 
         public X_LevelElements WhatAreYou()

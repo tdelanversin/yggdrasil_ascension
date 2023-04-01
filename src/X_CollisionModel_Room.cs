@@ -18,8 +18,6 @@ namespace YGR
         int _tileWidth;
         int _tileHeight;
 
-        double _drawTimeoutMS;
-
         private List<Manager_Collision.Record> _records;
 
         public X_CollisionModel_Room(
