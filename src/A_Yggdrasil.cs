@@ -60,8 +60,8 @@ namespace YGR
             };
 
             _player = new List<Y_Sprite>{
-                new Y_Sprite(
-                    PlayerIndex.One,
+                new Ninja(
+                    null,
                     Content.Load<Texture2D>("tester"),
                     new Rectangle(0, 0, 73, 102),
                     0.04f,
@@ -73,8 +73,12 @@ namespace YGR
                     new Dictionary<string, int[]> {
                         { "stand", new int[] { 0, 1, 8, 9 } },
                         { "walk_left", new int[] { 2, 3, 4 } },
-                        { "walk_right", new int[] { 5, 6, 7 } }},
-                    new Y_WideGun()
+                        { "walk_right", new int[] { 5, 6, 7 } },
+                        { "dash_left", new int[] { 10, 11, 12 } },
+                        { "dash_right", new int[] { 13, 14, 15 } },
+                        { "shoot_left", new int[] { 16, 17, 18 } },
+                        { "shoot_right", new int[] { 19, 20, 21 } }},
+                    new Y_StarterGun()
                 ),
                 new Y_Sprite(
                     PlayerIndex.Two,
@@ -159,14 +163,14 @@ namespace YGR
             {
                 room.Draw(gameTime, zero, _spriteBatch);
                 // uncomment for debugging
-                room.DrawOutline(gameTime, zero, _spriteBatch);
+                //room.DrawOutline(gameTime, zero, _spriteBatch);
             }
 
             foreach (var con in _connectors)
             {
                 con.Draw(gameTime, zero, _spriteBatch);
                 // uncomment for debugging
-                con.DrawOutline(gameTime, zero, _spriteBatch);
+                //con.DrawOutline(gameTime, zero, _spriteBatch);
             }
 
             Manager_Projectile.Draw(gameTime, zero, _spriteBatch);

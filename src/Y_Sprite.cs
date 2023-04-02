@@ -11,10 +11,11 @@ namespace YGR
         Texture2D _sprite;
         Rectangle _window;
         Dictionary<string, int[]> _animations;
+        public float _velocity;
         float _frameDuration;
         int _animationIndex;
         IShooter _gun;
-        PlayerIndex? _playerIndex;
+        public PlayerIndex? _playerIndex;
 
         public IWalkable Room { get; set; }
         X_ConnectorSide _lastSide;
@@ -83,7 +84,7 @@ namespace YGR
         /// Regular Monogame Update method
         /// </summary>
         /// <param name="gameTime">Monogame GameTime</param>
-        public void Update(GameTime gameTime)
+        public virtual void Update(GameTime gameTime)
         {
             Vector2 input = Vector2.Zero;
             MouseState mouse = Mouse.GetState();
