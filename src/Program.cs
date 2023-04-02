@@ -42,9 +42,9 @@ class Program
         var random = new Random();
         var targetLogFile = new FileInfo(
 #if COLLISION_TEST
-            "./test_[" +
+            "logs/test_[" +
 #else
-            "./log_[" +
+            "logs/log_[" +
 #endif
             time.Year.ToString() + 
             time.Month.ToString().PadLeft(2, '0') + 
