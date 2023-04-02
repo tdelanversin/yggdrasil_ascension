@@ -82,6 +82,7 @@ namespace YGR
                     2 // control input
                 )
             };
+            _camera.Players = _player;
         }
 
         protected override void Update(GameTime gameTime)
@@ -91,7 +92,7 @@ namespace YGR
             if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed ||
                 Keyboard.IsPressed(Keys.Escape))
                 Exit();
-            
+
             if (Keyboard.HasBeenPressed(Keybinds.ToggleFullscreen))
                 Util.ToggleFullscreen(_graphics, Window);
 

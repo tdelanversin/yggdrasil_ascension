@@ -2,9 +2,16 @@
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using System;
+using System.Collections.Generic;
 
 namespace YGR
 {
+    public enum CameraMode
+    {
+        Follow = 0, // Follow players
+        Room,       // Focus on a room
+        Manual      // Control pos and zoom with keybinds
+    }
     public class Y_Camera
     {
         public float Zoom { get; set; }
@@ -12,9 +19,12 @@ namespace YGR
         public Rectangle Bounds { get; protected set; }
         public Rectangle VisibleArea { get; protected set; }
         public Matrix Transform { get; protected set; }
+        public CameraMode Mode { get; set; }
+        public Y_Room Room { get; protected set; }
+        public IList<IVictim> Players { get; set; }
 
         private const float minZoom = .25f;
-        private const float maxZoom = 2f;
+        private const float maxZoom = 1f;
         private const float zoomSpeed = 0.05f;
         private const float panSpeed = 1024;
 
@@ -59,18 +69,13 @@ namespace YGR
             Position = newPosition;
         }
 
-        public void AdjustZoom(float zoomAmount)
+        public void UpdateZoom(float zoom)
         {
-            Zoom += zoomAmount;
-            if (Zoom < minZoom) Zoom = minZoom;
-            if (Zoom > maxZoom) Zoom = maxZoom;
+            Zoom = Math.Clamp(zoom, minZoom, maxZoom);
         }
 
-        public void UpdateCamera(Viewport bounds, float deltaTime)
+        private void keyboardMove(float deltaTime)
         {
-            Bounds = bounds.Bounds;
-            UpdateMatrix();
-
             Vector2 cameraMovement = Vector2.Zero;
             float moveSpeed = deltaTime * panSpeed / (float)Math.Sqrt(Zoom);
 
@@ -78,12 +83,67 @@ namespace YGR
             if (Keyboard.IsPressed(Keybinds.CameraMoveRight)) cameraMovement.X = moveSpeed;
             if (Keyboard.IsPressed(Keybinds.CameraMoveUp)) cameraMovement.Y = -moveSpeed;
             if (Keyboard.IsPressed(Keybinds.CameraMoveDown)) cameraMovement.Y = moveSpeed;
+            MoveCamera(cameraMovement);
 
             previousMouseWheelValue = currentMouseWheelValue;
             currentMouseWheelValue = Mouse.GetState().ScrollWheelValue;
-            AdjustZoom(Math.Clamp(currentMouseWheelValue - previousMouseWheelValue, -1, 1) * zoomSpeed);
+            UpdateZoom(Zoom + Math.Clamp(currentMouseWheelValue - previousMouseWheelValue, -1, 1) * zoomSpeed);
+        }
 
-            MoveCamera(cameraMovement);
+        private void centerOnPlayers()
+        {
+            if (Players == null || Players.Count < 1) return;
+
+            var left = Players[0].Rect.X;
+            var right = Players[0].Rect.X;
+            var top = Players[0].Rect.Y;
+            var bot = Players[0].Rect.Y;
+
+            Vector2 playerMeanPos = Vector2.Zero;
+            foreach (var player in Players)
+            {
+                playerMeanPos += new Vector2(player.Rect.X, player.Rect.Y);
+                left = Math.Min(player.Rect.X, left);
+                right = Math.Max(player.Rect.X, right);
+                top = Math.Min(player.Rect.Y, top);
+                bot = Math.Max(player.Rect.Y, bot);
+            }
+
+            // Update camera position
+            playerMeanPos /= Players.Count;
+            Position = playerMeanPos;
+            // Console.WriteLine(playerMeanPos);
+
+            // Set zoom level to fit all players
+            var playerStretch = Math.Max((right - left) / Bounds.Width, (bot - top) / Bounds.Height);
+            UpdateZoom(.75f / playerStretch);
+        }
+
+        public void UpdateCamera(Viewport bounds, float deltaTime)
+        {
+            Bounds = bounds.Bounds;
+            UpdateMatrix();
+
+            switch (Mode)
+            {
+                case CameraMode.Manual:
+                    keyboardMove(deltaTime);
+                    break;
+
+                case CameraMode.Follow:
+                    centerOnPlayers();
+                    break;
+
+                case CameraMode.Room:
+                    // TODO: Focus on a room
+                    break;
+            }
+        }
+
+        public void focusOnRoom(Y_Room room)
+        {
+            Room = room;
+            Mode = CameraMode.Room;
         }
     }
 }
