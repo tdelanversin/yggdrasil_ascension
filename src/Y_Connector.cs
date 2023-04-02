@@ -128,7 +128,7 @@ namespace YGR
 
             KeyboardState keyboard = Keyboard.GetState();
 
-            if (keyboard.IsKeyDown(Keys.O))
+            if (keyboard.IsKeyDown(Keybinds.ToggleConnectors))
             {
                 if (State == Y_ConnectorState.Closed)
                 {
