@@ -1,7 +1,6 @@
 ﻿using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using System.Collections.Generic;
-using System.ComponentModel;
 
 namespace YGR
 {
@@ -11,6 +10,7 @@ namespace YGR
     public static class Factory_Rooms
     {
         private static bool _initialized = false;
+
         private static Texture2D _room_0;
         private static Texture2D _room_1;
         private static Texture2D _room_2;
@@ -32,7 +32,6 @@ namespace YGR
         public static Y_Room Room_0(string name)
         {
             check();
-
             return new Y_Room(
                 /* name of the room */
                 name,
@@ -42,6 +41,7 @@ namespace YGR
                 new X_Polygon(
                     new float[][,] {
                         /*outer border*/
+
                         new float[,] {{ 40.0f, 51.0f }, { 40.0f , 1045.0f }, { 1884.0f , 1045.0f }, { 1884.0f, 51.0f } },
                         /*vertical rectangle on the left*/
                         new float[,] {{ 298.0f, 278.0f }, { 300.0f, 816.0f }, { 419.0f, 816.0f }, { 419, 278.0f } },

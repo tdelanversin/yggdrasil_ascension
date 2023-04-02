@@ -10,11 +10,10 @@ namespace YGR
     public interface IGameElement
     {
         public Vector2 Position { get; }
+        public Rectangle Rect { get; set; }
         public void Update(GameTime gameTime);
         public void DrawOutline(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch);
         public void Draw(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch);
         public X_LevelElements WhatAreYou();
-        public Rectangle GetRect();
-        public bool Intersects(Rectangle rect);
     }
 }

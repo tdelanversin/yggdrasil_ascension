@@ -1,11 +1,8 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics.Metrics;
 using System.Linq;
-using System.Runtime.Intrinsics.Arm;
 
 namespace YGR
 {
@@ -24,6 +21,8 @@ namespace YGR
         public string Name { get; }
         // the background color as required by IDrawable
         private Color BackgroundColor { get; set; }
+        public X_CollisionModel_Room Collision { get; }
+        public Rectangle Rect { get; set; }
 
         // The list with all connector points located on the walls of this room
         private Dictionary<X_ConnectorSide, List<X_ConnectorPoint>> _connectorPoints;
@@ -195,7 +194,14 @@ namespace YGR
         {
             // TODO: this one needs to deal with the tiles of the walls
             // then goto X_CollisionManager and do sofisticated tile collision detection with the relevant tiles
-            return other.Intersects(GetRect());
+            return other.Intersects(Rect);
+        }
+
+        public bool Intersects(ref Rectangle movingRect, ref Vector2 velocity, int timeStepMS, out Point contactPoint, out Vector2 contactNormal)
+        {
+            contactNormal = Vector2.Zero;
+            contactPoint = Point.Zero;
+            return false;
         }
 
         /// <summary>
@@ -205,11 +211,6 @@ namespace YGR
         public X_LevelElements WhatAreYou()
         {
             return X_LevelElements.Room;
-        }
-
-        public Rectangle GetRect()
-        {
-            return new Rectangle((int)Position.X, (int)Position.Y, Width, Height);
         }
     }
 }

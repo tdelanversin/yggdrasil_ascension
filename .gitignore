@@ -49,6 +49,8 @@ _ReSharper*/
 
 # Visual Studio
 src/.vs/*
+.vs/*
+*.sln
 
 #monodroid private beta
 monodroid*.msi

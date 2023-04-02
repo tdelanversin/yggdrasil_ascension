@@ -1,5 +1,4 @@
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
 
 /*
  * Interface to be implemented by all elements that are a projectile
@@ -18,6 +17,10 @@ namespace YGR
         //public bool _isEnemy { get; set; }
         public string Name { get; set; }
         public bool DeleteNext { get; set; }
+        public X_CollisionModel_Projectile Collision { get; }
+        public Vector2 Velocity { get; set; }
+        public IWalkable Room { get; set; }
+        public IGameElement WhoFiredMe { get; }
 
         //public void Update(GameTime gameTime);
         //public void Draw(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch);

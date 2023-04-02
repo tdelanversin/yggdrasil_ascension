@@ -3,6 +3,7 @@ using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using System.Collections.Generic;
 using System;
+using Yggdrasil;
 
 namespace YGR
 {
@@ -44,10 +45,11 @@ namespace YGR
         public Y_Room LeftOrBottomRoom { get; private set; }
         /* The Y_Room attached on the right or the top side */
         public Y_Room RightOrTopRoom { get; private set; }
+        public X_CollisionModel_Room Collision { get; }
 
         // outline of the connector (the same as the texture size)
         // use this to check if a point is on the connector or not
-        Rectangle _rectangle;
+        public Rectangle Rect { get; set; }
         // essentially the same as _rectangle but should be used for the sprite animations
         Rectangle _window;
         
@@ -101,7 +103,7 @@ namespace YGR
             _animations = animations;
             _window = window;
 
-            _rectangle = _window;
+            Rect = _window;
 
             if(State == Y_ConnectorState.Closed)
             {
@@ -476,7 +478,7 @@ namespace YGR
         {
             int localX = (int)(point.X - Position.X);
             int localY = (int)(point.Y - Position.Y);
-            return _rectangle.Contains(localX, localY);
+            return Rect.Contains(localX, localY);
         }
 
         public bool Intersects(Rectangle other)
@@ -484,6 +486,13 @@ namespace YGR
             // TODO: this one needs to deal with the tiles of the walls
             // then goto X_CollisionManager and do sofisticated tile collision detection with the relevant tiles
             return other.Intersects(GetRect());
+        }
+
+        public bool Intersects(ref Rectangle movingRect, ref Vector2 velocity, int timeStepMS, out Point contactPoint, out Vector2 contactNormal)
+        {
+            contactPoint = Point.Zero;
+            contactNormal = Vector2.Zero;
+            return false;
         }
 
         /// <summary>

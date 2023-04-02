@@ -68,7 +68,9 @@ namespace YGR
                     PlayerIndex.One,
                     Content.Load<Texture2D>("tester"),
                     new Rectangle(0, 0, 73, 102),
-                    400.0f,
+                    0.04f,
+                    0.75f,
+                    0.75f,
                     new Vector2(200, 350),
                     _rooms["room_center"],
                     200.0f,
@@ -76,13 +78,15 @@ namespace YGR
                         { "stand", new int[] { 0, 1, 8, 9 } },
                         { "walk_left", new int[] { 2, 3, 4 } },
                         { "walk_right", new int[] { 5, 6, 7 } }},
-                    new Y_StarterGun()
+                    new Y_WideGun()
                 ),
                 new Y_Sprite(
                     PlayerIndex.Two,
                     Content.Load<Texture2D>("tester"),
                     new Rectangle(0, 0, 73, 102),
-                    400.0f,
+                    0.04f,
+                    0.75f,
+                    0.75f,
                     new Vector2(170, 500),
                     _rooms["room_center"],
                     200.0f,
