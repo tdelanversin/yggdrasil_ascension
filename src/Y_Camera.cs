@@ -24,7 +24,8 @@ namespace YGR
         public IList<IVictim> Players { get; set; }
 
         private const float minZoom = .25f;
-        private const float maxZoom = 1f;
+        // Maximum zoom levels for...      { Follow, Room, Manual }
+        private readonly float[] maxZoom = { 1.25f, 1.75f, 2.00f };
         private const float zoomSpeed = 0.05f;
         private const float panSpeed = 1024;
 
@@ -71,7 +72,7 @@ namespace YGR
 
         public void UpdateZoom(float zoom)
         {
-            Zoom = Math.Clamp(zoom, minZoom, maxZoom);
+            Zoom = Math.Clamp(zoom, minZoom, maxZoom[(int)Mode]);
         }
 
         private void keyboardMove(float deltaTime)
@@ -135,7 +136,7 @@ namespace YGR
                     break;
 
                 case CameraMode.Room:
-                    // TODO: Focus on a room
+                    // All good here, we only update once when setting the room
                     break;
             }
         }
@@ -144,6 +145,9 @@ namespace YGR
         {
             Room = room;
             Mode = CameraMode.Room;
+            Position = new Vector2(Room.Position.X + Room.Width / 2, Room.Position.Y + Room.Height / 2);
+            var stretch = Math.Max((float)Room.Width / Bounds.Width, (float)Room.Height / Bounds.Height);
+            UpdateZoom(.95f / stretch);
         }
     }
 }
