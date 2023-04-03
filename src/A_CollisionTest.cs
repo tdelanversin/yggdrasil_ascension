@@ -22,9 +22,6 @@ namespace YGR
         private GraphicsDeviceManager _graphics;
         private SpriteBatch _spriteBatch;
 
-        private const int RES_X = 1920;
-        private const int RES_Y = 1000;
-
         private Y_CMRoom _room;
         private List<Y_CMSprite> _player;
 
@@ -37,9 +34,7 @@ namespace YGR
 
         protected override void Initialize()
         {
-            _graphics.PreferredBackBufferWidth = RES_X;
-            _graphics.PreferredBackBufferHeight = RES_Y;
-            _graphics.ApplyChanges();
+            Util.ToggleFullscreen(_graphics, Window);
 
             Factory_Rooms.Initialize(Content);
             Factory_Connectors.Initialize(Content);
@@ -99,6 +94,10 @@ namespace YGR
         protected override void Update(GameTime gameTime)
         {
             Keyboard.Update();
+
+            if (Keyboard.HasBeenPressed(Keybinds.ToggleFullscreen))
+                Util.ToggleFullscreen(_graphics, Window);
+
             foreach(var player in _player)
             {
                 player.Update(gameTime);

@@ -9,6 +9,7 @@ namespace YGR
         public static Keys CameraMoveDown = Keys.G;
         public static Keys CameraMoveRight = Keys.H;
 
+        public static Keys ToggleFullscreen = Keys.F11;
         public static Keys ToggleConnectors = Keys.O;
     }
 }

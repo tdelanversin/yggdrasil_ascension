@@ -17,9 +17,6 @@ namespace YGR
         private GraphicsDeviceManager _graphics;
         private SpriteBatch _spriteBatch;
 
-        private const int RES_X = 1920;
-        private const int RES_Y = 1000;
-
         Texture2D _background;
         Y_Camera _camera;
         IList<Y_Sprite> _player;
@@ -35,12 +32,11 @@ namespace YGR
 
         protected override void Initialize()
         {
-            _graphics.PreferredBackBufferWidth = RES_X;
-            _graphics.PreferredBackBufferHeight = RES_Y;
-            _graphics.ApplyChanges();
+            Util.ToggleFullscreen(_graphics, Window);
 
-            _camera = new Y_Camera(new Vector2(RES_X / 2, RES_Y / 2), RES_X, RES_Y);
-            Logger.Info("Set resolution to " + RES_X.ToString() + "x" + RES_Y.ToString());
+            var res_x = _graphics.PreferredBackBufferWidth;
+            var res_y = _graphics.PreferredBackBufferHeight;
+            _camera = new Y_Camera(new Vector2(res_x / 2, res_y / 2), res_x, res_y);
 
             Factory_Rooms.Initialize(Content);
             Factory_Connectors.Initialize(Content);
@@ -110,8 +106,13 @@ namespace YGR
         protected override void Update(GameTime gameTime)
         {
             Keyboard.Update();
-            if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.IsPressed(Keys.Escape))
+
+            if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed ||
+                Keyboard.IsPressed(Keys.Escape))
                 Exit();
+            
+            if (Keyboard.HasBeenPressed(Keybinds.ToggleFullscreen))
+                Util.ToggleFullscreen(_graphics, Window);
 
             float deltaTime = (float)gameTime.ElapsedGameTime.TotalSeconds;
 
