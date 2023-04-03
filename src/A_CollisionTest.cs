@@ -98,6 +98,7 @@ namespace YGR
 
         protected override void Update(GameTime gameTime)
         {
+            Keyboard.Update();
             foreach(var player in _player)
             {
                 player.Update(gameTime);

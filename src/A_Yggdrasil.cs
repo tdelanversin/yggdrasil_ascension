@@ -109,7 +109,8 @@ namespace YGR
 
         protected override void Update(GameTime gameTime)
         {
-            if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
+            Keyboard.Update();
+            if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.IsPressed(Keys.Escape))
                 Exit();
 
             float deltaTime = (float)gameTime.ElapsedGameTime.TotalSeconds;
