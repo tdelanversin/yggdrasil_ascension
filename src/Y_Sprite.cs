@@ -9,7 +9,7 @@ namespace YGR
     public class Y_Sprite : IVictim
     {
         Texture2D _sprite;
-        Rectangle _window;
+        public Rectangle _window;
         Dictionary<string, int[]> _animations;
         public float _velocity;
         float _frameDuration;
@@ -34,6 +34,8 @@ namespace YGR
         private Vector2 _deceleration;
         private Vector2 _maxVelocity;
 
+        public Vector2 input;
+
         public Y_Sprite(
             PlayerIndex? playerIndex,
             Texture2D texture,
@@ -51,8 +53,10 @@ namespace YGR
             _sprite = texture;
             _window = window;
             _animations = animations;
-            _animationIndex = 0;
-            Room = startRoom;
+            _velocity = velocity;
+            Position = position;
+            _animationIndex = 5;
+            _currentRoom = startRoom;
             _gun = gun;
             _playerIndex = playerIndex;
 
@@ -86,7 +90,7 @@ namespace YGR
         /// <param name="gameTime">Monogame GameTime</param>
         public virtual void Update(GameTime gameTime)
         {
-            Vector2 input = Vector2.Zero;
+            input = Vector2.Zero;
             MouseState mouse = Mouse.GetState();
 
             if (HitInLastLoop)
@@ -200,13 +204,14 @@ namespace YGR
         /// <param name="gameTime">Monogame GameTime</param>
         /// <param name="globalOffset">If you don't know what, put Vector2.Zero</param>
         /// <param name="spriteBatch">Active Monogame SpriteBatch</param>
-        public void Draw(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)
+        public virtual void Draw(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)
         {
             Color color = Color.White;
             if (_hitCounter != 0)
             {
                 color = Color.OrangeRed;
             }
+
             spriteBatch.Draw(
                 _sprite,
                 Rect,
@@ -214,7 +219,6 @@ namespace YGR
                 color
             );
         }
-
         /// <summary>
         /// Regular DrawOutline method for debugging
         /// </summary>

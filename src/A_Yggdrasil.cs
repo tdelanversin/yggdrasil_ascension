@@ -62,7 +62,7 @@ namespace YGR
             _player = new List<Y_Sprite>{
                 new Ninja(
                     null,
-                    Content.Load<Texture2D>("tester"),
+                    Content.Load<Texture2D>("charaset"),
                     new Rectangle(0, 0, 73, 102),
                     0.04f,
                     0.75f,
