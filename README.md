@@ -1,14 +1,8 @@
-
-# :exclamation: READ FIRST :exclamation:
-Before committing anything, set up gitignore and git LFS correctly for your project and your programming environment. When gitignore and git LFS are configured, remove this section from the readme.
-
-# :grey_exclamation: FIRST STEPS
-Please update the [game teaser image](game_teaser.jpg) and the [game teaser text](game_teaser.txt) throughout the semester. Please don't rename, move or delete these files.
-
+# Yggdrasil Ascension
 ![teaser image](game_teaser.jpg){width=200px}
-# ENTER YOUR GAME TITLE HERE
-# :video_game: Game Programming Lab 2023 - House Rapture - Team3
 
-ENTER DESCRIPTION HERE
+The gods are in crisis, and humanity has to come to the rescue. Climb the world tree to show the gods what you are capable of…
+
+:video_game: Game Programming Lab 2023 - House Rapture - Team3
 
 Members: Veit Billinger, Tilman de Lanversin, David Colonna, Ivana Klasovita, Patrick Wicki, and Dumeni Manatschal
