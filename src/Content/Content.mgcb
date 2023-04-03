@@ -13,6 +13,12 @@
 
 #---------------------------------- Content ---------------------------------#
 
+#begin 545958__cloud-10__gun-cocking-sound.mp3
+/importer:Mp3Importer
+/processor:SongProcessor
+/processorParam:Quality=Best
+/build:545958__cloud-10__gun-cocking-sound.mp3
+
 #begin background.png
 /importer:TextureImporter
 /processor:TextureProcessor
@@ -36,6 +42,24 @@
 /processorParam:MakeSquare=False
 /processorParam:TextureFormat=Color
 /build:charaset.png
+
+#begin example_intro_song.mp3
+/importer:Mp3Importer
+/processor:SongProcessor
+/processorParam:Quality=Best
+/build:example_intro_song.mp3
+
+#begin explosion.wav
+/importer:WavImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:explosion.wav
+
+#begin fireball.wav
+/importer:WavImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:fireball.wav
 
 #begin font_large.spritefont
 /importer:FontDescriptionImporter

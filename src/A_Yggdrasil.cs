@@ -3,6 +3,8 @@ using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using System;
 using System.Collections.Generic;
+using Microsoft.Xna.Framework.Media;
+using Microsoft.Xna.Framework.Audio;
 
 namespace YGR
 {
@@ -25,12 +27,15 @@ namespace YGR
         Y_Level _level;
         public GameState State;
         public GameState DesiredState;
-
+        Song song;
+        List<SoundEffect> soundEffects;
         public A_Yggdrasil()
         {
             _graphics = new GraphicsDeviceManager(this);
             Content.RootDirectory = "Content";
             IsMouseVisible = true;
+
+            soundEffects = new List<SoundEffect>();
         }
 
         protected override void Initialize()
@@ -62,6 +67,16 @@ namespace YGR
         {
             Fonts.LoadContent(Content);
             Menu.LoadContent(Content);
+            soundEffects.Add(Content.Load<SoundEffect>("fireball"));
+            soundEffects.Add(Content.Load<SoundEffect>("explosion"));
+            //soundEffects.Add(Content.Load<SoundEffect>("icecream"));
+            //soundEffects.Add(Content.Load<SoundEffect>("sneeze"));
+            song = Content.Load<Song>("example_intro_song");
+            //soundEffects[0].Play();
+
+            MediaPlayer.Play(song);
+            MediaPlayer.IsRepeating = true;
+            MediaPlayer.MediaStateChanged += MediaPlayer_MediaStateChanged;
             _spriteBatch = new SpriteBatch(GraphicsDevice);
         }
 
@@ -198,7 +213,13 @@ namespace YGR
             // Once everything is in place, inform Update() of the new desired state
             DesiredState = GameState.InGame;
         }
-
+        void MediaPlayer_MediaStateChanged(object sender, System.
+                                   EventArgs e)
+        {
+            // 0.0f is silent, 1.0f is full volume
+            MediaPlayer.Volume -= 0.1f;
+            MediaPlayer.Play(song);
+        }
         protected override void Update(GameTime gameTime)
         {
             Input.Update();
