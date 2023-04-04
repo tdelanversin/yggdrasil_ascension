@@ -89,6 +89,7 @@ namespace YGR
         /// <param name="gameTime">Monogame GameTime</param>
         public virtual void Update(GameTime gameTime)
         {
+            int deltaTime = gameTime.ElapsedGameTime.Milliseconds;
             input = Vector2.Zero;
             MouseState mouse = Mouse.GetState();
 
@@ -162,7 +163,7 @@ namespace YGR
             }
 
             // only check collision if we actually have some input...
-            int deltaTime = gameTime.ElapsedGameTime.Milliseconds;
+            
             //Logger.Info(Velocity.ToString() + "    " + MaxVelocity.ToString());
             if (controls)
             {

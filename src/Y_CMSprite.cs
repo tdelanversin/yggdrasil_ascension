@@ -67,16 +67,17 @@ namespace YGR
             _deceleration = Vector2.One * acceleration;
             _maxVelocity = Vector2.One * maxVelocity;
             Position = position;
-            Rect = new Rectangle(
-                (int)position.X - _window.Width/2,
-                (int)position.Y - _window.Height/2,
-                _window.Width, _window.Height
-            );
 
             LifePoints = 100;
             HitInLastLoop = false;
 
             Collision = collision;
+
+            Rect = new Rectangle(
+                (int)position.X - _window.Width / 2,
+                (int)position.Y - _window.Height / 2,
+                _window.Width, _window.Height
+            );
 
             Room.Victims.Add(this);
         }

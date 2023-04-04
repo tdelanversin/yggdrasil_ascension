@@ -2,10 +2,12 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using System.Collections.Generic;
+using System.Net.Http.Headers;
+using System.Net.NetworkInformation;
 
 namespace YGR
 {
-    public class Ninja : Y_Sprite
+    public class Ninja : IVictim // Y_Sprite
     {
         private bool _isDashing;
         private float _dashDuration;
@@ -26,20 +28,30 @@ namespace YGR
         // These bytes tell the spriteBatch.Draw() what sourceRectangle to display.
         byte previousAnimationIndex;
         byte currentAnimationIndex;
+        PlayerIndex _playerIndex;
+
+        public int LifePoints { get; set; }
+        public bool HitInLastLoop { get; set; }
+        public X_CollisionModel_Victim Collision { get; }
+        public Vector2 Velocity { get; set; }
+        public Rectangle Rect { get; set; }
+        public IWalkable Room { get; set; }
+        IShooter _gun;
+
+        Vector2 _maxVelocity;
 
         public Ninja(
-            PlayerIndex? playerIndex,
+            X_CollisionModel_Victim collision,
+            PlayerIndex playerIndex,
             Texture2D texture,
             Rectangle window,
-            float acceleration,
-            float deceleration,
             float maxVelocity,
             Vector2 position,
             IWalkable startRoom,
             float frameDuration,
             Dictionary<string, int[]> animations,
             IShooter gun
-        ) : base(playerIndex, texture, window, acceleration, deceleration, maxVelocity, position, startRoom, frameDuration, animations, gun)
+        ) //: base(playerIndex, texture, window, acceleration, deceleration, maxVelocity, position, startRoom, frameDuration, animations, gun)
         {
             _isDashing = false;
             _dashDuration = 0.1f; // Dash duration in seconds
@@ -48,6 +60,17 @@ namespace YGR
             _dashCooldown = 3.0f; // Dash cooldown in seconds
             _dashCooldownTimer = 0.0f;
             _sprite = texture;
+            _playerIndex = playerIndex;
+
+            Velocity = Vector2.Zero;
+            _maxVelocity = Vector2.One * maxVelocity;
+
+            Collision = collision;
+            Room = startRoom;
+            LifePoints = 100;
+            HitInLastLoop = false;
+
+            Room.Victims.Add(this);
 
             // Set a default timer value.
             timer = 0;
@@ -97,44 +120,99 @@ namespace YGR
                     }
                 }
             };
+
+            Rectangle rr = directionSourceRectangles["down"][0];
+            Rect = new Rectangle(
+                (int)position.X - rr.Width / 2,
+                (int)position.Y - rr.Height / 2,
+                rr.Width, rr.Height
+            );
+
             // This tells the animation to start on the left-side sprite.
             previousAnimationIndex = 2;
             currentAnimationIndex = 1;
         }
 
-        public override void Update(GameTime gameTime)
+        public X_LevelElements WhatAreYou()
         {
-            float deltaTime = (float)gameTime.ElapsedGameTime.TotalSeconds;
+            return X_LevelElements.Victim;
+        }
+        public void Update(GameTime gameTime)
+        {
+            //float deltaTime = (float)gameTime.ElapsedGameTime.TotalSeconds;
+            int timeStepMS = gameTime.ElapsedGameTime.Milliseconds;
+            GamePadState gpState = GamePad.GetState(_playerIndex);
+            MouseState mouse = Mouse.GetState();
+
+            Vector2 input = Vector2.Zero;
+            if (gpState.IsButtonDown(Buttons.LeftThumbstickRight)) input.X += gpState.ThumbSticks.Left.X;
+            if (gpState.IsButtonDown(Buttons.LeftThumbstickLeft)) input.X += gpState.ThumbSticks.Left.X;
+            if (gpState.IsButtonDown(Buttons.LeftThumbstickDown)) input.Y -= gpState.ThumbSticks.Left.Y;
+            if (gpState.IsButtonDown(Buttons.LeftThumbstickUp)) input.Y -= gpState.ThumbSticks.Left.Y;
+
+            if (Keyboard.IsPressed(Keys.D)) input.X += 1;
+            if (Keyboard.IsPressed(Keys.A)) input.X -= 1;
+            if (Keyboard.IsPressed(Keys.S)) input.Y += 1;
+            if (Keyboard.IsPressed(Keys.W)) input.Y -= 1;
+
+            if (input.LengthSquared() > 1)
+            {
+                input.Normalize();
+            }
+
+            Velocity = input * _maxVelocity * timeStepMS;
+
+            if (gpState.IsButtonDown(Buttons.RightShoulder) || gpState.IsButtonDown(Buttons.RightTrigger))
+            {
+                Vector2 shootDir = Vector2.One;
+                if (
+                    gpState.IsButtonDown(Buttons.RightThumbstickRight) ||
+                    gpState.IsButtonDown(Buttons.RightThumbstickLeft) ||
+                    gpState.IsButtonDown(Buttons.RightThumbstickDown) ||
+                    gpState.IsButtonDown(Buttons.RightThumbstickUp)
+                )
+                {
+                    shootDir.X *= gpState.ThumbSticks.Right.X;
+                    shootDir.Y *= -gpState.ThumbSticks.Right.Y;
+                    shootDir.Normalize();
+                }
+                else
+                {
+                    shootDir.X = -1.0f;
+                    shootDir.Y = 0.0f;
+                }
+
+                _gun.Shoot(gameTime, Rect.Location.ToVector2() + new Vector2(Rect.Width / 2, Rect.Height / 2), shootDir, Room, this);
+            }
+            else if (mouse.LeftButton == ButtonState.Pressed)
+            {
+                var d = (mouse.Position.ToVector2() - Rect.Location.ToVector2());
+                d.Normalize();
+                _gun.Shoot(gameTime, Rect.Location.ToVector2() + new Vector2(Rect.Width / 2, Rect.Height / 2), d, Room, this);
+            }
 
             // Update the cooldown timer
             if (_dashCooldownTimer < _dashCooldown)
             {
-                _dashCooldownTimer += deltaTime;
+                _dashCooldownTimer += ((float)timeStepMS/1000.0f);
             }
 
-            if (_playerIndex == null)
+            if (!_isDashing && Keyboard.IsPressed(Keys.Space) && _dashCooldownTimer >= _dashCooldown)
             {
-                if (!_isDashing && Keyboard.IsPressed(Keys.Q) && _dashCooldownTimer >= _dashCooldown)
-                {
-                    _isDashing = true;
-                    _dashTimer = 0.0f;
-                    _dashCooldownTimer = 0.0f; // Reset timer
-                }
+                _isDashing = true;
+                _dashTimer = 0.0f;
+                _dashCooldownTimer = 0.0f; // Reset timer
             }
-            else
+            else if (!_isDashing && gpState.IsButtonDown(Buttons.A) && _dashCooldownTimer >= _dashCooldown)
             {
-                GamePadState gpState = GamePad.GetState(_playerIndex.Value);
-                if (!_isDashing && gpState.IsButtonDown(Buttons.A) && _dashCooldownTimer >= _dashCooldown)
-                {
-                    _isDashing = true;
-                    _dashTimer = 0.0f;
-                    _dashCooldownTimer = 0.0f; // Reset timer
-                }
+                _isDashing = true;
+                _dashTimer = 0.0f;
+                _dashCooldownTimer = 0.0f; // Reset timer
             }
 
             if (_isDashing)
             {
-                _dashTimer += deltaTime;
+                _dashTimer += (timeStepMS*1000.0f);
 
                 if (_dashTimer >= _dashDuration)
                 {
@@ -142,15 +220,22 @@ namespace YGR
                 }
                 else
                 {
-                    _velocity *= _dashSpeed;
+                    Velocity *= _dashSpeed;
                 }
             }
 
-            base.Update(gameTime);
+            //base.Update(gameTime);
+            IList<Vector2> contactNormal;
+            IList<Point> contactPoint;
+            IList<IGameElement> who;
+            if (Collision.Intersect(this, timeStepMS, out contactPoint, out contactNormal, out who))
+            {
+                Logger.Info("Collided with something");
+            }
 
             if (_isDashing)
             {
-                _velocity /= _dashSpeed;
+                Velocity /= _dashSpeed;
             }
 
             string direction = "down";
@@ -214,8 +299,24 @@ namespace YGR
 
         }
 
-        public override void Draw(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch){
-            spriteBatch.Draw( _sprite, new Rectangle((int)Position.X - _window.Width/2, (int)Position.Y - _window.Height/2, _window.Width, _window.Height), sourceRectangles[currentAnimationIndex], Color.White);
+        public void Draw(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch){
+            spriteBatch.Draw(
+                _sprite, 
+                new Rectangle(
+                    Rect.X, Rect.Y, Rect.Width, Rect.Height),
+                    sourceRectangles[currentAnimationIndex], Color.White);
+        }
+
+        /// <summary>
+        /// Regular DrawOutline method for debugging
+        /// </summary>
+        /// <param name="gameTime">Monogame GameTime object</param>
+        /// <param name="globalOffset">If it's not clear, then Vector2.Zero</param>
+        /// <param name="spriteBatch">Mogogame SpriteBatch</param>
+        public void DrawOutline(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)
+        {
+            Factory_Debug.DrawRectangle(Rect.X, Rect.Y, Rect.Width, Rect.Height, 1, Color.OrangeRed, spriteBatch);
+            Collision.DrawOutline(gameTime, globalOffset, spriteBatch);
         }
     }
 }

@@ -1,4 +1,4 @@
-﻿#define COLLISION_TEST
+﻿//#define COLLISION_TEST
 
 using Microsoft.VisualBasic;
 using System;
