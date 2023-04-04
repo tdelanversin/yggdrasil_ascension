@@ -59,19 +59,9 @@ namespace YGR
                     new X_CollisionModel_Victim(1.0f /* mass */, 0.0f /* elastic impact */),
                     PlayerIndex.One,
                     Content.Load<Texture2D>("charaset"),
-                    new Rectangle(0, 0, 73, 102),
                     0.02f,
                     new Vector2(200, 350),
                     _rooms["room_center"],
-                    200.0f,
-                    new Dictionary<string, int[]> {
-                        { "stand", new int[] { 0, 1, 8, 9 } },
-                        { "walk_left", new int[] { 2, 3, 4 } },
-                        { "walk_right", new int[] { 5, 6, 7 } },
-                        { "dash_left", new int[] { 10, 11, 12 } },
-                        { "dash_right", new int[] { 13, 14, 15 } },
-                        { "shoot_left", new int[] { 16, 17, 18 } },
-                        { "shoot_right", new int[] { 19, 20, 21 } }},
                     new Y_StarterGun()
                 ),
                 new Y_CMSprite(

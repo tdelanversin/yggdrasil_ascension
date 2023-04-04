@@ -42,14 +42,11 @@ namespace YGR
             X_CollisionModel_Victim collision,
             PlayerIndex playerIndex,
             Texture2D texture,
-            Rectangle window,
             float maxVelocity,
             Vector2 position,
             IWalkable startRoom,
-            float frameDuration,
-            Dictionary<string, int[]> animations,
             IShooter gun
-        ) //: base(playerIndex, texture, window, acceleration, deceleration, maxVelocity, position, startRoom, frameDuration, animations, gun)
+        )
         {
             _isDashing = false;
             _dashDuration = 100; // Dash duration in seconds
