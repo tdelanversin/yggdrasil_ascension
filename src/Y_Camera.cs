@@ -71,10 +71,10 @@ namespace YGR
 
             Vector2 input = Vector2.Zero;
 
-            if (Keyboard.IsPressed(Keys.A)) input.X += 1;
-            if (Keyboard.IsPressed(Keys.D)) input.X -= 1;
-            if (Keyboard.IsPressed(Keys.S)) input.Y -= 1;
-            if (Keyboard.IsPressed(Keys.W)) input.Y += 1;
+            if (Keyboard.IsPressed(Keys.F)) input.X += 1;
+            if (Keyboard.IsPressed(Keys.H)) input.X -= 1;
+            if (Keyboard.IsPressed(Keys.G)) input.Y -= 1;
+            if (Keyboard.IsPressed(Keys.T)) input.Y += 1;
 
             if (input.LengthSquared() > 1) input.Normalize();
 

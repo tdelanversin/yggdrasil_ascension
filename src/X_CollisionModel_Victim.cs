@@ -32,30 +32,30 @@ namespace YGR
             Vector2 myVelocity = me.Velocity;
             Rectangle otherRect;
             Vector2 otherVelocity;
-            foreach (var victim in me.Room.Victims)
-            {
-                if (victim == me) continue;
+            //foreach (var victim in me.Room.Victims)
+            //{
+            //    if (victim == me) continue;
 
-                otherRect = victim.Rect;
-                otherVelocity = victim.Velocity;
-                result = Manager_Collision.MovingRectVsMovingRect(
-                    ref myRect, ref myVelocity, Mass,
-                    ref otherRect, ref otherVelocity, victim.Collision.Mass,
-                    Cr, timeStepMS, out point, out normal);
-                if (result)
-                {
-                    who.Add(victim);
-                    contactPoint.Add(point);
-                    contactNormal.Add(normal);
-                    me.Velocity = myVelocity;
-                    victim.Velocity = otherVelocity;
-                    Logger.Info("impacted with someone at " + point.ToString());
+            //    otherRect = victim.Rect;
+            //    otherVelocity = victim.Velocity;
+            //    result = Manager_Collision.MovingRectVsMovingRect(
+            //        ref myRect, ref myVelocity, Mass,
+            //        ref otherRect, ref otherVelocity, victim.Collision.Mass,
+            //        Cr, timeStepMS, out point, out normal);
+            //    if (result)
+            //    {
+            //        who.Add(victim);
+            //        contactPoint.Add(point);
+            //        contactNormal.Add(normal);
+            //        me.Velocity = myVelocity;
+            //        victim.Velocity = otherVelocity;
+            //        Logger.Info("impacted with someone at " + point.ToString());
 
-                    _records.Add(new Manager_Collision.Record(
-                        (DateTime.Now - Manager_Collision.StartTime).TotalMilliseconds,
-                        point, Vector2.Zero, 0));
-                }
-            }
+            //        _records.Add(new Manager_Collision.Record(
+            //            (DateTime.Now - Manager_Collision.StartTime).TotalMilliseconds,
+            //            point, Vector2.Zero, 0));
+            //    }
+            //}
 
             if (me.Room.Collision.Intersect(ref myRect, ref myVelocity, timeStepMS, out point, out normal))
             {

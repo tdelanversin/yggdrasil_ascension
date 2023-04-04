@@ -19,9 +19,8 @@ namespace YGR
 
         Texture2D _background;
         Y_Camera _camera;
-        IList<Y_Sprite> _player;
-        IList<Y_Connector> _connectors;
-        IDictionary<string, Y_Room> _rooms;
+        IList<IVictim> _player;
+        IDictionary<string, IWalkable> _rooms;
 
         public A_Yggdrasil()
         {
@@ -51,55 +50,37 @@ namespace YGR
             _spriteBatch = new SpriteBatch(GraphicsDevice);
             _background = Content.Load<Texture2D>("background");
 
-            _rooms = new Dictionary<string, Y_Room> {
-                { "room_center", Factory_Rooms.Room_0("room_center") },
-                { "room_right", Factory_Rooms.Room_1("room_right") },
-                { "room_left", Factory_Rooms.Room_2("room_left") },
-                { "room_bottom", Factory_Rooms.Room_1("room_bottom") },
-                { "room_top", Factory_Rooms.Room_1("room_top") },
+            _rooms = new Dictionary<string, IWalkable> {
+                { "room_center", new Y_CMRoom("hello", new X_CollisionModel_Room("Rooms/Collisions2.csv", 40, 40, new Point(0,0)))}
             };
 
-            _player = new List<Y_Sprite>{
-                new Y_Sprite(
+            _player = new List<IVictim>{
+                new Ninja(
+                    new X_CollisionModel_Victim(1.0f /* mass */, 0.0f /* elastic impact */),
                     PlayerIndex.One,
-                    Content.Load<Texture2D>("tester"),
-                    new Rectangle(0, 0, 73, 102),
-                    0.04f,
-                    0.75f,
-                    0.75f,
+                    Content.Load<Texture2D>("charaset"),
+                    0.02f,
                     new Vector2(200, 350),
                     _rooms["room_center"],
-                    200.0f,
-                    new Dictionary<string, int[]> {
-                        { "stand", new int[] { 0, 1, 8, 9 } },
-                        { "walk_left", new int[] { 2, 3, 4 } },
-                        { "walk_right", new int[] { 5, 6, 7 } }},
-                    new Y_WideGun()
+                    new Y_StarterGun()
                 ),
-                new Y_Sprite(
-                    PlayerIndex.Two,
-                    Content.Load<Texture2D>("tester"),
-                    new Rectangle(0, 0, 73, 102),
-                    0.04f,
-                    0.75f,
-                    0.75f,
-                    new Vector2(170, 500),
+                new Y_CMSprite(
+                    new X_CollisionModel_Victim(1.0f /* mass */, 0.0f /* elastic impact */),
+                    null,
+                    Content.Load<Texture2D>("tester_30"),
+                    new Rectangle(0, 0, 21, 30),
+                    0.004f, // acceleration
+                    0.4f,  // max velocity
+                    new Vector2(250, 350),
                     _rooms["room_center"],
                     200.0f,
                     new Dictionary<string, int[]> {
-                        { "stand", new int[] { 0, 1, 8, 9 } },
-                        { "walk_left", new int[] { 2, 3, 4 } },
-                        { "walk_right", new int[] { 5, 6, 7 } }},
-                    new Y_StarterGun()
+                                    { "stand", new int[] { 0, 1, 8, 9 } },
+                                    { "walk_left", new int[] { 2, 3, 4 } },
+                                    { "walk_right", new int[] { 5, 6, 7 } }},
+                    new Y_WideGun(),
+                    2 // control input
                 )
-            };
-
-            Random random = new Random(3);
-            _connectors = new List<Y_Connector> { 
-                Factory_Connectors.HConnector("con_center_right").Connect(X_ConnectorSide.Left, _rooms["room_center"], X_ConnectorSide.Right, _rooms["room_right"], random),
-                Factory_Connectors.HConnector("con_center_left").Connect(X_ConnectorSide.Right, _rooms["room_center"], X_ConnectorSide.Left, _rooms["room_left"], random),
-                Factory_Connectors.VConnector("con_center_bottom").Connect(X_ConnectorSide.Top, _rooms["room_center"], X_ConnectorSide.Bottom, _rooms["room_bottom"], random),
-                Factory_Connectors.VConnector("con_center_top").Connect(X_ConnectorSide.Bottom, _rooms["room_center"], X_ConnectorSide.Top, _rooms["room_top"], random)
             };
         }
 
@@ -125,11 +106,6 @@ namespace YGR
             }
 
             Manager_Projectile.Update(gameTime);
-
-            foreach(var con in _connectors)
-            {
-                con.Update(gameTime);
-            }
 
             base.Update(gameTime);
         }
@@ -158,15 +134,9 @@ namespace YGR
             foreach(var room in _rooms.Values)
             {
                 room.Draw(gameTime, zero, _spriteBatch);
-                // uncomment for debugging
                 room.DrawOutline(gameTime, zero, _spriteBatch);
-            }
-
-            foreach (var con in _connectors)
-            {
-                con.Draw(gameTime, zero, _spriteBatch);
                 // uncomment for debugging
-                con.DrawOutline(gameTime, zero, _spriteBatch);
+                //room.DrawOutline(gameTime, zero, _spriteBatch);
             }
 
             Manager_Projectile.Draw(gameTime, zero, _spriteBatch);

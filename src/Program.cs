@@ -1,6 +1,4 @@
-﻿#define COLLISION_TEST
-
-using Microsoft.VisualBasic;
+﻿using Microsoft.VisualBasic;
 using System;
 using System.IO;
 
@@ -41,23 +39,19 @@ class Program
         var time = DateAndTime.Now;
         var random = new Random();
         var targetLogFile = new FileInfo(
-#if COLLISION_TEST
-            "logs/test_[" +
-#else
             "logs/log_[" +
-#endif
-            time.Year.ToString() + 
-            time.Month.ToString().PadLeft(2, '0') + 
-            time.Day.ToString().PadLeft(2, '0') + 
-            "][" + 
+            time.Year.ToString() +
+            time.Month.ToString().PadLeft(2, '0') +
+            time.Day.ToString().PadLeft(2, '0') +
+            "][" +
             time.Hour.ToString().PadLeft(2, '0') +
             "-" +
             time.Minute.ToString().PadLeft(2, '0') +
             "-" +
             time.Second.ToString().PadLeft(2, '0') +
             "][" +
-            time.Millisecond.ToString() + 
-            random.Next().ToString() + 
+            time.Millisecond.ToString() +
+            random.Next().ToString() +
             "].log");
         Clearcove.Logging.Logger.BatchInterval = 1500;
         Clearcove.Logging.Logger.LogToConsole = true;  // Print log entries to console (optional).
@@ -66,15 +60,9 @@ class Program
 
         try
         {
-#if COLLISION_TEST
-            Logger.Info("################### " + time.ToLongDateString() + " | " + time.ToLongTimeString() + " ###################");
-            var game = new YGR.A_CollisionTest();
-            game.Run();
-#else
             Logger.Info("=================== " + time.ToLongDateString() + " | " + time.ToLongTimeString() + " ===================");
             var game = new YGR.A_Yggdrasil();
             game.Run();
-#endif
         }
         finally
         {

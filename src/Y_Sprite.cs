@@ -9,12 +9,13 @@ namespace YGR
     public class Y_Sprite : IVictim
     {
         Texture2D _sprite;
-        Rectangle _window;
+        public Rectangle _window;
         Dictionary<string, int[]> _animations;
+        public float _velocity;
         float _frameDuration;
         int _animationIndex;
         IShooter _gun;
-        PlayerIndex? _playerIndex;
+        public PlayerIndex? _playerIndex;
 
         public IWalkable Room { get; set; }
         X_ConnectorSide _lastSide;
@@ -33,6 +34,8 @@ namespace YGR
         private Vector2 _deceleration;
         private Vector2 _maxVelocity;
 
+        public Vector2 input;
+
         public Y_Sprite(
             PlayerIndex? playerIndex,
             Texture2D texture,
@@ -50,7 +53,8 @@ namespace YGR
             _sprite = texture;
             _window = window;
             _animations = animations;
-            _animationIndex = 0;
+            Position = position;
+            _animationIndex = 5;
             Room = startRoom;
             _gun = gun;
             _playerIndex = playerIndex;
@@ -58,7 +62,7 @@ namespace YGR
             _hitCounter = 0;
             _maxHitCounter = 750 / 16;
 
-            Velocity = Vector2.Zero;
+            Velocity = Vector2.One;
             _acceleration = Vector2.One * acceleration;
             _deceleration = Vector2.One * deceleration;
             _maxVelocity = Vector2.One * maxVelocity;
@@ -83,9 +87,10 @@ namespace YGR
         /// Regular Monogame Update method
         /// </summary>
         /// <param name="gameTime">Monogame GameTime</param>
-        public void Update(GameTime gameTime)
+        public virtual void Update(GameTime gameTime)
         {
-            Vector2 input = Vector2.Zero;
+            int deltaTime = gameTime.ElapsedGameTime.Milliseconds;
+            input = Vector2.Zero;
             MouseState mouse = Mouse.GetState();
 
             if (HitInLastLoop)
@@ -158,7 +163,7 @@ namespace YGR
             }
 
             // only check collision if we actually have some input...
-            int deltaTime = gameTime.ElapsedGameTime.Milliseconds;
+            
             //Logger.Info(Velocity.ToString() + "    " + MaxVelocity.ToString());
             if (controls)
             {
@@ -199,13 +204,14 @@ namespace YGR
         /// <param name="gameTime">Monogame GameTime</param>
         /// <param name="globalOffset">If you don't know what, put Vector2.Zero</param>
         /// <param name="spriteBatch">Active Monogame SpriteBatch</param>
-        public void Draw(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)
+        public virtual void Draw(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)
         {
             Color color = Color.White;
             if (_hitCounter != 0)
             {
                 color = Color.OrangeRed;
             }
+
             spriteBatch.Draw(
                 _sprite,
                 Rect,
@@ -213,7 +219,6 @@ namespace YGR
                 color
             );
         }
-
         /// <summary>
         /// Regular DrawOutline method for debugging
         /// </summary>
