@@ -53,17 +53,16 @@ namespace YGR
             _sprite = texture;
             _window = window;
             _animations = animations;
-            _velocity = velocity;
             Position = position;
             _animationIndex = 5;
-            _currentRoom = startRoom;
+            Room = startRoom;
             _gun = gun;
             _playerIndex = playerIndex;
 
             _hitCounter = 0;
             _maxHitCounter = 750 / 16;
 
-            Velocity = Vector2.Zero;
+            Velocity = Vector2.One;
             _acceleration = Vector2.One * acceleration;
             _deceleration = Vector2.One * deceleration;
             _maxVelocity = Vector2.One * maxVelocity;

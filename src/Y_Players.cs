@@ -31,13 +31,15 @@ namespace YGR
             PlayerIndex? playerIndex,
             Texture2D texture,
             Rectangle window,
-            float velocity,
+            float acceleration,
+            float deceleration,
+            float maxVelocity,
             Vector2 position,
             IWalkable startRoom,
             float frameDuration,
             Dictionary<string, int[]> animations,
             IShooter gun
-        ) : base(playerIndex, texture, window, velocity, position, startRoom, frameDuration, animations, gun)
+        ) : base(playerIndex, texture, window, acceleration, deceleration, maxVelocity, position, startRoom, frameDuration, animations, gun)
         {
             _isDashing = false;
             _dashDuration = 0.1f; // Dash duration in seconds
@@ -112,8 +114,7 @@ namespace YGR
 
             if (_playerIndex == null)
             {
-                KeyboardState keyboard = Keyboard.GetState();
-                if (!_isDashing && keyboard.IsKeyDown(Keys.Q) && _dashCooldownTimer >= _dashCooldown)
+                if (!_isDashing && Keyboard.IsPressed(Keys.Q) && _dashCooldownTimer >= _dashCooldown)
                 {
                     _isDashing = true;
                     _dashTimer = 0.0f;
