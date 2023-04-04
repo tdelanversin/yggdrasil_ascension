@@ -2,19 +2,17 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using System.Collections.Generic;
-using System.Net.Http.Headers;
-using System.Net.NetworkInformation;
 
 namespace YGR
 {
     public class Ninja : IVictim // Y_Sprite
     {
         private bool _isDashing;
-        private float _dashDuration;
+        private int _dashDuration;
         private float _dashSpeed;
-        private float _dashTimer;
-        private float _dashCooldown;
-        private float _dashCooldownTimer;
+        private int _dashTimer;
+        private int _dashCooldown;
+        private int _dashCooldownTimer;
 
         private Texture2D _sprite;
 
@@ -54,13 +52,14 @@ namespace YGR
         ) //: base(playerIndex, texture, window, acceleration, deceleration, maxVelocity, position, startRoom, frameDuration, animations, gun)
         {
             _isDashing = false;
-            _dashDuration = 0.1f; // Dash duration in seconds
+            _dashDuration = 100; // Dash duration in seconds
             _dashSpeed = 4f; // Dash speed multiplier
-            _dashTimer = 0.0f;
-            _dashCooldown = 3.0f; // Dash cooldown in seconds
-            _dashCooldownTimer = 0.0f;
+            _dashTimer = 0;
+            _dashCooldown = 3000; // Dash cooldown in seconds
+            _dashCooldownTimer = 0;
             _sprite = texture;
             _playerIndex = playerIndex;
+            _gun = gun;
 
             Velocity = Vector2.Zero;
             _maxVelocity = Vector2.One * maxVelocity;
@@ -162,6 +161,8 @@ namespace YGR
 
             Velocity = input * _maxVelocity * timeStepMS;
 
+            // Shooting
+            _gun.Update(gameTime);
             if (gpState.IsButtonDown(Buttons.RightShoulder) || gpState.IsButtonDown(Buttons.RightTrigger))
             {
                 Vector2 shootDir = Vector2.One;
@@ -194,25 +195,25 @@ namespace YGR
             // Update the cooldown timer
             if (_dashCooldownTimer < _dashCooldown)
             {
-                _dashCooldownTimer += ((float)timeStepMS/1000.0f);
+                _dashCooldownTimer += timeStepMS;
             }
 
             if (!_isDashing && Keyboard.IsPressed(Keys.Space) && _dashCooldownTimer >= _dashCooldown)
             {
                 _isDashing = true;
-                _dashTimer = 0.0f;
-                _dashCooldownTimer = 0.0f; // Reset timer
+                _dashTimer = 0;
+                _dashCooldownTimer = 0; // Reset timer
             }
             else if (!_isDashing && gpState.IsButtonDown(Buttons.A) && _dashCooldownTimer >= _dashCooldown)
             {
                 _isDashing = true;
-                _dashTimer = 0.0f;
-                _dashCooldownTimer = 0.0f; // Reset timer
+                _dashTimer = 0;
+                _dashCooldownTimer = 0; // Reset timer
             }
 
             if (_isDashing)
             {
-                _dashTimer += (timeStepMS*1000.0f);
+                _dashTimer += timeStepMS;
 
                 if (_dashTimer >= _dashDuration)
                 {
@@ -239,69 +240,71 @@ namespace YGR
             }
 
             string direction = "down";
-           if (input.X > 0)
-           {
-               direction = "right";
-           }
-           else if (input.X < 0)
-           {
-               direction = "left";
-           }
-           else if (input.Y > 0)
-           {
-               direction = "down";
-           }
-           else if (input.Y < 0)
-           {
-               direction = "up";
-           }
-           else{
+            if (input.X > 0)
+            {
+                direction = "right";
+            }
+            else if (input.X < 0)
+            {
+                direction = "left";
+            }
+            else if (input.Y > 0)
+            {
+                direction = "down";
+            }
+            else if (input.Y < 0)
+            {
+                direction = "up";
+            }
+            else
+            {
                 direction = "idle";
-           }
+            }
 
-           // Update the sourceRectangles array based on direction
-           sourceRectangles = directionSourceRectangles[direction];
+            // Update the sourceRectangles array based on direction
+            sourceRectangles = directionSourceRectangles[direction];
 
 
 
             // Check if the timer has exceeded the threshold.
             if (timer > threshold)
             {
-            // If Alex is in the middle sprite of the animation.
-            if (currentAnimationIndex == 1)
-            {
-            // If the previous animation was the left-side sprite, then the next animation should be the right-side sprite.
-            if (previousAnimationIndex == 0)
-            {
-            currentAnimationIndex = 2;
-            }
-            else
-            // If not, then the next animation should be the left-side sprite.
-            {
-            currentAnimationIndex = 0;
-            }
-            // Track the animation.
-            previousAnimationIndex = currentAnimationIndex;
-            }
-            // If Alex was not in the middle sprite of the animation, he should return to the middle sprite.
-            else
-            {
-            currentAnimationIndex = 1;
-            }
-            // Reset the timer.
-            timer = 0;
+                // If Alex is in the middle sprite of the animation.
+                if (currentAnimationIndex == 1)
+                {
+                    // If the previous animation was the left-side sprite, then the next animation should be the right-side sprite.
+                    if (previousAnimationIndex == 0)
+                    {
+                        currentAnimationIndex = 2;
+                    }
+                    else
+                    // If not, then the next animation should be the left-side sprite.
+                    {
+                        currentAnimationIndex = 0;
+                    }
+                    // Track the animation.
+                    previousAnimationIndex = currentAnimationIndex;
+                }
+                // If Alex was not in the middle sprite of the animation, he should return to the middle sprite.
+                else
+                {
+                    currentAnimationIndex = 1;
+                }
+                // Reset the timer.
+                timer = 0;
             }
             // If the timer has not reached the threshold, then add the milliseconds that have past since the last Update() to the timer.
             else
             {
-            timer += (float)gameTime.ElapsedGameTime.TotalMilliseconds;
+                timer += (float)gameTime.ElapsedGameTime.TotalMilliseconds;
             }
 
         }
 
-        public void Draw(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch){
+        public void Draw(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)
+        {
             spriteBatch.Draw(
-                _sprite, 
+                _sprite,
                 new Rectangle(
                     Rect.X, Rect.Y, Rect.Width, Rect.Height),
                     sourceRectangles[currentAnimationIndex], Color.White);
