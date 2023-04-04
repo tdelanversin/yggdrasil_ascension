@@ -99,11 +99,10 @@ namespace YGR
             bool controls = false;
             if(_playerIndex == null)
             {
-                KeyboardState keyboard = Keyboard.GetState();
-                if (keyboard.IsKeyDown(Keys.D)) input.X += 1;
-                if (keyboard.IsKeyDown(Keys.A)) input.X -= 1;
-                if (keyboard.IsKeyDown(Keys.S)) input.Y += 1;
-                if (keyboard.IsKeyDown(Keys.W)) input.Y -= 1;
+                if (Keyboard.IsPressed(Keys.D)) input.X += 1;
+                if (Keyboard.IsPressed(Keys.A)) input.X -= 1;
+                if (Keyboard.IsPressed(Keys.S)) input.Y += 1;
+                if (Keyboard.IsPressed(Keys.W)) input.Y -= 1;
 
                 /* ================================================ */
                 /* Detect player shooting and spawn projectiles     */

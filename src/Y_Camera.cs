@@ -70,12 +70,11 @@ namespace YGR
             //if (coolDown()) return;
 
             Vector2 input = Vector2.Zero;
-            KeyboardState keyboard = Keyboard.GetState();
 
-            if (keyboard.IsKeyDown(Keys.A)) input.X += 1;
-            if (keyboard.IsKeyDown(Keys.D)) input.X -= 1;
-            if (keyboard.IsKeyDown(Keys.S)) input.Y -= 1;
-            if (keyboard.IsKeyDown(Keys.W)) input.Y += 1;
+            if (Keyboard.IsPressed(Keys.A)) input.X += 1;
+            if (Keyboard.IsPressed(Keys.D)) input.X -= 1;
+            if (Keyboard.IsPressed(Keys.S)) input.Y -= 1;
+            if (Keyboard.IsPressed(Keys.W)) input.Y += 1;
 
             if (input.LengthSquared() > 1) input.Normalize();
 

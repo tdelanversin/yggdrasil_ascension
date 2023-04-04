@@ -1,9 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using Microsoft.Xna.Framework.Input;
 using System.Collections.Generic;
 using System;
-using Yggdrasil;
 
 namespace YGR
 {
@@ -63,11 +61,6 @@ namespace YGR
         int _animationIndex;
         Dictionary<string, int[]> _animations;
 
-        // some cooldown for the very jumpy keyboard input
-        // only used for the manual switch of the connectors
-        int _coolDownCounter = 0;
-        int _coolDown = 8;
-
         public IList<IProjectile> Projectiles { get; }
         public IList<IVictim> Victims { get; }
 
@@ -124,11 +117,7 @@ namespace YGR
         /// <param name="gameTime">Monogame GameTime</param>
         public void Update(GameTime gameTime)
         {
-            if (coolDown()) return;
-
-            KeyboardState keyboard = Keyboard.GetState();
-
-            if (keyboard.IsKeyDown(Keys.O))
+            if (Keyboard.HasBeenPressed(Keybinds.ToggleConnectors))
             {
                 if (State == Y_ConnectorState.Closed)
                 {
@@ -504,18 +493,6 @@ namespace YGR
         {
             if (side == X_ConnectorSide.Left || side == X_ConnectorSide.Bottom) return LeftOrBottomRoom;
             else return RightOrTopRoom;
-        }
-
-        private bool coolDown()
-        {
-            if (_coolDownCounter < _coolDown)
-            {
-                _coolDownCounter++;
-                return true;
-            }
-
-            _coolDownCounter = 0;
-            return false;
         }
 
         /// <summary>

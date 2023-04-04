@@ -106,20 +106,19 @@ namespace YGR
             bool controls = false;
             if(_playerIndex == null)
             {
-                KeyboardState keyboard = Keyboard.GetState();
                 if (_controlLayout == 1)
                 {
-                    if (keyboard.IsKeyDown(Keys.D)) input.X += 1;
-                    if (keyboard.IsKeyDown(Keys.A)) input.X -= 1;
-                    if (keyboard.IsKeyDown(Keys.S)) input.Y += 1;
-                    if (keyboard.IsKeyDown(Keys.W)) input.Y -= 1;
+                    if (Keyboard.IsPressed(Keys.D)) input.X += 1;
+                    if (Keyboard.IsPressed(Keys.A)) input.X -= 1;
+                    if (Keyboard.IsPressed(Keys.S)) input.Y += 1;
+                    if (Keyboard.IsPressed(Keys.W)) input.Y -= 1;
                 }
                 else
                 {
-                    if (keyboard.IsKeyDown(Keys.Right)) input.X += 1;
-                    if (keyboard.IsKeyDown(Keys.Left)) input.X -= 1;
-                    if (keyboard.IsKeyDown(Keys.Down)) input.Y += 1;
-                    if (keyboard.IsKeyDown(Keys.Up)) input.Y -= 1;
+                    if (Keyboard.IsPressed(Keys.Right)) input.X += 1;
+                    if (Keyboard.IsPressed(Keys.Left)) input.X -= 1;
+                    if (Keyboard.IsPressed(Keys.Down)) input.Y += 1;
+                    if (Keyboard.IsPressed(Keys.Up)) input.Y -= 1;
                 }
 
                 if (mouse.LeftButton == ButtonState.Pressed)
