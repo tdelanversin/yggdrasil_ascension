@@ -49,11 +49,11 @@ namespace YGR
         )
         {
             _isDashing = false;
-            _dashDuration = 100; // Dash duration in seconds
+            _dashDuration = 100; // Dash duration in ms
             _dashSpeed = 4f; // Dash speed multiplier
             _dashTimer = 0;
-            _dashCooldown = 3000; // Dash cooldown in seconds
-            _dashCooldownTimer = 0;
+            _dashCooldown = 2000; // Dash cooldown in ms
+            _dashCooldownTimer = 2000;
             _sprite = texture;
             _playerIndex = playerIndex;
             _gun = gun;
