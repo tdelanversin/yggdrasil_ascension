@@ -1,153 +1,161 @@
 ﻿using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using System;
+using System.Collections.Generic;
 
 namespace YGR
 {
-    /// <summary>
-    /// Class <c>Y_Camera</c> is a primitive implementation of a camera view that can pan using W,A,S,D. It pans with some simple animation.
-    /// </summary>
+    public enum CameraMode
+    {
+        Follow = 0, // Follow players
+        Room,       // Focus on a room
+        Manual      // Control pos and zoom with keybinds
+    }
     public class Y_Camera
     {
-        // Global X position
-        public int PosX { get { return _rect.X; } }
-        // Global X position
-        public int PosY { get { return _rect.Y; } }
-        // Rectangle that will be shown in the Viewport
-        public Rectangle SourceRect { get { return _rect; } }
+        public float Zoom { get; set; }
+        public Vector2 Position { get; set; }
+        public Rectangle Bounds { get; protected set; }
+        public Rectangle VisibleArea { get; protected set; }
+        public Matrix Transform { get; protected set; }
+        public CameraMode Mode { get; set; }
+        public Y_Room Room { get; protected set; }
+        public IList<IVictim> Players { get; set; }
 
-        private Vector2 _dPos;
-        private Rectangle _rect;
-        private Rectangle _newRect;
-        
-        private float _dt;
-        private bool _animate;
-        private float _animationTime;
+        // Zoom levels for...              { Follow, Room, Manual }
+        private readonly float[] minZoom = { 0.60f, 0.25f, 0.05f };
+        private readonly float[] maxZoom = { 1.25f, 1.75f, 16.0f };
+        private const float zoomSpeed = 0.1f;
+        private const float panSpeed = 1024;
 
-        public Y_Camera(Vector2 pos, int res_x, int res_y)
+        private float currentMouseWheelValue, previousMouseWheelValue;
+
+        public Y_Camera(Viewport viewport, Vector2 position)
         {
-            _rect = new Rectangle((int)(pos.X - res_x/2), (int)(pos.Y - res_y/2), res_x, res_y);
-            _newRect = _rect;
-
-            _dPos = Vector2.Zero;
-
-            _animate = false;
-            _animationTime = 0.0f;
-            _dt = 0.0f;
+            Bounds = viewport.Bounds;
+            Zoom = 1f;
+            Position = position;
         }
 
-        /// <summary>
-        /// Update the animation time
-        /// </summary>
-        /// <param name="dt">Time duration for the animation</param>
-        public void SetDt(float dt)
+        private void UpdateVisibleArea()
         {
-            if(dt > 0.0f) _dt = dt;
+            var inverseViewMatrix = Matrix.Invert(Transform);
+
+            var tl = Vector2.Transform(Vector2.Zero, inverseViewMatrix);
+            var tr = Vector2.Transform(new Vector2(Bounds.X, 0), inverseViewMatrix);
+            var bl = Vector2.Transform(new Vector2(0, Bounds.Y), inverseViewMatrix);
+            var br = Vector2.Transform(new Vector2(Bounds.Width, Bounds.Height), inverseViewMatrix);
+
+            var min = new Vector2(
+                MathHelper.Min(tl.X, MathHelper.Min(tr.X, MathHelper.Min(bl.X, br.X))),
+                MathHelper.Min(tl.Y, MathHelper.Min(tr.Y, MathHelper.Min(bl.Y, br.Y))));
+            var max = new Vector2(
+                MathHelper.Max(tl.X, MathHelper.Max(tr.X, MathHelper.Max(bl.X, br.X))),
+                MathHelper.Max(tl.Y, MathHelper.Max(tr.Y, MathHelper.Max(bl.Y, br.Y))));
+            VisibleArea = new Rectangle((int)min.X, (int)min.Y, (int)(max.X - min.X), (int)(max.Y - min.Y));
         }
 
-        /// <summary>
-        /// Pan the camera by [dx, dy] within animation time dt
-        /// </summary>
-        /// <param name="dx">Delta x</param>
-        /// <param name="dy">Delta Y</param>
-        /// <param name="dt">Animation time</param>
-        public void MoveBy(float dx, float dy, float dt)
+        private void UpdateMatrix()
         {
-            _newRect.X = (int)dx;
-            _newRect.Y = (int)dy;
-            resetAnimation(dt);
+            Transform = Matrix.CreateTranslation(new Vector3(-Position.X, -Position.Y, 0)) *
+                    Matrix.CreateScale(Zoom) *
+                    Matrix.CreateTranslation(new Vector3(Bounds.Width * 0.5f, Bounds.Height * 0.5f, 0));
+            UpdateVisibleArea();
         }
 
-        /// <summary>
-        /// Poll the keyboard and pan the camera in the direction polled from the keyboard using dPos as update speeds.
-        /// Finish the paning animation within time dt.
-        /// If the user pans the camera again before the animation is finished, the animation will restart in the new direction.
-        /// </summary>
-        /// <param name="dPos">Position update delta for each manual update</param>
-        /// <param name="dt">Animation time</param>
-        public void UpdateManual(Vector2 dPos, float dt)
+        public void MoveCamera(Vector2 movePosition)
         {
-            //if (coolDown()) return;
+            Vector2 newPosition = Position + movePosition;
+            Position = newPosition;
+        }
 
-            Vector2 input = Vector2.Zero;
+        public void UpdateZoom(float zoom)
+        {
+            // Clamp to the min/max zoom level allowed in the current mode
+            Zoom = Math.Clamp(zoom, minZoom[(int)Mode], maxZoom[(int)Mode]);
+        }
 
-            if (Keyboard.IsPressed(Keys.F)) input.X += 1;
-            if (Keyboard.IsPressed(Keys.H)) input.X -= 1;
-            if (Keyboard.IsPressed(Keys.G)) input.Y -= 1;
-            if (Keyboard.IsPressed(Keys.T)) input.Y += 1;
+        private void keyboardMove(float deltaTime)
+        {
+            Vector2 cameraMovement = Vector2.Zero;
+            float moveSpeed = deltaTime * panSpeed / (float)Math.Sqrt(Zoom);
 
-            if (input.LengthSquared() > 1) input.Normalize();
+            if (Keyboard.IsPressed(Keybinds.CameraMoveLeft)) cameraMovement.X = -moveSpeed;
+            if (Keyboard.IsPressed(Keybinds.CameraMoveRight)) cameraMovement.X = moveSpeed;
+            if (Keyboard.IsPressed(Keybinds.CameraMoveUp)) cameraMovement.Y = -moveSpeed;
+            if (Keyboard.IsPressed(Keybinds.CameraMoveDown)) cameraMovement.Y = moveSpeed;
+            MoveCamera(cameraMovement);
 
-            if(input != Vector2.Zero)
+            previousMouseWheelValue = currentMouseWheelValue;
+            currentMouseWheelValue = Mouse.GetState().ScrollWheelValue;
+            if (currentMouseWheelValue > previousMouseWheelValue)
             {
-                _dPos.X = input.X * dPos.X;
-                _dPos.Y = input.Y * dPos.Y;
-                _newRect.X = (int)(_rect.X + _dPos.X);
-                _newRect.Y = (int)(_rect.Y + _dPos.Y);
-                resetAnimation(dt);
-                Logger.Debug("set new position diff: " + _dPos.ToString());
+                UpdateZoom(Zoom * (1 + zoomSpeed));
+            }
+            else if (currentMouseWheelValue < previousMouseWheelValue)
+            {
+                UpdateZoom(Zoom / (1 + zoomSpeed));
             }
         }
 
-        /// <summary>
-        /// Regular Monogame Update method
-        /// </summary>
-        /// <param name="gameTime">Monogame GameTime</param>
-        public void Update(GameTime gameTime)
+        private void centerOnPlayers()
         {
-            float dt = gameTime.ElapsedGameTime.Milliseconds;
+            if (Players == null || Players.Count < 1) return;
 
-            if (_animate)
+            var left = Players[0].Rect.X;
+            var right = Players[0].Rect.X;
+            var top = Players[0].Rect.Y;
+            var bot = Players[0].Rect.Y;
+
+            Vector2 playerMeanPos = Vector2.Zero;
+            foreach (var player in Players)
             {
-                moveAnimation(dt);
+                playerMeanPos += player.Rect.Location.ToVector2();
+                left = Math.Min(player.Rect.X, left);
+                right = Math.Max(player.Rect.X, right);
+                top = Math.Min(player.Rect.Y, top);
+                bot = Math.Max(player.Rect.Y, bot);
             }
-            //_logger.Debug(_dt.ToString() + " " + dt.ToString() + " " + _rect.ToString());
+
+            // Update camera position
+            playerMeanPos /= Players.Count;
+            Position = playerMeanPos;
+            // Console.WriteLine(playerMeanPos);
+
+            // Set zoom level to fit all players
+            var stretch = Math.Max((float)(right - left) / Bounds.Width, (float)(bot - top) / Bounds.Height);
+            UpdateZoom(.75f / stretch);
         }
 
-        private void moveAnimation(float dt)
+        public void UpdateCamera(Viewport bounds, float deltaTime)
         {
-            if (_animationTime <= _dt)
-            {
-                float percent = 1.0f / _dt * dt;
-                average(percent);
-                _animationTime += dt;
-            }
-            if(_animationTime >= _dt)
-            {
-                _animate = false;
-            }
-            //_logger.Debug(_newRect.ToString() + " " + dt.ToString() + " " + (_animationTime).ToString() + " " + _dt.ToString() + " " + _rect.ToString());
-        }
+            Bounds = bounds.Bounds;
+            UpdateMatrix();
 
-        private int newPosition(int oldPos, int dp, int newPos)
-        {
-            int temp = oldPos + dp;
-            if (dp < 0.0f)
+            switch (Mode)
             {
-                if (temp >= newPos) return temp;
-                return newPos;
-            }
-            else
-            {
-                if (temp <= newPos) return temp;
-                return newPos;
+                case CameraMode.Manual:
+                    keyboardMove(deltaTime);
+                    break;
+
+                case CameraMode.Follow:
+                    centerOnPlayers();
+                    break;
+
+                case CameraMode.Room:
+                    // All good here, we only update once when setting the room
+                    break;
             }
         }
 
-        private void average(float a)
+        public void focusOnRoom(Y_Room room)
         {
-            int dx = (int)(Math.Ceiling(_dPos.X * a));
-            _rect.X = newPosition(_rect.X, dx, _newRect.X);
-
-            int dy = (int)(Math.Ceiling(_dPos.Y * a));
-            _rect.Y = newPosition(_rect.Y, dy, _newRect.Y);
-        }
-
-        private void resetAnimation(float dt)
-        {
-            _animate = true;
-            _animationTime = 0.0f;
-            _dt = dt;
+            Room = room;
+            Mode = CameraMode.Room;
+            Position = new Vector2(Room.Position.X + Room.Width / 2, Room.Position.Y + Room.Height / 2);
+            var stretch = Math.Max((float)Room.Width / Bounds.Width, (float)Room.Height / Bounds.Height);
+            UpdateZoom(.95f / stretch);
         }
     }
 }

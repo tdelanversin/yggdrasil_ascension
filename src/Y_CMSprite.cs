@@ -105,21 +105,21 @@ namespace YGR
             else _hitCounter = 0;
 
             bool controls = false;
-            if(_playerIndex == null)
+            if (_playerIndex == null)
             {
                 if (_controlLayout == 1)
                 {
-                    if (Keyboard.IsPressed(Keys.D)) input.X += 1;
-                    if (Keyboard.IsPressed(Keys.A)) input.X -= 1;
-                    if (Keyboard.IsPressed(Keys.S)) input.Y += 1;
-                    if (Keyboard.IsPressed(Keys.W)) input.Y -= 1;
+                    if (Keyboard.IsPressed(Keybinds.P1Right)) input.X += 1;
+                    if (Keyboard.IsPressed(Keybinds.P1Left)) input.X -= 1;
+                    if (Keyboard.IsPressed(Keybinds.P1Down)) input.Y += 1;
+                    if (Keyboard.IsPressed(Keybinds.P1Up)) input.Y -= 1;
                 }
                 else
                 {
-                    if (Keyboard.IsPressed(Keys.Right)) input.X += 1;
-                    if (Keyboard.IsPressed(Keys.Left)) input.X -= 1;
-                    if (Keyboard.IsPressed(Keys.Down)) input.Y += 1;
-                    if (Keyboard.IsPressed(Keys.Up)) input.Y -= 1;
+                    if (Keyboard.IsPressed(Keybinds.P2Right)) input.X += 1;
+                    if (Keyboard.IsPressed(Keybinds.P2Left)) input.X -= 1;
+                    if (Keyboard.IsPressed(Keybinds.P2Down)) input.Y += 1;
+                    if (Keyboard.IsPressed(Keybinds.P2Up)) input.Y -= 1;
                 }
 
                 if (mouse.LeftButton == ButtonState.Pressed)
@@ -144,7 +144,7 @@ namespace YGR
                         gpState.IsButtonDown(Buttons.RightThumbstickRight) ||
                         gpState.IsButtonDown(Buttons.RightThumbstickLeft) ||
                         gpState.IsButtonDown(Buttons.RightThumbstickDown) ||
-                        gpState.IsButtonDown(Buttons.RightThumbstickUp) 
+                        gpState.IsButtonDown(Buttons.RightThumbstickUp)
                     )
                     {
                         shootDir.X *= gpState.ThumbSticks.Right.X;
@@ -157,7 +157,7 @@ namespace YGR
                         shootDir.Y = 0.0f;
                     }
 
-                    _gun.Shoot(gameTime, Rect.Location.ToVector2() + new Vector2(Rect.Width/2, Rect.Height/2), shootDir, Room, this);
+                    _gun.Shoot(gameTime, Rect.Location.ToVector2() + new Vector2(Rect.Width / 2, Rect.Height / 2), shootDir, Room, this);
                 }
             }
 
@@ -194,7 +194,7 @@ namespace YGR
             IList<Vector2> contactNormal;
             IList<Point> contactPoint;
             IList<IGameElement> who;
-            if(Collision.Intersect(this, timeStepMS, out contactPoint, out contactNormal, out who))
+            if (Collision.Intersect(this, timeStepMS, out contactPoint, out contactNormal, out who))
             {
                 Logger.Info("Collided with something");
             }

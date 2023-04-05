@@ -35,7 +35,10 @@ namespace YGR
 
             var res_x = _graphics.PreferredBackBufferWidth;
             var res_y = _graphics.PreferredBackBufferHeight;
-            _camera = new Y_Camera(new Vector2(res_x / 2, res_y / 2), res_x, res_y);
+            _camera = new Y_Camera(_graphics.GraphicsDevice.Viewport, new Vector2(res_x / 2, res_y / 2));
+
+            // Set the camera mode, e.g. 'Follow' to follow players, 'Manual' for keyboard controlled
+            _camera.Mode = CameraMode.Follow;
 
             Factory_Rooms.Initialize(Content);
             Factory_Connectors.Initialize(Content);
@@ -82,6 +85,7 @@ namespace YGR
                     2 // control input
                 )
             };
+            _camera.Players = _player;
         }
 
         protected override void Update(GameTime gameTime)
@@ -91,16 +95,15 @@ namespace YGR
             if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed ||
                 Keyboard.IsPressed(Keys.Escape))
                 Exit();
-            
+
             if (Keyboard.HasBeenPressed(Keybinds.ToggleFullscreen))
                 Util.ToggleFullscreen(_graphics, Window);
 
             float deltaTime = (float)gameTime.ElapsedGameTime.TotalSeconds;
 
-            _camera.UpdateManual(new Vector2(100, 100), 500);
-            _camera.Update(gameTime);
+            _camera.UpdateCamera(_graphics.GraphicsDevice.Viewport, deltaTime);
 
-            foreach(var player in _player)
+            foreach (var player in _player)
             {
                 player.Update(gameTime);
             }
@@ -117,12 +120,10 @@ namespace YGR
             float deltaTime = (float)gameTime.ElapsedGameTime.TotalMilliseconds;
 
             Vector2 zero = Vector2.Zero;
-            int gx = _camera.PosX;
-            int gy = _camera.PosY;
 
             _spriteBatch.Begin(
                 SpriteSortMode.Immediate, null, null, null, null, null,
-                Matrix.CreateTranslation(gx, gy, 0));
+                _camera.Transform);
 
             _spriteBatch.Draw(
                 _background,
@@ -131,7 +132,7 @@ namespace YGR
                 Color.White
             );
 
-            foreach(var room in _rooms.Values)
+            foreach (var room in _rooms.Values)
             {
                 room.Draw(gameTime, zero, _spriteBatch);
                 room.DrawOutline(gameTime, zero, _spriteBatch);
