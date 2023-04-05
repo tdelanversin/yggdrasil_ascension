@@ -127,6 +127,7 @@ namespace YGR
                     var d = (mouse.Position.ToVector2() - Rect.Location.ToVector2());
                     d.Normalize();
                     _gun.Shoot(gameTime, Rect.Location.ToVector2() + new Vector2(Rect.Width / 2, Rect.Height / 2), d, Room, this);
+                    Logger.Info(mouse.Position.ToString() + "    " + d.ToString() + "     " + Rect.ToString());
                 }
             }
             else

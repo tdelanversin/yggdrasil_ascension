@@ -7,7 +7,6 @@ namespace YGR
     public class Y_CMRoom : IWalkable
     {
         public string Name { get; set; }
-        public Vector2 Position { get; set; }
         public IList<IProjectile> Projectiles { get; }
         public IList<IVictim> Victims { get; }
         public int Width { get; private set; }
@@ -20,7 +19,6 @@ namespace YGR
             X_CollisionModel_Room collision
         )
         {
-            Position = Vector2.Zero;
             Name = name;
             Collision = collision;
             Projectiles = new List<IProjectile>();

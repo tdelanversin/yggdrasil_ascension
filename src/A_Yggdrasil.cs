@@ -69,7 +69,7 @@ namespace YGR
                 ),
                 new Y_CMSprite(
                     new X_CollisionModel_Victim(1.0f /* mass */, 0.0f /* elastic impact */),
-                    null,
+                    PlayerIndex.Two,
                     Content.Load<Texture2D>("tester_30"),
                     new Rectangle(0, 0, 21, 30),
                     0.004f, // acceleration
