@@ -37,6 +37,9 @@ namespace YGR
             var res_y = _graphics.PreferredBackBufferHeight;
             _camera = new Y_Camera(_graphics.GraphicsDevice.Viewport, new Vector2(res_x / 2, res_y / 2));
 
+            // Set the camera mode, e.g. 'Follow' to follow players, 'Manual' for keyboard controlled
+            _camera.Mode = CameraMode.Follow;
+
             Factory_Rooms.Initialize(Content);
             Factory_Connectors.Initialize(Content);
             Factory_Debug.Initialize(Content);

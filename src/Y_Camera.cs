@@ -23,10 +23,10 @@ namespace YGR
         public Y_Room Room { get; protected set; }
         public IList<IVictim> Players { get; set; }
 
-        private const float minZoom = .25f;
-        // Maximum zoom levels for...      { Follow, Room, Manual }
-        private readonly float[] maxZoom = { 1.25f, 1.75f, 2.00f };
-        private const float zoomSpeed = 0.05f;
+        // Zoom levels for...              { Follow, Room, Manual }
+        private readonly float[] minZoom = { 0.60f, 0.25f, 0.05f };
+        private readonly float[] maxZoom = { 1.25f, 1.75f, 16.0f };
+        private const float zoomSpeed = 0.1f;
         private const float panSpeed = 1024;
 
         private float currentMouseWheelValue, previousMouseWheelValue;
@@ -72,7 +72,8 @@ namespace YGR
 
         public void UpdateZoom(float zoom)
         {
-            Zoom = Math.Clamp(zoom, minZoom, maxZoom[(int)Mode]);
+            // Clamp to the min/max zoom level allowed in the current mode
+            Zoom = Math.Clamp(zoom, minZoom[(int)Mode], maxZoom[(int)Mode]);
         }
 
         private void keyboardMove(float deltaTime)
@@ -88,7 +89,14 @@ namespace YGR
 
             previousMouseWheelValue = currentMouseWheelValue;
             currentMouseWheelValue = Mouse.GetState().ScrollWheelValue;
-            UpdateZoom(Zoom + Math.Clamp(currentMouseWheelValue - previousMouseWheelValue, -1, 1) * zoomSpeed);
+            if (currentMouseWheelValue > previousMouseWheelValue)
+            {
+                UpdateZoom(Zoom * (1 + zoomSpeed));
+            }
+            else if (currentMouseWheelValue < previousMouseWheelValue)
+            {
+                UpdateZoom(Zoom / (1 + zoomSpeed));
+            }
         }
 
         private void centerOnPlayers()
@@ -103,7 +111,7 @@ namespace YGR
             Vector2 playerMeanPos = Vector2.Zero;
             foreach (var player in Players)
             {
-                playerMeanPos += new Vector2(player.Rect.X, player.Rect.Y);
+                playerMeanPos += player.Rect.Location.ToVector2();
                 left = Math.Min(player.Rect.X, left);
                 right = Math.Max(player.Rect.X, right);
                 top = Math.Min(player.Rect.Y, top);
@@ -116,8 +124,8 @@ namespace YGR
             // Console.WriteLine(playerMeanPos);
 
             // Set zoom level to fit all players
-            var playerStretch = Math.Max((right - left) / Bounds.Width, (bot - top) / Bounds.Height);
-            UpdateZoom(.75f / playerStretch);
+            var stretch = Math.Max((float)(right - left) / Bounds.Width, (float)(bot - top) / Bounds.Height);
+            UpdateZoom(.75f / stretch);
         }
 
         public void UpdateCamera(Viewport bounds, float deltaTime)
