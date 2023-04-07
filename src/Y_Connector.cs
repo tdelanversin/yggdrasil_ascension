@@ -132,6 +132,11 @@ namespace YGR
             }
         }
 
+        public void MoveTo(Point position)
+        {
+
+        }
+
         /// <summary>
         /// This Method will draw all internal structures for debugging purposes
         /// Note: potentially heavy impact on performace

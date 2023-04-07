@@ -80,6 +80,11 @@ namespace YGR
 
         }
 
+        public void MoveTo(Point position)
+        {
+
+        }
+
         /// <summary>
         /// This Method will draw all internal structures for debugging purposes
         /// Note: potentially heavy impact on performace
@@ -114,23 +119,6 @@ namespace YGR
                 new Rectangle(0, 0, _walls.Bounds.Size.X, _walls.Bounds.Size.Y),
                 BackgroundColor
             );
-        }
-
-        /// <summary>
-        /// This method sets the background color for the regular Monogame Draw method
-        /// </summary>
-        /// <param name="color">Some Monogame color</param>
-        public void SetBackgroundColor(Color color)
-        {
-            BackgroundColor = color;
-        }
-
-        /// <summary>
-        /// This method resets the background color for the regular Monogame Draw method to Color.White
-        /// </summary>
-        public void ResetBackgroundColor()
-        {
-            BackgroundColor = Color.White;
         }
 
         /// <summary>
@@ -188,20 +176,6 @@ namespace YGR
                 who = null;
             }
             return newPos;
-        }
-
-        public bool Intersects(Rectangle other)
-        {
-            // TODO: this one needs to deal with the tiles of the walls
-            // then goto X_CollisionManager and do sofisticated tile collision detection with the relevant tiles
-            return other.Intersects(Rect);
-        }
-
-        public bool Intersects(ref Rectangle movingRect, ref Vector2 velocity, int timeStepMS, out Point contactPoint, out Vector2 contactNormal)
-        {
-            contactNormal = Vector2.Zero;
-            contactPoint = Point.Zero;
-            return false;
         }
 
         /// <summary>

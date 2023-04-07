@@ -193,11 +193,6 @@ namespace YGR
             Rect = rect;
         }
 
-        public bool Intersects(Rectangle other)
-        {
-            return other.Intersects(Rect);
-        }
-
         /// <summary>
         /// Regular Draw method for all drawable objects
         /// </summary>

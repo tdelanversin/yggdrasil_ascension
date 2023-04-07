@@ -47,7 +47,8 @@ namespace YGR
             float frameDuration,
             Dictionary<string, int[]> animations,
             IShooter gun,
-            int controlLayout = 1
+            int controlLayout = 1,
+            float scale = 1.0f
             )
         {
             _sprite = texture;
@@ -74,9 +75,9 @@ namespace YGR
             Collision = collision;
 
             Rect = new Rectangle(
-                (int)position.X - _window.Width / 2,
-                (int)position.Y - _window.Height / 2,
-                _window.Width, _window.Height
+                (int)position.X - (int)(scale*_window.Width / 2),
+                (int)position.Y - (int)(scale*_window.Height / 2),
+                (int)(scale*_window.Width), (int)(scale*_window.Height)
             );
 
             Room.Victims.Add(this);
@@ -127,7 +128,6 @@ namespace YGR
                     var d = (mouse.Position.ToVector2() - Rect.Location.ToVector2());
                     d.Normalize();
                     _gun.Shoot(gameTime, Rect.Location.ToVector2() + new Vector2(Rect.Width / 2, Rect.Height / 2), d, Room, this);
-                    Logger.Info(mouse.Position.ToString() + "    " + d.ToString() + "     " + Rect.ToString());
                 }
             }
             else
@@ -215,11 +215,17 @@ namespace YGR
             {
                 color = Color.OrangeRed;
             }
+            //spriteBatch.Draw(
+            //    _sprite, Rect,
+            //    new Rectangle(_animationIndex * _window.Width, 0, _window.Width, _window.Height),
+            //    color
+            //);
+
+            float scale = (float)Rect.Width / (float)_window.Width;
             spriteBatch.Draw(
-                _sprite, Rect,
-                new Rectangle(_animationIndex * _window.Width, 0, _window.Width, _window.Height),
-                color
-            );
+                _sprite, Rect.Location.ToVector2(), 
+                new Rectangle(_animationIndex * _window.Width, 0, _window.Width, _window.Height), 
+                Color.White, 0, Vector2.Zero, scale, SpriteEffects.None, 0);
         }
 
         /// <summary>

@@ -13,7 +13,46 @@
   <ItemGroup>
     <None Remove="Icon.ico" />
     <None Remove="Icon.bmp" />
+    <None Remove="Levels\Level_0\R0\Collisions-int.png" />
+    <None Remove="Levels\Level_0\R0\Collisions.csv" />
+    <None Remove="Levels\Level_0\R0\Collisions.png" />
+    <None Remove="Levels\Level_0\R0\Custom_grounds.png" />
+    <None Remove="Levels\Level_0\R0\Custom_tiles.png" />
+    <None Remove="Levels\Level_0\R0\data.json" />
+    <None Remove="Levels\Level_0\R0\Default_ground.png" />
+    <None Remove="Levels\Level_0\R0\Wall_outlines.png" />
+    <None Remove="Levels\Level_0\R0\_bg.png" />
+    <None Remove="Levels\Level_0\R0\_composite.png" />
+    <None Remove="Levels\Level_0\R2\Collisions-int.png" />
+    <None Remove="Levels\Level_0\R2\Collisions.csv" />
+    <None Remove="Levels\Level_0\R2\Collisions.png" />
+    <None Remove="Levels\Level_0\R2\Custom_grounds.png" />
+    <None Remove="Levels\Level_0\R2\Custom_tiles.png" />
+    <None Remove="Levels\Level_0\R2\data.json" />
+    <None Remove="Levels\Level_0\R2\Default_ground.png" />
+    <None Remove="Levels\Level_0\R2\Wall_outlines.png" />
+    <None Remove="Levels\Level_0\R2\_bg.png" />
+    <None Remove="Levels\Level_0\R2\_composite.png" />
     <None Remove="Rooms\Collisions2.csv" />
+    <None Remove="Rooms\R0\Collisions2.csv" />
+    <None Remove="Rooms\R0\data.json" />
+    <None Remove="Rooms\R1\Collisions-int.png" />
+    <None Remove="Rooms\R1\Collisions.csv" />
+    <None Remove="Rooms\R1\Collisions.png" />
+    <None Remove="Rooms\R1\Custom_grounds.png" />
+    <None Remove="Rooms\R1\Custom_tiles.png" />
+    <None Remove="Rooms\R1\data.json" />
+    <None Remove="Rooms\R1\Default_ground.png" />
+    <None Remove="Rooms\R1\Wall_outlines.png" />
+    <None Remove="Rooms\R1\_bg.png" />
+    <None Remove="Rooms\R1\_composite.png" />
+    <None Remove="Rooms\R2\data.json" />
+    <None Remove="Rooms\R3\data.json" />
+    <None Remove="Rooms\R4\data.json" />
+    <None Remove="Rooms\R5\Collisions.csv" />
+    <None Remove="Rooms\R4\Collisions.csv" />
+    <None Remove="Rooms\R3\Collisions.csv" />
+    <None Remove="Rooms\R5\data.json" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Icon.ico" />
@@ -40,7 +79,7 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Rooms\**">
+    <Content Include="Levels\**">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>

@@ -20,7 +20,8 @@ namespace YGR
         Texture2D _background;
         Y_Camera _camera;
         IList<IVictim> _player;
-        IDictionary<string, IWalkable> _rooms;
+        Y_Level _level;
+        //IDictionary<string, IWalkable> _rooms;
 
         public A_Yggdrasil()
         {
@@ -38,7 +39,8 @@ namespace YGR
             _camera = new Y_Camera(_graphics.GraphicsDevice.Viewport, new Vector2(res_x / 2, res_y / 2));
 
             // Set the camera mode, e.g. 'Follow' to follow players, 'Manual' for keyboard controlled
-            _camera.Mode = CameraMode.Follow;
+            //_camera.Mode = CameraMode.Follow;
+            _camera.Mode = CameraMode.Manual;
 
             Factory_Rooms.Initialize(Content);
             Factory_Connectors.Initialize(Content);
@@ -53,38 +55,43 @@ namespace YGR
             _spriteBatch = new SpriteBatch(GraphicsDevice);
             _background = Content.Load<Texture2D>("background");
 
-            _rooms = new Dictionary<string, IWalkable> {
-                { "room_center", new Y_CMRoom("hello", new X_CollisionModel_Room("Rooms/Collisions2.csv", 40, 40, new Point(0,0)))}
-            };
+            _level = new Y_Level("level_0", 40, 40, "Levels/Level_0");
 
-            _player = new List<IVictim>{
-                new Ninja(
-                    new X_CollisionModel_Victim(1.0f /* mass */, 0.0f /* elastic impact */),
-                    PlayerIndex.One,
-                    Content.Load<Texture2D>("charaset"),
-                    0.02f,
-                    new Vector2(200, 350),
-                    _rooms["room_center"],
-                    new Y_StarterGun()
-                ),
-                new Y_CMSprite(
-                    new X_CollisionModel_Victim(1.0f /* mass */, 0.0f /* elastic impact */),
-                    PlayerIndex.Two,
-                    Content.Load<Texture2D>("tester_30"),
-                    new Rectangle(0, 0, 21, 30),
-                    0.004f, // acceleration
-                    0.4f,  // max velocity
-                    new Vector2(250, 350),
-                    _rooms["room_center"],
-                    200.0f,
-                    new Dictionary<string, int[]> {
-                                    { "stand", new int[] { 0, 1, 8, 9 } },
-                                    { "walk_left", new int[] { 2, 3, 4 } },
-                                    { "walk_right", new int[] { 5, 6, 7 } }},
-                    new Y_WideGun(),
-                    2 // control input
-                )
-            };
+            //_rooms = new Dictionary<string, IWalkable> {
+            //    { "room_center", new Y_CMRoom("hello", new X_CollisionModel_Room("Rooms/Collisions2.csv", 40, 40, new Point(0,0)))}
+            //};
+
+            //_player = new List<IVictim>{
+            //    new Ninja(
+            //        new X_CollisionModel_Victim(1.0f /* mass */, 0.0f /* elastic impact */),
+            //        PlayerIndex.One,
+            //        Content.Load<Texture2D>("charaset"),
+            //        0.02f,
+            //        new Vector2(200, 350),
+            //        _rooms["room_center"],
+            //        new Y_StarterGun()
+            //    ),
+            //    new Y_CMSprite(
+            //        new X_CollisionModel_Victim(1.0f /* mass */, 0.0f /* elastic impact */),
+            //        PlayerIndex.Two,
+            //        Content.Load<Texture2D>("tester_60"),
+            //        //new Rectangle(0, 0, 21, 30),
+            //        new Rectangle(0, 0, 42, 60),
+            //        0.004f, // acceleration
+            //        0.4f,  // max velocity
+            //        new Vector2(250, 350),
+            //        _rooms["room_center"],
+            //        200.0f,
+            //        new Dictionary<string, int[]> {
+            //                        { "stand", new int[] { 0, 1, 8, 9 } },
+            //                        { "walk_left", new int[] { 2, 3, 4 } },
+            //                        { "walk_right", new int[] { 5, 6, 7 } }},
+            //        new Y_WideGun(),
+            //        2, // control input
+            //        1.0f
+            //    )
+            //};
+
             _camera.Players = _player;
         }
 
@@ -103,12 +110,12 @@ namespace YGR
 
             _camera.UpdateCamera(_graphics.GraphicsDevice.Viewport, deltaTime);
 
-            foreach (var player in _player)
-            {
-                player.Update(gameTime);
-            }
+            //foreach (var player in _player)
+            //{
+            //    player.Update(gameTime);
+            //}
 
-            Manager_Projectile.Update(gameTime);
+            //Manager_Projectile.Update(gameTime);
 
             base.Update(gameTime);
         }
@@ -125,29 +132,31 @@ namespace YGR
                 SpriteSortMode.Immediate, null, null, null, null, null,
                 _camera.Transform);
 
-            _spriteBatch.Draw(
-                _background,
-                new Rectangle(0, 0, 3840, 2160),
-                new Rectangle(0, 0, 3840, 2160),
-                Color.White
-            );
+            //_spriteBatch.Draw(
+            //    _background,
+            //    new Rectangle(0, 0, 3840, 2160),
+            //    new Rectangle(0, 0, 3840, 2160),
+            //    Color.White
+            //);
 
-            foreach (var room in _rooms.Values)
-            {
-                room.Draw(gameTime, zero, _spriteBatch);
-                room.DrawOutline(gameTime, zero, _spriteBatch);
-                // uncomment for debugging
-                //room.DrawOutline(gameTime, zero, _spriteBatch);
-            }
+            _level.DrawOutline(gameTime, Vector2.Zero, _spriteBatch);
+
+            //foreach (var room in _rooms.Values)
+            //{
+            //    room.Draw(gameTime, zero, _spriteBatch);
+            //    room.DrawOutline(gameTime, zero, _spriteBatch);
+            //    // uncomment for debugging
+            //    //room.DrawOutline(gameTime, zero, _spriteBatch);
+            //}
 
             Manager_Projectile.Draw(gameTime, zero, _spriteBatch);
             Manager_Projectile.DrawOutline(gameTime, zero, _spriteBatch);
 
-            foreach (var player in _player)
-            {
-                player.Draw(gameTime, zero, _spriteBatch);
-                player.DrawOutline(gameTime, zero, _spriteBatch);
-            }
+            //foreach (var player in _player)
+            //{
+            //    player.Draw(gameTime, zero, _spriteBatch);
+            //    player.DrawOutline(gameTime, zero, _spriteBatch);
+            //}
 
             _spriteBatch.End();
 

@@ -8,8 +8,9 @@
     {
         Room = 0,
         Connector,
+        Door,
         Victim,
         Projectile,
-        CollisionTester
+        Level
     }
 }

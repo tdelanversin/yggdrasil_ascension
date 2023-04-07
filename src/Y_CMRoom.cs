@@ -1,31 +1,155 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 
 namespace YGR
 {
+    internal sealed class Door
+    {
+        public string id;
+        public string iid;
+        public string layer;
+        public int x;
+        public int y;
+        public int width;
+        public int height;
+        public int color;
+    }
+
     public class Y_CMRoom : IWalkable
     {
         public string Name { get; set; }
         public IList<IProjectile> Projectiles { get; }
         public IList<IVictim> Victims { get; }
-        public int Width { get; private set; }
-        public int Height { get; private set; }
         public X_CollisionModel_Room Collision { get; }
         public Rectangle Rect { get; set; }
 
+        //IList<Door> _doors;
+
+        Dictionary<X_ConnectorSide, IList<Tuple<int, int>>> _doors;
+
         public Y_CMRoom(
             string name,
-            X_CollisionModel_Room collision
+            int tileWidth,
+            int tileHeight,
+            string resourceFolder
         )
         {
+            if (resourceFolder.Substring(0, 1) == "/")
+                resourceFolder = "." + resourceFolder;
+            else if (resourceFolder.Substring(0, 2) != "./")
+                resourceFolder = "./" + resourceFolder;
+            if (resourceFolder.Substring(resourceFolder.Length - 2, 1) != "/")
+                resourceFolder += "/";
+
+            string[] lines = File.ReadAllLines(resourceFolder + "Collisions.csv");
+            int[][] collisions = new int[lines.Length][];
+            int counter = 0;
+            foreach (var line in lines)
+            {
+                collisions[counter] = line.Split(',').Where(i => i != "").Select(int.Parse).ToArray();
+                counter++;
+            }
+
+            Collision = new X_CollisionModel_Room(collisions, tileWidth, tileHeight);
+            Rect = new Rectangle(0, 0, collisions[0].Length * Collision.TileWidth, collisions.Length * Collision.TileHeight);
+
+            _doors = new Dictionary<X_ConnectorSide, IList<Tuple<int, int>>>();
+            using (StreamReader stream = new StreamReader(resourceFolder + "data.json"))
+            {
+                string json = stream.ReadToEnd();
+                dynamic array = JsonConvert.DeserializeObject(json);
+                IList<Door> doors = JsonConvert.DeserializeObject<List<Door>>(array.entities.Door.ToString());
+
+                foreach(var door in doors)
+                {
+                    int x = (int)((float)door.x / door.width * Collision.TileWidth) + Rect.X;
+                    int y = (int)((float)door.y / door.height * Collision.TileHeight) + Rect.Y;
+                    var side = determineSide(x, y);
+                    IList<Tuple<int, int>> list;
+                    if(!_doors.TryGetValue(side, out list)){
+                        _doors.Add(side, new List<Tuple<int, int>> { new Tuple<int, int>(x, y) });
+                    }
+                    else list.Add(new Tuple<int, int>(door.x, door.y));
+                }
+            }
+
             Name = name;
-            Collision = collision;
             Projectiles = new List<IProjectile>();
             Victims = new List<IVictim>();
-            Rect = new Rectangle(0, 0, Width, Height);
         }
 
+        private X_ConnectorSide determineSide(int x0, int y0)
+        {
+            /**
+             *  x1,y1 -- x2,y2
+             *    |        |
+             *    |        |
+             *    |        |
+             *  x4,y4 -- x3,y3
+             */
+
+            float x1 = Rect.X;
+            float y1 = Rect.Y;
+            float x2 = Rect.X + Rect.Width;
+            float y2 = Rect.Y;
+            float x3 = Rect.X + Rect.Width;
+            float y3 = Rect.Y + Rect.Height;
+            float x4 = Rect.X;
+            float y4 = Rect.Y + Rect.Height;
+
+            float[] dists = {
+                distance(x0, y0, x1, y1, x2, y2),
+                distance(x0, y0, x2, y2, x3, y3),
+                distance(x0, y0, x3, y3, x4, y4),
+                distance(x0, y0, x4, y4, x1, y1) };
+
+            float min = float.MaxValue;
+            int ind = 0;
+            for(int i=0; i<dists.Length; ++i)
+            {
+                if (dists[i] < min)
+                {
+                    min = dists[i];
+                    ind = i;
+                }
+            }
+
+            if (ind == 0) return X_ConnectorSide.Top;
+            if (ind == 1) return X_ConnectorSide.Right;
+            if (ind == 2) return X_ConnectorSide.Bottom;
+            else return X_ConnectorSide.Left;
+        }
+
+        private float distance(float x0, float y0, float x1, float y1, float x2, float y2)
+        {
+            return (float)(Math.Abs((x2 - x1) * (y1 - y0) - (x1 - x0) * (y2 - y1)) / Math.Sqrt((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1)));
+        }
+
+        public void MoveTo(Point position)
+        {
+            Collision.MoveTo(position - Rect.Location);
+            foreach (var side in _doors)
+            {
+                for (int i=0; i<side.Value.Count(); ++i)
+                {
+                    side.Value[i] = new Tuple<int, int>(position.X + side.Value[i].Item1, position.Y + side.Value[i].Item2);
+                }
+            }
+            
+            // needs to be done this way because properties return by value and not by ref
+            Rect = new Rectangle(position.X, position.Y, Rect.Width, Rect.Height);
+        }
+
+        public Point GetConnectorPoint(X_ConnectorSide side)
+        {
+            var p = _doors[side].First();
+            return new Point(p.Item1, p.Item2);
+        }
 
         /// <summary>
         /// Regular Monogame Update method
@@ -45,6 +169,25 @@ namespace YGR
         public void DrawOutline(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)
         {
             Collision.DrawOutline(gameTime, globalOffset, spriteBatch);
+            Factory_Debug.DrawRectangle(Rect.X, Rect.Y, Rect.Width, Rect.Height, 3, Color.Blue, spriteBatch);
+
+            //foreach(var door in _doors)
+            //{
+            //int x = (int)((float)door.x / door.width * Collision.TileWidth) + Rect.X;
+            //int y = (int)((float)door.y / door.height * Collision.TileHeight) + Rect.Y;
+            Color color = Color.Red;
+            foreach(var side in _doors)
+            {
+                if (side.Key == X_ConnectorSide.Left) color = Color.Red;
+                else if (side.Key == X_ConnectorSide.Right) color = Color.Blue;
+                else if (side.Key == X_ConnectorSide.Top) color = Color.Green;
+                else if (side.Key == X_ConnectorSide.Bottom) color = Color.Yellow;
+                foreach (var door in side.Value)
+                {
+                    Factory_Debug.DrawPoint(door.Item1, door.Item2, 11, color, spriteBatch);
+                }
+            }
+            //}
         }
 
         /// <summary>
@@ -58,27 +201,12 @@ namespace YGR
         }
 
         /// <summary>
-        /// This method sets the background color for the regular Monogame Draw method
-        /// </summary>
-        /// <param name="color">Some Monogame color</param>
-        public void SetBackgroundColor(Color color)
-        {
-        }
-
-        /// <summary>
-        /// This method resets the background color for the regular Monogame Draw method to Color.White
-        /// </summary>
-        public void ResetBackgroundColor()
-        {
-        }
-
-        /// <summary>
         /// This method is the standard ILevelElement WhatAreYou
         /// </summary>
         /// <returns>Returns the fitting X_LevelElements enum entry</returns>
         public X_LevelElements WhatAreYou()
         {
-            return X_LevelElements.CollisionTester;
+            return X_LevelElements.Room;
         }
     }
 }
