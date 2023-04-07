@@ -32,7 +32,7 @@ namespace YGR
 
             Rooms = new Dictionary<string, IWalkable>
             {
-                { "door", new Y_Door(X_DoorDirection.Horizontal, 13, TileWidth, TileHeight, 0) }
+                //{ "door", new Y_Door(X_DoorDirection.Horizontal, 13, TileWidth, TileHeight, 3) }
                 //{ "center", new Y_CMRoom("r0", TileWidth, TileHeight, resourceFolder + "R0") },
                 //{ "bottom", new Y_CMRoom("r2", TileWidth, TileHeight, resourceFolder + "R2") },
                 //{ "top", new Y_CMRoom("r1", TileWidth, TileHeight, resourceFolder + "R1") },

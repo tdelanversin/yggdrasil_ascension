@@ -61,7 +61,7 @@ namespace YGR
                     _connectorPoints[side.Key].Add(
                         new X_ConnectorPoint(
                             side.Key,
-                            new Vector2(side.Value[i, 0], side.Value[i, 1])
+                            new Point(side.Value[i, 0], side.Value[i, 1])
                         )
                     );
                 }

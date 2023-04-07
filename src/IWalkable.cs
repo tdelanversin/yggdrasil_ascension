@@ -14,5 +14,6 @@ namespace YGR
         public IList<IProjectile> Projectiles { get; }
         public IList<IVictim> Victims { get; }
         public void MoveTo(Point position);
+        public X_ConnectorPoint GetConnectorPoint(X_ConnectorSide side, string name="");
     }
 }

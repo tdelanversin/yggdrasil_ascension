@@ -30,7 +30,7 @@ namespace YGR
 
         //IList<Door> _doors;
 
-        Dictionary<X_ConnectorSide, IList<Tuple<int, int>>> _doors;
+        Dictionary<X_ConnectorSide, IList<X_ConnectorPoint>> _doors;
 
         public Y_CMRoom(
             string name,
@@ -58,7 +58,7 @@ namespace YGR
             Collision = new X_CollisionModel_Room(collisions, tileWidth, tileHeight);
             Rect = new Rectangle(0, 0, collisions[0].Length * Collision.TileWidth, collisions.Length * Collision.TileHeight);
 
-            _doors = new Dictionary<X_ConnectorSide, IList<Tuple<int, int>>>();
+            _doors = new Dictionary<X_ConnectorSide, IList<X_ConnectorPoint>>();
             using (StreamReader stream = new StreamReader(resourceFolder + "data.json"))
             {
                 string json = stream.ReadToEnd();
@@ -70,17 +70,23 @@ namespace YGR
                     int x = (int)((float)door.x / door.width * Collision.TileWidth) + Rect.X;
                     int y = (int)((float)door.y / door.height * Collision.TileHeight) + Rect.Y;
                     var side = determineSide(x, y);
-                    IList<Tuple<int, int>> list;
+                    IList<X_ConnectorPoint> list;
                     if(!_doors.TryGetValue(side, out list)){
-                        _doors.Add(side, new List<Tuple<int, int>> { new Tuple<int, int>(x, y) });
+                        _doors.Add(side, new List<X_ConnectorPoint> { new X_ConnectorPoint(side, new Point(x, y)) });
                     }
-                    else list.Add(new Tuple<int, int>(door.x, door.y));
+                    else list.Add(new X_ConnectorPoint(side, new Point(door.x, door.y)));
                 }
             }
 
             Name = name;
             Projectiles = new List<IProjectile>();
             Victims = new List<IVictim>();
+        }
+
+        public X_ConnectorPoint GetConnectorPoint(X_ConnectorSide side, string name = "")
+        {
+            if (!_doors.ContainsKey(side)) return null;
+            return _doors[side].First();
         }
 
         private X_ConnectorSide determineSide(int x0, int y0)
@@ -137,7 +143,8 @@ namespace YGR
             {
                 for (int i=0; i<side.Value.Count(); ++i)
                 {
-                    side.Value[i] = new Tuple<int, int>(position.X + side.Value[i].Item1, position.Y + side.Value[i].Item2);
+                    side.Value[i].MoveTo(position);
+                    //side.Value[i] = new Tuple<int, int>(position.X + side.Value[i].Item1, position.Y + side.Value[i].Item2);
                 }
             }
             
@@ -145,10 +152,9 @@ namespace YGR
             Rect = new Rectangle(position.X, position.Y, Rect.Width, Rect.Height);
         }
 
-        public Point GetConnectorPoint(X_ConnectorSide side)
+        public X_ConnectorPoint GetConnectorPoint(X_ConnectorSide side)
         {
-            var p = _doors[side].First();
-            return new Point(p.Item1, p.Item2);
+            return _doors[side].First();
         }
 
         /// <summary>
@@ -175,16 +181,12 @@ namespace YGR
             //{
             //int x = (int)((float)door.x / door.width * Collision.TileWidth) + Rect.X;
             //int y = (int)((float)door.y / door.height * Collision.TileHeight) + Rect.Y;
-            Color color = Color.Red;
             foreach(var side in _doors)
             {
-                if (side.Key == X_ConnectorSide.Left) color = Color.Red;
-                else if (side.Key == X_ConnectorSide.Right) color = Color.Blue;
-                else if (side.Key == X_ConnectorSide.Top) color = Color.Green;
-                else if (side.Key == X_ConnectorSide.Bottom) color = Color.Yellow;
                 foreach (var door in side.Value)
                 {
-                    Factory_Debug.DrawPoint(door.Item1, door.Item2, 11, color, spriteBatch);
+                    door.DrawOutline(gameTime, Vector2.Zero, spriteBatch);
+                    //Factory_Debug.DrawPoint(door.Item1, door.Item2, 11, color, spriteBatch);
                 }
             }
             //}

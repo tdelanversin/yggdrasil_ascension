@@ -23,13 +23,18 @@ namespace YGR
         // Left: the point should be located on the left wall of the Y_Room
         public X_ConnectorSide ConnectorSide { get; }
         // The point itself in local coordinates
-        public Vector2 Point { get; }
+        public Point Point { get; private set; }
 
-        public X_ConnectorPoint(X_ConnectorSide side, Vector2 point)
+        public X_ConnectorPoint(X_ConnectorSide side, Point point)
         {
 
             ConnectorSide = side;
             Point = point;
+        }
+
+        public void MoveTo(Point position)
+        {
+            Point = position - Point;
         }
 
         /// <summary>
@@ -45,20 +50,20 @@ namespace YGR
             switch (ConnectorSide)
             {
                 case X_ConnectorSide.Left:
-                    color = Color.Blue;
+                    color = Color.Red;
                     break;
                 case X_ConnectorSide.Right:
-                    color = Color.Magenta;
+                    color = Color.Blue;
                     break;
                 case X_ConnectorSide.Top:
-                    color = Color.Yellow;
+                    color = Color.Green;
                     break;
                 case X_ConnectorSide.Bottom:
-                    color = Color.Green;
+                    color = Color.Yellow;
                     break;
             }
 
-            Factory_Debug.DrawPoint((int)(Point.X + globalOffset.X), (int)(Point.Y + globalOffset.Y), 5, Color.Yellow, spriteBatch);
+            Factory_Debug.DrawPoint((int)(Point.X + globalOffset.X), (int)(Point.Y + globalOffset.Y), 11, color, spriteBatch);
         }
     }
 }
