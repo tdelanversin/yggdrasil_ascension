@@ -39,11 +39,11 @@ namespace YGR
             _camera = new Y_Camera(_graphics.GraphicsDevice.Viewport, new Vector2(res_x / 2, res_y / 2));
 
             // Set the camera mode, e.g. 'Follow' to follow players, 'Manual' for keyboard controlled
-            //_camera.Mode = CameraMode.Follow;
-            _camera.Mode = CameraMode.Manual;
+            _camera.Mode = CameraMode.Follow;
+            //_camera.Mode = CameraMode.Manual;
 
-            Factory_Rooms.Initialize(Content);
-            Factory_Connectors.Initialize(Content);
+            //Factory_Rooms.Initialize(Content);
+            //Factory_Connectors.Initialize(Content);
             Factory_Debug.Initialize(Content);
             Manager_Projectile.Initialize(Content);
 
@@ -92,6 +92,28 @@ namespace YGR
             //    )
             //};
 
+            _player = new List<IVictim>{
+                new Y_CMSprite(
+                    new X_CollisionModel_Victim(1.0f /* mass */, 0.0f /* elastic impact */),
+                    PlayerIndex.Two,
+                    Content.Load<Texture2D>("tester_60"),
+                    //new Rectangle(0, 0, 21, 30),
+                    new Rectangle(0, 0, 42, 60),
+                    0.004f, // acceleration
+                    0.4f,  // max velocity
+                    new Vector2(400, 1650),
+                    _level,
+                    200.0f,
+                    new Dictionary<string, int[]> {
+                                    { "stand", new int[] { 0, 1, 8, 9 } },
+                                    { "walk_left", new int[] { 2, 3, 4 } },
+                                    { "walk_right", new int[] { 5, 6, 7 } }},
+                    new Y_WideGun(),
+                    2, // control input
+                    1.0f
+                )
+            };
+
             _camera.Players = _player;
         }
 
@@ -110,12 +132,12 @@ namespace YGR
 
             _camera.UpdateCamera(_graphics.GraphicsDevice.Viewport, deltaTime);
 
-            //foreach (var player in _player)
-            //{
-            //    player.Update(gameTime);
-            //}
+            foreach (var player in _player)
+            {
+                player.Update(gameTime);
+            }
 
-            //Manager_Projectile.Update(gameTime);
+            Manager_Projectile.Update(gameTime);
 
             base.Update(gameTime);
         }
@@ -152,11 +174,11 @@ namespace YGR
             Manager_Projectile.Draw(gameTime, zero, _spriteBatch);
             Manager_Projectile.DrawOutline(gameTime, zero, _spriteBatch);
 
-            //foreach (var player in _player)
-            //{
-            //    player.Draw(gameTime, zero, _spriteBatch);
-            //    player.DrawOutline(gameTime, zero, _spriteBatch);
-            //}
+            foreach (var player in _player)
+            {
+                player.Draw(gameTime, zero, _spriteBatch);
+                player.DrawOutline(gameTime, zero, _spriteBatch);
+            }
 
             _spriteBatch.End();
 

@@ -13,7 +13,6 @@ namespace YGR
         private int[][] _collisionTemplate;
         private Rectangle[] _collisionRectangles;
         private int[,] _collisionModel;
-        private string _locationResourseFile;
         private bool[] _collisionRectanglesHit;
         private Point _location;
         private List<Manager_Collision.Record> _records;
@@ -34,6 +33,59 @@ namespace YGR
             var components = fitRectangles(_collisionTemplate);
             createCollisionModelRectangles(components.Item1, components.Item2);
             _records = new List<Manager_Collision.Record>();
+        }
+
+        public void SplitCollisionVerticallyAt(Point p, int tileCount)
+        {
+            var col = _collisionRectangles.ToList();
+            int index;
+            for (index = 0; index < col.Count(); ++index)
+            {
+                if (col[index].Contains(p)) break;
+            }
+
+            var old = col[index];
+            Rectangle rectTop = new Rectangle(
+                old.X, old.Y,
+                old.Width,
+                p.Y - old.Y - TileHeight / 2 - (tileCount - 3) / 2 * TileHeight - 1);
+            Rectangle rectBottom = new Rectangle(
+                old.X, 
+                old.Y + rectTop.Height + 2 + (tileCount - 2) * TileHeight,
+                old.Width,
+                old.Height - rectTop.Height - (tileCount - 2) * TileHeight - 1);
+
+            col.RemoveAt(index);
+            col.Add(rectTop);
+            col.Add(rectBottom);
+            _collisionRectangles = col.ToArray();
+            _collisionRectanglesHit = Enumerable.Repeat<bool>(false, _collisionRectangles.Count()).ToArray();
+        }
+
+        public void SplitCollisionHorizontallyAt(Point p, int tileCount)
+        {
+            var col = _collisionRectangles.ToList();
+            int index;
+            for (index = 0; index < col.Count(); ++index)
+            {
+                if (col[index].Contains(p)) break;
+            }
+
+            var old = col[index];
+            Rectangle rectLeft = new Rectangle(
+                old.X, old.Y,
+                p.X - old.X - TileWidth / 2 - (tileCount - 3) / 2 * TileWidth - 1,
+                old.Height);
+            Rectangle rectRight = new Rectangle(
+                old.X + rectLeft.Width + 2 + (tileCount - 2) * TileWidth, old.Y,
+                old.Width - rectLeft.Width - (tileCount - 2) * TileWidth - 1,
+                old.Height);
+
+            col.RemoveAt(index);
+            col.Add(rectLeft);
+            col.Add(rectRight);
+            _collisionRectangles = col.ToArray();
+            _collisionRectanglesHit = Enumerable.Repeat<bool>(false, _collisionRectangles.Count()).ToArray();
         }
 
         private int[,] createPattern(int sx, int sy)
@@ -311,12 +363,6 @@ namespace YGR
                         y * TileWidth + _location.X, x * TileHeight + _location.Y, TileWidth, TileHeight,
                         lineWidth, color, spriteBatch);
                     }
-                    //else
-                    //{
-                    //    Factory_Debug.DrawRectangle(
-                    //    y * _tileWidth + _location.X, x * _tileHeight + _location.Y, _tileWidth, _tileHeight,
-                    //    3, Color.Yellow, spriteBatch);
-                    //}
                 }
             }
 
@@ -329,8 +375,8 @@ namespace YGR
                     _collisionRectanglesHit[i] = false;
                 }
                 Factory_Debug.DrawRectangle(
-                        _collisionRectangles[i].X + _location.X,
-                        _collisionRectangles[i].Y + _location.Y,
+                        _collisionRectangles[i].X,
+                        _collisionRectangles[i].Y,
                         _collisionRectangles[i].Width,
                         _collisionRectangles[i].Height,
                         3, color, spriteBatch);
@@ -350,14 +396,17 @@ namespace YGR
             }
         }
 
-        public void MoveTo(Point position)
+        public void MoveBy(Point offset)
         {
-            _location.X = position.X;
-            _location.Y = position.Y;
+            _location.X = _location.X + offset.X;
+            _location.Y = _location.Y + offset.Y;
 
-            foreach(var rect in _collisionRectangles)
+            for(int i=0; i<_collisionRectangles.Length; ++i)
             {
-                rect.Offset(_location - rect.Location);
+                var rect = _collisionRectangles[i];
+                _collisionRectangles[i] = new Rectangle(
+                    rect.X + offset.X, rect.Y + offset.Y, 
+                    rect.Width, rect.Height);
             }
         }
 

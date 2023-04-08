@@ -23,14 +23,11 @@ namespace YGR
     public class Y_CMRoom : IWalkable
     {
         public string Name { get; set; }
-        public IList<IProjectile> Projectiles { get; }
-        public IList<IVictim> Victims { get; }
         public X_CollisionModel_Room Collision { get; }
         public Rectangle Rect { get; set; }
 
-        //IList<Door> _doors;
-
-        Dictionary<X_ConnectorSide, IList<X_ConnectorPoint>> _doors;
+        public Dictionary<X_ConnectorSide, IList<X_ConnectorPoint>> Doors { get; set; }
+        public Dictionary<X_ConnectorSide, IList<IWalkable>> DoorRooms { get; set; }
 
         public Y_CMRoom(
             string name,
@@ -58,7 +55,8 @@ namespace YGR
             Collision = new X_CollisionModel_Room(collisions, tileWidth, tileHeight);
             Rect = new Rectangle(0, 0, collisions[0].Length * Collision.TileWidth, collisions.Length * Collision.TileHeight);
 
-            _doors = new Dictionary<X_ConnectorSide, IList<X_ConnectorPoint>>();
+            Doors = new Dictionary<X_ConnectorSide, IList<X_ConnectorPoint>>();
+            DoorRooms = new Dictionary<X_ConnectorSide, IList<IWalkable>>();
             using (StreamReader stream = new StreamReader(resourceFolder + "data.json"))
             {
                 string json = stream.ReadToEnd();
@@ -71,25 +69,23 @@ namespace YGR
                     int y = (int)((float)door.y / door.height * Collision.TileHeight) + Rect.Y;
                     var side = determineSide(x, y);
                     IList<X_ConnectorPoint> list;
-                    if(!_doors.TryGetValue(side, out list)){
+                    if(!Doors.TryGetValue(side, out list)){
                         if(side == X_ConnectorSide.Top || side == X_ConnectorSide.Bottom)
-                            _doors.Add(side, new List<X_ConnectorPoint> { new X_ConnectorPoint(side, new Point(x, y-tileHeight)) });
+                            Doors.Add(side, new List<X_ConnectorPoint> { new X_ConnectorPoint(side, new Point(x, y-tileHeight)) });
                         else
-                            _doors.Add(side, new List<X_ConnectorPoint> { new X_ConnectorPoint(side, new Point(x, y)) });
+                            Doors.Add(side, new List<X_ConnectorPoint> { new X_ConnectorPoint(side, new Point(x, y)) });
                     }
                     else list.Add(new X_ConnectorPoint(side, new Point(door.x, door.y)));
                 }
             }
 
             Name = name;
-            Projectiles = new List<IProjectile>();
-            Victims = new List<IVictim>();
         }
 
         public X_ConnectorPoint GetConnectorPoint(X_ConnectorSide side, string name = "")
         {
-            if (!_doors.ContainsKey(side)) return null;
-            return _doors[side].First();
+            if (!Doors.ContainsKey(side)) return null;
+            return Doors[side].First();
         }
 
         private X_ConnectorSide determineSide(int x0, int y0)
@@ -141,12 +137,13 @@ namespace YGR
 
         public void MoveTo(Point position)
         {
-            Collision.MoveTo(position);
-            foreach (var side in _doors)
+            Point p = position - Rect.Location;
+            Collision.MoveBy(p);
+            foreach (var side in Doors)
             {
                 for (int i=0; i<side.Value.Count(); ++i)
                 {
-                    side.Value[i].MoveTo(position);
+                    side.Value[i].MoveBy(p);
                     //side.Value[i] = new Tuple<int, int>(position.X + side.Value[i].Item1, position.Y + side.Value[i].Item2);
                 }
             }
@@ -157,7 +154,7 @@ namespace YGR
 
         public X_ConnectorPoint GetConnectorPoint(X_ConnectorSide side)
         {
-            return _doors[side].First();
+            return Doors[side].First();
         }
 
         /// <summary>
@@ -180,11 +177,11 @@ namespace YGR
             Collision.DrawOutline(gameTime, globalOffset, spriteBatch);
             Factory_Debug.DrawRectangle(Rect.X, Rect.Y, Rect.Width, Rect.Height, 3, Color.Blue, spriteBatch);
 
-            //foreach(var door in _doors)
+            //foreach(var door in Doors)
             //{
             //int x = (int)((float)door.x / door.width * Collision.TileWidth) + Rect.X;
             //int y = (int)((float)door.y / door.height * Collision.TileHeight) + Rect.Y;
-            foreach(var side in _doors)
+            foreach(var side in Doors)
             {
                 foreach (var door in side.Value)
                 {

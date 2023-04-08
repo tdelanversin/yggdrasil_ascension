@@ -15,7 +15,6 @@ namespace YGR
         IShooter _gun;
         PlayerIndex? _playerIndex;
 
-        public IWalkable Room { get; set; }
         X_ConnectorSide _lastSide;
         int _hitCounter;
         int _maxHitCounter;
@@ -25,6 +24,8 @@ namespace YGR
         public bool HitInLastLoop { get; set; }
         public X_CollisionModel_Victim Collision { get; }
         public Vector2 Velocity { get; set; }
+        public Y_Level Level { get; set; }
+        public IWalkable Room { get; set; }
         public Rectangle Rect { get; set; }
 
         private Vector2 _acceleration;
@@ -43,7 +44,7 @@ namespace YGR
             float acceleration,
             float maxVelocity,
             Vector2 position,
-            IWalkable startRoom,
+            Y_Level level,
             float frameDuration,
             Dictionary<string, int[]> animations,
             IShooter gun,
@@ -55,7 +56,6 @@ namespace YGR
             _window = window;
             _animations = animations;
             _animationIndex = 0;
-            Room = startRoom;
             _gun = gun;
             _playerIndex = playerIndex;
             _controlLayout = controlLayout;
@@ -69,6 +69,7 @@ namespace YGR
             _maxVelocity = Vector2.One * maxVelocity;
             Position = position;
 
+            Level = level;
             LifePoints = 100;
             HitInLastLoop = false;
 
@@ -80,7 +81,8 @@ namespace YGR
                 (int)(scale*_window.Width), (int)(scale*_window.Height)
             );
 
-            Room.Victims.Add(this);
+            Level.Victims.Add(this);
+            Room = Level.GetRoom(this, Room);
         }
 
         public X_LevelElements WhatAreYou()
@@ -127,7 +129,7 @@ namespace YGR
                 {
                     var d = (mouse.Position.ToVector2() - Rect.Location.ToVector2());
                     d.Normalize();
-                    _gun.Shoot(gameTime, Rect.Location.ToVector2() + new Vector2(Rect.Width / 2, Rect.Height / 2), d, Room, this);
+                    _gun.Shoot(gameTime, Rect.Location.ToVector2() + new Vector2(Rect.Width / 2, Rect.Height / 2), d, Level, this);
                 }
             }
             else
@@ -158,7 +160,7 @@ namespace YGR
                         shootDir.Y = 0.0f;
                     }
 
-                    _gun.Shoot(gameTime, Rect.Location.ToVector2() + new Vector2(Rect.Width / 2, Rect.Height / 2), shootDir, Room, this);
+                    _gun.Shoot(gameTime, Rect.Location.ToVector2() + new Vector2(Rect.Width / 2, Rect.Height / 2), shootDir, Level, this);
                 }
             }
 

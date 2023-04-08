@@ -13,6 +13,7 @@ namespace YGR
         public Vector2 Position { get; private set; }
         public X_CollisionModel_Projectile Collision { get; }
         public Vector2 Velocity { get; set; }
+        public Y_Level Level { get; set; }
         public IWalkable Room { get; set; }
         public Rectangle Rect { get; set; }
         public IGameElement WhoFiredMe { get; }
@@ -28,7 +29,7 @@ namespace YGR
             Vector2 position,
             Vector2 direction,
             double timeCreated,
-            IWalkable room,
+            Y_Level level,
             IGameElement who
         ) {
             _sprite = Manager_Projectile.projectile_textures["smaller_projectile"];
@@ -40,14 +41,15 @@ namespace YGR
             TimeCreated = timeCreated;
             _isEnemy = false;
             Name = "StarterProjectile";
-            Room = room;
+            Level = level;
             DeleteNext = false;
             Collision = new X_CollisionModel_Projectile(0.5f, 1.0f);
 
             Rect = new Rectangle((int)position.X - _window.Width/2, (int)position.Y - _window.Height/2, _window.Width, _window.Height);
 
-            Room.Projectiles.Add(this);
+            Level.Projectiles.Add(this);
             WhoFiredMe = who;
+            Room = Level.GetRoom(this, Room);
         }
 
         public void Update(GameTime gameTime) {
@@ -73,47 +75,6 @@ namespace YGR
             /* ########################################################################## */
 
             _animationIndex = (int)(5 - (gameTime.TotalGameTime.TotalMilliseconds - TimeCreated) / 300);
-
-            var whatAreYou = Room.WhatAreYou();
-            if (whatAreYou == X_LevelElements.Connector)
-            {
-                var connector = (Y_Connector)Room;
-                // check if we are still inside the room
-                if (!connector.IsInside(Position))
-                {
-                    // if not, assign the room according to the last side we were on
-                    /*
-                     * TODO: this is sensitive to movement speed!!!
-                     */
-                    var oldRoom = Room.Name;
-                    Room = connector.GetRoom(_lastSide);
-                    Logger.Info("Projectile moves from room [" + oldRoom + "] to room [" + Room.Name + "]");
-                }
-                else
-                {
-                    // if we are still inside the connector, check which pad and if necessary switch
-                    connector.IsOnPad(Position, ref _lastSide);
-                }
-            }
-            else if (whatAreYou == X_LevelElements.Room)
-            {
-                // check if we are inside one of the connector pads
-                // if we are => switch the room
-                var room = (Y_Room)Room;
-                foreach (var conn in room.Connectors)
-                {
-                    if (conn.IsOnPad(Position, ref _lastSide))
-                    {
-                        if (conn.IsInside(Position))
-                        {
-                            var oldRoom = Room.Name;
-                            Room = conn;
-                            Logger.Info("Projectile move from room [" + oldRoom + "] to room [" + Room.Name + "]");
-                        }
-                        break;
-                    }
-                }
-            }
         }
 
         public void Draw(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch) {
@@ -164,6 +125,7 @@ namespace YGR
         public Vector2 Position { get; private set; }
         public X_CollisionModel_Projectile Collision { get; }
         public Vector2 Velocity { get; set; }
+        public Y_Level Level { get; set; }
         public IWalkable Room { get; set; }
         public Rectangle Rect { get; set; }
         public IGameElement WhoFiredMe { get; }
@@ -179,7 +141,7 @@ namespace YGR
             Vector2 position,
             Vector2 direction,
             double timeCreated,
-            IWalkable room,
+            Y_Level level,
             IGameElement who
         ) {
             _sprite = Manager_Projectile.projectile_textures["smaller_projectile"];
@@ -191,14 +153,14 @@ namespace YGR
             TimeCreated = timeCreated;
             _isEnemy = false;
             Name = "StarterProjectile";
-            Room = room;
+            Level = level;
             DeleteNext = false;
             Collision = new X_CollisionModel_Projectile(0.1f, 1.0f);
 
             Rect = new Rectangle((int)position.X - _window.Width / 2, (int)position.Y - _window.Height / 2, _window.Width, _window.Height);
-            Room.Projectiles.Add(this);
+            Level.Projectiles.Add(this);
             WhoFiredMe = who;
-
+            Room = Level.GetRoom(this, Room);
         }
 
         public void Update(GameTime gameTime) {
@@ -222,57 +184,7 @@ namespace YGR
                 }
             }
 
-            // ========== Old way: ==========
-            //Position = _room.Clamp(_window, Position, _direction * (float)(_speed * gameTime.ElapsedGameTime.TotalMilliseconds), ref who, ref where );
-            //if(who != null)
-            //{
-            //    DeleteNext = true;
-            //}
-
-            /* ########################################################################## */
-
             _animationIndex = (int)(5 - (gameTime.TotalGameTime.TotalMilliseconds - TimeCreated) / 300);
-
-            var whatAreYou = Room.WhatAreYou();
-            if (whatAreYou == X_LevelElements.Connector)
-            {
-                var connector = (Y_Connector)Room;
-                // check if we are still inside the room
-                if (!connector.IsInside(Position))
-                {
-                    // if not, assign the room according to the last side we were on
-                    /*
-                     * TODO: this is sensitive to movement speed!!!
-                     */
-                    var oldRoom = Room.Name;
-                    Room = connector.GetRoom(_lastSide);
-                    Logger.Info("Projectile moves from room [" + oldRoom + "] to room [" + Room.Name + "]");
-                }
-                else
-                {
-                    // if we are still inside the connector, check which pad and if necessary switch
-                    connector.IsOnPad(Position, ref _lastSide);
-                }
-            }
-            else if (whatAreYou == X_LevelElements.Room)
-            {
-                // check if we are inside one of the connector pads
-                // if we are => switch the room
-                var room = (Y_Room)Room;
-                foreach (var conn in room.Connectors)
-                {
-                    if (conn.IsOnPad(Position, ref _lastSide))
-                    {
-                        if (conn.IsInside(Position))
-                        {
-                            var oldRoom = Room.Name;
-                            Room = conn;
-                            Logger.Info("Projectile move from room [" + oldRoom + "] to room [" + Room.Name + "]");
-                        }
-                        break;
-                    }
-                }
-            }
         }
 
         public void Draw(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch) {

@@ -32,9 +32,9 @@ namespace YGR
             Point = point;
         }
 
-        public void MoveTo(Point position)
+        public void MoveBy(Point offset)
         {
-            Point = position + Point;
+            Point = offset + Point;
         }
 
         /// <summary>

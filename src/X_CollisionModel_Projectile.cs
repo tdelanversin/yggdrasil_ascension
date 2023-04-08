@@ -2,6 +2,7 @@
 using Microsoft.Xna.Framework.Graphics;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using static YGR.Manager_Collision;
 
 namespace YGR
@@ -33,7 +34,8 @@ namespace YGR
             Vector2 myVelocity = me.Velocity;
             Rectangle otherRect;
             Vector2 otherVelocity;
-            foreach (var victim in me.Room.Victims)
+
+            foreach (var victim in me.Level.Victims)
             {
                 if (victim == me.WhoFiredMe) continue;
 
@@ -58,14 +60,29 @@ namespace YGR
                 }
             }
 
-            if (me.Room.Collision.IntersectFast(ref myRect, ref myVelocity, timeStepMS, out point, out normal))
+            var room = me.Level.GetRoom(me, me.Room);
+            if (room.Collision.IntersectFast(ref myRect, ref myVelocity, timeStepMS, out point, out normal))
             {
                 result = true;
-                who.Add(me.Room);
+                who.Add(room);
                 contactPoint.Add(point);
                 contactNormal.Add(normal);
                 me.Velocity = Vector2.Zero;
-                Logger.Info("impacted at " + point.ToString() + " with room " + me.Room.Name);
+                Logger.Info("impacted at " + point.ToString() + " with room " + room.Name);
+            }
+
+            // check the connected connectors, just to be sure
+            foreach (var door in room.DoorRooms)
+            {
+                if (door.Value.First().Collision.Intersect(ref myRect, ref myVelocity, timeStepMS, out point, out normal))
+                {
+                    result = true;
+                    who.Add(room);
+                    contactPoint.Add(point);
+                    contactNormal.Add(normal);
+                    me.Velocity = myVelocity;
+                    Logger.Info("impacted at " + point.ToString() + " with room " + room.Name);
+                }
             }
 
             if (result)

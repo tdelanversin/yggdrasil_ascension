@@ -11,6 +11,10 @@ namespace YGR
         public IDictionary<string, IWalkable> Rooms { get; private set; }
         public int TileWidth { get; }
         public int TileHeight { get; }
+        public IList<IProjectile> Projectiles { get; }
+        public IList<IVictim> Victims { get; }
+
+        private string _name;
 
         public Y_Level(
             string name,
@@ -18,6 +22,8 @@ namespace YGR
             int tileHeight,
             string resourceFolder)
         {
+            _name = name;
+
             if (resourceFolder.Substring(0, 1) == "/")
                 resourceFolder = "." + resourceFolder;
             else if (resourceFolder.Substring(0, 2) != "./")
@@ -48,6 +54,37 @@ namespace YGR
             ((Y_Door)Rooms["door-center-to-right"]).Connect(X_ConnectorSide.Left, Rooms["center"], X_ConnectorSide.Right, Rooms["right"]);
             ((Y_Door)Rooms["door-center-to-bottom"]).Connect(X_ConnectorSide.Top, Rooms["center"], X_ConnectorSide.Bottom, Rooms["bottom"]);
             ((Y_Door)Rooms["door-middle-to-top"]).Connect(X_ConnectorSide.Bottom, Rooms["middle"], X_ConnectorSide.Top, Rooms["top"]);
+
+            // finalize: split collision models
+            foreach (var room in Rooms)
+            {
+                if(room.Value.WhatAreYou() == X_LevelElements.Door)
+                {
+                    ((Y_Door)room.Value).SplitConnectedCollisionModels();
+                }
+            }
+
+            Projectiles = new List<IProjectile>();
+            Victims = new List<IVictim>();
+        }
+
+        public IWalkable GetRoom(IGameElement elem, IWalkable currentRoom)
+        {
+            var location = elem.Rect.Location + new Point(Rect.Width / 2, Rect.Height / 2);
+            if (currentRoom != null && currentRoom.Rect.Contains(location))
+            {
+                return currentRoom;
+            }
+
+            foreach (var r in Rooms)
+            {
+                if (r.Value.Rect.Contains(location))
+                {
+                    currentRoom = r.Value;
+                }
+            }
+
+            return currentRoom;
         }
 
         public void Update(GameTime gameTime)

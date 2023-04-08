@@ -2,6 +2,7 @@
 using Microsoft.Xna.Framework.Graphics;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace YGR
 {
@@ -57,14 +58,30 @@ namespace YGR
             //    }
             //}
 
-            if (me.Room.Collision.Intersect(ref myRect, ref myVelocity, timeStepMS, out point, out normal))
+            // check the room
+            IWalkable room = me.Level.GetRoom(me, me.Room);
+            if (room.Collision.Intersect(ref myRect, ref myVelocity, timeStepMS, out point, out normal))
             {
                 result = true;
-                who.Add(me.Room);
+                who.Add(room);
                 contactPoint.Add(point);
                 contactNormal.Add(normal);
                 me.Velocity = myVelocity;
-                Logger.Info("impacted at " + point.ToString() + " with room " + me.Room.Name);
+                Logger.Info("impacted at " + point.ToString() + " with room " + room.Name);
+            }
+
+            // check the connected connectors, just to be sure
+            foreach(var door in room.DoorRooms)
+            {
+                if (door.Value.First().Collision.Intersect(ref myRect, ref myVelocity, timeStepMS, out point, out normal))
+                {
+                    result = true;
+                    who.Add(room);
+                    contactPoint.Add(point);
+                    contactNormal.Add(normal);
+                    me.Velocity = myVelocity;
+                    Logger.Info("impacted at " + point.ToString() + " with room " + room.Name);
+                }
             }
 
             Rectangle rect = me.Rect;

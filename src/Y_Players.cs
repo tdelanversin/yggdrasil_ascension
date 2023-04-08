@@ -33,6 +33,7 @@ namespace YGR
         public X_CollisionModel_Victim Collision { get; }
         public Vector2 Velocity { get; set; }
         public Rectangle Rect { get; set; }
+        public Y_Level Level { get; set; }
         public IWalkable Room { get; set; }
         IShooter _gun;
 
@@ -44,7 +45,7 @@ namespace YGR
             Texture2D texture,
             float maxVelocity,
             Vector2 position,
-            IWalkable startRoom,
+            Y_Level level,
             IShooter gun
         )
         {
@@ -62,11 +63,11 @@ namespace YGR
             _maxVelocity = Vector2.One * maxVelocity;
 
             Collision = collision;
-            Room = startRoom;
+            Level = level;
             LifePoints = 100;
             HitInLastLoop = false;
 
-            Room.Victims.Add(this);
+            Level.Victims.Add(this);
 
             // Set a default timer value.
             timer = 0;
@@ -127,6 +128,8 @@ namespace YGR
             // This tells the animation to start on the left-side sprite.
             previousAnimationIndex = 2;
             currentAnimationIndex = 1;
+
+            Room = Level.GetRoom(this, Room);
         }
 
         public X_LevelElements WhatAreYou()
@@ -179,13 +182,13 @@ namespace YGR
                     shootDir.Y = 0.0f;
                 }
 
-                _gun.Shoot(gameTime, Rect.Location.ToVector2() + new Vector2(Rect.Width / 2, Rect.Height / 2), shootDir, Room, this);
+                _gun.Shoot(gameTime, Rect.Location.ToVector2() + new Vector2(Rect.Width / 2, Rect.Height / 2), shootDir, Level, this);
             }
             else if (mouse.LeftButton == ButtonState.Pressed)
             {
                 var d = (mouse.Position.ToVector2() - Rect.Location.ToVector2());
                 d.Normalize();
-                _gun.Shoot(gameTime, Rect.Location.ToVector2() + new Vector2(Rect.Width / 2, Rect.Height / 2), d, Room, this);
+                _gun.Shoot(gameTime, Rect.Location.ToVector2() + new Vector2(Rect.Width / 2, Rect.Height / 2), d, Level, this);
             }
 
             // Update the cooldown timer

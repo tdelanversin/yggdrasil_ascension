@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System;
 using Assimp;
 using System.Data;
+using System.Linq;
 
 namespace YGR
 {
@@ -20,9 +21,10 @@ namespace YGR
         public X_CollisionModel_Room Collision { get; }
         public IList<IProjectile> Projectiles { get; }
         public IList<IVictim> Victims { get; }
+        public Dictionary<X_ConnectorSide, IList<X_ConnectorPoint>> Doors { get; set; }
+        public Dictionary<X_ConnectorSide, IList<IWalkable>> DoorRooms { get; set; }
 
         private int[][] _collision;
-        Dictionary<X_ConnectorSide, X_ConnectorPoint> _doors;
         private X_DoorDirection _direction;
 
         const int _numTilesDoorWidth = 5;
@@ -44,7 +46,8 @@ namespace YGR
 
         private int[][] getDoorPoints(int[][] collision, int tileWidth, int tileHeight)
         {
-            _doors = new Dictionary<X_ConnectorSide, X_ConnectorPoint>();
+            Doors = new Dictionary<X_ConnectorSide, IList<X_ConnectorPoint>>();
+            DoorRooms = new Dictionary<X_ConnectorSide, IList<IWalkable>>();
             for (int x = 0; x < collision.Length; ++x)
             {
                 for (int y = 0; y < collision[0].Length; ++y)
@@ -53,13 +56,13 @@ namespace YGR
                     if (val == 2 || val == 4)
                     {
                         var side = (val == 2) ? X_ConnectorSide.Bottom : X_ConnectorSide.Left;
-                        _doors.Add(side, new X_ConnectorPoint(side, new Point(y * tileWidth+tileWidth/2, x * tileHeight+tileHeight/2)));
+                        Doors.Add(side, new List<X_ConnectorPoint>{ new X_ConnectorPoint(side, new Point(y * tileWidth + tileWidth / 2, x * tileHeight + tileHeight / 2))});
                         collision[x][y] = 0;
                     }
                     if (val == 3 || val == 5)
                     {
                         var side = (val == 3) ? X_ConnectorSide.Top : X_ConnectorSide.Right;
-                        _doors.Add(side, new X_ConnectorPoint(side, new Point(y * tileWidth + tileWidth / 2, x * tileHeight + tileHeight / 2)));
+                        Doors.Add(side, new List<X_ConnectorPoint> { new X_ConnectorPoint(side, new Point(y * tileWidth + tileWidth / 2, x * tileHeight + tileHeight / 2)) });
                         collision[x][y] = 0;
                     }
                 }
@@ -192,8 +195,8 @@ namespace YGR
 
         public X_ConnectorPoint GetConnectorPoint(X_ConnectorSide side, string name = "")
         {
-            if (!_doors.ContainsKey(side)) return null;
-            return _doors[side];
+            if (!Doors.ContainsKey(side)) return null;
+            return Doors[side].First();
         }
 
         /// <summary>
@@ -300,40 +303,65 @@ namespace YGR
                 Logger.Error("Invalid connector combination");
             }
 
-            //Rooms["center"].MoveTo(new Point(0, -Rooms["center"].Rect.Height - 40));
-            //Rooms["top"].MoveTo(new Point(0, Rooms["center"].Rect.Y - Rooms["top"].Rect.Height - 40));
-            //Rooms["left"].MoveTo(new Point(-Rooms["left"].Rect.Width - 40, Rooms["bottom"].Rect.Height / 3));
-
             /* left to right */
             if (hCheck1)
             {
-                var deltaPC = Rect.Location - _doors[X_ConnectorSide.Right].Point;
+                var deltaPC = Rect.Location - Doors[X_ConnectorSide.Right].First().Point;
                 MoveTo(connectorPoint1.Point + deltaPC);
-                room2.MoveTo(_doors[X_ConnectorSide.Left].Point + room2.Rect.Location - connectorPoint2.Point);
+                room2.MoveTo(Doors[X_ConnectorSide.Left].First().Point + room2.Rect.Location - connectorPoint2.Point);
             }
             /* right to left */
             else if (hCheck2)
             {
-                var deltaPC = Rect.Location - _doors[X_ConnectorSide.Left].Point;
+                var deltaPC = Rect.Location - Doors[X_ConnectorSide.Left].First().Point;
                 MoveTo(connectorPoint1.Point + deltaPC);
-                room2.MoveTo(_doors[X_ConnectorSide.Right].Point + room2.Rect.Location - connectorPoint2.Point);
+                room2.MoveTo(Doors[X_ConnectorSide.Right].First().Point + room2.Rect.Location - connectorPoint2.Point);
             }
             /* bottom to top */
             else if (vCheck1)
             {
-                var deltaPC = Rect.Location - _doors[X_ConnectorSide.Top].Point;
+                var deltaPC = Rect.Location - Doors[X_ConnectorSide.Top].First().Point;
                 MoveTo(connectorPoint1.Point + deltaPC);
-                room2.MoveTo(_doors[X_ConnectorSide.Bottom].Point + room2.Rect.Location - connectorPoint2.Point);
+                room2.MoveTo(Doors[X_ConnectorSide.Bottom].First().Point + room2.Rect.Location - connectorPoint2.Point);
             }
             /* top to bottom */
             else if (vCheck2)
             {
-                var deltaPC = Rect.Location - _doors[X_ConnectorSide.Bottom].Point;
+                var deltaPC = Rect.Location - Doors[X_ConnectorSide.Bottom].First().Point;
                 MoveTo(connectorPoint1.Point + deltaPC);
-                room2.MoveTo(_doors[X_ConnectorSide.Top].Point + room2.Rect.Location - connectorPoint2.Point);
+                room2.MoveTo(Doors[X_ConnectorSide.Top].First().Point + room2.Rect.Location - connectorPoint2.Point);
             }
 
+            // the following flip of connectorPoint2 and connectorPoint1 is NOT a bug
+            DoorRooms.Add(connectorPoint2.ConnectorSide, new List<IWalkable> { room1 });
+            DoorRooms.Add(connectorPoint1.ConnectorSide, new List<IWalkable> { room2 });
+            room1.DoorRooms.Add(connectorPoint2.ConnectorSide, new List<IWalkable> { this });
+            room2.DoorRooms.Add(connectorPoint1.ConnectorSide, new List<IWalkable> { this });
+
             return this;
+        }
+
+        public void SplitConnectedCollisionModels()
+        {
+            foreach(var room in DoorRooms)
+            {
+                if (room.Key == X_ConnectorSide.Left || room.Key == X_ConnectorSide.Right)
+                {
+                    foreach (var r in room.Value)
+                    {
+                        // need vertical split
+                        r.Collision.SplitCollisionVerticallyAt(Doors[room.Key].First().Point, _numTilesDoorWidth);
+                    }
+                }
+                else
+                {
+                    foreach (var r in room.Value)
+                    {
+                        // need horizontal split                    
+                        r.Collision.SplitCollisionHorizontallyAt(Doors[room.Key].First().Point, _numTilesDoorWidth);
+                    }
+                }
+            }
         }
 
         public void Update(GameTime gameTime)
@@ -345,9 +373,12 @@ namespace YGR
         {
             Factory_Debug.DrawRectangle(Rect.X, Rect.Y, Rect.Width, Rect.Height, 3, Color.Orange, spriteBatch);
             Collision.DrawOutline(gameTime, globalOffset, spriteBatch);
-            foreach(var door in _doors)
+            foreach(var door in Doors)
             {
-                door.Value.DrawOutline(gameTime, globalOffset, spriteBatch);
+                foreach(var d in door.Value)
+                {
+                    d.DrawOutline(gameTime, globalOffset, spriteBatch);
+                }
             }
 
             //Factory_Debug.DrawPoint(_leftOrBottomConnector.Point.X, _leftOrBottomConnector.Point.Y, 11, Color.Red, spriteBatch);
@@ -363,11 +394,14 @@ namespace YGR
         {
             var p = position - Rect.Location;
             Rect = new Rectangle(p.X, p.Y, Rect.Width, Rect.Height);
-            foreach(var door in _doors)
+            foreach(var door in Doors)
             {
-                door.Value.MoveTo(position);
+                foreach(var d in door.Value)
+                {
+                    d.MoveBy(p);
+                }
             }
-            Collision.MoveTo(position);
+            Collision.MoveBy(p);
         }
 
         public X_LevelElements WhatAreYou()
