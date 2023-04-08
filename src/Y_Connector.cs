@@ -132,6 +132,11 @@ namespace YGR
             }
         }
 
+        public X_ConnectorPoint GetConnectorPoint(X_ConnectorSide side, string name = "")
+        {
+            return null;
+        }
+
         public void MoveTo(Point position)
         {
 

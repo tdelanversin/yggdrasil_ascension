@@ -130,6 +130,11 @@ namespace YGR
             Connectors.Add(connector);
         }
 
+        public X_ConnectorPoint GetConnectorPoint(X_ConnectorSide side, string name = "")
+        {
+            return null;
+        }
+
         /// <summary>
         /// This method returns a random connector point on the walls of the current room on the given X_ConnectorSide. 
         /// <para>X_ConnectorSide.Left means, the connector point will be on the left side wall of the room</para>

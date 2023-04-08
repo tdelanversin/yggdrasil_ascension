@@ -9,7 +9,6 @@ namespace YGR
     {
         public Rectangle Rect { get; set; }
         public IDictionary<string, IWalkable> Rooms { get; private set; }
-
         public int TileWidth { get; }
         public int TileHeight { get; }
 
@@ -26,24 +25,29 @@ namespace YGR
             if (resourceFolder.Substring(resourceFolder.Length - 2, 1) != "/")
                 resourceFolder += "/";
 
-
             TileWidth = tileWidth;
             TileHeight = tileHeight;
 
             Rooms = new Dictionary<string, IWalkable>
             {
-                //{ "door", new Y_Door(X_DoorDirection.Horizontal, 13, TileWidth, TileHeight, 3) }
-                //{ "center", new Y_CMRoom("r0", TileWidth, TileHeight, resourceFolder + "R0") },
-                //{ "bottom", new Y_CMRoom("r2", TileWidth, TileHeight, resourceFolder + "R2") },
-                //{ "top", new Y_CMRoom("r1", TileWidth, TileHeight, resourceFolder + "R1") },
-                //{ "left", new Y_CMRoom("r3", TileWidth, TileHeight, resourceFolder + "R3") }
+                { "center", new Y_CMRoom("r2", TileWidth, TileHeight, resourceFolder + "R2") },
+                { "middle", new Y_CMRoom("r0", TileWidth, TileHeight, resourceFolder + "R0") },
+                { "top", new Y_CMRoom("r1", TileWidth, TileHeight, resourceFolder + "R1") },
+                { "left", new Y_CMRoom("r3-L", TileWidth, TileHeight, resourceFolder + "R3") },
+                { "right", new Y_CMRoom("r3-R", TileWidth, TileHeight, resourceFolder + "R3") },
+                { "bottom", new Y_CMRoom("r3-B", TileWidth, TileHeight, resourceFolder + "R3") },
+                { "door-center-to-middle", new Y_Door(X_DoorDirection.Vertical, 17, TileWidth, TileHeight, 3) },
+                { "door-center-to-left", new Y_Door(X_DoorDirection.Horizontal, 17, TileWidth, TileHeight, 3) },
+                { "door-center-to-right", new Y_Door(X_DoorDirection.Horizontal, 17, TileWidth, TileHeight, 3) },
+                { "door-center-to-bottom", new Y_Door(X_DoorDirection.Vertical, 17, TileWidth, TileHeight, 3) },
+                { "door-middle-to-top", new Y_Door(X_DoorDirection.Vertical, 17, TileWidth, TileHeight, 3) },
             };
 
-            //Rooms["center"].MoveTo(new Point(0, -Rooms["center"].Rect.Height - 40));
-            //Rooms["top"].MoveTo(new Point(0, Rooms["center"].Rect.Y - Rooms["top"].Rect.Height - 40));
-            //Rooms["left"].MoveTo(new Point(-Rooms["left"].Rect.Width - 40, Rooms["bottom"].Rect.Height / 3));
-
-
+            ((Y_Door)Rooms["door-center-to-middle"]).Connect(X_ConnectorSide.Bottom, Rooms["center"], X_ConnectorSide.Top, Rooms["middle"]);
+            ((Y_Door)Rooms["door-center-to-left"]).Connect(X_ConnectorSide.Right, Rooms["center"], X_ConnectorSide.Left, Rooms["left"]);
+            ((Y_Door)Rooms["door-center-to-right"]).Connect(X_ConnectorSide.Left, Rooms["center"], X_ConnectorSide.Right, Rooms["right"]);
+            ((Y_Door)Rooms["door-center-to-bottom"]).Connect(X_ConnectorSide.Top, Rooms["center"], X_ConnectorSide.Bottom, Rooms["bottom"]);
+            ((Y_Door)Rooms["door-middle-to-top"]).Connect(X_ConnectorSide.Bottom, Rooms["middle"], X_ConnectorSide.Top, Rooms["top"]);
         }
 
         public void Update(GameTime gameTime)

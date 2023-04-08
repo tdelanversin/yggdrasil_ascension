@@ -18,11 +18,12 @@
   "entities": {
     "Door": [
       {
+        /*top*/
         "id": "Door",
         "iid": "e4661990-c640-11ed-9392-c92ee2030d92",
         "layer": "Entities",
         "x": 72,
-        "y": 24,
+        "y": 40,
         "width": 16,
         "height": 16,
         "color": 16759620,
@@ -31,6 +32,7 @@
         }
       },
       {
+        /*right*/
         "id": "Door",
         "iid": "e4661990-c640-11ed-9392-c92ee2030d92",
         "layer": "Entities",
@@ -44,6 +46,7 @@
         }
       },
       {
+        /*left*/
         "id": "Door",
         "iid": "e4661990-c640-11ed-9392-c92ee2030d92",
         "layer": "Entities",
@@ -57,11 +60,12 @@
         }
       },
       {
+        /*bottom*/
         "id": "Door",
         "iid": "e4661990-c640-11ed-9392-c92ee2030d92",
         "layer": "Entities",
         "x": 72,
-        "y": 120,
+        "y": 136,
         "width": 16,
         "height": 16,
         "color": 16759620,

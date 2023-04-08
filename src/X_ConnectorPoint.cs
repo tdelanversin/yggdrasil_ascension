@@ -34,7 +34,7 @@ namespace YGR
 
         public void MoveTo(Point position)
         {
-            Point = position - Point;
+            Point = position + Point;
         }
 
         /// <summary>
@@ -47,6 +47,7 @@ namespace YGR
         public void DrawOutline(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)
         {
             var color = Color.White;
+            int size = 11;
             switch (ConnectorSide)
             {
                 case X_ConnectorSide.Left:
@@ -54,16 +55,18 @@ namespace YGR
                     break;
                 case X_ConnectorSide.Right:
                     color = Color.Blue;
+                    size = 7;
                     break;
                 case X_ConnectorSide.Top:
                     color = Color.Green;
                     break;
                 case X_ConnectorSide.Bottom:
                     color = Color.Yellow;
+                    size = 7;
                     break;
             }
 
-            Factory_Debug.DrawPoint((int)(Point.X + globalOffset.X), (int)(Point.Y + globalOffset.Y), 11, color, spriteBatch);
+            Factory_Debug.DrawPoint((int)(Point.X + globalOffset.X), (int)(Point.Y + globalOffset.Y), size, color, spriteBatch);
         }
     }
 }

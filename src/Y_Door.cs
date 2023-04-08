@@ -3,6 +3,7 @@ using Microsoft.Xna.Framework.Graphics;
 using System.Collections.Generic;
 using System;
 using Assimp;
+using System.Data;
 
 namespace YGR
 {
@@ -37,6 +38,8 @@ namespace YGR
             _direction = direction;
 
             Collision = new X_CollisionModel_Room(_collision, tileWidth, tileHeight);
+
+            Rect = new Rectangle(0, 0, tileWidth * _collision[0].Length, tileHeight * _collision.Length);
         }
 
         private int[][] getDoorPoints(int[][] collision, int tileWidth, int tileHeight)
@@ -155,22 +158,22 @@ namespace YGR
             }
 
             int half1 = (int)Math.Floor((float)width / 2.0f) + 2;
-            for (int x = 0; x < half1; ++x)
+            for (int x = 1; x < half1; ++x)
             {
                 collision[x][0] = 1;
             }
 
-            for (int x = 0; x < half1 - doorWidth; ++x)
+            for (int x = 1; x < half1 - doorWidth; ++x)
             {
                 collision[x][doorWidth - 1] = 1;
             }
 
-            for (int x = half1-doorWidth; x < width; ++x)
+            for (int x = half1-doorWidth; x < width-1; ++x)
             {
                 collision[x][height - 1] = 1;
             }
 
-            for (int x = half1; x<width; ++x)
+            for (int x = half1; x<width-1; ++x)
             {
                 collision[x][Math.Abs(tileOffset)] = 1;
             }
@@ -181,8 +184,8 @@ namespace YGR
                 collision[half1 - doorWidth][height - y - 2] = 1;
             }
 
-            collision[width-1][height-1-doorWidth/2] = 2;
-            collision[0][doorWidth/2] = 3;
+            collision[width-2][height-1-doorWidth/2] = 2;
+            collision[1][doorWidth/2] = 3;
 
             return collision;
         }
@@ -297,21 +300,37 @@ namespace YGR
                 Logger.Error("Invalid connector combination");
             }
 
+            //Rooms["center"].MoveTo(new Point(0, -Rooms["center"].Rect.Height - 40));
+            //Rooms["top"].MoveTo(new Point(0, Rooms["center"].Rect.Y - Rooms["top"].Rect.Height - 40));
+            //Rooms["left"].MoveTo(new Point(-Rooms["left"].Rect.Width - 40, Rooms["bottom"].Rect.Height / 3));
+
             /* left to right */
             if (hCheck1)
             {
+                var deltaPC = Rect.Location - _doors[X_ConnectorSide.Right].Point;
+                MoveTo(connectorPoint1.Point + deltaPC);
+                room2.MoveTo(_doors[X_ConnectorSide.Left].Point + room2.Rect.Location - connectorPoint2.Point);
             }
             /* right to left */
             else if (hCheck2)
             {
+                var deltaPC = Rect.Location - _doors[X_ConnectorSide.Left].Point;
+                MoveTo(connectorPoint1.Point + deltaPC);
+                room2.MoveTo(_doors[X_ConnectorSide.Right].Point + room2.Rect.Location - connectorPoint2.Point);
             }
             /* bottom to top */
             else if (vCheck1)
             {
+                var deltaPC = Rect.Location - _doors[X_ConnectorSide.Top].Point;
+                MoveTo(connectorPoint1.Point + deltaPC);
+                room2.MoveTo(_doors[X_ConnectorSide.Bottom].Point + room2.Rect.Location - connectorPoint2.Point);
             }
             /* top to bottom */
             else if (vCheck2)
             {
+                var deltaPC = Rect.Location - _doors[X_ConnectorSide.Bottom].Point;
+                MoveTo(connectorPoint1.Point + deltaPC);
+                room2.MoveTo(_doors[X_ConnectorSide.Top].Point + room2.Rect.Location - connectorPoint2.Point);
             }
 
             return this;
@@ -324,6 +343,7 @@ namespace YGR
 
         public void DrawOutline(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)
         {
+            Factory_Debug.DrawRectangle(Rect.X, Rect.Y, Rect.Width, Rect.Height, 3, Color.Orange, spriteBatch);
             Collision.DrawOutline(gameTime, globalOffset, spriteBatch);
             foreach(var door in _doors)
             {
@@ -341,7 +361,13 @@ namespace YGR
 
         public void MoveTo(Point position)
         {
-
+            var p = position - Rect.Location;
+            Rect = new Rectangle(p.X, p.Y, Rect.Width, Rect.Height);
+            foreach(var door in _doors)
+            {
+                door.Value.MoveTo(position);
+            }
+            Collision.MoveTo(position);
         }
 
         public X_LevelElements WhatAreYou()

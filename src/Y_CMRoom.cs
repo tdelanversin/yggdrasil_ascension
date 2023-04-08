@@ -72,7 +72,10 @@ namespace YGR
                     var side = determineSide(x, y);
                     IList<X_ConnectorPoint> list;
                     if(!_doors.TryGetValue(side, out list)){
-                        _doors.Add(side, new List<X_ConnectorPoint> { new X_ConnectorPoint(side, new Point(x, y)) });
+                        if(side == X_ConnectorSide.Top || side == X_ConnectorSide.Bottom)
+                            _doors.Add(side, new List<X_ConnectorPoint> { new X_ConnectorPoint(side, new Point(x, y-tileHeight)) });
+                        else
+                            _doors.Add(side, new List<X_ConnectorPoint> { new X_ConnectorPoint(side, new Point(x, y)) });
                     }
                     else list.Add(new X_ConnectorPoint(side, new Point(door.x, door.y)));
                 }
@@ -138,7 +141,7 @@ namespace YGR
 
         public void MoveTo(Point position)
         {
-            Collision.MoveTo(position - Rect.Location);
+            Collision.MoveTo(position);
             foreach (var side in _doors)
             {
                 for (int i=0; i<side.Value.Count(); ++i)
