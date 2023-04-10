@@ -1,4 +1,5 @@
 ﻿using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using System;
 using System.Collections.Generic;
@@ -20,7 +21,9 @@ namespace YGR
             string name,
             int tileWidth,
             int tileHeight,
-            string resourceFolder)
+            string resourceFolder,
+            GraphicsDevice graphicsDevice
+        )
         {
             _name = name;
 
@@ -36,17 +39,17 @@ namespace YGR
 
             Rooms = new Dictionary<string, IWalkable>
             {
-                { "center", new Y_CMRoom("r2", TileWidth, TileHeight, resourceFolder + "R2") },
-                { "middle", new Y_CMRoom("r0", TileWidth, TileHeight, resourceFolder + "R0") },
-                { "top", new Y_CMRoom("r1", TileWidth, TileHeight, resourceFolder + "R1") },
-                { "left", new Y_CMRoom("r3-L", TileWidth, TileHeight, resourceFolder + "R3") },
-                { "right", new Y_CMRoom("r3-R", TileWidth, TileHeight, resourceFolder + "R3") },
-                { "bottom", new Y_CMRoom("r3-B", TileWidth, TileHeight, resourceFolder + "R3") },
-                { "door-center-to-middle", new Y_Door(X_DoorDirection.Vertical, 17, TileWidth, TileHeight, 3) },
-                { "door-center-to-left", new Y_Door(X_DoorDirection.Horizontal, 17, TileWidth, TileHeight, 3) },
-                { "door-center-to-right", new Y_Door(X_DoorDirection.Horizontal, 17, TileWidth, TileHeight, 3) },
-                { "door-center-to-bottom", new Y_Door(X_DoorDirection.Vertical, 17, TileWidth, TileHeight, 3) },
-                { "door-middle-to-top", new Y_Door(X_DoorDirection.Vertical, 17, TileWidth, TileHeight, 3) },
+                { "center", new Y_CMRoom("r2", TileWidth, TileHeight, resourceFolder + "R2", graphicsDevice) },
+                { "middle", new Y_CMRoom("r0", TileWidth, TileHeight, resourceFolder + "R0", graphicsDevice) },
+                { "top", new Y_CMRoom("r1", TileWidth, TileHeight, resourceFolder + "R1", graphicsDevice) },
+                { "left", new Y_CMRoom("r3-L", TileWidth, TileHeight, resourceFolder + "R3", graphicsDevice) },
+                { "right", new Y_CMRoom("r3-R", TileWidth, TileHeight, resourceFolder + "R3", graphicsDevice) },
+                { "bottom", new Y_CMRoom("r3-B", TileWidth, TileHeight, resourceFolder + "R3", graphicsDevice) },
+                { "door-center-to-middle", new Y_Door(X_DoorDirection.Vertical, 17, TileWidth, TileHeight, 3, graphicsDevice) },
+                { "door-center-to-left", new Y_Door(X_DoorDirection.Horizontal, 17, TileWidth, TileHeight, 3, graphicsDevice) },
+                { "door-center-to-right", new Y_Door(X_DoorDirection.Horizontal, 17, TileWidth, TileHeight, -3, graphicsDevice) },
+                { "door-center-to-bottom", new Y_Door(X_DoorDirection.Vertical, 17, TileWidth, TileHeight, -3, graphicsDevice) },
+                { "door-middle-to-top", new Y_Door(X_DoorDirection.Vertical, 17, TileWidth, TileHeight, 3, graphicsDevice) },
             };
 
             ((Y_Door)Rooms["door-center-to-middle"]).Connect(X_ConnectorSide.Bottom, Rooms["center"], X_ConnectorSide.Top, Rooms["middle"]);

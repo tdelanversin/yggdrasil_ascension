@@ -55,7 +55,7 @@ namespace YGR
             _spriteBatch = new SpriteBatch(GraphicsDevice);
             _background = Content.Load<Texture2D>("background");
 
-            _level = new Y_Level("level_0", 40, 40, "Levels/Level_0");
+            _level = new Y_Level("level_0", 40, 40, "Levels/Level_0", GraphicsDevice);
 
             //_rooms = new Dictionary<string, IWalkable> {
             //    { "room_center", new Y_CMRoom("hello", new X_CollisionModel_Room("Rooms/Collisions2.csv", 40, 40, new Point(0,0)))}
@@ -95,7 +95,7 @@ namespace YGR
             _player = new List<IVictim>{
                 new Y_CMSprite(
                     new X_CollisionModel_Victim(1.0f /* mass */, 0.0f /* elastic impact */),
-                    PlayerIndex.Two,
+                    null, //PlayerIndex.Two,
                     Content.Load<Texture2D>("tester_60"),
                     //new Rectangle(0, 0, 21, 30),
                     new Rectangle(0, 0, 42, 60),
@@ -161,6 +161,7 @@ namespace YGR
             //    Color.White
             //);
 
+            _level.Draw(gameTime, Vector2.Zero, _spriteBatch);
             _level.DrawOutline(gameTime, Vector2.Zero, _spriteBatch);
 
             //foreach (var room in _rooms.Values)

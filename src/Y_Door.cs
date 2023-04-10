@@ -5,6 +5,10 @@ using System;
 using Assimp;
 using System.Data;
 using System.Linq;
+using Microsoft.Xna.Framework.Content;
+using SharpFont.Cache;
+using System.IO;
+using System.IO.Pipes;
 
 namespace YGR
 {
@@ -29,7 +33,26 @@ namespace YGR
 
         const int _numTilesDoorWidth = 5;
 
-        public Y_Door(X_DoorDirection direction, int numTilesLength, int tileWidth, int tileHeight, int tileOffset)
+        //Texture2D _TL_3x3;
+        //Texture2D _TR_3x3;
+        //Texture2D _BL_3x3;
+        //Texture2D _BR_3x3;
+        //Texture2D _FR_1x1;
+        //Texture2D _FS_L_1x1;
+        //Texture2D _FS_T_1x1;
+        //Texture2D _FS_R_1x1;
+        //Texture2D _WS_1x1;
+        //Texture2D _WT_H_1x1;
+        //Texture2D _WT_V_1x1;
+
+        public Y_Door(
+            X_DoorDirection direction, 
+            int numTilesLength, 
+            int tileWidth, 
+            int tileHeight, 
+            int tileOffset,
+            GraphicsDevice graphicsDevice
+            )
         {
             int[][] collision = createDoorTemplate(numTilesLength, tileOffset);
 
@@ -42,6 +65,273 @@ namespace YGR
             Collision = new X_CollisionModel_Room(_collision, tileWidth, tileHeight);
 
             Rect = new Rectangle(0, 0, tileWidth * _collision[0].Length, tileHeight * _collision.Length);
+
+            Texture2D T_TL_1x1;
+            Texture2D T_TR_1x1;
+            Texture2D T_BL_1x1;
+            Texture2D T_BR_1x1;
+            Texture2D T_FR_1x1;
+            Texture2D T_FS_L_1x1;
+            Texture2D T_FS_T_1x1;
+            Texture2D T_FS_R_1x1;
+            Texture2D T_FS_TL_1x1;
+            Texture2D T_FS_TR_1x1;
+            Texture2D T_WS_1x1;
+            Texture2D T_WT_H_1x1;
+            Texture2D T_WT_V_1x1;
+
+            Color[] TL_1x1;
+            Color[] TR_1x1;
+            Color[] BL_1x1;
+            Color[] BR_1x1;
+            Color[] FR_1x1;
+            Color[] FS_L_1x1;
+            Color[] FS_T_1x1;
+            Color[] FS_R_1x1;
+            Color[] FS_TL_1x1;
+            Color[] FS_TR_1x1;
+            Color[] WS_1x1;
+            Color[] WT_H_1x1;
+            Color[] WT_V_1x1;
+
+            using (FileStream fileStream = new FileStream("./Doors/TL-1x1.png", FileMode.Open))
+                T_TL_1x1 = Texture2D.FromStream(graphicsDevice, fileStream);
+            using (FileStream fileStream = new FileStream("./Doors/TR-1x1.png", FileMode.Open))
+                T_TR_1x1 = Texture2D.FromStream(graphicsDevice, fileStream);
+            using (FileStream fileStream = new FileStream("./Doors/BL-1x1.png", FileMode.Open))
+                T_BL_1x1 = Texture2D.FromStream(graphicsDevice, fileStream);
+            using (FileStream fileStream = new FileStream("./Doors/BR-1x1.png", FileMode.Open))
+                T_BR_1x1 = Texture2D.FromStream(graphicsDevice, fileStream);
+            using (FileStream fileStream = new FileStream("./Doors/FR-1x1.png", FileMode.Open))
+                T_FR_1x1 = Texture2D.FromStream(graphicsDevice, fileStream);
+            using (FileStream fileStream = new FileStream("./Doors/FS-L-1x1.png", FileMode.Open))
+                T_FS_L_1x1 = Texture2D.FromStream(graphicsDevice, fileStream);
+            using (FileStream fileStream = new FileStream("./Doors/FS-T-1x1.png", FileMode.Open))
+                T_FS_T_1x1 = Texture2D.FromStream(graphicsDevice, fileStream);
+            using (FileStream fileStream = new FileStream("./Doors/FS-R-1x1.png", FileMode.Open))
+                T_FS_R_1x1 = Texture2D.FromStream(graphicsDevice, fileStream);
+            using (FileStream fileStream = new FileStream("./Doors/FS-TR-1x1.png", FileMode.Open))
+                T_FS_TR_1x1 = Texture2D.FromStream(graphicsDevice, fileStream);
+            using (FileStream fileStream = new FileStream("./Doors/FS-TL-1x1.png", FileMode.Open))
+                T_FS_TL_1x1 = Texture2D.FromStream(graphicsDevice, fileStream);
+            using (FileStream fileStream = new FileStream("./Doors/WS-1x1.png", FileMode.Open))
+                T_WS_1x1 = Texture2D.FromStream(graphicsDevice, fileStream);
+            using (FileStream fileStream = new FileStream("./Doors/WT-H-1x1.png", FileMode.Open))
+                T_WT_H_1x1 = Texture2D.FromStream(graphicsDevice, fileStream);
+            using (FileStream fileStream = new FileStream("./Doors/WT-V-1x1.png", FileMode.Open))
+                T_WT_V_1x1 = Texture2D.FromStream(graphicsDevice, fileStream);
+
+            int len = T_BL_1x1.Width * T_BL_1x1.Height;
+            /* 2 */
+            BL_1x1 = new Color[len];
+            T_BL_1x1.GetData<Color>(BL_1x1);
+
+            /* 3 */
+            TL_1x1 = new Color[len];
+            T_TL_1x1.GetData<Color>(TL_1x1);
+
+            /* 4 */
+            TR_1x1 = new Color[len];
+            T_TR_1x1.GetData<Color>(TR_1x1);
+
+            /* 5 */
+            BR_1x1 = new Color[len];
+            T_BR_1x1.GetData<Color>(BR_1x1);
+
+            /* 6 */
+            FR_1x1 = new Color[len];
+            T_FR_1x1.GetData<Color>(FR_1x1);
+
+            /* 7 */
+            FS_L_1x1 = new Color[len];
+            T_FS_L_1x1.GetData<Color>(FS_L_1x1);
+
+            /* 8 */
+            FS_R_1x1 = new Color[len];
+            T_FS_R_1x1.GetData<Color>(FS_R_1x1);
+
+            /* 9 */
+            FS_T_1x1 = new Color[len];
+            T_FS_T_1x1.GetData<Color>(FS_T_1x1);
+
+            /* 10 */
+            FS_TL_1x1 = new Color[len];
+            T_FS_TL_1x1.GetData<Color>(FS_TL_1x1);
+
+            /* 11 */
+            FS_TR_1x1 = new Color[len];
+            T_FS_TR_1x1.GetData<Color>(FS_TR_1x1);
+
+            /* 12 */
+            WS_1x1 = new Color[len];
+            T_WS_1x1.GetData<Color>(WS_1x1);
+
+            /* 13 */
+            WT_H_1x1 = new Color[len];
+            T_WT_H_1x1.GetData<Color>(WT_H_1x1);
+
+            /* 14 */
+            WT_V_1x1 = new Color[len];
+            T_WT_V_1x1.GetData<Color>(WT_V_1x1);
+
+            //Color[] floorData = new Color[len];
+            //_floor.GetData<Color>(floorData);
+            //Color[] newData = new Color[len];
+            //for (int i = 0; i < len; ++i)
+            //{
+            //    if (groundData[i].A == 0)
+            //    {
+            //        newData[i] = floorData[i];
+            //    }
+            //    else
+            //    {
+            //        newData[i] = Color.Transparent;
+            //    }
+            //}
+            //_floor.SetData<Color>(newData);
+
+            //_scale = (float)tileHeight * collisions.Length / _floor.Height;
+
+            int[][] pattern = _collision.Clone() as int[][];
+            for(int i=0; i < pattern.Length; i++)
+            {
+                for(int j=0; j<pattern[0].Length; ++j)
+                {
+                    if (pattern[i][j] != 0) pattern[i][j] = 1;
+                }
+            }
+
+            int[,] cornerTL = new int[,] { 
+                { 1, 1 }, 
+                { 1, 0 } };
+            int[,] cornerTR = new int[,] {
+                { 1, 1 },
+                { 0, 1 } };
+            int[,] cornerBL = new int[,] {
+                { 1, 0 },
+                { 1, 1 } };
+            int[,] cornerBR = new int[,] {
+                { 0, 1 },
+                { 1, 1 } };
+
+            int[,] h = new int[1, _numTilesDoorWidth];
+            for(int i=0; i<_numTilesDoorWidth;i++) { if (i == 0 || i == _numTilesDoorWidth - 1) h[0, i] = 1; else h[0, i] = 0; }
+            int[,] v = new int[_numTilesDoorWidth, 1];
+            for (int i = 0; i < _numTilesDoorWidth; i++) { if (i == 0 || i == _numTilesDoorWidth - 1) v[i, 0] = 1; else v[i, 0] = 0; }
+            int[,] hLong = new int[1, _numTilesDoorWidth + tileOffset];
+            for (int i = 0; i < _numTilesDoorWidth + tileOffset; i++) { 
+                if (i == 0 || i == _numTilesDoorWidth + tileOffset - 1) hLong[0, i] = 1; else hLong[0, i] = 0; 
+            }
+            int[,] vLong = new int[_numTilesDoorWidth + tileOffset, 1];
+            for (int i = 0; i < _numTilesDoorWidth + tileOffset; i++) { 
+                if (i == 0 || i == _numTilesDoorWidth + tileOffset - 1) vLong[i, 0] = 1; else vLong[i, 0] = 0; 
+            }
+
+            var tl = findMatch(cornerTL, pattern, 0, 0);
+            var tr = findMatch(cornerTR, pattern, 0, 1);
+            var bl = findMatch(cornerBL, pattern, 1, 0);
+            var br = findMatch(cornerBR, pattern, 1, 1);
+            
+
+            int[][] result = pattern.Clone() as int[][];
+            foreach (var t in tl) result[t.Item1][t.Item2] = 2;
+            foreach (var t in tr) result[t.Item1][t.Item2] = 3;
+            foreach (var t in bl) result[t.Item1][t.Item2] = 4;
+            foreach (var t in br) result[t.Item1][t.Item2] = 5;
+
+            var hr = findMatch(h, pattern, 0, 0);
+            var vr = findMatch(v, pattern, 0, 0);
+            var hrL = findMatch(hLong, pattern, 0, 0);
+            var vrL = findMatch(vLong, pattern, 0, 0);
+
+            for (int i=0; i<hr.Count(); ++i)
+            {
+                result[hr[i].Item1][hr[i].Item2] = 14;
+                result[hr[i].Item1][hr[i].Item2+1] = 7;
+                for (int j = 2; j < _numTilesDoorWidth - 2; ++j) result[hr[i].Item1][hr[i].Item2 + j] = 6;
+                result[hr[i].Item1][hr[i].Item2 + _numTilesDoorWidth - 2] = 8;
+                result[hr[i].Item1][hr[i].Item2 + _numTilesDoorWidth - 1] = 14;
+                //else result[hr[i].Item1][hr[i].Item2] = 7;
+            }
+
+            for (int i = 0; i < vr.Count(); ++i)
+            {
+                result[vr[i].Item1][vr[i].Item2] = 13;
+                result[vr[i].Item1 + 1][vr[i].Item2] = 9;
+                for (int j = 2; j < _numTilesDoorWidth - 2; ++j) result[vr[i].Item1 + j][vr[i].Item2] = 6;
+                result[vr[i].Item1 + _numTilesDoorWidth - 2][vr[i].Item2] = 6;
+                result[vr[i].Item1 + _numTilesDoorWidth - 1][vr[i].Item2] = 13;
+                //else result[hr[i].Item1][hr[i].Item2] = 7;
+            }
+
+            for (int i = 0; i < hrL.Count(); ++i)
+            {
+                result[hrL[i].Item1][hrL[i].Item2] = 14;
+                result[hrL[i].Item1][hrL[i].Item2 + 1] = 7;
+                for (int j = 2; j < _numTilesDoorWidth + tileOffset - 2; ++j) result[hrL[i].Item1][hrL[i].Item2 + j] = 6;
+                result[hrL[i].Item1][hrL[i].Item2 + _numTilesDoorWidth + tileOffset - 2] = 8;
+                result[hrL[i].Item1][hrL[i].Item2 + _numTilesDoorWidth + tileOffset - 1] = 14;
+                //else result[hr[i].Item1][hr[i].Item2] = 7;
+            }
+
+            for (int i = 0; i < vrL.Count(); ++i)
+            {
+                result[vrL[i].Item1][vrL[i].Item2] = 13;
+                result[vrL[i].Item1 + 1][vrL[i].Item2] = 9;
+                for (int j = 2; j < _numTilesDoorWidth + tileOffset - 2; ++j) result[vrL[i].Item1 + j][vrL[i].Item2] = 6;
+                result[vrL[i].Item1 + _numTilesDoorWidth + tileOffset - 2][vrL[i].Item2] = 6;
+                result[vrL[i].Item1 + _numTilesDoorWidth + tileOffset - 1][vrL[i].Item2] = 13;
+                //else result[hr[i].Item1][hr[i].Item2] = 7;
+            }
+
+            // 2   1   1   5   0   0   0   1
+            // 14  7   6   6   6   6   8   14
+            // 14  7   6   6   6   6   8   14
+            // 14  7   6   6   6   6   8   14
+            // 1   0   0   0   2   1   1   5
+
+            output(result, "./logs/pattern.csv");
+        }
+
+        private void output(int[][] pattern, string name)
+        {
+            using (StreamWriter writer = new StreamWriter(name))
+            {
+                for (int x = 0; x < pattern.GetLength(0); ++x)
+                {
+                    string s = string.Join("\t", pattern[x]);
+                    writer.WriteLine(s);
+                }
+            }
+        }
+
+        private IList<Tuple<int, int>> findMatch(int[,] match, int[][] pattern, int ox, int oy)
+        {
+            int lx = match.GetLength(0);
+            int ly = match.GetLength(1);
+            int px = pattern.Length - lx + 1;
+            int py = pattern[0].Length - ly + 1;
+            IList<Tuple<int, int>> matchPos = new List<Tuple<int, int>>();
+
+            for (int x = 0; x < px; ++x)
+            {
+                for (int y = 0; y < py; ++y)
+                {
+                    for (int mx = 0; mx < lx; ++mx)
+                    {
+                        for (int my = 0; my < ly; ++my)
+                        {
+                            var p = pattern[x + mx][y + my];
+                            var m = match[mx, my];
+                            if (p != m) goto no_match;
+                        }
+                    }
+                    matchPos.Add(new Tuple<int, int>(x+ox, y+oy));
+                    no_match: continue;
+                }
+            }
+
+            return matchPos;
         }
 
         private int[][] getDoorPoints(int[][] collision, int tileWidth, int tileHeight)

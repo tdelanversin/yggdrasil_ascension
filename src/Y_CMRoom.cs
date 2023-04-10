@@ -1,4 +1,5 @@
 ﻿using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using Newtonsoft.Json;
 using System;
@@ -25,15 +26,19 @@ namespace YGR
         public string Name { get; set; }
         public X_CollisionModel_Room Collision { get; }
         public Rectangle Rect { get; set; }
-
         public Dictionary<X_ConnectorSide, IList<X_ConnectorPoint>> Doors { get; set; }
         public Dictionary<X_ConnectorSide, IList<IWalkable>> DoorRooms { get; set; }
+
+        private Texture2D _floor;
+        private Texture2D _window;
+        private float _scale;
 
         public Y_CMRoom(
             string name,
             int tileWidth,
             int tileHeight,
-            string resourceFolder
+            string resourceFolder,
+            GraphicsDevice graphicsDevice
         )
         {
             if (resourceFolder.Substring(0, 1) == "/")
@@ -80,6 +85,35 @@ namespace YGR
             }
 
             Name = name;
+
+            using(FileStream fileStream = new FileStream(resourceFolder + "_composite.png", FileMode.Open)){
+                _floor = Texture2D.FromStream(graphicsDevice, fileStream);
+            }
+            using (FileStream fileStream = new FileStream(resourceFolder + "Custom_grounds.png", FileMode.Open))
+            {
+                _window = Texture2D.FromStream(graphicsDevice, fileStream);
+            }
+
+            int len = _window.Width * _window.Height;
+            Color[] groundData = new Color[len];
+            _window.GetData<Color>(groundData);
+            Color[] floorData = new Color[len];
+            _floor.GetData<Color>(floorData);
+            Color[] newData = new Color[len];
+            for (int i = 0; i < len; ++i)
+            {
+                if (groundData[i].A == 0)
+                {
+                    newData[i] = floorData[i];
+                }
+                else
+                {
+                    newData[i] = Color.Transparent;
+                }
+            }
+            _floor.SetData<Color>(newData);
+
+            _scale = (float)tileHeight * collisions.Length / _floor.Height;
         }
 
         public X_ConnectorPoint GetConnectorPoint(X_ConnectorSide side, string name = "")
@@ -200,6 +234,10 @@ namespace YGR
         /// <param name="spriteBatch">Active Monogame SpriteBatch</param>
         public void Draw(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)
         {
+            spriteBatch.Draw(
+                _floor, Rect.Location.ToVector2(),
+                new Rectangle(0, 0, _floor.Width, _floor.Height),
+                Color.White, 0, Vector2.Zero, _scale, SpriteEffects.None, 0);
         }
 
         /// <summary>
