@@ -20,7 +20,7 @@ namespace YGR
         public static Rectangle VisibleArea { get; set; }
         public static Matrix Transform { get; set; }
         public static CameraMode Mode { get; set; }
-        public Y_Room Room { get; protected set; }
+        public static IWalkable Room { get; set; }
         public static IList<IVictim> Players { get; set; }
 
         // Zoom levels for...              { Follow, Room, Manual }
@@ -142,7 +142,7 @@ namespace YGR
             }
         }
 
-        public void focusOnRoom(Y_Room room)
+        public static void focusOnRoom(IWalkable room)
         {
             Room = room;
             Mode = CameraMode.Room;

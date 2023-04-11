@@ -18,7 +18,6 @@ namespace YGR
         private SpriteBatch _spriteBatch;
 
         Texture2D _background;
-        Y_Camera _camera;
         IList<IVictim> _player;
         Y_Level _level;
         //IDictionary<string, IWalkable> _rooms;
@@ -42,8 +41,8 @@ namespace YGR
             // Set the camera mode, e.g. 'Follow' to follow players, 'Manual' for keyboard controlled
             Camera.Mode = CameraMode.Follow;
 
-            Factory_Rooms.Initialize(Content);
-            Factory_Connectors.Initialize(Content);
+            //Factory_Rooms.Initialize(Content);
+            //Factory_Connectors.Initialize(Content);
             Factory_Debug.Initialize(Content);
             Manager_Projectile.Initialize(Content);
 
@@ -57,51 +56,25 @@ namespace YGR
 
             _level = new Y_Level("level_0", 32, "Levels/Level_0", GraphicsDevice);
 
-            //_rooms = new Dictionary<string, IWalkable> {
-            //    { "room_center", new Y_CMRoom("hello", new X_CollisionModel_Room("Rooms/Collisions2.csv", 40, 40, new Point(0,0)))}
-            //};
-
-            //_player = new List<IVictim>{
-            //    new Ninja(
-            //        new X_CollisionModel_Victim(1.0f /* mass */, 0.0f /* elastic impact */),
-            //        PlayerIndex.One,
-            //        Content.Load<Texture2D>("charaset"),
-            //        0.02f,
-            //        new Vector2(200, 350),
-            //        _rooms["room_center"],
-            //        new Y_StarterGun()
-            //    ),
-            //    new Y_CMSprite(
-            //        new X_CollisionModel_Victim(1.0f /* mass */, 0.0f /* elastic impact */),
-            //        PlayerIndex.Two,
-            //        Content.Load<Texture2D>("tester_60"),
-            //        //new Rectangle(0, 0, 21, 30),
-            //        new Rectangle(0, 0, 42, 60),
-            //        0.004f, // acceleration
-            //        0.4f,  // max velocity
-            //        new Vector2(250, 350),
-            //        _rooms["room_center"],
-            //        200.0f,
-            //        new Dictionary<string, int[]> {
-            //                        { "stand", new int[] { 0, 1, 8, 9 } },
-            //                        { "walk_left", new int[] { 2, 3, 4 } },
-            //                        { "walk_right", new int[] { 5, 6, 7 } }},
-            //        new Y_WideGun(),
-            //        2, // control input
-            //        1.0f
-            //    )
-            //};
-
             _player = new List<IVictim>{
+                new Ninja(
+                    new X_CollisionModel_Victim(1.0f /* mass */, 0.0f /* elastic impact */),
+                    PlayerIndex.One,
+                    Content.Load<Texture2D>("charaset"),
+                    0.02f,
+                    new Vector2(200, 350),
+                    _level,
+                    new Y_StarterGun()
+                ),
                 new Y_CMSprite(
                     new X_CollisionModel_Victim(1.0f /* mass */, 0.0f /* elastic impact */),
-                    null, //PlayerIndex.Two,
+                    null,
                     Content.Load<Texture2D>("tester_60"),
                     //new Rectangle(0, 0, 21, 30),
                     new Rectangle(0, 0, 42, 60),
                     0.004f, // acceleration
                     0.4f,  // max velocity
-                    new Vector2(400, 800),
+                    new Vector2(250, 350),
                     _level,
                     200.0f,
                     new Dictionary<string, int[]> {
@@ -113,6 +86,28 @@ namespace YGR
                     1.0f
                 )
             };
+
+            //_player = new List<IVictim>{
+            //    new Y_CMSprite(
+            //        new X_CollisionModel_Victim(1.0f /* mass */, 0.0f /* elastic impact */),
+            //        null, //PlayerIndex.Two,
+            //        Content.Load<Texture2D>("tester_60"),
+            //        //new Rectangle(0, 0, 21, 30),
+            //        new Rectangle(0, 0, 42, 60),
+            //        0.004f, // acceleration
+            //        0.4f,  // max velocity
+            //        new Vector2(400, 800),
+            //        _level,
+            //        200.0f,
+            //        new Dictionary<string, int[]> {
+            //                        { "stand", new int[] { 0, 1, 8, 9 } },
+            //                        { "walk_left", new int[] { 2, 3, 4 } },
+            //                        { "walk_right", new int[] { 5, 6, 7 } }},
+            //        new Y_WideGun(),
+            //        2, // control input
+            //        1.0f
+            //    )
+            //};
 
             Camera.Players = _player;
         }

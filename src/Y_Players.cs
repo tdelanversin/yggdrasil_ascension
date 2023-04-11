@@ -190,7 +190,7 @@ namespace YGR
                 Vector2 mouseInGamePosition = mouse.Position.ToVector2() / Camera.Zoom + Camera.VisibleArea.Location.ToVector2();
                 Vector2 shotDirection = mouseInGamePosition - playerCenter;
                 shotDirection.Normalize();
-                _gun.Shoot(gameTime, playerCenter, shotDirection, Room, this);
+                _gun.Shoot(gameTime, playerCenter, shotDirection, Level, this);
             }
 
             // Update the cooldown timer

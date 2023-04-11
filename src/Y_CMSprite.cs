@@ -127,9 +127,11 @@ namespace YGR
 
                 if (mouse.LeftButton == ButtonState.Pressed)
                 {
-                    var d = (mouse.Position.ToVector2() - Rect.Location.ToVector2());
-                    d.Normalize();
-                    _gun.Shoot(gameTime, Rect.Location.ToVector2() + new Vector2(Rect.Width / 2, Rect.Height / 2), d, Level, this);
+                    Vector2 playerCenter = Rect.Location.ToVector2() + new Vector2(Rect.Width / 2, +Rect.Height / 2);
+                    Vector2 mouseInGamePosition = mouse.Position.ToVector2() / Camera.Zoom + Camera.VisibleArea.Location.ToVector2();
+                    Vector2 shotDirection = mouseInGamePosition - playerCenter;
+                    shotDirection.Normalize();
+                    _gun.Shoot(gameTime, playerCenter, shotDirection, Level, this);
                 }
             }
             else
