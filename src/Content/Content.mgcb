@@ -207,6 +207,12 @@
 /processorParam:TextureFormat=Color
 /build:room_2.png
 
+#begin shotgun.wav
+/importer:WavImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:shotgun.wav
+
 #begin smaller_projectile.png
 /importer:TextureImporter
 /processor:TextureProcessor
