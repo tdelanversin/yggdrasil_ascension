@@ -55,7 +55,7 @@ namespace YGR
             _spriteBatch = new SpriteBatch(GraphicsDevice);
             _background = Content.Load<Texture2D>("background");
 
-            _level = new Y_Level("level_0", 40, 40, "Levels/Level_0", GraphicsDevice);
+            _level = new Y_Level("level_0", 32, "Levels/Level_0", GraphicsDevice);
 
             //_rooms = new Dictionary<string, IWalkable> {
             //    { "room_center", new Y_CMRoom("hello", new X_CollisionModel_Room("Rooms/Collisions2.csv", 40, 40, new Point(0,0)))}

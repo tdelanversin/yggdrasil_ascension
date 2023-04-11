@@ -19,8 +19,7 @@ namespace YGR
 
         public Y_Level(
             string name,
-            int tileWidth,
-            int tileHeight,
+            int tileSize,
             string resourceFolder,
             GraphicsDevice graphicsDevice
         )
@@ -34,8 +33,8 @@ namespace YGR
             if (resourceFolder.Substring(resourceFolder.Length - 2, 1) != "/")
                 resourceFolder += "/";
 
-            TileWidth = tileWidth;
-            TileHeight = tileHeight;
+            TileWidth = tileSize;
+            TileHeight = tileSize;
 
             Rooms = new Dictionary<string, IWalkable>
             {
@@ -45,10 +44,10 @@ namespace YGR
                 { "left", new Y_CMRoom("r3-L", TileWidth, TileHeight, resourceFolder + "R3", graphicsDevice) },
                 { "right", new Y_CMRoom("r3-R", TileWidth, TileHeight, resourceFolder + "R3", graphicsDevice) },
                 { "bottom", new Y_CMRoom("r3-B", TileWidth, TileHeight, resourceFolder + "R3", graphicsDevice) },
-                { "door-center-to-middle", new Y_Door(X_DoorDirection.Vertical, 17, TileWidth, TileHeight, 3, graphicsDevice) },
-                { "door-center-to-left", new Y_Door(X_DoorDirection.Horizontal, 17, TileWidth, TileHeight, 3, graphicsDevice) },
+                { "door-center-to-middle", new Y_Door(X_DoorDirection.Vertical, 17, TileWidth, TileHeight, -7, graphicsDevice) },
+                { "door-center-to-left", new Y_Door(X_DoorDirection.Horizontal, 17, TileWidth, TileHeight, 9, graphicsDevice) },
                 { "door-center-to-right", new Y_Door(X_DoorDirection.Horizontal, 17, TileWidth, TileHeight, -3, graphicsDevice) },
-                { "door-center-to-bottom", new Y_Door(X_DoorDirection.Vertical, 17, TileWidth, TileHeight, -3, graphicsDevice) },
+                { "door-center-to-bottom", new Y_Door(X_DoorDirection.Vertical, 25, TileWidth, TileHeight, -3, graphicsDevice) },
                 { "door-middle-to-top", new Y_Door(X_DoorDirection.Vertical, 17, TileWidth, TileHeight, 3, graphicsDevice) },
             };
 

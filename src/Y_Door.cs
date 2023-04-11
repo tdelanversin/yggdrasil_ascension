@@ -428,6 +428,39 @@ namespace YGR
                         }
                     }
                 }
+
+                bool topL = true;
+                bool topR = true;
+                result[0][0] = -1;
+                result[1][0] = -1;
+                if(result[2][0] == 14) result[2][0] = 3;
+                result[0][result[0].Length - 1] = -1;
+                result[1][result[0].Length - 1] = -1;
+                if (result[2][result[0].Length - 1] == 14) result[2][result[0].Length - 1] = 2;
+
+                result[result.Length - 2][0] = -1;
+                result[result.Length - 1][0] = -1;
+                if (result[result.Length - 3][0] == 14) result[result.Length - 3][0] = 5;
+                result[result.Length - 2][result[0].Length-1] = -1;
+                result[result.Length - 1][result[0].Length - 1] = -1;
+                if (result[result.Length - 3][result[0].Length - 1] == 14) result[result.Length - 3][result[0].Length - 1] = 4;
+
+                for (int i = 0; i < result[0].Length; ++i)
+                {
+                    if (result[2][i] == 14 && result[1][i] != 14)
+                    {
+                        result[2][i] = 2;
+                        result[1][i] = -1;
+                        result[0][i] = -1;
+                    }
+
+                    if (result[result.Length-3][i] == 14 && result[result.Length - 2][i] != 14)
+                    {
+                        result[result.Length - 3][i] = 5;
+                        result[result.Length - 2][i] = -1;
+                        result[result.Length - 1][i] = -1;
+                    }
+                }
             }
 
             for(int x=0; x<result.Length; ++x)
