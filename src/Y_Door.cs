@@ -299,7 +299,7 @@ namespace YGR
                     while (j < result[0].Length && result[i][j] == 1)
                     {
                         result[i][j] = 13;
-                        if (i + 1 < result.Length && result[i + 1][j] <= 0) result[i + 1][j] = 12;
+                        if (i + 1 < result.Length && result[i + 1][j] == 0) result[i + 1][j] = 12;
                         if (i + 2 < result.Length && result[i + 2][j] == 0) result[i + 2][j] = 9;
                         j++;
                     }
@@ -308,7 +308,7 @@ namespace YGR
                     while (j > 0 && result[i][j] == 1)
                     {
                         result[i][j] = 13;
-                        if (i + 1 < result.Length && result[i + 1][j] <= 0) result[i + 1][j] = 12;
+                        if (i + 1 < result.Length && result[i + 1][j] == 0) result[i + 1][j] = 12;
                         if (i + 2 < result.Length && result[i + 2][j] == 0) result[i + 2][j] = 9;
                         j--;
                     }
@@ -339,7 +339,43 @@ namespace YGR
                         }
                     }
                 }
-                //output(result, "./logs/pattern.csv");
+
+                bool topL = true;
+                bool topR = true;
+                for (int i = 0; i < result.Length; ++i)
+                {
+                    if(i<2 || i > _numTilesDoorWidth)
+                    {
+                        result[i][0] = -1;
+                        result[i][1] = -1;
+                        result[i][result[0].Length - 2] = -1;
+                        result[i][result[0].Length - 1] = -1;
+                    }
+                    if (result[i][2] == 13)
+                    {
+                        if (topL)
+                        {
+                            result[i][2] = 4;
+                            topL = false;
+                        }
+                        else
+                        {
+                            result[i][2] = 2;
+                        }
+                    }
+                    if (result[i][result[0].Length-3] == 13)
+                    {
+                        if (topR)
+                        {
+                            result[i][result[0].Length - 3] = 5;
+                            topR = false;
+                        }
+                        else
+                        {
+                            result[i][result[0].Length - 3] = 3;
+                        }
+                    }
+                }
             }
             else
             {

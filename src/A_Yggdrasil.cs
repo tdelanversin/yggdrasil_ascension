@@ -101,7 +101,7 @@ namespace YGR
                     new Rectangle(0, 0, 42, 60),
                     0.004f, // acceleration
                     0.4f,  // max velocity
-                    new Vector2(400, 1650),
+                    new Vector2(400, 800),
                     _level,
                     200.0f,
                     new Dictionary<string, int[]> {
