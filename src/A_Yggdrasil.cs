@@ -57,15 +57,15 @@ namespace YGR
             _level = new Y_Level("level_0", 32, "Levels/Level_0", GraphicsDevice);
 
             _player = new List<IVictim>{
-                new Ninja(
-                    new X_CollisionModel_Victim(1.0f /* mass */, 0.0f /* elastic impact */),
-                    PlayerIndex.One,
-                    Content.Load<Texture2D>("charaset"),
-                    0.02f,
-                    new Vector2(200, 350),
-                    _level,
-                    new Y_StarterGun()
-                ),
+                //new Ninja(
+                //    new X_CollisionModel_Victim(1.0f /* mass */, 0.0f /* elastic impact */),
+                //    PlayerIndex.One,
+                //    Content.Load<Texture2D>("charaset"),
+                //    0.02f,
+                //    new Vector2(200, 350),
+                //    _level,
+                //    new Y_StarterGun()
+                //),
                 new Y_CMSprite(
                     new X_CollisionModel_Victim(1.0f /* mass */, 0.0f /* elastic impact */),
                     null,
@@ -86,28 +86,6 @@ namespace YGR
                     1.0f
                 )
             };
-
-            //_player = new List<IVictim>{
-            //    new Y_CMSprite(
-            //        new X_CollisionModel_Victim(1.0f /* mass */, 0.0f /* elastic impact */),
-            //        null, //PlayerIndex.Two,
-            //        Content.Load<Texture2D>("tester_60"),
-            //        //new Rectangle(0, 0, 21, 30),
-            //        new Rectangle(0, 0, 42, 60),
-            //        0.004f, // acceleration
-            //        0.4f,  // max velocity
-            //        new Vector2(400, 800),
-            //        _level,
-            //        200.0f,
-            //        new Dictionary<string, int[]> {
-            //                        { "stand", new int[] { 0, 1, 8, 9 } },
-            //                        { "walk_left", new int[] { 2, 3, 4 } },
-            //                        { "walk_right", new int[] { 5, 6, 7 } }},
-            //        new Y_WideGun(),
-            //        2, // control input
-            //        1.0f
-            //    )
-            //};
 
             Camera.Players = _player;
         }
