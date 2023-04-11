@@ -36,14 +36,14 @@ namespace YGR
 
             var res_x = _graphics.PreferredBackBufferWidth;
             var res_y = _graphics.PreferredBackBufferHeight;
-            _camera = new Y_Camera(_graphics.GraphicsDevice.Viewport, new Vector2(res_x / 2, res_y / 2));
+            Camera.Position = new Vector2(res_x / 2, res_y / 2);
+            Camera.Bounds = _graphics.GraphicsDevice.Viewport.Bounds;
 
             // Set the camera mode, e.g. 'Follow' to follow players, 'Manual' for keyboard controlled
-            _camera.Mode = CameraMode.Follow;
-            //_camera.Mode = CameraMode.Manual;
+            Camera.Mode = CameraMode.Follow;
 
-            //Factory_Rooms.Initialize(Content);
-            //Factory_Connectors.Initialize(Content);
+            Factory_Rooms.Initialize(Content);
+            Factory_Connectors.Initialize(Content);
             Factory_Debug.Initialize(Content);
             Manager_Projectile.Initialize(Content);
 
@@ -114,7 +114,7 @@ namespace YGR
                 )
             };
 
-            _camera.Players = _player;
+            Camera.Players = _player;
         }
 
         protected override void Update(GameTime gameTime)
@@ -130,7 +130,7 @@ namespace YGR
 
             float deltaTime = (float)gameTime.ElapsedGameTime.TotalSeconds;
 
-            _camera.UpdateCamera(_graphics.GraphicsDevice.Viewport, deltaTime);
+            Camera.UpdateCamera(_graphics.GraphicsDevice.Viewport, deltaTime);
 
             foreach (var player in _player)
             {
@@ -152,7 +152,7 @@ namespace YGR
 
             _spriteBatch.Begin(
                 SpriteSortMode.Immediate, null, null, null, null, null,
-                _camera.Transform);
+                Camera.Transform);
 
             //_spriteBatch.Draw(
             //    _background,

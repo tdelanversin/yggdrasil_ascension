@@ -12,33 +12,26 @@ namespace YGR
         Room,       // Focus on a room
         Manual      // Control pos and zoom with keybinds
     }
-    public class Y_Camera
+    public static class Camera
     {
-        public float Zoom { get; set; }
-        public Vector2 Position { get; set; }
-        public Rectangle Bounds { get; protected set; }
-        public Rectangle VisibleArea { get; protected set; }
-        public Matrix Transform { get; protected set; }
-        public CameraMode Mode { get; set; }
-        public IWalkable Room { get; protected set; }
-        public IList<IVictim> Players { get; set; }
+        public static float Zoom { get; set; } = 1f;
+        public static Vector2 Position { get; set; }
+        public static Rectangle Bounds { get; set; }
+        public static Rectangle VisibleArea { get; set; }
+        public static Matrix Transform { get; set; }
+        public static CameraMode Mode { get; set; }
+        public Y_Room Room { get; protected set; }
+        public static IList<IVictim> Players { get; set; }
 
         // Zoom levels for...              { Follow, Room, Manual }
-        private readonly float[] minZoom = { 0.60f, 0.25f, 0.05f };
-        private readonly float[] maxZoom = { 1.25f, 1.75f, 16.0f };
+        private static readonly float[] minZoom = { 0.60f, 0.25f, 0.05f };
+        private static readonly float[] maxZoom = { 1.25f, 1.75f, 16.0f };
         private const float zoomSpeed = 0.1f;
         private const float panSpeed = 1024;
 
-        private float currentMouseWheelValue, previousMouseWheelValue;
+        private static float currentMouseWheelValue, previousMouseWheelValue;
 
-        public Y_Camera(Viewport viewport, Vector2 position)
-        {
-            Bounds = viewport.Bounds;
-            Zoom = 1f;
-            Position = position;
-        }
-
-        private void UpdateVisibleArea()
+        private static void UpdateVisibleArea()
         {
             var inverseViewMatrix = Matrix.Invert(Transform);
 
@@ -56,7 +49,7 @@ namespace YGR
             VisibleArea = new Rectangle((int)min.X, (int)min.Y, (int)(max.X - min.X), (int)(max.Y - min.Y));
         }
 
-        private void UpdateMatrix()
+        private static void UpdateMatrix()
         {
             Transform = Matrix.CreateTranslation(new Vector3(-Position.X, -Position.Y, 0)) *
                     Matrix.CreateScale(Zoom) *
@@ -64,19 +57,19 @@ namespace YGR
             UpdateVisibleArea();
         }
 
-        public void MoveCamera(Vector2 movePosition)
+        public static void MoveCamera(Vector2 movePosition)
         {
             Vector2 newPosition = Position + movePosition;
             Position = newPosition;
         }
 
-        public void UpdateZoom(float zoom)
+        public static void UpdateZoom(float zoom)
         {
             // Clamp to the min/max zoom level allowed in the current mode
             Zoom = Math.Clamp(zoom, minZoom[(int)Mode], maxZoom[(int)Mode]);
         }
 
-        private void keyboardMove(float deltaTime)
+        private static void keyboardMove(float deltaTime)
         {
             Vector2 cameraMovement = Vector2.Zero;
             float moveSpeed = deltaTime * panSpeed / (float)Math.Sqrt(Zoom);
@@ -99,7 +92,7 @@ namespace YGR
             }
         }
 
-        private void centerOnPlayers()
+        private static void centerOnPlayers()
         {
             if (Players == null || Players.Count < 1) return;
 
@@ -128,7 +121,7 @@ namespace YGR
             UpdateZoom(.75f / stretch);
         }
 
-        public void UpdateCamera(Viewport bounds, float deltaTime)
+        public static void UpdateCamera(Viewport bounds, float deltaTime)
         {
             Bounds = bounds.Bounds;
             UpdateMatrix();
@@ -149,7 +142,7 @@ namespace YGR
             }
         }
 
-        public void focusOnRoom(IWalkable room)
+        public void focusOnRoom(Y_Room room)
         {
             Room = room;
             Mode = CameraMode.Room;
