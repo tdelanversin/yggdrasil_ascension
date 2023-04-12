@@ -471,7 +471,7 @@ namespace YGR
                 }
             }
 
-            output(result, "./logs/pattern.csv");
+            //output(result, "./logs/pattern.csv");
 
             int width = T_BL_1x1.Width;
             int height = T_BL_1x1.Height;
