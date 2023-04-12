@@ -11,6 +11,9 @@ using System.IO;
 using System.IO.Pipes;
 using System.Reflection;
 using SharpDX;
+using SharpDX.Direct3D;
+using SharpFont;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace YGR
 {
@@ -105,7 +108,7 @@ namespace YGR
             {
                 for (int j = 0; j < pattern[0].Length; ++j)
                 {
-                    if (pattern[i-1][j] == 1 && pattern[i][j] <= 0) pattern[i][j] = 2;
+                    if (pattern[i-1][j] == 1 && pattern[i][j] == 0) pattern[i][j] = 2;
                 }
             }
 
@@ -555,7 +558,7 @@ namespace YGR
             spriteBatch.Draw(
                 _floor, Rect.Location.ToVector2(),
                 new Rectangle(0, 0, _floor.Width, _floor.Height),
-                Color.White, 0, Vector2.Zero, _scale, SpriteEffects.None, 0);
+                Color.White, 0, Vector2.Zero, 1.0f, SpriteEffects.None, 0);
         }
 
         public void MoveTo(Point position)
