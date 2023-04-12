@@ -39,6 +39,13 @@ namespace YGR
             Factory_Debug.Initialize(Content);
             Manager_Projectile.Initialize(Content);
 
+            Manager_Light.Illuminate(
+                new Vector3(5, 5, 5),
+                new Vector3(0, 0, 0),
+                3, 3,
+                new Color(1, 1, 1)
+                );
+
             base.Initialize();
         }
 

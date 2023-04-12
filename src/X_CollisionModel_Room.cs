@@ -12,6 +12,7 @@ namespace YGR
     {
         private int[][] _collisionTemplate;
         private Rectangle[] _collisionRectangles;
+        private Rectangle[] _floor;
         private int[,] _collisionModel;
         private bool[] _collisionRectanglesHit;
         private Point _location;
@@ -33,6 +34,13 @@ namespace YGR
             var components = fitRectangles(_collisionTemplate);
             createCollisionModelRectangles(components.Item1, components.Item2);
             _records = new List<Manager_Collision.Record>();
+
+            _floor = createFloor(collisionTemplate);
+        }
+
+        public Rectangle[] GetCollisionRectangles()
+        {
+            return _collisionRectangles;
         }
 
         public void SplitCollisionVerticallyAt(Point p, int tileCount)
@@ -150,6 +158,27 @@ namespace YGR
             return coords;
         }
 
+        public Rectangle[] createFloor(int[][] collisionTemplate)
+        {
+            List<Rectangle> floor = new List<Rectangle>();
+            //output(collisionTemplate, "./logs/pattern.csv");
+
+            for (int i = 0; i < collisionTemplate.Length; ++i)
+            {
+                for (int j = 0; j < collisionTemplate[0].Length; ++j)
+                {
+                    if (collisionTemplate[i][j] == 0) 
+                        floor.Add(
+                            new Rectangle(
+                                j * TileWidth + _location.X, 
+                                i * TileHeight + _location.Y, 
+                                TileWidth, TileHeight));
+                }
+            }
+
+            return floor.ToArray();
+        }
+
         private Tuple<Dictionary<int, List<Tuple<int, int>>>, Dictionary<int, List<Tuple<int, int>>>> fitRectangles(int[][] pattern)
         {
             Dictionary<int, List<Tuple<int, int>>> lines = new Dictionary<int, List<Tuple<int, int>>>();
@@ -245,29 +274,6 @@ namespace YGR
                 }
             }
 
-            //output(pattern, "output2.csv");
-
-            //for (int x = 0; x < pattern.Length; ++x)
-            //{
-            //    for (int y = 0; y < pattern[0].Length; ++y)
-            //    {
-            //        if (pattern[x][y] == 1)
-            //        {
-            //            key++;
-            //            pattern[x][y] = key;
-
-            //            List<Tuple<int, int>> list;
-            //            if (!components.TryGetValue(key, out list))
-            //            {
-            //                components.Add(key, new List<Tuple<int, int>> { new Tuple<int, int>(x, y) });
-            //            }
-            //            else
-            //                list.Add(new Tuple<int, int>(x, y));
-            //        }
-            //    }
-            //}
-
-            //output(pattern, "output3.csv");
             return new Tuple<Dictionary<int, List<Tuple<int, int>>>, Dictionary<int, List<Tuple<int, int>>>>(lines, rectangles);
         }
 
@@ -351,19 +357,26 @@ namespace YGR
 
         public void DrawOutline(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)
         {
-            for (int x = 0; x < _collisionModel.GetLength(0); ++x)
+            //for (int x = 0; x < _collisionModel.GetLength(0); ++x)
+            //{
+            //    for (int y = 0; y < _collisionModel.GetLength(1); ++y)
+            //    {
+            //        var color = Color.Gray;
+            //        var lineWidth = 1;
+            //        if (_collisionTemplate[x][y] == 0)
+            //        {
+            //            Factory_Debug.DrawRectangle(
+            //            y * TileWidth + _location.X, x * TileHeight + _location.Y, TileWidth, TileHeight,
+            //            lineWidth, color, spriteBatch);
+            //        }
+            //    }
+            //}
+
+            foreach (var rect in _floor)
             {
-                for (int y = 0; y < _collisionModel.GetLength(1); ++y)
-                {
-                    var color = Color.Gray;
-                    var lineWidth = 1;
-                    if (_collisionTemplate[x][y] == 0)
-                    {
-                        Factory_Debug.DrawRectangle(
-                        y * TileWidth + _location.X, x * TileHeight + _location.Y, TileWidth, TileHeight,
-                        lineWidth, color, spriteBatch);
-                    }
-                }
+                Factory_Debug.DrawRectangle(
+                        rect.X, rect.Y, rect.Width, rect.Height,
+                        1, Color.Gray, spriteBatch);
             }
 
             for (int i = 0; i < _collisionRectangles.Count(); ++i)
@@ -406,6 +419,14 @@ namespace YGR
                 var rect = _collisionRectangles[i];
                 _collisionRectangles[i] = new Rectangle(
                     rect.X + offset.X, rect.Y + offset.Y, 
+                    rect.Width, rect.Height);
+            }
+
+            for (int i = 0; i < _floor.Length; ++i)
+            {
+                var rect = _floor[i];
+                _floor[i] = new Rectangle(
+                    rect.X + offset.X, rect.Y + offset.Y,
                     rect.Width, rect.Height);
             }
         }

@@ -57,6 +57,7 @@ namespace YGR
                 counter++;
             }
 
+            collisions = paddOutline(collisions);
             Collision = new X_CollisionModel_Room(collisions, tileWidth, tileHeight);
             Rect = new Rectangle(0, 0, collisions[0].Length * Collision.TileWidth, collisions.Length * Collision.TileHeight);
 
@@ -120,6 +121,64 @@ namespace YGR
         {
             if (!Doors.ContainsKey(side)) return null;
             return Doors[side].First();
+        }
+
+        private int[][] paddOutline(int[][] collision)
+        {
+            int x = 0;
+            int y = 0;
+            while (x < collision.Length)
+            {
+                y = 0;
+                while (y < collision[0].Length)
+                {
+                    if (collision[x][y] == 1) break;
+                    collision[x][y] = -1;
+                    y++;
+                }
+                x++;
+            }
+
+            x = collision.Length - 1;
+            while (x >= 0)
+            {
+                y = collision[0].Length - 1;
+                while (y >= 0)
+                {
+                    if (collision[x][y] == 1) break;
+                    collision[x][y] = -1;
+                    y--;
+                }
+                x--;
+            }
+
+            x = 0;
+            while (x < collision.Length)
+            {
+                y = collision[0].Length - 1;
+                while (y >= 0)
+                {
+                    if (collision[x][y] == 1) break;
+                    collision[x][y] = -1;
+                    y--;
+                }
+                x++;
+            }
+
+            x = collision.Length - 1;
+            while (x >= 0)
+            {
+                y = 0;
+                while (y < collision[0].Length)
+                {
+                    if (collision[x][y] == 1) break;
+                    collision[x][y] = -1;
+                    y++;
+                }
+                x--;
+            }
+
+            return collision;
         }
 
         private X_ConnectorSide determineSide(int x0, int y0)

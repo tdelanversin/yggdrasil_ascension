@@ -55,7 +55,7 @@ namespace YGR
             _collision = getDoorPoints(collision, tileWidth, tileHeight);
 
             _direction = direction;
-
+            
             Collision = new X_CollisionModel_Room(_collision, tileWidth, tileHeight);
 
             Rect = new Rectangle(0, 0, tileWidth * _collision[0].Length, tileHeight * _collision.Length);
@@ -120,7 +120,7 @@ namespace YGR
                 }
             }
 
-            output(pattern, "./logs/pattern.csv");
+            //output(pattern, "./logs/pattern.csv");
 
             int width = floor.Width;
             int height = floor.Height;
@@ -316,7 +316,7 @@ namespace YGR
             {
                 collision[x][0] = 1;
             }
-            //output(collision, "./logs/pattern.csv");
+
             for (int y = doorWidth; y < collision[0].Length; ++y)
             {
                 collision[0][y] = -1;
@@ -327,12 +327,12 @@ namespace YGR
                 collision[x][doorWidth - 1] = 1;
                 for(int y=doorWidth; y < collision[0].Length; ++y) collision[x][y] = -1;
             }
-            //output(collision, "./logs/pattern.csv");
+
             for (int x = half1-doorWidth; x < width-1; ++x)
             {
                 collision[x][height - 1] = 1;
             }
-            //output(collision, "./logs/pattern.csv");
+
             for (int x = half1; x<width-1; ++x)
             {
                 collision[x][Math.Abs(tileOffset)] = 1;
@@ -342,7 +342,7 @@ namespace YGR
                 collision[width - 1][y] = -1;
                 collision[width - 2][y] = -1;
             } 
-            //output(collision, "./logs/pattern.csv");
+
             for (int y = 0; y < Math.Abs(tileOffset); ++y)
             {
                 collision[half1 - 1][y + 1] = 1;
@@ -354,7 +354,6 @@ namespace YGR
                 if (collision[width - 2][y] != 0) collision[width - 1][y] = -1;
             }
 
-            //output(collision, "./logs/pattern.csv");
             collision[width-2][height-1-doorWidth/2] = 2;
             collision[1][doorWidth/2] = 3;
 
@@ -558,7 +557,7 @@ namespace YGR
             spriteBatch.Draw(
                 _floor, Rect.Location.ToVector2(),
                 new Rectangle(0, 0, _floor.Width, _floor.Height),
-                Color.White, 0, Vector2.Zero, 1.0f, SpriteEffects.None, 0);
+                Color.White, 0, Vector2.Zero, _scale, SpriteEffects.None, 0);
         }
 
         public void MoveTo(Point position)
