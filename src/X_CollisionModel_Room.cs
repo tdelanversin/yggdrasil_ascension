@@ -39,17 +39,12 @@ namespace YGR
 
             _records = new List<Manager_Collision.Record>();
 
-            _floor = createFloor(collisionTemplate);
+            _floor = CreateFloorRectangles(TileWidth);
         }
 
         public Rectangle[] GetCollisionRectangles()
         {
             return _collisionRectangles;
-        }
-
-        public Rectangle[] GetFloorRectangles()
-        {
-            return _floor;
         }
 
         public void SplitCollisionVerticallyAt(Point p, int tileCount)
@@ -167,21 +162,21 @@ namespace YGR
             return coords;
         }
 
-        public Rectangle[] createFloor(int[][] collisionTemplate)
+        public Rectangle[] CreateFloorRectangles(int tileSize)
         {
             List<Rectangle> floor = new List<Rectangle>();
             //output(collisionTemplate, "./logs/pattern.csv");
 
-            for (int i = 0; i < collisionTemplate.Length; ++i)
+            for (int i = 0; i < _collisionTemplate.Length; ++i)
             {
-                for (int j = 0; j < collisionTemplate[0].Length; ++j)
+                for (int j = 0; j < _collisionTemplate[0].Length; ++j)
                 {
-                    if (collisionTemplate[i][j] == 0) 
+                    if (_collisionTemplate[i][j] == 0)
                         floor.Add(
                             new Rectangle(
-                                j * TileWidth + _location.X, 
-                                i * TileHeight + _location.Y, 
-                                TileWidth, TileHeight));
+                                j * tileSize + _location.X,
+                                i * tileSize + _location.Y,
+                                tileSize, tileSize));
                 }
             }
 

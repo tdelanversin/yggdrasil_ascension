@@ -210,10 +210,6 @@ namespace YGR
             R.M43 = light.Position.Z;
             R.M44 = 1;
 
-            Texture2D texture = room.GetFloor();
-            Color[] data = new Color[texture.Width*texture.Height];
-            texture.GetData<Color>(data);
-
             var cubes = Manager_Light.Elevate(room, 1);
             Manager_Light.toWavefrontObj(cubes, "./logs/cubes.obj");
 
@@ -231,9 +227,7 @@ namespace YGR
             //    color.B = (byte)(p * lightPower.Z + (1 - p) * color.B);
             //    data[h * texture.Width + w] = color;
             //}
-            var floor = room.Collision.GetFloorRectangles();
-            int width = texture.Width;
-            int height = texture.Height;
+            var floor = room.Collision.CreateFloorRectangles(room.TextureTileSize);
             //for (int x = xpos; x < xend; ++x)
             //{
             //    for (int y = ypos; y < yend; ++y)
@@ -243,51 +237,35 @@ namespace YGR
             //origin4 = Vector4.Transform(origin4, R);
             //Vector3 origin = new Vector3(origin4.X, origin4.Y, origin4.Z);
 
-            var rects = room.Collision.GetCollisionRectangles();
-            //Vector3 origin = new Vector3(0, 0, 100);
+            Vector3 origin = new Vector3(0, 0, 100);
 
-            var r = new Rectangle(
-                (int)(rects.First().X / room.Scale),
-                (int)(rects.First().Y / room.Scale),
-                (int)(rects.First().Width / room.Scale),
-                (int)(rects.First().Height / room.Scale));
-            for (int h = 0; h < height; ++h)
+            Texture2D texture = room.GetFloor();
+            Color[] data = new Color[texture.Width * texture.Height];
+            texture.GetData<Color>(data);
+
+            int width = texture.Width;
+            int height = texture.Height;
+            foreach (var floorRect in floor)
             {
-                for (int w = 0; w < width; ++w)
+                int fromX = floorRect.X;
+                int fromY = floorRect.Y;
+                int toX = fromX + floorRect.Width;
+                int toY = fromY + floorRect.Height;
+                for (int h = fromY; h < toY; ++h)
                 {
-                    //foreach(var rect in rects)
-                    //{
-                    //    var r = new Rectangle(
-                    //        (int)(rect.X/room.Scale), 
-                    //        (int)(rect.Y/room.Scale), 
-                    //        (int)(rect.Width/room.Scale), 
-                    //        (int)(rect.Height/room.Scale));
-
-                    //    if(r.Contains(new Point(w, h)))
-                    //    {
-                    //        data[h * width + w] = Color.Black;
-                    //    }
-
-                    //}
-                    Vector3 origin = new Vector3(w, h, 5);
-                    Vector3 target = new Vector3(w, h, -5);
-                    //if (w == 120 && h == 20)
-                    //    Logger.Info("stop");
-                    foreach (var cube in cubes)
+                    for (int w = fromX; w < toX; ++w)
                     {
-                        //if (r.Contains(new Point(w, h)))
-                        //{
-                        //    data[h * width + w] = Color.Orange;
-                        //}
-                        if (cube.RayIntersect(origin, target - origin))
+                        Vector3 target = new Vector3(w, h, -float.Epsilon);
+                        foreach (var cube in cubes)
                         {
-                            data[h * width + w] = Color.Black;
+                            if (cube.RayIntersect(origin, target - origin))
+                            {
+                                data[h * width + w] = Color.Black;
+                            }
                         }
                     }
                 }
             }
-            //    }
-            //}
 
             texture.SetData<Color>(data);
         }
@@ -329,6 +307,8 @@ namespace YGR
 
                 cubes.Add(new X_Cube(vertices, indices));
             }
+
+            toWavefrontObj(cubes, "cubes.obj");
 
             return cubes;
         }

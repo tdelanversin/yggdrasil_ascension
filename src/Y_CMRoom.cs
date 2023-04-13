@@ -29,6 +29,7 @@ namespace YGR
         public Rectangle Rect { get; set; }
         public Dictionary<X_ConnectorSide, IList<X_ConnectorPoint>> Doors { get; set; }
         public Dictionary<X_ConnectorSide, IList<IWalkable>> DoorRooms { get; set; }
+        public int TextureTileSize { get; }
 
         private Texture2D _floor;
         private Texture2D _window;
@@ -94,6 +95,8 @@ namespace YGR
             {
                 _window = Texture2D.FromStream(graphicsDevice, fileStream);
             }
+
+            TextureTileSize = _floor.Height / collisions[0].Length;
 
             int len = _window.Width * _window.Height;
             Color[] groundData = new Color[len];

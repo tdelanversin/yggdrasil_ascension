@@ -33,6 +33,7 @@ namespace YGR
         public IList<IVictim> Victims { get; }
         public Dictionary<X_ConnectorSide, IList<X_ConnectorPoint>> Doors { get; set; }
         public Dictionary<X_ConnectorSide, IList<IWalkable>> DoorRooms { get; set; }
+        public int TextureTileSize { get; }
 
         private int[][] _collision;
         private X_DoorDirection _direction;
@@ -72,7 +73,9 @@ namespace YGR
                 floor = Texture2D.FromStream(graphicsDevice, fileStream);
             using (FileStream fileStream = new FileStream("./Doors/wall.png", FileMode.Open))
                 wall = Texture2D.FromStream(graphicsDevice, fileStream);
-            
+
+            TextureTileSize = wall.Width;
+
             Color[] roofA;
             Color[] floorA;
             Color[] wallA;
