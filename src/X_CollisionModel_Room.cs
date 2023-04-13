@@ -1,4 +1,5 @@
 ﻿using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Graphics;
 using System;
 using System.Collections.Generic;
@@ -12,7 +13,7 @@ namespace YGR
     {
         private int[][] _collisionTemplate;
         private Rectangle[] _collisionRectangles;
-        private Rectangle[] _floor;
+        private List<List<Rectangle>> _floor;
         private int[,] _collisionModel;
         private bool[] _collisionRectanglesHit;
         private Point _location;
@@ -36,6 +37,8 @@ namespace YGR
 
             //_collisionRectangles = new Rectangle[] { _collisionRectangles[0] };
             //_collisionRectanglesHit = new bool[] { false };
+
+            _collisionTemplate = cleanUpCollisionTemplate(_collisionTemplate);
 
             _records = new List<Manager_Collision.Record>();
 
@@ -100,6 +103,36 @@ namespace YGR
             _collisionRectanglesHit = Enumerable.Repeat<bool>(false, _collisionRectangles.Count()).ToArray();
         }
 
+        private int[][] cleanUpCollisionTemplate(int[][] collision)
+        {
+            int[][] pattern = collision.Clone() as int[][];
+            for (int i = 0; i < pattern.Length; i++)
+            {
+                for (int j = 0; j < pattern[0].Length; ++j)
+                {
+                    if (pattern[i][j] > 0) pattern[i][j] = (int)X_TileType.Roof;
+                }
+            }
+
+            for (int i = 1; i < pattern.Length; i++)
+            {
+                for (int j = 0; j < pattern[0].Length; ++j)
+                {
+                    if (pattern[i - 1][j] == (int)X_TileType.Roof && pattern[i][j] == 0) pattern[i][j] = (int)X_TileType.Wall;
+                }
+            }
+
+            for (int i = 0; i < pattern.Length; i++)
+            {
+                for (int j = 0; j < pattern[0].Length; ++j)
+                {
+                    if (pattern[i][j] == 0) pattern[i][j] = (int)X_TileType.Floor;
+                }
+            }
+
+            return pattern;
+        }
+
         private int[,] createPattern(int sx, int sy)
         {
             int[,] match = new int[sx + 2, sy + 2];
@@ -162,17 +195,18 @@ namespace YGR
             return coords;
         }
 
-        public Rectangle[] CreateFloorRectangles(int tileSize)
+        public List<List<Rectangle>> CreateFloorRectangles(int tileSize)
         {
-            List<Rectangle> floor = new List<Rectangle>();
+            List<List<Rectangle>> floor = new List<List<Rectangle>>();
             //output(collisionTemplate, "./logs/pattern.csv");
 
             for (int i = 0; i < _collisionTemplate.Length; ++i)
             {
+                floor.Add(new List<Rectangle>());
                 for (int j = 0; j < _collisionTemplate[0].Length; ++j)
                 {
-                    if (_collisionTemplate[i][j] == 0)
-                        floor.Add(
+                    if (_collisionTemplate[i][j] == (int)X_TileType.Floor || _collisionTemplate[i][j] == (int)X_TileType.Wall)
+                        floor.Last().Add(
                             new Rectangle(
                                 j * tileSize + _location.X,
                                 i * tileSize + _location.Y,
@@ -180,7 +214,33 @@ namespace YGR
                 }
             }
 
-            return floor.ToArray();
+            output(_collisionTemplate, "logs/blub.csv");
+            floor.RemoveAll(x => x.Count() == 0);
+            return floor;
+        }
+
+        public List<List<Rectangle>> CreateWallRectangles(int tileSize)
+        {
+            List<List<Rectangle>> wall = new List<List<Rectangle>>();
+            //output(collisionTemplate, "./logs/pattern.csv");
+
+            for (int i = 0; i < _collisionTemplate.Length; ++i)
+            {
+                wall.Add(new List<Rectangle>());
+                for (int j = 0; j < _collisionTemplate[0].Length; ++j)
+                {
+                    if (_collisionTemplate[i][j] == (int)X_TileType.Wall)
+                        wall.Last().Add(
+                            new Rectangle(
+                                j * tileSize + _location.X,
+                                i * tileSize + _location.Y,
+                                tileSize, tileSize));
+                }
+            }
+
+            //output(_collisionTemplate, "logs/blub.csv");
+            wall.RemoveAll(x => x.Count() == 0);
+            return wall;
         }
 
         private Tuple<Dictionary<int, List<Tuple<int, int>>>, Dictionary<int, List<Tuple<int, int>>>> fitRectangles(int[][] pattern)
@@ -349,14 +409,14 @@ namespace YGR
 
         private void output(int[][] pattern, string name)
         {
-            using (StreamWriter writer = new StreamWriter(name))
+            string s = "";
+            for (int x = 0; x < pattern.GetLength(0); ++x)
             {
-                for (int x = 0; x < pattern.GetLength(0); ++x)
-                {
-                    string s = string.Join("\t", pattern[x]);
-                    writer.WriteLine(s);
-                }
+                s += string.Join("\t", pattern[x]);
+                s += "\n";
             }
+
+            File.WriteAllText(name, s);
         }
 
         public void DrawOutline(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)
@@ -376,11 +436,14 @@ namespace YGR
             //    }
             //}
 
-            foreach (var rect in _floor)
+            foreach (var rectRow in _floor)
             {
-                Factory_Debug.DrawRectangle(
+                foreach(var rect in rectRow)
+                {
+                    Factory_Debug.DrawRectangle(
                         rect.X, rect.Y, rect.Width, rect.Height,
                         1, Color.Gray, spriteBatch);
+                }
             }
 
             for (int i = 0; i < _collisionRectangles.Count(); ++i)
@@ -426,13 +489,19 @@ namespace YGR
                     rect.Width, rect.Height);
             }
 
-            for (int i = 0; i < _floor.Length; ++i)
+            List<List<Rectangle>> newList = new List<List<Rectangle>>();
+            foreach (var row in _floor)
             {
-                var rect = _floor[i];
-                _floor[i] = new Rectangle(
-                    rect.X + offset.X, rect.Y + offset.Y,
-                    rect.Width, rect.Height);
+                List<Rectangle> r = new List<Rectangle>();
+                foreach(var rect in row)
+                {
+                    r.Add(new Rectangle(
+                        rect.X + offset.X, rect.Y + offset.Y,
+                        rect.Width, rect.Height));
+                }
+                newList.Add(r);
             }
+            _floor = newList;
         }
 
         public bool Intersect(ref Rectangle movingRect, ref Vector2 velocity, int timeStepMS, out Point contactPoint, out Vector2 contactNormal)

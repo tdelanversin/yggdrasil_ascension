@@ -2,10 +2,13 @@
 using Assimp.Configs;
 using Microsoft.VisualBasic;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Content.Pipeline.Builder.Convertors;
 using Microsoft.Xna.Framework.Graphics;
+using SharpFont;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -55,6 +58,16 @@ namespace YGR
             _triangles = triangles;
         }
 
+        public int VertexCount()
+        {
+            return _vertices.Length;
+        }
+
+        public int TriangleCount()
+        {
+            return _triangles.GetLength(0);
+        }
+
         public string toWavefrontObj(int offset)
         {
             string s = "";
@@ -75,7 +88,7 @@ namespace YGR
         /*
          * Source: Nori
          */
-        public bool RayIntersect(Vector3 origin, Vector3 direction)
+        public bool RayIntersect(Vector3 origin, Vector3 direction, out Vector3 hitPoint)
         {
             float length = direction.Length();
             direction.Normalize();
@@ -90,6 +103,12 @@ namespace YGR
 
                 // Find vectors for two edges sharing v[0]
                 Vector3 edge1 = p1 - p0; Vector3 edge2 = p2 - p0;
+
+                // remove backside
+                Vector3 n = Manager_Light.CrossProduct(edge1, edge2);
+                n.Normalize();
+                if (Manager_Light.Dot(direction, n) > float.Epsilon)
+                    continue;
 
                 // Begin calculating determinant - also used to calculate U parameter
                 Vector3 pvec = Manager_Light.CrossProduct(direction, edge2);
@@ -123,7 +142,11 @@ namespace YGR
                 // Ray intersects triangle -> compute t
                 float t = Manager_Light.Dot(edge2, qvec) * invDet;
 
-                if(t >= float.Epsilon && t <= length) return true;
+                if (t >= float.Epsilon && t <= length) {
+                    float w = 1.0f - u - v;
+                    hitPoint = p0 * w + p1 * u + p2 * v;
+                    return true;
+                }
             }
             /*
             uint32_t i0 = m_F(0, index), i1 = m_F(1, index), i2 = m_F(2, index);
@@ -163,7 +186,7 @@ namespace YGR
 
             return t >= ray.mint && t <= ray.maxt;
             */
-
+            hitPoint = new Vector3(0, 0, 0);
             return false;
         }
     }
@@ -210,8 +233,8 @@ namespace YGR
             R.M43 = light.Position.Z;
             R.M44 = 1;
 
-            var cubes = Manager_Light.Elevate(room, 1);
-            Manager_Light.toWavefrontObj(cubes, "./logs/cubes.obj");
+            var cubes = Manager_Light.Elevate(room);
+            var wallCubes = Manager_Light.CreateWall(room);
 
             //int xpos = -light.Width / 2;
             //int ypos = -light.Height / 2;
@@ -228,6 +251,10 @@ namespace YGR
             //    data[h * texture.Width + w] = color;
             //}
             var floor = room.Collision.CreateFloorRectangles(room.TextureTileSize);
+
+
+            var walls = room.Collision.CreateWallRectangles(room.TextureTileSize);
+
             //for (int x = xpos; x < xend; ++x)
             //{
             //    for (int y = ypos; y < yend; ++y)
@@ -245,32 +272,253 @@ namespace YGR
 
             int width = texture.Width;
             int height = texture.Height;
-            foreach (var floorRect in floor)
+            Vector3 hitPoint;
+            foreach (var row in floor.Take(floor.Count-1))
             {
-                int fromX = floorRect.X;
-                int fromY = floorRect.Y;
-                int toX = fromX + floorRect.Width;
-                int toY = fromY + floorRect.Height;
-                for (int h = fromY; h < toY; ++h)
+                foreach (var floorRect in row)
                 {
-                    for (int w = fromX; w < toX; ++w)
+                    int fromX = floorRect.X;
+                    int fromY = floorRect.Y;
+                    int toX = fromX + floorRect.Width;
+                    int toY = fromY + floorRect.Height;
+                    for (int h = fromY; h < toY; ++h)
                     {
-                        Vector3 target = new Vector3(w, h, -float.Epsilon);
-                        foreach (var cube in cubes)
+                        for (int w = fromX; w < toX; ++w)
                         {
-                            if (cube.RayIntersect(origin, target - origin))
+                            Vector3 target = new Vector3(w, h, -room.TextureTileSize-0.1f);
+                            foreach (var cube in cubes)
                             {
-                                data[h * width + w] = Color.Black;
+                                if (cube.RayIntersect(origin, target - origin, out hitPoint))
+                                {
+                                    // we hit the floor
+                                    data[(h + room.TextureTileSize) * width + w] = Color.Black;
+                                }
                             }
                         }
                     }
                 }
             }
 
+            /**
+             * Test calculating the precise vector and then check intersection with frame
+             */
+            int counter = 0;
+            foreach (var row in walls)
+            {
+                foreach (var wall in row)
+                {
+                    //int minx = int.MaxValue;
+                    //int maxx = int.MinValue;
+                    //int miny = int.MaxValue;
+                    //int maxy = int.MinValue;
+                    int offsetH = wall.Y;
+                    int offsetW = wall.X;
+                    int inset = 1;
+                    bool[,] mask = new bool[wall.Height + 2 * inset, wall.Width + 2 * inset];
+
+                    for (int w = offsetW; w <= wall.Width + offsetW; ++w)
+                    {
+                        for (int h = 0; h <= wall.Height; ++h)
+                        {
+                            foreach (var wc in wallCubes)
+                            {
+                                if (wc.RayIntersect(origin, (new Vector3(w, offsetH - 0.1f, -h) - origin), out hitPoint))
+                                {
+                                    foreach (var cube in cubes)
+                                    {
+                                        Vector3 hitPoint2;
+                                        if (cube.RayIntersect(origin, hitPoint - origin, out hitPoint2))
+                                        {
+                                            int hitH = (int)(hitPoint.Y + Math.Abs(hitPoint.Z));
+                                            int hitW = (int)(hitPoint.X);
+                                            data[hitH * width + hitW] = Color.Red;
+                                            // we hit the floor
+                                            //data[(h + room.TextureTileSize) * width + w] = Color.Black;
+
+                                            //if (minx > hitW) minx = hitW;
+                                            //if (maxx < hitW) maxx = hitW;
+                                            //if (miny > hitH) miny = hitH;
+                                            //if (maxy < hitH) maxy = hitH;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    //Logger.Info(" minx " + minx + "\t| maxx " + maxx + "\t| miny " + miny + "\t| maxy " + maxy + "\t| offsetW " + offsetW + "\t| offsetH " + offsetH);
+
+                    //output(mask, "./logs/mask" + counter + ".csv");
+                    //counter++;
+                }
+
+            }
+
+            ///**
+            // * Test to calculate all dots on the wall from the wall boxes
+            // */
+            //Vector3 orig = new Vector3(100, 100, 100);
+            //Vector3 orig = origin;
+
+            //int counter = 0;
+            //foreach (var row in walls)
+            //{
+            //    foreach (var wall in row)
+            //    {
+            //        int minx = int.MaxValue;
+            //        int maxx = int.MinValue;
+            //        int miny = int.MaxValue;
+            //        int maxy = int.MinValue;
+            //        int offsetH = wall.Y;
+            //        int offsetW = wall.X;
+            //        int inset = 1;
+            //        bool[,] mask = new bool[wall.Height + 2*inset, wall.Width + 2*inset];
+
+            //        for (int w = offsetW; w <= wall.Width + offsetW; ++w)
+            //        {
+            //            for (int h = 0; h <= wall.Height; ++h)
+            //            {
+            //                foreach (var cube in wallCubes)
+            //                {
+            //                    if (cube.RayIntersect(orig, (new Vector3(w, offsetH - 0.1f, -h) - orig), out hitPoint))
+            //                    {
+            //                        int hitH = (int)(hitPoint.Y + Math.Abs(hitPoint.Z));
+            //                        int hitW = (int)(hitPoint.X);
+            //                        //data[hitH * width + hitW] = Color.Red;
+            //                        if (!mask[hitH - offsetH + inset, hitW - offsetW + inset])
+            //                        {
+            //                            mask[hitH - offsetH+inset, hitW - offsetW+inset] = true;
+            //                            data[hitH * width + hitW] = Color.Red;
+            //                        }
+
+            //                        // we hit the floor
+            //                        if (minx > hitW) minx = hitW;
+            //                        if (maxx < hitW) maxx = hitW;
+            //                        if (miny > hitH) miny = hitH;
+            //                        if (maxy < hitH) maxy = hitH;
+            //                    }
+            //                }
+            //            }
+            //        }
+
+            //        Logger.Info(" minx " + minx + "\t| maxx " + maxx + "\t| miny " + miny + "\t| maxy " + maxy + "\t| offsetW " + offsetW + "\t| offsetH " + offsetH);
+
+            //        output(mask, "./logs/mask" + counter + ".csv");
+            //        counter++;
+            //    }
+
+            //}
+
+
+            ///**
+            // * Test from some origin to all dots on the wall
+            // */
+            //Vector3 orig = new Vector3(100, 100, 100);
+            //int minx = int.MaxValue;
+            //int maxx = int.MinValue;
+            //int miny = int.MaxValue;
+            //int maxy = int.MinValue;
+            //bool[,] mask = new bool[16, 80];
+
+            //int offsetH = 32;
+            //int offsetW = 32;
+            //for (int i = 20; i <= 115; ++i)
+            //{
+            //    for (int j = -1; j <= 30; ++j)
+            //    {
+            //        foreach (var cube in wallCubes)
+            //        {
+            //            if (cube.RayIntersect(orig, (new Vector3(i, 29, -j) - orig), out hitPoint))
+            //            {
+            //                int hitH = (int)(hitPoint.Y + Math.Abs(hitPoint.Z));
+            //                int hitW = (int)(hitPoint.X);
+
+            //                if (!mask[hitH-offsetH, hitW-offsetW])
+            //                {
+            //                    mask[hitH - offsetH, hitW - offsetW] = true;
+            //                    data[hitH * width + hitW] = Color.Red;
+            //                }
+
+            //            // we hit the floor
+            //            if (minx > hitW) minx = hitW;
+            //                if (maxx < hitW) maxx = hitW;
+            //                if (miny > hitH) miny = hitH;
+            //                if (maxy < hitH) maxy = hitH;
+            //            }
+            //        }
+            //    }
+            //}
+            //Logger.Info(" minx " + minx + "\t| maxx " + maxx + "\t| miny " + miny + "\t| maxy " + maxy);
+
+            //output(mask, "./logs/mask.csv");
+
+            ///**
+            // * Test to get all dots on the wall
+            // */
+            //int minx = int.MaxValue;
+            //int maxx = int.MinValue;
+            //int miny = int.MaxValue;
+            //int maxy = int.MinValue;
+            //foreach (var row in walls)
+            //{
+            //    foreach (var wall in row)
+            //    {
+            //        int fromX = wall.X;
+            //        int fromY = wall.Y;
+            //        int toX = fromX + wall.Width;
+            //        int toY = fromY + wall.Height;
+            //        int fromZ = 0;
+            //        int toZ = wall.Height;
+            //        if (minx > fromX) minx = fromX;
+            //        if (maxx < toX) maxx = toX;
+            //        if (miny > fromZ) miny = fromZ;
+            //        if (maxy < toZ) maxy = toZ;
+            //    }
+            //}
+            //Logger.Info(" minx " + minx + "\t| maxx " + maxx + "\t| miny " + miny + "\t| maxy " + maxy);
+
+            //minx = int.MaxValue;
+            //maxx = int.MinValue;
+            //miny = int.MaxValue;
+            //maxy = int.MinValue;
+            //for (int i = 1; i < 150; ++i)
+            //{
+            //    for (int j = 0; j <= 16; ++j)
+            //    {
+            //        foreach (var cube in wallCubes)
+            //        {
+            //            Vector3 orig = new Vector3(i, 50, -j);
+            //            if (cube.RayIntersect(orig, new Vector3(i, -200, -j) - orig, out hitPoint))
+            //            {
+            //                // we hit the floor
+            //                data[(int)(hitPoint.Y + Math.Abs(hitPoint.Z)) * width + (int)hitPoint.X] = Color.Red;
+            //                if (minx > i) minx = i;
+            //                if (maxx < i) maxx = i;
+            //                if (miny > j) miny = j;
+            //                if (maxy < j) maxy = j;
+            //            }
+            //        }
+            //    }
+            //}
+
+            //Logger.Info(" minx " + minx + "\t| maxx " + maxx + "\t| miny " + miny + "\t| maxy " + maxy);
+
             texture.SetData<Color>(data);
         }
 
-        public static List<X_Cube> Elevate(IWalkable room, int elevation)
+        private static void output(bool[,] pattern, string name)
+        {
+            string s = "";
+            for (int x = 0; x < pattern.GetLength(0); ++x)
+            {
+                s += string.Join("\t", Enumerable.Range(0, pattern.GetLength(1)).Select(y => pattern[x, y]).ToArray());
+                s += "\n";
+            }
+
+            File.WriteAllText(name, s);
+        }
+
+        public static List<X_Cube> Elevate(IWalkable room)
         {
             List<X_Cube> cubes = new List<X_Cube>();
             var rects = room.Collision.GetCollisionRectangles().Clone() as Rectangle[];
@@ -293,35 +541,110 @@ namespace YGR
                 float y = rect.Y / scale;
                 float h = rect.Height / scale;
                 float w = rect.Width / scale;
-                float e = elevation * elev;
+                float e = elev;
                 Vector3[] vertices = new Vector3[] {
+                    new Vector3(x, y, -e),
+                    new Vector3(x, y+h, -e),
+                    new Vector3(x+w, y+h, -e),
+                    new Vector3(x+w, y, -e),
                     new Vector3(x, y, 0),
                     new Vector3(x, y+h, 0),
                     new Vector3(x+w, y+h, 0),
-                    new Vector3(x+w, y, 0),
-                    new Vector3(x, y, e),
-                    new Vector3(x, y+h, e),
-                    new Vector3(x+w, y+h, e),
-                    new Vector3(x+w, y, e)
+                    new Vector3(x+w, y, 0)
                 };
 
                 cubes.Add(new X_Cube(vertices, indices));
             }
 
-            toWavefrontObj(cubes, "cubes.obj");
+            //int[,] indicesF = new int[,]
+            //{
+            //    /* bottom */ {0,2,1}, {0,3,2},
+            //};
+
+            //List<X_Cube> tiles = new List<X_Cube>();
+            //int tileSize = room.TextureTileSize;
+            //var floor = room.Collision.CreateFloorRectangles(tileSize);
+            //int minX = int.MaxValue;
+            //int minY = int.MaxValue;
+            //int maxX = int.MinValue;
+            //foreach (var row in floor)
+            //{
+            //    foreach(var rect in row)
+            //    {
+            //        float x = rect.X;
+            //        float y = rect.Y;
+            //        float h = rect.Height;
+            //        float w = rect.Width;
+            //        if (x < minX) minX = (int)x;
+            //        if (y < minY) minY = (int)y;
+            //        if (x > maxX) maxX = (int)x;
+            //        Vector3[] vertices = new Vector3[] {
+            //        new Vector3(x, y, 0),
+            //        new Vector3(x, y+h, 0),
+            //        new Vector3(x+w, y+h, 0),
+            //        new Vector3(x+w, y, 0)
+            //    };
+
+            //        cubes.Add(new X_Cube(vertices, indicesF));
+            //    }
+            //}
+
+            //toWavefrontObj(cubes, "./logs/cubes.obj");
+
+            //List<X_Cube> tiles = new List<X_Cube>();
+            //for (int x=minX; x<maxX+tileSize/2; x+=tileSize)
+            //{
+            //    Vector3[] vertices = new Vector3[] {
+            //        new Vector3(x, minY, tileSize),
+            //        new Vector3(x, minY, 0),
+            //        new Vector3(x+tileSize, minY, 0),
+            //        new Vector3(x+tileSize, minY, tileSize)
+            //    };
+
+            //    tiles.Add(new X_Cube(vertices, indicesF));
+            //}
+
+            //toWavefrontObj(tiles, "./logs/tiles.obj");
 
             return cubes;
+        }
+
+        public static List<X_Cube> CreateWall(IWalkable room)
+        {
+            int[,] indicesF = new int[,]
+            {
+                /* bottom */ {0,2,1}, {0,3,2},
+            };
+
+            var walls = room.Collision.CreateWallRectangles(room.TextureTileSize);
+            List<X_Cube> tiles = new List<X_Cube>();
+            int e = room.TextureTileSize;
+            foreach (var row in walls) { 
+                foreach(var rect in row)
+                {
+                    Vector3[] vertices = new Vector3[] {
+                    new Vector3(rect.X, rect.Y, -float.Epsilon),
+                    new Vector3(rect.X, rect.Y, -e-float.Epsilon),
+                    new Vector3(rect.X+room.TextureTileSize, rect.Y, -e-float.Epsilon),
+                    new Vector3(rect.X+room.TextureTileSize, rect.Y, -float.Epsilon) };
+
+                    tiles.Add(new X_Cube(vertices, indicesF));
+                }
+            }
+            //toWavefrontObj(tiles, "./logs/tiles.obj");
+            return tiles;
         }
 
         private static void toWavefrontObj(List<X_Cube> cubes, string name)
         {
             string s = "";
             int i = 0;
-            int offset = 8;
+            int offset = 0;
             foreach (var cube in cubes)
             {
                 s += "o cube" + i + "\n";
-                s += (cube.toWavefrontObj(i*offset));
+                s += (cube.toWavefrontObj(offset));
+                offset += cube.VertexCount();
                 i++;
             }
 

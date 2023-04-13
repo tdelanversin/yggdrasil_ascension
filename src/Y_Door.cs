@@ -23,6 +23,13 @@ namespace YGR
         Vertical
     }
 
+    public enum X_TileType
+    {
+        Roof = 2,
+        Wall,
+        Floor
+    }
+
     public class Y_Door : IWalkable
     {
         public float Scale { get; private set; }
@@ -80,23 +87,23 @@ namespace YGR
             Color[] floorA;
             Color[] wallA;
 
-            List<Color[]> textels = new List<Color[]>();
+            Dictionary<X_TileType, Color[]> textels = new Dictionary<X_TileType, Color[]>();
 
             int len = roof.Width * roof.Height;
             /* 1 */
             roofA = new Color[len];
             roof.GetData<Color>(roofA);
-            textels.Add(roofA);
+            textels.Add(X_TileType.Roof, roofA);
 
             /* 2 */
             wallA = new Color[len];
             wall.GetData<Color>(wallA);
-            textels.Add(wallA);
+            textels.Add(X_TileType.Wall, wallA);
 
             /* 3 */
             floorA = new Color[len];
             floor.GetData<Color>(floorA);
-            textels.Add(floorA);
+            textels.Add(X_TileType.Floor, floorA);
 
             
 
@@ -105,7 +112,7 @@ namespace YGR
             {
                 for(int j=0; j<pattern[0].Length; ++j)
                 {
-                    if (pattern[i][j] > 0) pattern[i][j] = 1;
+                    if (pattern[i][j] > 0) pattern[i][j] = (int)X_TileType.Roof;
                 }
             }
 
@@ -113,7 +120,7 @@ namespace YGR
             {
                 for (int j = 0; j < pattern[0].Length; ++j)
                 {
-                    if (pattern[i-1][j] == 1 && pattern[i][j] == 0) pattern[i][j] = 2;
+                    if (pattern[i-1][j] == (int)X_TileType.Roof && pattern[i][j] == 0) pattern[i][j] = (int)X_TileType.Wall;
                 }
             }
 
@@ -121,7 +128,7 @@ namespace YGR
             {
                 for (int j = 0; j < pattern[0].Length; ++j)
                 {
-                    if (pattern[i][j] == 0) pattern[i][j] = 3;
+                    if (pattern[i][j] == 0) pattern[i][j] = (int)X_TileType.Floor;
                 }
             }
 
@@ -136,11 +143,11 @@ namespace YGR
             {
                 for (int y = 0; y < pattern.Length; ++y)
                 {
-                    var index = pattern[y][x] - 1;
+                    var index = pattern[y][x];
                     Color[] elem;
-                    if (index >= 0)
+                    if (index > 0)
                     {
-                        elem = textels.ElementAt(index);
+                        elem = textels[(X_TileType)index];
                     }
                     else
                     {

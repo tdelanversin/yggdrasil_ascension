@@ -56,7 +56,7 @@ namespace YGR
 
             X_Light light = new X_Light(
                 new Vector3(0, 0, 100),
-                new Vector3(Rooms["left"].Rect.Width/2, Rooms["left"].Rect.Height/2, 0),
+                new Vector3(Rooms["left"].Rect.Width / 2, Rooms["left"].Rect.Height / 2, 0),
                 1, 1,
                 new Vector3(1.0f, 1.0f, 1.0f)
                 );
