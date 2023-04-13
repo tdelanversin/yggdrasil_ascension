@@ -19,6 +19,7 @@ namespace YGR
         public bool DeleteNext { get; set; }
         public X_CollisionModel_Projectile Collision { get; }
         public Vector2 Velocity { get; set; }
+        public Y_Level Level { get; set; }
         public IWalkable Room { get; set; }
         public IGameElement WhoFiredMe { get; }
 

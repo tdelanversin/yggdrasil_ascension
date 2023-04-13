@@ -15,7 +15,6 @@ namespace YGR
         IShooter _gun;
         PlayerIndex? _playerIndex;
 
-        public IWalkable Room { get; set; }
         X_ConnectorSide _lastSide;
         int _hitCounter;
         int _maxHitCounter;
@@ -25,6 +24,8 @@ namespace YGR
         public bool HitInLastLoop { get; set; }
         public X_CollisionModel_Victim Collision { get; }
         public Vector2 Velocity { get; set; }
+        public Y_Level Level { get; set; }
+        public IWalkable Room { get; set; }
         public Rectangle Rect { get; set; }
 
         private Vector2 _acceleration;
@@ -43,18 +44,18 @@ namespace YGR
             float acceleration,
             float maxVelocity,
             Vector2 position,
-            IWalkable startRoom,
+            Y_Level level,
             float frameDuration,
             Dictionary<string, int[]> animations,
             IShooter gun,
-            int controlLayout = 1
+            int controlLayout = 1,
+            float scale = 1.0f
             )
         {
             _sprite = texture;
             _window = window;
             _animations = animations;
             _animationIndex = 0;
-            Room = startRoom;
             _gun = gun;
             _playerIndex = playerIndex;
             _controlLayout = controlLayout;
@@ -68,18 +69,20 @@ namespace YGR
             _maxVelocity = Vector2.One * maxVelocity;
             Position = position;
 
+            Level = level;
             LifePoints = 100;
             HitInLastLoop = false;
 
             Collision = collision;
 
             Rect = new Rectangle(
-                (int)position.X - _window.Width / 2,
-                (int)position.Y - _window.Height / 2,
-                _window.Width, _window.Height
+                (int)position.X - (int)(scale*_window.Width / 2),
+                (int)position.Y - (int)(scale*_window.Height / 2),
+                (int)(scale*_window.Width), (int)(scale*_window.Height)
             );
 
-            Room.Victims.Add(this);
+            Level.Victims.Add(this);
+            Room = Level.GetRoom(this, Room);
         }
 
         public X_LevelElements WhatAreYou()
@@ -124,9 +127,11 @@ namespace YGR
 
                 if (mouse.LeftButton == ButtonState.Pressed)
                 {
-                    var d = (mouse.Position.ToVector2() - Rect.Location.ToVector2());
-                    d.Normalize();
-                    _gun.Shoot(gameTime, Rect.Location.ToVector2() + new Vector2(Rect.Width / 2, Rect.Height / 2), d, Room, this);
+                    Vector2 playerCenter = Rect.Location.ToVector2() + new Vector2(Rect.Width / 2, +Rect.Height / 2);
+                    Vector2 mouseInGamePosition = mouse.Position.ToVector2() / Camera.Zoom + Camera.VisibleArea.Location.ToVector2();
+                    Vector2 shotDirection = mouseInGamePosition - playerCenter;
+                    shotDirection.Normalize();
+                    _gun.Shoot(gameTime, playerCenter, shotDirection, Level, this);
                 }
             }
             else
@@ -157,7 +162,7 @@ namespace YGR
                         shootDir.Y = 0.0f;
                     }
 
-                    _gun.Shoot(gameTime, Rect.Location.ToVector2() + new Vector2(Rect.Width / 2, Rect.Height / 2), shootDir, Room, this);
+                    _gun.Shoot(gameTime, Rect.Location.ToVector2() + new Vector2(Rect.Width / 2, Rect.Height / 2), shootDir, Level, this);
                 }
             }
 
@@ -214,11 +219,17 @@ namespace YGR
             {
                 color = Color.OrangeRed;
             }
+            //spriteBatch.Draw(
+            //    _sprite, Rect,
+            //    new Rectangle(_animationIndex * _window.Width, 0, _window.Width, _window.Height),
+            //    color
+            //);
+
+            float scale = (float)Rect.Width / (float)_window.Width;
             spriteBatch.Draw(
-                _sprite, Rect,
-                new Rectangle(_animationIndex * _window.Width, 0, _window.Width, _window.Height),
-                color
-            );
+                _sprite, Rect.Location.ToVector2(), 
+                new Rectangle(_animationIndex * _window.Width, 0, _window.Width, _window.Height), 
+                Color.White, 0, Vector2.Zero, scale, SpriteEffects.None, 0);
         }
 
         /// <summary>

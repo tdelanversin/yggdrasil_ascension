@@ -1,0 +1,78 @@
+{
+	"identifier": "World_Level_5",
+	"uniqueIdentifer": "0dd59f10-c640-11ed-90fd-99827b86d77f",
+	"x": 1168,
+	"y": 624,
+	"width": 768,
+	"height": 704,
+	"bgColor": "#404255",
+	"neighbourLevels": [],
+	"customFields" : {},
+	"layers": [
+		"Default_ground.png",
+		"Collisions.png",
+		"Custom_grounds.png",
+		"Custom_tiles.png",
+		"Wall_outlines.png"
+	],
+	"entities": {
+		"Door": [
+			{
+				/*bottom*/
+				"id": "Door",
+				"iid": "0dd59f13-c640-11ed-90fd-23fa2dbdffa0",
+				"layer": "Entities",
+				"x": 200,
+				"y": 696,
+				"width": 16,
+				"height": 16,
+				"color": 16759620,
+				"customFields": {
+					"lockedWith": null
+				}
+			},
+			{
+				/*top*/
+				"id": "Container",
+				"iid": "0dd59f12-c640-11ed-90fd-cf4d24dd9b66",
+				"layer": "Entities",
+				"x": 184,
+				"y": 40,
+				"width": 16,
+				"height": 16,
+				"color": 16765225,
+				"customFields": {
+					"lockedWith": null
+				}
+			},
+			{
+				/*left*/
+				"id": "Container",
+				"iid": "0dd59f12-c640-11ed-90fd-cf4d24dd9b66",
+				"layer": "Entities",
+				"x": 40,
+				"y": 216,
+				"width": 16,
+				"height": 16,
+				"color": 16765225,
+				"customFields": {
+					"lockedWith": null
+				}
+			},
+			{
+				/*right*/
+				"id": "Container",
+				"iid": "0dd59f12-c640-11ed-90fd-cf4d24dd9b66",
+				"layer": "Entities",
+				"x": 728,
+				"y": 216,
+				"width": 16,
+				"height": 16,
+				"color": 16765225,
+				"customFields": {
+					"lockedWith": null
+				}
+			}
+		]
+	}
+}

@@ -13,7 +13,7 @@ namespace YGR
 
         public Y_StarterGun() { }
 
-        public void Shoot(GameTime gameTime, Vector2 origin, Vector2 direction, IWalkable room, IGameElement who)
+        public void Shoot(GameTime gameTime, Vector2 origin, Vector2 direction, Y_Level level, IGameElement who)
         {
             if (nextShotCooldown > 0.0f)
                 return;
@@ -24,7 +24,7 @@ namespace YGR
                 origin,
                 direction,
                 gameTime.TotalGameTime.TotalMilliseconds,
-                room,
+                level,
                 who
             );
             Manager_Projectile.AddProjectile(projectile);
@@ -46,7 +46,7 @@ namespace YGR
 
         public Y_ShotGun() { }
 
-        public void Shoot(GameTime gameTime, Vector2 origin, Vector2 direction, IWalkable room, IGameElement who)
+        public void Shoot(GameTime gameTime, Vector2 origin, Vector2 direction, Y_Level level, IGameElement who)
         {
             if (nextShotCooldown > 0.0f)
                 return;
@@ -64,7 +64,7 @@ namespace YGR
                     origin,
                     new_dir,
                     gameTime.TotalGameTime.TotalMilliseconds,
-                    room,
+                    level,
                     who
                 );
                 Manager_Projectile.AddProjectile(projectile);
@@ -84,7 +84,7 @@ namespace YGR
         double timeSinceShot = 1001;
         Vector2 _origin = new Vector2(0, 0);
         Vector2 _direction = new Vector2(0, 0);
-        IWalkable _room;
+        Y_Level _level;
         IGameElement _who;
 
         static int shotDelay = 1000;
@@ -107,7 +107,7 @@ namespace YGR
 
         public Y_FunkyGun() { }
 
-        public void Shoot(GameTime gameTime, Vector2 origin, Vector2 direction, IWalkable room, IGameElement who)
+        public void Shoot(GameTime gameTime, Vector2 origin, Vector2 direction, Y_Level level, IGameElement who)
         {
             if (timeSinceShot < shotDelay)
                 return;
@@ -115,7 +115,7 @@ namespace YGR
             timeSinceShot = 0.0f;
             _origin = origin;
             _direction = direction;
-            _room = room;
+            _level = level;
             _who = who;
         }
 
@@ -158,7 +158,7 @@ namespace YGR
                         new_origin,
                         new_dir,
                         gameTime.TotalGameTime.TotalMilliseconds,
-                        _room,
+                        _level,
                         _who
                     );
                     Manager_Projectile.AddProjectile(projectile);
@@ -173,7 +173,7 @@ namespace YGR
         double timeSinceShot = 1001;
         Vector2 _origin = new Vector2(0, 0);
         Vector2 _direction = new Vector2(0, 0);
-        IWalkable _room;
+        Y_Level _level;
         IGameElement _who;
 
         static int shotDelay = 1000;
@@ -197,7 +197,7 @@ namespace YGR
 
         public Y_WideGun() { }
 
-        public void Shoot(GameTime gameTime, Vector2 origin, Vector2 direction, IWalkable room, IGameElement who)
+        public void Shoot(GameTime gameTime, Vector2 origin, Vector2 direction, Y_Level level, IGameElement who)
         {
             if (timeSinceShot < shotDelay)
                 return;
@@ -205,7 +205,7 @@ namespace YGR
             timeSinceShot = 0.0f;
             _origin = origin;
             _direction = direction;
-            _room = room;
+            _level = level;
             _who = who;
         }
 
@@ -249,7 +249,7 @@ namespace YGR
                         new_origin,
                         new_dir,
                         gameTime.TotalGameTime.TotalMilliseconds,
-                        _room,
+                        _level,
                         _who
                     );
                     Manager_Projectile.AddProjectile(projectile);
@@ -265,7 +265,7 @@ namespace YGR
 
             public Y_SimpleEnemyGun() { }
 
-            public void Shoot(GameTime gameTime, Vector2 origin, Vector2 direction, IWalkable room, IGameElement who)
+            public void Shoot(GameTime gameTime, Vector2 origin, Vector2 direction, Y_Level level, IGameElement who)
             {
                 if (nextShotCooldown > 0.0f)
                     return;
@@ -276,7 +276,7 @@ namespace YGR
                     origin,
                     direction,
                     gameTime.TotalGameTime.TotalMilliseconds,
-                    room,
+                    level,
                     who
                 );
             }

@@ -1,6 +1,5 @@
 ﻿using Microsoft.Xna.Framework;
 using System.Collections.Generic;
-using Yggdrasil;
 
 /*
  * Interface to be implemented by all elements where a player can move around inside
@@ -12,9 +11,9 @@ namespace YGR
     {
         public string Name { get; }
         public X_CollisionModel_Room Collision { get; }
-        public void SetBackgroundColor(Color color);
-        public void ResetBackgroundColor();
-        public IList<IProjectile> Projectiles { get; }
-        public IList<IVictim> Victims { get; }
+        public Dictionary<X_ConnectorSide, IList<X_ConnectorPoint>> Doors { get; set; }
+        public Dictionary<X_ConnectorSide, IList<IWalkable>> DoorRooms { get; set; }
+        public void MoveTo(Point position);
+        public X_ConnectorPoint GetConnectorPoint(X_ConnectorSide side, string name="");
     }
 }

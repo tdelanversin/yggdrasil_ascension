@@ -20,7 +20,7 @@ namespace YGR
         public static Rectangle VisibleArea { get; set; }
         public static Matrix Transform { get; set; }
         public static CameraMode Mode { get; set; }
-        public static Y_Room Room { get; set; }
+        public static IWalkable Room { get; set; }
         public static IList<IVictim> Players { get; set; }
 
         // Zoom levels for...              { Follow, Room, Manual }
@@ -142,12 +142,12 @@ namespace YGR
             }
         }
 
-        public static void focusOnRoom(Y_Room room)
+        public static void focusOnRoom(IWalkable room)
         {
             Room = room;
             Mode = CameraMode.Room;
-            Position = new Vector2(Room.Position.X + Room.Width / 2, Room.Position.Y + Room.Height / 2);
-            var stretch = Math.Max((float)Room.Width / Bounds.Width, (float)Room.Height / Bounds.Height);
+            Position = new Vector2(Room.Rect.X + Room.Rect.Width / 2, Room.Rect.Y + Room.Rect.Height / 2);
+            var stretch = Math.Max((float)Room.Rect.Width / Bounds.Width, (float)Room.Rect.Height / Bounds.Height);
             UpdateZoom(.95f / stretch);
         }
     }

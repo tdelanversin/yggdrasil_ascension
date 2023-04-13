@@ -2,10 +2,6 @@
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using System.Collections.Generic;
-using System;
-
-using Rectangle = Microsoft.Xna.Framework.Rectangle;
-using Color = Microsoft.Xna.Framework.Color;
 
 namespace YGR
 {
@@ -19,7 +15,7 @@ namespace YGR
 
         Texture2D _background;
         IList<IVictim> _player;
-        IDictionary<string, IWalkable> _rooms;
+        Y_Level _level;
 
         public A_Yggdrasil()
         {
@@ -40,8 +36,6 @@ namespace YGR
             // Set the camera mode, e.g. 'Follow' to follow players, 'Manual' for keyboard controlled
             Camera.Mode = CameraMode.Follow;
 
-            Factory_Rooms.Initialize(Content);
-            Factory_Connectors.Initialize(Content);
             Factory_Debug.Initialize(Content);
             Manager_Projectile.Initialize(Content);
 
@@ -53,9 +47,7 @@ namespace YGR
             _spriteBatch = new SpriteBatch(GraphicsDevice);
             _background = Content.Load<Texture2D>("background");
 
-            _rooms = new Dictionary<string, IWalkable> {
-                { "room_center", new Y_CMRoom("hello", new X_CollisionModel_Room("Rooms/Collisions2.csv", 40, 40, new Point(0,0)))}
-            };
+            _level = new Y_Level("level_0", 32, "Levels/Level_0", GraphicsDevice);
 
             _player = new List<IVictim>{
                 new Ninja(
@@ -64,27 +56,29 @@ namespace YGR
                     Content.Load<Texture2D>("charaset"),
                     0.02f,
                     new Vector2(200, 350),
-                    _rooms["room_center"],
+                    _level,
                     new Y_StarterGun()
                 ),
                 new Y_CMSprite(
                     new X_CollisionModel_Victim(1.0f /* mass */, 0.0f /* elastic impact */),
                     null,
-                    Content.Load<Texture2D>("tester_30"),
-                    new Rectangle(0, 0, 21, 30),
+                    Content.Load<Texture2D>("tester_60"),
+                    new Rectangle(0, 0, 42, 60),
                     0.004f, // acceleration
                     0.4f,  // max velocity
                     new Vector2(250, 350),
-                    _rooms["room_center"],
+                    _level,
                     200.0f,
                     new Dictionary<string, int[]> {
                                     { "stand", new int[] { 0, 1, 8, 9 } },
                                     { "walk_left", new int[] { 2, 3, 4 } },
                                     { "walk_right", new int[] { 5, 6, 7 } }},
                     new Y_WideGun(),
-                    2 // control input
+                    2, // control input
+                    1.0f
                 )
             };
+
             Camera.Players = _player;
         }
 
@@ -125,20 +119,8 @@ namespace YGR
                 SpriteSortMode.Immediate, null, null, null, null, null,
                 Camera.Transform);
 
-            _spriteBatch.Draw(
-                _background,
-                new Rectangle(0, 0, 3840, 2160),
-                new Rectangle(0, 0, 3840, 2160),
-                Color.White
-            );
-
-            foreach (var room in _rooms.Values)
-            {
-                room.Draw(gameTime, zero, _spriteBatch);
-                room.DrawOutline(gameTime, zero, _spriteBatch);
-                // uncomment for debugging
-                //room.DrawOutline(gameTime, zero, _spriteBatch);
-            }
+            _level.Draw(gameTime, Vector2.Zero, _spriteBatch);
+            _level.DrawOutline(gameTime, Vector2.Zero, _spriteBatch);
 
             Manager_Projectile.Draw(gameTime, zero, _spriteBatch);
             Manager_Projectile.DrawOutline(gameTime, zero, _spriteBatch);
