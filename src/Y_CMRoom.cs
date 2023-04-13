@@ -23,6 +23,7 @@ namespace YGR
 
     public class Y_CMRoom : IWalkable
     {
+        public float Scale { get; private set; }
         public string Name { get; set; }
         public X_CollisionModel_Room Collision { get; }
         public Rectangle Rect { get; set; }
@@ -31,7 +32,6 @@ namespace YGR
 
         private Texture2D _floor;
         private Texture2D _window;
-        private float _scale;
 
         public Y_CMRoom(
             string name,
@@ -114,7 +114,17 @@ namespace YGR
             }
             _floor.SetData<Color>(newData);
 
-            _scale = (float)tileHeight * collisions.Length / _floor.Height;
+            Scale = (float)tileHeight * collisions.Length / _floor.Height;
+        }
+
+        public void Illuminate(X_Light light)
+        {
+            Manager_Light.Illuminate(light, this);
+        }
+
+        public ref Texture2D GetFloor()
+        {
+            return ref _floor;
         }
 
         public X_ConnectorPoint GetConnectorPoint(X_ConnectorSide side, string name = "")
@@ -274,14 +284,14 @@ namespace YGR
             //{
             //int x = (int)((float)door.x / door.width * Collision.TileWidth) + Rect.X;
             //int y = (int)((float)door.y / door.height * Collision.TileHeight) + Rect.Y;
-            foreach(var side in Doors)
-            {
-                foreach (var door in side.Value)
-                {
-                    door.DrawOutline(gameTime, Vector2.Zero, spriteBatch);
-                    //Factory_Debug.DrawPoint(door.Item1, door.Item2, 11, color, spriteBatch);
-                }
-            }
+            //foreach(var side in Doors)
+            //{
+            //    foreach (var door in side.Value)
+            //    {
+            //        door.DrawOutline(gameTime, Vector2.Zero, spriteBatch);
+            //        //Factory_Debug.DrawPoint(door.Item1, door.Item2, 11, color, spriteBatch);
+            //    }
+            //}
             //}
         }
 
@@ -296,7 +306,7 @@ namespace YGR
             spriteBatch.Draw(
                 _floor, Rect.Location.ToVector2(),
                 new Rectangle(0, 0, _floor.Width, _floor.Height),
-                Color.White, 0, Vector2.Zero, _scale, SpriteEffects.None, 0);
+                Color.White, 0, Vector2.Zero, Scale, SpriteEffects.None, 0);
         }
 
         /// <summary>

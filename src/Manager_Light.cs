@@ -2,8 +2,11 @@
 using Assimp.Configs;
 using Microsoft.VisualBasic;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Content.Pipeline.Builder.Convertors;
+using Microsoft.Xna.Framework.Graphics;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
@@ -22,6 +25,25 @@ namespace YGR
     //    }
     //}
 
+    public class X_Light
+    {
+        public Vector3 Position { get; }
+        public Vector3 PointTo { get; }
+        public int Width { get; }
+        public int Height { get; }
+        public Vector3 Power { get; }
+
+        public X_Light(Vector3 position, Vector3 pointTo, int width, int height, Vector3 power)
+        {
+            Position = position; // new Vector3(position.Y, position.X, position.Z);
+            PointTo = pointTo; // new Vector3(pointTo.Y, pointTo.X, pointTo.Z);
+            Width = width;
+            Height = height;
+            Power = power;
+        }
+
+    }
+
     public class X_Cube
     {
         Vector3[] _vertices;
@@ -33,6 +55,23 @@ namespace YGR
             _triangles = triangles;
         }
 
+        public string toWavefrontObj(int offset)
+        {
+            string s = "";
+            foreach(var v in _vertices)
+            {
+                s += ("v " + v.X + " " + v.Y + " " + v.Z + "\n");
+            }
+            s += "\n";
+            for(int i=0; i<_triangles.GetLength(0); ++i)
+            {
+                s += ("f " + (_triangles[i,0]+1+offset) + " " + (_triangles[i, 1]+1+offset) + " " + (_triangles[i, 2]+1+offset) + "\n");
+            }
+            s += "\n";
+
+            return s;
+        }
+
         /*
          * Source: Nori
          */
@@ -42,6 +81,7 @@ namespace YGR
             direction.Normalize();
 
             int len = _triangles.GetLength(0);
+
             for (int ind=0; ind < len; ++ind)
             {
                 Vector3 p0 = _vertices[_triangles[ind, 0]];
@@ -58,7 +98,8 @@ namespace YGR
                 float det = Manager_Light.Dot(edge1, pvec);
 
                 if (det > -float.Epsilon && det < float.Epsilon)
-                    return false;
+                    continue;
+                    //return false;
                 float invDet = 1.0f / det;
 
                 // Calculate distance from v[0] to ray origin
@@ -67,7 +108,8 @@ namespace YGR
                 // Calculate U parameter and test bounds
                 float u = Manager_Light.Dot(tvec, pvec) * invDet;
                 if (u < 0.0 || u > 1.0)
-                    return false;
+                    continue;
+                    //return false;
 
                 // Prepare to test V parameter
                 Vector3 qvec = Manager_Light.CrossProduct(tvec, edge1);
@@ -75,12 +117,13 @@ namespace YGR
                 // Calculate V parameter and test bounds
                 float v = Manager_Light.Dot(direction, qvec) * invDet;
                 if (v < 0.0 || u + v > 1.0)
-                    return false;
+                    continue;
+                    //return false;
 
                 // Ray intersects triangle -> compute t
                 float t = Manager_Light.Dot(edge2, qvec) * invDet;
 
-                return t >= float.Epsilon && t <= length;
+                if(t >= float.Epsilon && t <= length) return true;
             }
             /*
             uint32_t i0 = m_F(0, index), i1 = m_F(1, index), i2 = m_F(2, index);
@@ -141,9 +184,12 @@ namespace YGR
                 );
         }
 
-        public static void Illuminate(Vector3 lightPosition, Vector3 pointTo, int lightWidth, int lightHeight, Color power)
+        public static void Illuminate(
+            X_Light light,
+            IWalkable room
+        )
         {
-            Vector3 lightDirection = pointTo - lightPosition;
+            Vector3 lightDirection = light.PointTo - light.Position;
             // https://math.stackexchange.com/questions/180418/calculate-rotation-matrix-to-align-vector-a-to-vector-b-in-3d
             Vector3 n = new Vector3(0, 0, -1);
             lightDirection.Normalize();
@@ -159,22 +205,91 @@ namespace YGR
             float c = Manager_Light.Dot(n, lightDirection);
 
             Matrix R = Matrix.Identity + vx + vx2 * (1 / (1 + c));
-            R.M14 = lightPosition.X;
-            R.M24 = lightPosition.Y;
-            R.M34 = lightPosition.Z;
+            R.M41 = light.Position.X;
+            R.M42 = light.Position.Y;
+            R.M43 = light.Position.Z;
             R.M44 = 1;
 
-            int xpos = -lightWidth / 2;
-            int ypos = -lightHeight / 2;
-            int xend = -xpos;
-            int yend = -ypos;
-            for (int x=xpos; x<xend; ++x)
+            Texture2D texture = room.GetFloor();
+            Color[] data = new Color[texture.Width*texture.Height];
+            texture.GetData<Color>(data);
+
+            var cubes = Manager_Light.Elevate(room, 1);
+            Manager_Light.toWavefrontObj(cubes, "./logs/cubes.obj");
+
+            //int xpos = -light.Width / 2;
+            //int ypos = -light.Height / 2;
+            //int xend = -xpos;
+            //int yend = -ypos;
+
+            float p = 0.5f;
+
+            //if(color != Color.Transparent)
+            //{
+            //    color.R = (byte)(p * lightPower.X + (1 - p) * color.R);
+            //    color.G = (byte)(p * lightPower.Y + (1 - p) * color.G);
+            //    color.B = (byte)(p * lightPower.Z + (1 - p) * color.B);
+            //    data[h * texture.Width + w] = color;
+            //}
+            var floor = room.Collision.GetFloorRectangles();
+            int width = texture.Width;
+            int height = texture.Height;
+            //for (int x = xpos; x < xend; ++x)
+            //{
+            //    for (int y = ypos; y < yend; ++y)
+            //    {
+
+            //Vector4 origin4 = new Vector4(0, 0, 0, 1);
+            //origin4 = Vector4.Transform(origin4, R);
+            //Vector3 origin = new Vector3(origin4.X, origin4.Y, origin4.Z);
+
+            var rects = room.Collision.GetCollisionRectangles();
+            //Vector3 origin = new Vector3(0, 0, 100);
+
+            var r = new Rectangle(
+                (int)(rects.First().X / room.Scale),
+                (int)(rects.First().Y / room.Scale),
+                (int)(rects.First().Width / room.Scale),
+                (int)(rects.First().Height / room.Scale));
+            for (int h = 0; h < height; ++h)
             {
-                for(int y=ypos; y<yend; ++y)
+                for (int w = 0; w < width; ++w)
                 {
-                    Vector3 origin = new Vector3(x + lightPosition.X, x + lightPosition.Y, lightPosition.Z);
+                    //foreach(var rect in rects)
+                    //{
+                    //    var r = new Rectangle(
+                    //        (int)(rect.X/room.Scale), 
+                    //        (int)(rect.Y/room.Scale), 
+                    //        (int)(rect.Width/room.Scale), 
+                    //        (int)(rect.Height/room.Scale));
+
+                    //    if(r.Contains(new Point(w, h)))
+                    //    {
+                    //        data[h * width + w] = Color.Black;
+                    //    }
+
+                    //}
+                    Vector3 origin = new Vector3(w, h, 5);
+                    Vector3 target = new Vector3(w, h, -5);
+                    //if (w == 120 && h == 20)
+                    //    Logger.Info("stop");
+                    foreach (var cube in cubes)
+                    {
+                        //if (r.Contains(new Point(w, h)))
+                        //{
+                        //    data[h * width + w] = Color.Orange;
+                        //}
+                        if (cube.RayIntersect(origin, target - origin))
+                        {
+                            data[h * width + w] = Color.Black;
+                        }
+                    }
                 }
             }
+            //    }
+            //}
+
+            texture.SetData<Color>(data);
         }
 
         public static List<X_Cube> Elevate(IWalkable room, int elevation)
@@ -184,31 +299,53 @@ namespace YGR
 
             int[,] indices = new int[,]
             {
-                /* bottom */ {0,1,2}, {0,2,3},
+                /* bottom */ {0,2,1}, {0,3,2},
                 /* right  */ {2,3,6}, {3,7,6},
                 /* front  */ {1,2,5}, {2,6,5},
-                /* left   */ {0,1,5}, {0,5,4},
-                /* back   */ {3,0,7}, {0,4,7},
+                /* left   */ {0,1,4}, {1,5,4},
+                /* back   */ {0,7,3}, {0,4,7},
                 /* top    */ {5,6,4}, {6,7,4}
             };
 
-            foreach(var rect in rects)
+            float scale = room.Scale;
+            float elev = room.Collision.TileHeight / scale;
+            foreach (var rect in rects)
             {
+                float x = rect.X / scale;
+                float y = rect.Y / scale;
+                float h = rect.Height / scale;
+                float w = rect.Width / scale;
+                float e = elevation * elev;
                 Vector3[] vertices = new Vector3[] {
-                    new Vector3(rect.X, rect.Y, 0),
-                    new Vector3(rect.X, rect.Y + rect.Height, 0),
-                    new Vector3(rect.X + rect.Width, rect.Y + rect.Height, 0),
-                    new Vector3(rect.X + rect.Height, rect.Y, 0),
-                    new Vector3(rect.X, rect.Y, elevation),
-                    new Vector3(rect.X, rect.Y + rect.Height, elevation),
-                    new Vector3(rect.X + rect.Width, rect.Y + rect.Height, elevation),
-                    new Vector3(rect.X + rect.Height, rect.Y, elevation)
+                    new Vector3(x, y, 0),
+                    new Vector3(x, y+h, 0),
+                    new Vector3(x+w, y+h, 0),
+                    new Vector3(x+w, y, 0),
+                    new Vector3(x, y, e),
+                    new Vector3(x, y+h, e),
+                    new Vector3(x+w, y+h, e),
+                    new Vector3(x+w, y, e)
                 };
 
                 cubes.Add(new X_Cube(vertices, indices));
             }
 
             return cubes;
+        }
+
+        private static void toWavefrontObj(List<X_Cube> cubes, string name)
+        {
+            string s = "";
+            int i = 0;
+            int offset = 8;
+            foreach (var cube in cubes)
+            {
+                s += "o cube" + i + "\n";
+                s += (cube.toWavefrontObj(i*offset));
+                i++;
+            }
+
+            File.WriteAllText(name, s);
         }
     }
 }

@@ -1,6 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
+using SharpFont.Cache;
 using System;
 using System.Collections.Generic;
 
@@ -8,6 +9,7 @@ namespace YGR
 {
     public class Y_Level : IGameElement
     {
+        public float Scale { get; }
         public Rectangle Rect { get; set; }
         public IDictionary<string, IWalkable> Rooms { get; private set; }
         public int TileWidth { get; }
@@ -35,27 +37,37 @@ namespace YGR
 
             TileWidth = tileSize;
             TileHeight = tileSize;
+            Scale = 1.0f;
 
             Rooms = new Dictionary<string, IWalkable>
             {
-                { "center", new Y_CMRoom("r2", TileWidth, TileHeight, resourceFolder + "R2", graphicsDevice) },
-                { "middle", new Y_CMRoom("r0", TileWidth, TileHeight, resourceFolder + "R0", graphicsDevice) },
-                { "top", new Y_CMRoom("r1", TileWidth, TileHeight, resourceFolder + "R1", graphicsDevice) },
+                //{ "center", new Y_CMRoom("r2", TileWidth, TileHeight, resourceFolder + "R2", graphicsDevice) },
+                //{ "middle", new Y_CMRoom("r0", TileWidth, TileHeight, resourceFolder + "R0", graphicsDevice) },
+                //{ "top", new Y_CMRoom("r1", TileWidth, TileHeight, resourceFolder + "R1", graphicsDevice) },
                 { "left", new Y_CMRoom("r3-L", TileWidth, TileHeight, resourceFolder + "R3", graphicsDevice) },
-                { "right", new Y_CMRoom("r3-R", TileWidth, TileHeight, resourceFolder + "R3", graphicsDevice) },
-                { "bottom", new Y_CMRoom("r3-B", TileWidth, TileHeight, resourceFolder + "R3", graphicsDevice) },
-                { "door-center-to-middle", new Y_Door(X_DoorDirection.Vertical, 17, TileWidth, TileHeight, -7, graphicsDevice) },
-                { "door-center-to-left", new Y_Door(X_DoorDirection.Horizontal, 17, TileWidth, TileHeight, 9, graphicsDevice) },
-                { "door-center-to-right", new Y_Door(X_DoorDirection.Horizontal, 17, TileWidth, TileHeight, -3, graphicsDevice) },
-                { "door-center-to-bottom", new Y_Door(X_DoorDirection.Vertical, 25, TileWidth, TileHeight, -3, graphicsDevice) },
-                { "door-middle-to-top", new Y_Door(X_DoorDirection.Vertical, 17, TileWidth, TileHeight, 3, graphicsDevice) },
+                //{ "right", new Y_CMRoom("r3-R", TileWidth, TileHeight, resourceFolder + "R3", graphicsDevice) },
+                //{ "bottom", new Y_CMRoom("r3-B", TileWidth, TileHeight, resourceFolder + "R3", graphicsDevice) },
+                //{ "door-center-to-middle", new Y_Door(X_DoorDirection.Vertical, 17, TileWidth, TileHeight, -7, graphicsDevice) },
+                //{ "door-center-to-left", new Y_Door(X_DoorDirection.Horizontal, 17, TileWidth, TileHeight, 9, graphicsDevice) },
+                //{ "door-center-to-right", new Y_Door(X_DoorDirection.Horizontal, 17, TileWidth, TileHeight, -3, graphicsDevice) },
+                //{ "door-center-to-bottom", new Y_Door(X_DoorDirection.Vertical, 25, TileWidth, TileHeight, -3, graphicsDevice) },
+                //{ "door-middle-to-top", new Y_Door(X_DoorDirection.Vertical, 17, TileWidth, TileHeight, 3, graphicsDevice) },
             };
 
-            ((Y_Door)Rooms["door-center-to-middle"]).Connect(X_ConnectorSide.Bottom, Rooms["center"], X_ConnectorSide.Top, Rooms["middle"]);
-            ((Y_Door)Rooms["door-center-to-left"]).Connect(X_ConnectorSide.Right, Rooms["center"], X_ConnectorSide.Left, Rooms["left"]);
-            ((Y_Door)Rooms["door-center-to-right"]).Connect(X_ConnectorSide.Left, Rooms["center"], X_ConnectorSide.Right, Rooms["right"]);
-            ((Y_Door)Rooms["door-center-to-bottom"]).Connect(X_ConnectorSide.Top, Rooms["center"], X_ConnectorSide.Bottom, Rooms["bottom"]);
-            ((Y_Door)Rooms["door-middle-to-top"]).Connect(X_ConnectorSide.Bottom, Rooms["middle"], X_ConnectorSide.Top, Rooms["top"]);
+            X_Light light = new X_Light(
+                new Vector3(0, 0, 100),
+                new Vector3(Rooms["left"].Rect.Width/2, Rooms["left"].Rect.Height/2, 0),
+                1, 1,
+                new Vector3(1.0f, 1.0f, 1.0f)
+                );
+
+            Rooms["left"].Illuminate(light);
+
+            //((Y_Door)Rooms["door-center-to-middle"]).Connect(X_ConnectorSide.Bottom, Rooms["center"], X_ConnectorSide.Top, Rooms["middle"]);
+            //((Y_Door)Rooms["door-center-to-left"]).Connect(X_ConnectorSide.Right, Rooms["center"], X_ConnectorSide.Left, Rooms["left"]);
+            //((Y_Door)Rooms["door-center-to-right"]).Connect(X_ConnectorSide.Left, Rooms["center"], X_ConnectorSide.Right, Rooms["right"]);
+            //((Y_Door)Rooms["door-center-to-bottom"]).Connect(X_ConnectorSide.Top, Rooms["center"], X_ConnectorSide.Bottom, Rooms["bottom"]);
+            //((Y_Door)Rooms["door-middle-to-top"]).Connect(X_ConnectorSide.Bottom, Rooms["middle"], X_ConnectorSide.Top, Rooms["top"]);
 
             // finalize: split collision models
             foreach (var room in Rooms)

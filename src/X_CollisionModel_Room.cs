@@ -33,6 +33,10 @@ namespace YGR
 
             var components = fitRectangles(_collisionTemplate);
             createCollisionModelRectangles(components.Item1, components.Item2);
+
+            //_collisionRectangles = new Rectangle[] { _collisionRectangles[0] };
+            //_collisionRectanglesHit = new bool[] { false };
+
             _records = new List<Manager_Collision.Record>();
 
             _floor = createFloor(collisionTemplate);
@@ -41,6 +45,11 @@ namespace YGR
         public Rectangle[] GetCollisionRectangles()
         {
             return _collisionRectangles;
+        }
+
+        public Rectangle[] GetFloorRectangles()
+        {
+            return _floor;
         }
 
         public void SplitCollisionVerticallyAt(Point p, int tileCount)

@@ -25,6 +25,7 @@ namespace YGR
 
     public class Y_Door : IWalkable
     {
+        public float Scale { get; private set; }
         public Rectangle Rect { get; set; }
         public string Name { get; }
         public X_CollisionModel_Room Collision { get; }
@@ -36,7 +37,6 @@ namespace YGR
         private int[][] _collision;
         private X_DoorDirection _direction;
         private Texture2D _floor;
-        private float _scale;
         const int _numTilesDoorWidth = 5;
 
         public Y_Door(
@@ -59,6 +59,8 @@ namespace YGR
             Collision = new X_CollisionModel_Room(_collision, tileWidth, tileHeight);
 
             Rect = new Rectangle(0, 0, tileWidth * _collision[0].Length, tileHeight * _collision.Length);
+
+            Scale = 1.0f;
 
             Texture2D roof;
             Texture2D floor;
@@ -124,8 +126,8 @@ namespace YGR
 
             int width = floor.Width;
             int height = floor.Height;
-            _floor = new Texture2D(graphicsDevice, tileWidth * pattern[0].Length, tileHeight * pattern.Length);
-            _scale = (float)tileHeight / height;
+            _floor = new Texture2D(graphicsDevice, width * pattern[0].Length, height * pattern.Length);
+            Scale = (float)tileHeight / height;
 
             for (int x = 0; x < pattern[0].Length; ++x)
             {
@@ -141,10 +143,15 @@ namespace YGR
                     {
                         elem = Enumerable.Repeat<Color>(Color.Transparent, height * width).ToArray();
                     }
-                    //var elem = Enumerable.Repeat<Color>(Color.Transparent, height * width).ToArray();
+                    //var elem = Enumerable.Repeat<Color>(Color.Red, height * width).ToArray();
                     _floor.SetData(0, new Rectangle(x * width, y * height, width, height), elem, 0, elem.Length);
                 }
             }
+        }
+
+        public void Illuminate(X_Light light)
+        {
+            Manager_Light.Illuminate(light, this);
         }
 
         private void output(int[][] pattern, string name)
@@ -163,6 +170,11 @@ namespace YGR
                 }
                 writer.WriteLine(s);
             }
+        }
+
+        public ref Texture2D GetFloor()
+        {
+            return ref _floor;
         }
 
         private IList<Tuple<int, int>> findMatch(int[,] match, int[][] pattern, int ox, int oy)
@@ -557,7 +569,7 @@ namespace YGR
             spriteBatch.Draw(
                 _floor, Rect.Location.ToVector2(),
                 new Rectangle(0, 0, _floor.Width, _floor.Height),
-                Color.White, 0, Vector2.Zero, _scale, SpriteEffects.None, 0);
+                Color.White, 0, Vector2.Zero, Scale, SpriteEffects.None, 0);
         }
 
         public void MoveTo(Point position)

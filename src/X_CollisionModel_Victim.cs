@@ -60,20 +60,9 @@ namespace YGR
 
             // check the room
             IWalkable room = me.Level.GetRoom(me, me.Room);
-            if (room.Collision.Intersect(ref myRect, ref myVelocity, timeStepMS, out point, out normal))
+            if(room != null)
             {
-                result = true;
-                who.Add(room);
-                contactPoint.Add(point);
-                contactNormal.Add(normal);
-                me.Velocity = myVelocity;
-                Logger.Info("impacted at " + point.ToString() + " with room " + room.Name);
-            }
-
-            // check the connected connectors, just to be sure
-            foreach(var door in room.DoorRooms)
-            {
-                if (door.Value.First().Collision.Intersect(ref myRect, ref myVelocity, timeStepMS, out point, out normal))
+                if (room.Collision.Intersect(ref myRect, ref myVelocity, timeStepMS, out point, out normal))
                 {
                     result = true;
                     who.Add(room);
@@ -82,11 +71,25 @@ namespace YGR
                     me.Velocity = myVelocity;
                     Logger.Info("impacted at " + point.ToString() + " with room " + room.Name);
                 }
-            }
 
-            Rectangle rect = me.Rect;
-            rect.Location += (me.Velocity * timeStepMS).ToPoint();
-            me.Rect = rect;
+                // check the connected connectors, just to be sure
+                foreach (var door in room.DoorRooms)
+                {
+                    if (door.Value.First().Collision.Intersect(ref myRect, ref myVelocity, timeStepMS, out point, out normal))
+                    {
+                        result = true;
+                        who.Add(room);
+                        contactPoint.Add(point);
+                        contactNormal.Add(normal);
+                        me.Velocity = myVelocity;
+                        Logger.Info("impacted at " + point.ToString() + " with room " + room.Name);
+                    }
+                }
+
+                Rectangle rect = me.Rect;
+                rect.Location += (me.Velocity * timeStepMS).ToPoint();
+                me.Rect = rect;
+            }
 
             return result;
         }

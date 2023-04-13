@@ -39,13 +39,6 @@ namespace YGR
             Factory_Debug.Initialize(Content);
             Manager_Projectile.Initialize(Content);
 
-            Manager_Light.Illuminate(
-                new Vector3(5, 5, 5),
-                new Vector3(0, 0, 0),
-                3, 3,
-                new Color(1, 1, 1)
-                );
-
             base.Initialize();
         }
 
@@ -54,7 +47,7 @@ namespace YGR
             _spriteBatch = new SpriteBatch(GraphicsDevice);
             _background = Content.Load<Texture2D>("background");
 
-            _level = new Y_Level("level_0", 32, "Levels/Level_0", GraphicsDevice);
+            _level = new Y_Level("level_0", 64, "Levels/Level_0", GraphicsDevice);
 
             _player = new List<IVictim>{
                 //new Ninja(
@@ -73,7 +66,7 @@ namespace YGR
                     new Rectangle(0, 0, 42, 60),
                     0.004f, // acceleration
                     0.4f,  // max velocity
-                    new Vector2(250, 350),
+                    new Vector2(100, 100),
                     _level,
                     200.0f,
                     new Dictionary<string, int[]> {
