@@ -4,6 +4,7 @@ using Microsoft.Xna.Framework.Graphics;
 using SharpFont.Cache;
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace YGR
 {
@@ -18,6 +19,8 @@ namespace YGR
         public IList<IVictim> Victims { get; }
 
         private string _name;
+
+        private X_Light _light;
 
         public Y_Level(
             string name,
@@ -41,45 +44,50 @@ namespace YGR
 
             Rooms = new Dictionary<string, IWalkable>
             {
-                //{ "center", new Y_CMRoom("r2", TileWidth, TileHeight, resourceFolder + "R2", graphicsDevice) },
+                { "center", new Y_CMRoom("r2", TileWidth, TileHeight, resourceFolder + "R2", graphicsDevice) },
                 { "middle", new Y_CMRoom("r0", TileWidth, TileHeight, resourceFolder + "R0", graphicsDevice) },
-                //{ "top", new Y_CMRoom("r1", TileWidth, TileHeight, resourceFolder + "R1", graphicsDevice) },
-                //{ "left", new Y_CMRoom("r3-L", TileWidth, TileHeight, resourceFolder + "R3", graphicsDevice) },
-                //{ "right", new Y_CMRoom("r3-R", TileWidth, TileHeight, resourceFolder + "R3", graphicsDevice) },
-                //{ "bottom", new Y_CMRoom("r3-B", TileWidth, TileHeight, resourceFolder + "R3", graphicsDevice) },
-                //{ "door-center-to-middle", new Y_Door(X_DoorDirection.Vertical, 17, TileWidth, TileHeight, -7, graphicsDevice) },
-                //{ "door-center-to-left", new Y_Door(X_DoorDirection.Horizontal, 17, TileWidth, TileHeight, 9, graphicsDevice) },
-                //{ "door-center-to-right", new Y_Door(X_DoorDirection.Horizontal, 17, TileWidth, TileHeight, -3, graphicsDevice) },
-                //{ "door-center-to-bottom", new Y_Door(X_DoorDirection.Vertical, 25, TileWidth, TileHeight, -3, graphicsDevice) },
-                //{ "door-middle-to-top", new Y_Door(X_DoorDirection.Vertical, 17, TileWidth, TileHeight, 3, graphicsDevice) },
+                { "top", new Y_CMRoom("r1", TileWidth, TileHeight, resourceFolder + "R1", graphicsDevice) },
+                { "left", new Y_CMRoom("r3-L", TileWidth, TileHeight, resourceFolder + "R3", graphicsDevice) },
+                { "right", new Y_CMRoom("r3-R", TileWidth, TileHeight, resourceFolder + "R3", graphicsDevice) },
+                { "bottom", new Y_CMRoom("r3-B", TileWidth, TileHeight, resourceFolder + "R3", graphicsDevice) },
+                { "door-center-to-middle", new Y_Door(X_DoorDirection.Vertical, 17, TileWidth, TileHeight, -7, graphicsDevice) },
+                { "door-center-to-left", new Y_Door(X_DoorDirection.Horizontal, 17, TileWidth, TileHeight, 9, graphicsDevice) },
+                { "door-center-to-right", new Y_Door(X_DoorDirection.Horizontal, 17, TileWidth, TileHeight, -3, graphicsDevice) },
+                { "door-center-to-bottom", new Y_Door(X_DoorDirection.Vertical, 25, TileWidth, TileHeight, -3, graphicsDevice) },
+                { "door-middle-to-top", new Y_Door(X_DoorDirection.Vertical, 17, TileWidth, TileHeight, 3, graphicsDevice) },
             };
 
-            //Rooms["left"].Illuminate(light);
+            //Rooms["center"].MoveTo(new Point(-(4*tileSize), 0));
 
-            foreach(var room in Rooms.Keys)
-            {
-                X_Light light = new X_Light(
-                    new Vector3(-Rooms[room].Rect.Width / 2, Rooms[room].Rect.Height / 2, Rooms[room].Rect.Width),
-                    new Vector3(Rooms[room].Rect.Width / 2, Rooms[room].Rect.Height / 2, 0),
-                    1, 1,
-                    new Vector3(1.0f, 1.0f, 1.0f)
-                );
-                Rooms[room].Illuminate(light);
-            }
-
-            //((Y_Door)Rooms["door-center-to-middle"]).Connect(X_ConnectorSide.Bottom, Rooms["center"], X_ConnectorSide.Top, Rooms["middle"]);
-            //((Y_Door)Rooms["door-center-to-left"]).Connect(X_ConnectorSide.Right, Rooms["center"], X_ConnectorSide.Left, Rooms["left"]);
-            //((Y_Door)Rooms["door-center-to-right"]).Connect(X_ConnectorSide.Left, Rooms["center"], X_ConnectorSide.Right, Rooms["right"]);
-            //((Y_Door)Rooms["door-center-to-bottom"]).Connect(X_ConnectorSide.Top, Rooms["center"], X_ConnectorSide.Bottom, Rooms["bottom"]);
-            //((Y_Door)Rooms["door-middle-to-top"]).Connect(X_ConnectorSide.Bottom, Rooms["middle"], X_ConnectorSide.Top, Rooms["top"]);
+            ((Y_Door)Rooms["door-center-to-middle"]).Connect(X_ConnectorSide.Bottom, Rooms["center"], X_ConnectorSide.Top, Rooms["middle"]);
+            ((Y_Door)Rooms["door-center-to-left"]).Connect(X_ConnectorSide.Right, Rooms["center"], X_ConnectorSide.Left, Rooms["left"]);
+            ((Y_Door)Rooms["door-center-to-right"]).Connect(X_ConnectorSide.Left, Rooms["center"], X_ConnectorSide.Right, Rooms["right"]);
+            ((Y_Door)Rooms["door-center-to-bottom"]).Connect(X_ConnectorSide.Top, Rooms["center"], X_ConnectorSide.Bottom, Rooms["bottom"]);
+            ((Y_Door)Rooms["door-middle-to-top"]).Connect(X_ConnectorSide.Bottom, Rooms["middle"], X_ConnectorSide.Top, Rooms["top"]);
 
             // finalize: split collision models
             foreach (var room in Rooms)
             {
-                if(room.Value.WhatAreYou() == X_LevelElements.Door)
+                if (room.Value.WhatAreYou() == X_LevelElements.Door)
                 {
                     ((Y_Door)room.Value).SplitConnectedCollisionModels();
                 }
+            }
+
+            float scale = (float)TileWidth / 16.0f;
+            _light = new X_Light(
+                    new Vector3((int)(3.5 * tileSize), (int)(4 * tileSize), 1 * tileSize),
+                    new Vector3(0, 0, 0),
+                    1, 1,
+                    Color.Black,
+                    0.6f,
+                    scale
+                );
+
+            var model = Manager_Light.Elevate(this);
+            foreach (var room in Rooms.Values)
+            {
+                room.Illuminate(_light, model);
             }
 
             Projectiles = new List<IProjectile>();
@@ -116,6 +124,7 @@ namespace YGR
             {
                 room.Value.DrawOutline(gameTime, globalOffset, spriteBatch);
             }
+            _light.DrawOutline(gameTime, globalOffset, spriteBatch);
         }
 
         public void Draw(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)

@@ -159,9 +159,9 @@ namespace YGR
             }
         }
 
-        public void Illuminate(X_Light light)
+        public void Illuminate(X_Light light, List<X_Cube> model)
         {
-            Manager_Light.Illuminate(light, this);
+            Manager_Light.Illuminate(light, this, model);
         }
 
         private void output(int[][] pattern, string name)

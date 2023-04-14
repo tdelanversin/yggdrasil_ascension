@@ -128,7 +128,7 @@ namespace YGR
             foreach (var player in _player)
             {
                 player.Draw(gameTime, zero, _spriteBatch);
-                player.DrawOutline(gameTime, zero, _spriteBatch);
+                //player.DrawOutline(gameTime, zero, _spriteBatch);
             }
 
             _spriteBatch.End();

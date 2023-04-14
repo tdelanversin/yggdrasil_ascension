@@ -120,9 +120,9 @@ namespace YGR
             Scale = (float)tileHeight * collisions.Length / _floor.Height;
         }
 
-        public void Illuminate(X_Light light)
+        public void Illuminate(X_Light light, List<X_Cube> model)
         {
-            Manager_Light.Illuminate(light, this);
+            Manager_Light.Illuminate(light, this, model);
         }
 
         public ref Texture2D GetFloor()
