@@ -36,15 +36,15 @@ namespace YGR
         public Vector3 PointTo { get; }
         public int Width { get; }
         public int Height { get; }
-        public Vector3 Power { get; }
+        public Vector3 Color { get; }
 
-        public X_Light(Vector3 position, Vector3 pointTo, int width, int height, Vector3 power)
+        public X_Light(Vector3 position, Vector3 pointTo, int width, int height, Vector3 color)
         {
             Position = position; // new Vector3(position.Y, position.X, position.Z);
             PointTo = pointTo; // new Vector3(pointTo.Y, pointTo.X, pointTo.Z);
             Width = width;
             Height = height;
-            Power = power;
+            Color = color;
         }
 
     }
@@ -255,10 +255,10 @@ namespace YGR
             //    color.B = (byte)(p * lightPower.Z + (1 - p) * color.B);
             //    data[h * texture.Width + w] = color;
             //}
-            var floor = room.Collision.CreateFloorRectangles(room.TextureTileSize);
+            //var floor = room.Collision.CreateFloorRectangles(room.TextureTileSize);
 
 
-            var walls = room.Collision.CreateWallRectangles(room.TextureTileSize);
+            //var walls = room.Collision.CreateWallRectangles(room.TextureTileSize);
 
             //for (int x = xpos; x < xend; ++x)
             //{
@@ -448,127 +448,6 @@ namespace YGR
             }
 
             texture.SetData<Color>(data);
-            return;
-
-            //for (int i = 1; i < 150; ++i)
-            //{
-            //    for (int j = 0; j <= 16; ++j)
-            //    {
-            //        foreach (var cube in wallCubes)
-            //        {
-            //            Vector3 orig = new Vector3(i, 50, -j);
-            //            if (cube.RayIntersect(orig, new Vector3(i, -200, -j) - orig, out hitPoint))
-            //            {
-            //                // we hit the floor
-            //                data[(int)(hitPoint.Y + Math.Abs(hitPoint.Z)) * width + (int)hitPoint.X] = Color.Red;
-            //            }
-            //        }
-            //    }
-            //}
-
-            int width = texture.Width;
-            int height = texture.Height;
-            //Vector3 hitPoint;
-            foreach (var row in floor.Take(floor.Count - 1))
-            {
-                foreach (var floorRect in row)
-                {
-                    int fromX = floorRect.X;
-                    int fromY = floorRect.Y;
-                    int toX = fromX + floorRect.Width;
-                    int toY = fromY + floorRect.Height;
-                    for (int h = fromY; h < toY; ++h)
-                    {
-                        for (int w = fromX; w < toX; ++w)
-                        {
-                            Vector3 target = new Vector3(w, h, -room.TextureTileSize - 0.1f);
-                            foreach (var cube in cubes)
-                            {
-                                if (cube.RayIntersect(origin, target - origin, out hitPoint))
-                                {
-                                    // we hit the floor
-                                    int index = (h + room.TextureTileSize) * width + w;
-                                    //int index = (h) * width + w;
-                                    if (index < shadow.Length)
-                                        shadow[index] = shadowP;
-                                    //data[(h + room.TextureTileSize) * width + w] = Color.Black;
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-
-            /**
-             * Test calculating the precise vector and then check intersection with frame
-             */
-            int counter = 0;
-            foreach (var row in walls)
-            {
-                foreach (var wall in row)
-                {
-                    //int minx = int.MaxValue;
-                    //int maxx = int.MinValue;
-                    //int miny = int.MaxValue;
-                    //int maxy = int.MinValue;
-                    int offsetH = wall.Y;
-                    int offsetW = wall.X;
-                    int inset = 1;
-                    bool[,] mask = new bool[wall.Height + 2 * inset, wall.Width + 2 * inset];
-
-                    for (int w = offsetW; w <= wall.Width + offsetW; ++w)
-                    {
-                        for (int h = 0; h <= wall.Height; ++h)
-                        {
-                            foreach (var wc in wallCubes)
-                            {
-                                if (wc.RayIntersect(origin, (new Vector3(w, offsetH - 0.1f, -h) - origin), out hitPoint))
-                                {
-                                    foreach (var cube in cubes)
-                                    {
-                                        Vector3 hitPoint2;
-                                        if (cube.RayIntersect(origin, hitPoint - origin, out hitPoint2))
-                                        {
-                                            int hitH = (int)(hitPoint.Y + Math.Abs(hitPoint.Z));
-                                            int hitW = (int)(hitPoint.X);
-                                            //data[hitH * width + hitW] = Color.Red;
-                                            //if (!mask[hitH - offsetH + inset, hitW - offsetW + inset])
-                                            //{
-                                                int index = hitH * width + hitW;
-                                                if (index < shadow.Length)
-                                                    shadow[index] = shadowP;
-                                            //}
-                                            // we hit the floor
-                                            //data[(h + room.TextureTileSize) * width + w] = Color.Black;
-
-                                            //if (minx > hitW) minx = hitW;
-                                            //if (maxx < hitW) maxx = hitW;
-                                            //if (miny > hitH) miny = hitH;
-                                            //if (maxy < hitH) maxy = hitH;
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-
-                    //Logger.Info(" minx " + minx + "\t| maxx " + maxx + "\t| miny " + miny + "\t| maxy " + maxy + "\t| offsetW " + offsetW + "\t| offsetH " + offsetH);
-
-                    //output(mask, "./logs/mask" + counter + ".csv");
-                    //counter++;
-                }
-
-            }
-
-            for(int i=0; i<shadow.Length; ++i)
-            {
-                if (shadow[i] > 0)
-                {
-                    data[i].R = (byte)(shadow[i] * Color.Black.R + (1 - shadow[i]) * data[i].R);
-                    data[i].G = (byte)(shadow[i] * Color.Black.G + (1 - shadow[i]) * data[i].G);
-                    data[i].B = (byte)(shadow[i] * Color.Black.B + (1 - shadow[i]) * data[i].B);
-                }
-            }
 
             ///**
             // * Test to calculate all dots on the wall from the wall boxes
@@ -718,8 +597,6 @@ namespace YGR
             //}
 
             //Logger.Info(" minx " + minx + "\t| maxx " + maxx + "\t| miny " + miny + "\t| maxy " + maxy);
-
-            texture.SetData<Color>(data);
         }
 
         private static void output(bool[,] pattern, string name)
