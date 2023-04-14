@@ -39,7 +39,8 @@ namespace YGR
                     color = Color.Beige;
                 }
 
-                if (!IsActive) {
+                if (!IsActive)
+                {
                     color = Color.Gray;
                 }
                 spriteBatch.DrawString(Fonts.Large, Text, GetOffsetPosition(), color);
@@ -49,6 +50,13 @@ namespace YGR
             {
                 // Offset position by own size to center text
                 return Position - Fonts.Large.MeasureString(Text) / 2;
+            }
+
+            public Rectangle Bounds()
+            {
+                Vector2 topLeft = GetOffsetPosition();
+                Vector2 size = Fonts.Large.MeasureString(Text);
+                return new Rectangle((int)topLeft.X, (int)topLeft.Y, (int)size.X, (int)size.Y);
             }
 
             public void Dispatch()
@@ -144,6 +152,20 @@ namespace YGR
             if (Keyboard.HasBeenPressed(Keybinds.Enter))
             {
                 SelectableItems[SelectedMenu].Dispatch();
+            }
+
+            MouseState mouseState = Mouse.GetState();
+            Point mousePos = mouseState.Position;
+            for (int i = 0; i < SelectableItems.Count; i++)
+            {
+                if (SelectableItems[i].Bounds().Contains(mousePos))
+                {
+                    SelectMenu(i);
+                    if (mouseState.LeftButton == ButtonState.Pressed)
+                    {
+                        SelectableItems[SelectedMenu].Dispatch();
+                    }
+                }
             }
         }
 
