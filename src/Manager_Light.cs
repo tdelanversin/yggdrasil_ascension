@@ -2,6 +2,7 @@
 using Assimp.Configs;
 using Microsoft.VisualBasic;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Content.Pipeline.Builder.Convertors;
 using Microsoft.Xna.Framework.Graphics;
@@ -12,6 +13,7 @@ using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Reflection.Emit;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -269,12 +271,149 @@ namespace YGR
             Texture2D texture = room.GetFloor();
             Color[] data = new Color[texture.Width * texture.Height];
             float[] shadow = Enumerable.Repeat<float>(0.0f, data.Length).ToArray();
+
+            bool[] shadowMap = Enumerable.Repeat<bool>(true, data.Length).ToArray();
+            Vector3[] floorCoords = Enumerable.Repeat<Vector3>(Vector3.Zero, data.Length).ToArray();
+            Vector3[] wallCoords = Enumerable.Repeat<Vector3>(Vector3.Zero, data.Length).ToArray();
+            int[] textureMapFloor = Enumerable.Repeat<int>(0, data.Length).ToArray();
+            int[] textureMapWall = Enumerable.Repeat<int>(0, data.Length).ToArray();
+            var template = room.Collision.GetCollisionTemplate();
+            
+            var tileSize = room.TextureTileSize;
+            for(int h=0; h < template.Length; ++h)
+            {
+                for (int w = 0; w < template[0].Length; ++w)
+                {
+                    int fromX = w*tileSize; // wall.X
+                    int fromY = h* tileSize; // wall.Y
+                    int toX = fromX + tileSize;
+                    int toY = fromY + tileSize;
+                    for (int x = fromX; x < toX; ++x)
+                    {
+                        for (int y = fromY; y < toY; ++y)
+                        {
+                            if (template[h][w] > 0) // == (int)X_TileType.Floor || template[h][w] == (int)X_TileType.Roof)
+                            {
+                                floorCoords[y * texture.Width + x] = new Vector3(x, y, -room.TextureTileSize - 0.1f);
+                                textureMapFloor[y * texture.Width + x] = (y + tileSize) * texture.Width + x;
+                                //shadowMap[y * texture.Width + x] = true;
+                            }
+                            //if (template[h][w] > 0) //template[h][w] == (int)X_TileType.Wall)
+                            //{
+                            //    floorCoords[y * texture.Width + x] = new Vector3(x, fromY - 0.1f, -(y - fromY));
+                            //    textureMapFloor[y * texture.Width + x] = (y) * texture.Width + x;
+                            //    //shadowMap[y * texture.Width + x] = true;
+                            //}
+                            if(template[h][w] == (int)X_TileType.Roof)
+                            {
+                                shadowMap[y * texture.Width + x] = false;
+                            }
+                            //if (template[h][w] == (int)X_TileType.Wall)
+                            //{
+                            //    //coords[y * texture.Width + x] = new Vector3(x, fromY - 0.1f, -(y - fromY));
+                            //    //shadowMap[y * texture.Width + x] = true;
+                            //}
+                            //if (template[h][w] == (int)X_TileType.Roof)
+                            //{
+                            //    coords[y * texture.Width + x] = new Vector3(x, y, 0);
+                            //    shadowMap[y * texture.Width + x] = true;
+                            //    textureMapFloor[y * texture.Width + x] = y * texture.Width + x;
+                            //}
+                        }
+                    }
+                }
+            }
+
+            //foreach (var row in floor.Take(floor.Count - 1))
+            //{
+            //    foreach (var floorRect in row)
+            //    {
+            //        int fromX = floorRect.X;
+            //        int fromY = floorRect.Y;
+            //        int toX = fromX + floorRect.Width;
+            //        int toY = fromY + floorRect.Height;
+            //        for (int h = fromY; h < toY; ++h)
+            //        {
+            //            for (int w = fromX; w < toX; ++w)
+            //            {
+            //                Vector3 target = new Vector3(w, h, -room.TextureTileSize - 0.1f)
+
+            //foreach (var row in walls)
+            //{
+            //    foreach (var wall in row)
+            //    {
+            //        int minx = int.MaxValue;
+            //        int maxx = int.MinValue;
+            //        int miny = int.MaxValue;
+            //        int maxy = int.MinValue;
+            //        int offsetH = wall.Y;
+            //        int offsetW = wall.X;
+            //        int inset = 1;
+            //        bool[,] mask = new bool[wall.Height + 2*inset, wall.Width + 2*inset];
+
+                            //        for (int w = offsetW; w <= wall.Width + offsetW; ++w)
+                            //        {
+                            //            for (int h = 0; h <= wall.Height; ++h)
+                            //            {
+                            //                foreach (var cube in wallCubes)
+                            //                {
+                            //                    if (cube.RayIntersect(orig, (new Vector3(w, offsetH - 0.1f, -h) - orig), out hitPoint))
+                            //                    {
+
             texture.GetData<Color>(data);
+            Vector3 orig = new Vector3(12*16, (int)(7.5*16), 16);
+            Vector3 hitPoint;
+            for (int i=0; i<data.Length; ++i)
+            {
+                //if (shadowMap[i] == true)
+                //{
+                //    continue;
+                //    //data[i] = Color.White;
+                //}
+                //else
+                //{
+                    bool intersectFloor = false;
+                //bool intersectWall = false;
+                foreach (var cube in cubes)
+                    {
+                        if (cube.RayIntersect(orig, floorCoords[i] - orig, out hitPoint))
+                        {
+                        int hitH = (int)(hitPoint.Y + Math.Abs(hitPoint.Z));
+                        int hitW = (int)(hitPoint.X);
+                        int hit = hitH * texture.Width + hitW;
+                        int hit2 = textureMapFloor[i];
+                        intersectFloor = true;
+                            break;
+                            // we hit the floor
+                        }
+                }
+                if (!intersectFloor && shadowMap[textureMapFloor[i]]) data[textureMapFloor[i]] = Color.Red;
+                //if (!intersectWall && shadowMap[textureMapWall[i]]) data[textureMapWall[i]] = Color.Blue;
+                //}
+            }
+            texture.SetData<Color>(data);
+            return;
+
+            //for (int i = 1; i < 150; ++i)
+            //{
+            //    for (int j = 0; j <= 16; ++j)
+            //    {
+            //        foreach (var cube in wallCubes)
+            //        {
+            //            Vector3 orig = new Vector3(i, 50, -j);
+            //            if (cube.RayIntersect(orig, new Vector3(i, -200, -j) - orig, out hitPoint))
+            //            {
+            //                // we hit the floor
+            //                data[(int)(hitPoint.Y + Math.Abs(hitPoint.Z)) * width + (int)hitPoint.X] = Color.Red;
+            //            }
+            //        }
+            //    }
+            //}
 
             int width = texture.Width;
             int height = texture.Height;
-            Vector3 hitPoint;
-            foreach (var row in floor.Take(floor.Count-1))
+            //Vector3 hitPoint;
+            foreach (var row in floor.Take(floor.Count - 1))
             {
                 foreach (var floorRect in row)
                 {
@@ -282,29 +421,18 @@ namespace YGR
                     int fromY = floorRect.Y;
                     int toX = fromX + floorRect.Width;
                     int toY = fromY + floorRect.Height;
-
-                    bool intersects = false;
-                    //foreach(var colRect in room.Collision.GetCollisionRectangles())
-                    //{
-                    //    if (floorRect.Intersects(colRect))
-                    //    {
-                    //        intersects = true;
-                    //        break;
-                    //    }
-                    //}
-                    //if (intersects) continue;
                     for (int h = fromY; h < toY; ++h)
                     {
                         for (int w = fromX; w < toX; ++w)
                         {
-                            Vector3 target = new Vector3(w, h, -room.TextureTileSize-0.1f);
+                            Vector3 target = new Vector3(w, h, -room.TextureTileSize - 0.1f);
                             foreach (var cube in cubes)
                             {
                                 if (cube.RayIntersect(origin, target - origin, out hitPoint))
                                 {
                                     // we hit the floor
-                                    //int index = (h + room.TextureTileSize) * width + w;
-                                    int index = (h) * width + w;
+                                    int index = (h + room.TextureTileSize) * width + w;
+                                    //int index = (h) * width + w;
                                     if (index < shadow.Length)
                                         shadow[index] = shadowP;
                                     //data[(h + room.TextureTileSize) * width + w] = Color.Black;
@@ -550,6 +678,18 @@ namespace YGR
             File.WriteAllText(name, s);
         }
 
+        private static void output(int[][] pattern, string name)
+        {
+            string s = "";
+            for (int x = 0; x < pattern.GetLength(0); ++x)
+            {
+                s += string.Join("\t", pattern[x]);
+                s += "\n";
+            }
+
+            File.WriteAllText(name, s);
+        }
+
         public static List<X_Cube> Elevate(IWalkable room)
         {
             List<X_Cube> cubes = new List<X_Cube>();
@@ -557,12 +697,12 @@ namespace YGR
 
             int[,] indices = new int[,]
             {
-                /* bottom */ {0,2,1}, {0,3,2},
-                /* right  */ {2,3,6}, {3,7,6},
-                /* front  */ {1,2,5}, {2,6,5},
-                /* left   */ {0,1,4}, {1,5,4},
-                /* back   */ {0,7,3}, {0,4,7},
-                /* top    */ {5,6,4}, {6,7,4}
+                /* bottom */ {0,1,2}, {0,2,3},
+                /* right  */ {2,6,3}, {3,6,7},
+                /* front  */ {1,5,2}, {2,5,6},
+                /* left   */ {0,4,1}, {1,4,5},
+                /* back   */ {0,3,7}, {0,7,4},
+                /* top    */ {5,4,6}, {6,4,7}
             };
 
             float scale = room.Scale;
@@ -588,6 +728,7 @@ namespace YGR
                 cubes.Add(new X_Cube(vertices, indices));
             }
 
+            toWavefrontObj(cubes, "./logs/cubes.obj");
             //int[,] indicesF = new int[,]
             //{
             //    /* bottom */ {0,2,1}, {0,3,2},
@@ -663,7 +804,7 @@ namespace YGR
                     tiles.Add(new X_Cube(vertices, indicesF));
                 }
             }
-            //toWavefrontObj(tiles, "./logs/tiles.obj");
+            toWavefrontObj(tiles, "./logs/tiles.obj");
             return tiles;
         }
 

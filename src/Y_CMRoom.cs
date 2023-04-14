@@ -96,7 +96,7 @@ namespace YGR
                 _window = Texture2D.FromStream(graphicsDevice, fileStream);
             }
 
-            TextureTileSize = _floor.Height / collisions[0].Length;
+            TextureTileSize = _floor.Height / collisions.Length;
 
             int len = _window.Width * _window.Height;
             Color[] groundData = new Color[len];

@@ -59,7 +59,7 @@ namespace YGR
             foreach(var room in Rooms.Keys)
             {
                 X_Light light = new X_Light(
-                    new Vector3(Rooms[room].Rect.Width / 2, Rooms[room].Rect.Height / 2, Rooms[room].Rect.Width),
+                    new Vector3(-Rooms[room].Rect.Width / 2, Rooms[room].Rect.Height / 2, Rooms[room].Rect.Width),
                     new Vector3(Rooms[room].Rect.Width / 2, Rooms[room].Rect.Height / 2, 0),
                     1, 1,
                     new Vector3(1.0f, 1.0f, 1.0f)
