@@ -81,7 +81,6 @@ namespace YGR
             {
                 SelectableItems[i].Position = new Vector2(x, y + i * 40);
             }
-
         }
         internal static void Initialize(A_Yggdrasil game)
         {
@@ -133,20 +132,61 @@ namespace YGR
         {
             SelectableItems[SelectedMenu].IsSelected = false;
             // Wrap index around in both directions
-            SelectedMenu = (nextSelected % SelectableItems.Count + SelectableItems.Count) % SelectableItems.Count;
+            SelectedMenu = Util.ProperMod(nextSelected, SelectableItems.Count);
             SelectableItems[SelectedMenu].IsSelected = true;
+        }
+
+        private static void SelectMenuNext()
+        {
+            do
+            {
+                SelectMenu(SelectedMenu + 1);
+            } while (!SelectableItems[SelectedMenu].IsActive);
+        }
+
+        private static void SelectMenuPrev()
+        {
+            do
+            {
+                SelectMenu(SelectedMenu - 1);
+            } while (!SelectableItems[SelectedMenu].IsActive);
+        }
+
+        private static void DrawControllerState(SpriteBatch spriteBatch)
+        {
+            Bounds = Game._graphics.GraphicsDevice.Viewport.Bounds;
+            for (int i = 0; i < 4; i++)
+            {
+                float x = Bounds.Width * (i + 1) / 6;
+                float y = Bounds.Height * 7 / 8;
+
+                string string_a = "Controller " + i + ":  ";
+                spriteBatch.DrawString(Fonts.Normal, string_a, new Vector2(x, y), Color.Wheat);
+
+                Vector2 stringSize = Fonts.Normal.MeasureString(string_a);
+                GamePadState gamePadState = GamePad.GetState(i);
+
+                string string_b = "Connected";
+                Color color = Color.ForestGreen;
+                if (!gamePadState.IsConnected)
+                {
+                    string_b = "N/A";
+                    color = Color.Gray;
+                }
+                spriteBatch.DrawString(Fonts.Normal, string_b, new Vector2(x + stringSize.X, y), color);
+            }
         }
 
         public static void Update()
         {
             if (Keyboard.HasBeenPressed(Keybinds.P1Down))
             {
-                SelectMenu(SelectedMenu + 1);
+                SelectMenuNext();
             }
 
             if (Keyboard.HasBeenPressed(Keybinds.P1Up))
             {
-                SelectMenu(SelectedMenu - 1);
+                SelectMenuPrev();
             }
 
             if (Keyboard.HasBeenPressed(Keybinds.Enter))
@@ -177,6 +217,7 @@ namespace YGR
             {
                 item.Draw(spriteBatch, Bounds);
             }
+            DrawControllerState(spriteBatch);
         }
 
         internal static void LoadContent(ContentManager content)

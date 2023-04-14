@@ -46,5 +46,9 @@ namespace YGR
         {
             Game.Exit();
         }
+
+        public static int ProperMod(int i, int m) {
+            return (i % m + m) % m;
+        }
     }
 }
