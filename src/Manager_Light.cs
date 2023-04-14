@@ -53,11 +53,13 @@ namespace YGR
     {
         Vector3[] _vertices;
         int[,] _triangles;
+        public bool IsWall { get; }
 
-        public X_Cube(Vector3[] vertices, int[,] triangles)
+        public X_Cube(Vector3[] vertices, int[,] triangles, bool isWall)
         {
             _vertices = vertices;
             _triangles = triangles;
+            IsWall = isWall;
         }
 
         public int VertexCount()
@@ -107,10 +109,10 @@ namespace YGR
                 Vector3 edge1 = p1 - p0; Vector3 edge2 = p2 - p0;
 
                 // remove backside
-                Vector3 n = Manager_Light.CrossProduct(edge1, edge2);
-                n.Normalize();
-                if (Manager_Light.Dot(direction, n) > float.Epsilon)
-                    continue;
+                //Vector3 n = Manager_Light.CrossProduct(edge1, edge2);
+                //n.Normalize();
+                //if (Manager_Light.Dot(direction, n) > float.Epsilon)
+                //    continue;
 
                 // Begin calculating determinant - also used to calculate U parameter
                 Vector3 pvec = Manager_Light.CrossProduct(direction, edge2);
@@ -145,8 +147,9 @@ namespace YGR
                 float t = Manager_Light.Dot(edge2, qvec) * invDet;
 
                 if (t >= float.Epsilon && t <= length) {
-                    float w = 1.0f - u - v;
-                    hitPoint = p0 * w + p1 * u + p2 * v;
+                    //float w = 1.0f - u - v;
+                    //hitPoint = p0 * w + p1 * u + p2 * v;
+                    hitPoint = origin + t * direction;
                     return true;
                 }
             }
@@ -293,23 +296,28 @@ namespace YGR
                     {
                         for (int y = fromY; y < toY; ++y)
                         {
-                            if (template[h][w] > 0) // == (int)X_TileType.Floor || template[h][w] == (int)X_TileType.Roof)
+                            if (template[h][w] == (int)X_TileType.Floor || template[h][w] == (int)X_TileType.Roof)
                             {
-                                floorCoords[y * texture.Width + x] = new Vector3(x, y, -room.TextureTileSize - 0.1f);
-                                textureMapFloor[y * texture.Width + x] = (y + tileSize) * texture.Width + x;
+                                floorCoords[y * texture.Width + x] = new Vector3(x, y - room.TextureTileSize, -room.TextureTileSize - 0.001f);
+                                textureMapFloor[y * texture.Width + x] = (y) * texture.Width + x;
                                 tileType[y * texture.Width + x] = (X_TileType)template[h][w];
                                 //shadowMap[y * texture.Width + x] = true;
                             }
-                            //if (template[h][w] > 0) //template[h][w] == (int)X_TileType.Wall)
-                            //{
-                            //    floorCoords[y * texture.Width + x] = new Vector3(x, fromY - 0.1f, -(y - fromY));
-                            //    textureMapFloor[y * texture.Width + x] = (y) * texture.Width + x;
-                            //    //shadowMap[y * texture.Width + x] = true;
-                            //}
-                            if(template[h][w] == (int)X_TileType.Roof)
+                            if (template[h][w] == (int)X_TileType.Wall)
+                            {
+                                floorCoords[y * texture.Width + x] = new Vector3(x, fromY + 0.001f, -(y - fromY));
+                                textureMapFloor[y * texture.Width + x] = (y) * texture.Width + x;
+                                tileType[y * texture.Width + x] = (X_TileType)template[h][w];
+                                //shadowMap[y * texture.Width + x] = true;
+                            }
+                            if (template[h][w] == (int)X_TileType.Roof)
                             {
                                 shadowMap[y * texture.Width + x] = false;
                             }
+                            //else if(template[h][w] == (int)X_TileType.Wall)
+                            //{
+                            //    shadowMap[y * texture.Width + x] = false;
+                            //}
                             //if (template[h][w] == (int)X_TileType.Wall)
                             //{
                             //    //coords[y * texture.Width + x] = new Vector3(x, fromY - 0.1f, -(y - fromY));
@@ -363,7 +371,7 @@ namespace YGR
                             //                    {
 
             texture.GetData<Color>(data);
-            Vector3 orig = new Vector3(12*16, (int)(7.5*16), 50);
+            Vector3 orig = new Vector3(1*16, (int)(7.5*16), 50);
             Vector3 hitPoint;
             for (int i=0; i<data.Length; ++i)
             {
@@ -375,21 +383,48 @@ namespace YGR
                 //else
                 //{
 
+
+                //foreach (var cube in wallCubes)
+                //{
+                //    if (cube.RayIntersect(orig, floorCoords[i] - orig, out hitPoint))
+                //    {
+                //        int hitH = (int)(hitPoint.Y + Math.Abs(hitPoint.Z));
+                //        int hitW = (int)(hitPoint.X);
+                //        int hit = hitH * texture.Width + hitW;
+                //        int hit2 = textureMapFloor[i];
+
+                //        //if (tileType[hit] == X_TileType.Wall) data[hit] = Color.Blue;
+
+                //        ////if (shadowMap[textureMapFloor[i]]) data[textureMapFloor[i]] = Color.Red;
+                //        if (shadowMap[hit2] && tileType[hit2] == X_TileType.Wall)
+                //        {
+                //            data[hit2] = Color.Red;
+                //            break;
+                //            // we hit the floor
+                //        }
+                //    }
+                //}
+
+
+                int hit2 = textureMapFloor[i];
+                var sm = shadowMap[hit2];
+                var tt = tileType[hit2];
                 foreach (var cube in cubes)
                 {
+                    //if (tt == X_TileType.Wall && cube.IsWall) continue;
                     if (cube.RayIntersect(orig, floorCoords[i] - orig, out hitPoint))
                     {
-                        int hitH = (int)(hitPoint.Y + Math.Abs(hitPoint.Z));
-                        int hitW = (int)(hitPoint.X);
-                        int hit = hitH * texture.Width + hitW;
-                        int hit2 = textureMapFloor[i];
+                        //int hitW = (int)(hitPoint.Y + Math.Abs(hitPoint.Z));
+                        //int hitH = (int)(hitPoint.X);
+                        //int hit = hitW * texture.Width + hitH;
 
                         //if (tileType[hit] == X_TileType.Wall) data[hit] = Color.Blue;
 
-                        //if (shadowMap[textureMapFloor[i]]) data[textureMapFloor[i]] = Color.Red;
-                        if (shadowMap[hit2] && tileType[hit2] != X_TileType.Wall)
+                        ////if (shadowMap[textureMapFloor[i]]) data[textureMapFloor[i]] = Color.Red;
+                        if (sm) // && tileType[hit2] != X_TileType.Wall)
                         {
-                            data[hit2] = Color.Red;
+                            if (tileType[hit2] == X_TileType.Wall) data[hit2] = Color.Blue;
+                            if (tt != X_TileType.Wall) data[hit2] = Color.Red;
                             break;
                             // we hit the floor
                         }
@@ -403,6 +438,15 @@ namespace YGR
                 //if (!intersectWall && shadowMap[textureMapWall[i]]) data[textureMapWall[i]] = Color.Blue;
                 //}
             }
+            for(int i=-25; i<25; ++i)
+            {
+                data[(int)((orig.Y-orig.Z+i)*texture.Width + orig.X)] = Color.Red;
+            }
+            for (int i = -25; i < 25; ++i)
+            {
+                data[(int)((orig.Y - orig.Z) * texture.Width + orig.X+i)] = Color.Red;
+            }
+
             texture.SetData<Color>(data);
             return;
 
@@ -707,7 +751,7 @@ namespace YGR
             List<X_Cube> cubes = new List<X_Cube>();
             var rects = room.Collision.GetCollisionRectangles().Clone() as Rectangle[];
 
-            int[,] indices = new int[,]
+            int[,] indicesRoof = new int[,]
             {
                 /* bottom */ {0,1,2}, {0,2,3},
                 /* right  */ {2,6,3}, {3,6,7},
@@ -716,6 +760,16 @@ namespace YGR
                 /* back   */ {0,3,7}, {0,7,4},
                 /* top    */ {5,4,6}, {6,4,7}
             };
+
+            //int[,] indicesWall = new int[,]
+            //{
+            //    ///* bottom */ {0,1,2}, {0,2,3},
+            //    /* right  */ {2,6,3}, {3,6,7},
+            //    /* front  */ {1,5,2}, {2,5,6},
+            //    /* left   */ {0,4,1}, {1,4,5},
+            //    /* back   */ {0,3,7}, {0,7,4},
+            //    ///* top    */ {5,4,6}, {6,4,7}
+            //};
 
             float scale = room.Scale;
             float elev = room.Collision.TileHeight / scale;
@@ -737,7 +791,8 @@ namespace YGR
                     new Vector3(x+w, y, 0)
                 };
 
-                cubes.Add(new X_Cube(vertices, indices));
+                cubes.Add(new X_Cube(vertices, indicesRoof, false));
+                //cubes.Add(new X_Cube(vertices, indicesWall, true));
             }
 
             toWavefrontObj(cubes, "./logs/cubes.obj");
@@ -813,7 +868,7 @@ namespace YGR
                     new Vector3(rect.X+room.TextureTileSize, rect.Y, -e-float.Epsilon),
                     new Vector3(rect.X+room.TextureTileSize, rect.Y, -float.Epsilon) };
 
-                    tiles.Add(new X_Cube(vertices, indicesF));
+                    tiles.Add(new X_Cube(vertices, indicesF, true));
                 }
             }
             toWavefrontObj(tiles, "./logs/tiles.obj");
