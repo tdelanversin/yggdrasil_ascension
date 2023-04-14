@@ -14,7 +14,6 @@ namespace YGR
         private int[][] _collisionTemplate;
         private Rectangle[] _collisionRectangles;
         private List<List<Rectangle>> _floor;
-        private int[,] _collisionModel;
         private bool[] _collisionRectanglesHit;
         private Point _location;
         private List<Manager_Collision.Record> _records;
@@ -43,6 +42,11 @@ namespace YGR
             _records = new List<Manager_Collision.Record>();
 
             _floor = CreateFloorRectangles(TileWidth);
+        }
+
+        public int[][] GetCollisionTemplate()
+        {
+            return _collisionTemplate;
         }
 
         public Rectangle[] GetCollisionRectangles()
@@ -106,6 +110,7 @@ namespace YGR
         private int[][] cleanUpCollisionTemplate(int[][] collision)
         {
             int[][] pattern = collision.Clone() as int[][];
+            output(pattern, "./logs/pattern.csv");
             for (int i = 0; i < pattern.Length; i++)
             {
                 for (int j = 0; j < pattern[0].Length; ++j)
@@ -129,7 +134,7 @@ namespace YGR
                     if (pattern[i][j] == 0) pattern[i][j] = (int)X_TileType.Floor;
                 }
             }
-
+            output(pattern, "./logs/pattern.csv");
             return pattern;
         }
 
@@ -343,7 +348,6 @@ namespace YGR
 
         private void createCollisionModelRectangles(Dictionary<int, List<Tuple<int, int>>> lines, Dictionary<int, List<Tuple<int, int>>> rectangles)
         {
-            _collisionModel = new int[_collisionTemplate.Length, _collisionTemplate[0].Length];
             var rects = new List<Rectangle>();
 
             int offset = 2;

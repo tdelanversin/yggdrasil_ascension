@@ -42,9 +42,9 @@ namespace YGR
             Rooms = new Dictionary<string, IWalkable>
             {
                 //{ "center", new Y_CMRoom("r2", TileWidth, TileHeight, resourceFolder + "R2", graphicsDevice) },
-                //{ "middle", new Y_CMRoom("r0", TileWidth, TileHeight, resourceFolder + "R0", graphicsDevice) },
+                { "middle", new Y_CMRoom("r0", TileWidth, TileHeight, resourceFolder + "R0", graphicsDevice) },
                 //{ "top", new Y_CMRoom("r1", TileWidth, TileHeight, resourceFolder + "R1", graphicsDevice) },
-                { "left", new Y_CMRoom("r3-L", TileWidth, TileHeight, resourceFolder + "R3", graphicsDevice) },
+                //{ "left", new Y_CMRoom("r3-L", TileWidth, TileHeight, resourceFolder + "R3", graphicsDevice) },
                 //{ "right", new Y_CMRoom("r3-R", TileWidth, TileHeight, resourceFolder + "R3", graphicsDevice) },
                 //{ "bottom", new Y_CMRoom("r3-B", TileWidth, TileHeight, resourceFolder + "R3", graphicsDevice) },
                 //{ "door-center-to-middle", new Y_Door(X_DoorDirection.Vertical, 17, TileWidth, TileHeight, -7, graphicsDevice) },
@@ -54,14 +54,18 @@ namespace YGR
                 //{ "door-middle-to-top", new Y_Door(X_DoorDirection.Vertical, 17, TileWidth, TileHeight, 3, graphicsDevice) },
             };
 
-            X_Light light = new X_Light(
-                new Vector3(0, 0, 100),
-                new Vector3(Rooms["left"].Rect.Width / 2, Rooms["left"].Rect.Height / 2, 0),
-                1, 1,
-                new Vector3(1.0f, 1.0f, 1.0f)
-                );
+            //Rooms["left"].Illuminate(light);
 
-            Rooms["left"].Illuminate(light);
+            foreach(var room in Rooms.Keys)
+            {
+                X_Light light = new X_Light(
+                    new Vector3(Rooms[room].Rect.Width / 2, Rooms[room].Rect.Height / 2, Rooms[room].Rect.Width),
+                    new Vector3(Rooms[room].Rect.Width / 2, Rooms[room].Rect.Height / 2, 0),
+                    1, 1,
+                    new Vector3(1.0f, 1.0f, 1.0f)
+                );
+                Rooms[room].Illuminate(light);
+            }
 
             //((Y_Door)Rooms["door-center-to-middle"]).Connect(X_ConnectorSide.Bottom, Rooms["center"], X_ConnectorSide.Top, Rooms["middle"]);
             //((Y_Door)Rooms["door-center-to-left"]).Connect(X_ConnectorSide.Right, Rooms["center"], X_ConnectorSide.Left, Rooms["left"]);

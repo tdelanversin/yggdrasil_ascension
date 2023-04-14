@@ -42,7 +42,6 @@ namespace YGR
         public Dictionary<X_ConnectorSide, IList<IWalkable>> DoorRooms { get; set; }
         public int TextureTileSize { get; }
 
-        private int[][] _collision;
         private X_DoorDirection _direction;
         private Texture2D _floor;
         const int _numTilesDoorWidth = 5;
@@ -60,13 +59,13 @@ namespace YGR
 
             collision = flipToPosition(collision, direction, tileOffset);
 
-            _collision = getDoorPoints(collision, tileWidth, tileHeight);
+            collision = getDoorPoints(collision, tileWidth, tileHeight);
 
             _direction = direction;
             
-            Collision = new X_CollisionModel_Room(_collision, tileWidth, tileHeight);
+            Collision = new X_CollisionModel_Room(collision, tileWidth, tileHeight);
 
-            Rect = new Rectangle(0, 0, tileWidth * _collision[0].Length, tileHeight * _collision.Length);
+            Rect = new Rectangle(0, 0, tileWidth * collision[0].Length, tileHeight * collision.Length);
 
             Scale = 1.0f;
 
@@ -107,35 +106,36 @@ namespace YGR
 
             
 
-            int[][] pattern = _collision.Clone() as int[][];
-            for(int i=0; i < pattern.Length; i++)
-            {
-                for(int j=0; j<pattern[0].Length; ++j)
-                {
-                    if (pattern[i][j] > 0) pattern[i][j] = (int)X_TileType.Roof;
-                }
-            }
+            //int[][] pattern = _collision.Clone() as int[][];
+            //for(int i=0; i < pattern.Length; i++)
+            //{
+            //    for(int j=0; j<pattern[0].Length; ++j)
+            //    {
+            //        if (pattern[i][j] > 0) pattern[i][j] = (int)X_TileType.Roof;
+            //    }
+            //}
 
-            for (int i = 1; i < pattern.Length; i++)
-            {
-                for (int j = 0; j < pattern[0].Length; ++j)
-                {
-                    if (pattern[i-1][j] == (int)X_TileType.Roof && pattern[i][j] == 0) pattern[i][j] = (int)X_TileType.Wall;
-                }
-            }
+            //for (int i = 1; i < pattern.Length; i++)
+            //{
+            //    for (int j = 0; j < pattern[0].Length; ++j)
+            //    {
+            //        if (pattern[i-1][j] == (int)X_TileType.Roof && pattern[i][j] == 0) pattern[i][j] = (int)X_TileType.Wall;
+            //    }
+            //}
 
-            for (int i = 0; i < pattern.Length; i++)
-            {
-                for (int j = 0; j < pattern[0].Length; ++j)
-                {
-                    if (pattern[i][j] == 0) pattern[i][j] = (int)X_TileType.Floor;
-                }
-            }
+            //for (int i = 0; i < pattern.Length; i++)
+            //{
+            //    for (int j = 0; j < pattern[0].Length; ++j)
+            //    {
+            //        if (pattern[i][j] == 0) pattern[i][j] = (int)X_TileType.Floor;
+            //    }
+            //}
 
             //output(pattern, "./logs/pattern.csv");
 
             int width = floor.Width;
             int height = floor.Height;
+            var pattern = Collision.GetCollisionTemplate();
             _floor = new Texture2D(graphicsDevice, width * pattern[0].Length, height * pattern.Length);
             Scale = (float)tileHeight / height;
 

@@ -47,7 +47,7 @@ namespace YGR
             _spriteBatch = new SpriteBatch(GraphicsDevice);
             _background = Content.Load<Texture2D>("background");
 
-            _level = new Y_Level("level_0", 64, "Levels/Level_0", GraphicsDevice);
+            _level = new Y_Level("level_0", 40, "Levels/Level_0", GraphicsDevice);
 
             _player = new List<IVictim>{
                 //new Ninja(

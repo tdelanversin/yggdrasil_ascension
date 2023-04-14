@@ -264,10 +264,11 @@ namespace YGR
             //origin4 = Vector4.Transform(origin4, R);
             //Vector3 origin = new Vector3(origin4.X, origin4.Y, origin4.Z);
 
-            Vector3 origin = new Vector3(0, 0, 100);
-
+            Vector3 origin = light.Position; // new Vector3(-100, 50, 100);
+            float shadowP = 0.8f;
             Texture2D texture = room.GetFloor();
             Color[] data = new Color[texture.Width * texture.Height];
+            float[] shadow = Enumerable.Repeat<float>(0.0f, data.Length).ToArray();
             texture.GetData<Color>(data);
 
             int width = texture.Width;
@@ -281,6 +282,17 @@ namespace YGR
                     int fromY = floorRect.Y;
                     int toX = fromX + floorRect.Width;
                     int toY = fromY + floorRect.Height;
+
+                    bool intersects = false;
+                    //foreach(var colRect in room.Collision.GetCollisionRectangles())
+                    //{
+                    //    if (floorRect.Intersects(colRect))
+                    //    {
+                    //        intersects = true;
+                    //        break;
+                    //    }
+                    //}
+                    //if (intersects) continue;
                     for (int h = fromY; h < toY; ++h)
                     {
                         for (int w = fromX; w < toX; ++w)
@@ -291,7 +303,11 @@ namespace YGR
                                 if (cube.RayIntersect(origin, target - origin, out hitPoint))
                                 {
                                     // we hit the floor
-                                    data[(h + room.TextureTileSize) * width + w] = Color.Black;
+                                    //int index = (h + room.TextureTileSize) * width + w;
+                                    int index = (h) * width + w;
+                                    if (index < shadow.Length)
+                                        shadow[index] = shadowP;
+                                    //data[(h + room.TextureTileSize) * width + w] = Color.Black;
                                 }
                             }
                         }
@@ -331,7 +347,13 @@ namespace YGR
                                         {
                                             int hitH = (int)(hitPoint.Y + Math.Abs(hitPoint.Z));
                                             int hitW = (int)(hitPoint.X);
-                                            data[hitH * width + hitW] = Color.Red;
+                                            //data[hitH * width + hitW] = Color.Red;
+                                            //if (!mask[hitH - offsetH + inset, hitW - offsetW + inset])
+                                            //{
+                                                int index = hitH * width + hitW;
+                                                if (index < shadow.Length)
+                                                    shadow[index] = shadowP;
+                                            //}
                                             // we hit the floor
                                             //data[(h + room.TextureTileSize) * width + w] = Color.Black;
 
@@ -352,6 +374,16 @@ namespace YGR
                     //counter++;
                 }
 
+            }
+
+            for(int i=0; i<shadow.Length; ++i)
+            {
+                if (shadow[i] > 0)
+                {
+                    data[i].R = (byte)(shadow[i] * Color.Black.R + (1 - shadow[i]) * data[i].R);
+                    data[i].G = (byte)(shadow[i] * Color.Black.G + (1 - shadow[i]) * data[i].G);
+                    data[i].B = (byte)(shadow[i] * Color.Black.B + (1 - shadow[i]) * data[i].B);
+                }
             }
 
             ///**
