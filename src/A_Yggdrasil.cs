@@ -75,6 +75,8 @@ namespace YGR
             //soundEffects[0].Play();
 
             MediaPlayer.Play(song);
+            // Uncomment to play intro sound in a loop
+            // MediaPlayer.Play(song);
             MediaPlayer.IsRepeating = true;
             MediaPlayer.MediaStateChanged += MediaPlayer_MediaStateChanged;
             _spriteBatch = new SpriteBatch(GraphicsDevice);

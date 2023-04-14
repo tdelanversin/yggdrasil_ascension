@@ -183,6 +183,7 @@ namespace YGR
 
         public void Shoot(GameTime gameTime, Vector2 origin, Vector2 direction, Y_Level level, IGameElement who)
         {
+            // need to fix weird sound modification
             Y_SoundEffectManager.Instance.GetShotgun().Play();
 
             if (timeSinceShot < shotDelay)
@@ -205,7 +206,7 @@ namespace YGR
 
             shotSpeeds.Last();
             if (lastUpdate >= shotSpeeds.Last())
-                return;
+                return; 
 
             for (int i = 0; i < shotSpeeds.GetLength(0); ++i)
             {
