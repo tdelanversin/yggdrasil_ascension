@@ -1,21 +1,30 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using System;
 using System.Collections.Generic;
 
 namespace YGR
 {
+    public enum GameState
+    {
+        PreGame,
+        InGame,
+        Menu,
+    }
 
     public class A_Yggdrasil : Game
     {
         public Clearcove.Logging.Logger logger;
 
-        private GraphicsDeviceManager _graphics;
-        private SpriteBatch _spriteBatch;
+        public GraphicsDeviceManager _graphics;
+        public SpriteBatch _spriteBatch;
 
         Texture2D _background;
         IList<IVictim> _player;
         Y_Level _level;
+        public GameState State;
+        public GameState DesiredState;
 
         public A_Yggdrasil()
         {
@@ -26,7 +35,10 @@ namespace YGR
 
         protected override void Initialize()
         {
-            Util.ToggleFullscreen(_graphics, Window);
+            State = GameState.PreGame;
+            Util.Initialize(this);
+            Util.ToggleFullscreen();
+            Menu.Initialize(this);
 
             var res_x = _graphics.PreferredBackBufferWidth;
             var res_y = _graphics.PreferredBackBufferHeight;
@@ -44,11 +56,15 @@ namespace YGR
 
         protected override void LoadContent()
         {
+            Fonts.LoadContent(Content);
+            Menu.LoadContent(Content);
             _spriteBatch = new SpriteBatch(GraphicsDevice);
             _background = Content.Load<Texture2D>("background");
+        }
 
+        internal void StartNewGame()
+        {
             _level = new Y_Level("level_0", 32, "Levels/Level_0", GraphicsDevice);
-
             _player = new List<IVictim>{
                 new Ninja(
                     new X_CollisionModel_Victim(1.0f /* mass */, 0.0f /* elastic impact */),
@@ -79,7 +95,11 @@ namespace YGR
                 )
             };
 
+            // Pass players to camera so it can follow their positions
             Camera.Players = _player;
+
+            // Once everything is in place, inform Update() of the new desired state
+            DesiredState = GameState.InGame;
         }
 
         protected override void Update(GameTime gameTime)
@@ -87,22 +107,37 @@ namespace YGR
             Keyboard.Update();
 
             if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed ||
-                Keyboard.IsPressed(Keys.Escape))
-                Exit();
+            Keyboard.HasBeenPressed(Keys.Escape))
+                DesiredState = GameState.PreGame;
+            
+            // Only switch actual state during Update(), otherwise you can mess up the Draw call
+            State = DesiredState;
 
             if (Keyboard.HasBeenPressed(Keybinds.ToggleFullscreen))
-                Util.ToggleFullscreen(_graphics, Window);
+                Util.ToggleFullscreen();
+                Menu.RepositionMenuItems();
 
-            float deltaTime = (float)gameTime.ElapsedGameTime.TotalSeconds;
-
-            Camera.UpdateCamera(_graphics.GraphicsDevice.Viewport, deltaTime);
-
-            foreach (var player in _player)
+            switch (State)
             {
-                player.Update(gameTime);
-            }
+                case GameState.PreGame:
+                    Menu.Update();
+                    break;
+                case GameState.InGame:
+                    float deltaTime = (float)gameTime.ElapsedGameTime.TotalSeconds;
 
-            Manager_Projectile.Update(gameTime);
+                    Camera.UpdateCamera(_graphics.GraphicsDevice.Viewport, deltaTime);
+
+                    foreach (var player in _player)
+                    {
+                        player.Update(gameTime);
+                    }
+
+                    Manager_Projectile.Update(gameTime);
+                    break;
+                case GameState.Menu:
+                    Menu.Update();
+                    break;
+            }
 
             base.Update(gameTime);
         }
@@ -113,25 +148,39 @@ namespace YGR
 
             float deltaTime = (float)gameTime.ElapsedGameTime.TotalMilliseconds;
 
-            Vector2 zero = Vector2.Zero;
-
-            _spriteBatch.Begin(
-                SpriteSortMode.Immediate, null, null, null, null, null,
-                Camera.Transform);
-
-            _level.Draw(gameTime, Vector2.Zero, _spriteBatch);
-            _level.DrawOutline(gameTime, Vector2.Zero, _spriteBatch);
-
-            Manager_Projectile.Draw(gameTime, zero, _spriteBatch);
-            Manager_Projectile.DrawOutline(gameTime, zero, _spriteBatch);
-
-            foreach (var player in _player)
+            switch (State)
             {
-                player.Draw(gameTime, zero, _spriteBatch);
-                player.DrawOutline(gameTime, zero, _spriteBatch);
-            }
+                case GameState.PreGame:
+                    _spriteBatch.Begin(
+                            SpriteSortMode.Immediate, null, null, null, null, null,
+                            null);
+                    Menu.Draw(_spriteBatch);
+                    _spriteBatch.End();
+                    break;
+                case GameState.InGame:
+                    Vector2 zero = Vector2.Zero;
 
-            _spriteBatch.End();
+                    _spriteBatch.Begin(
+                        SpriteSortMode.Immediate, null, null, null, null, null,
+                        Camera.Transform);
+
+                    _level.Draw(gameTime, Vector2.Zero, _spriteBatch);
+                    _level.DrawOutline(gameTime, Vector2.Zero, _spriteBatch);
+
+                    Manager_Projectile.Draw(gameTime, zero, _spriteBatch);
+                    Manager_Projectile.DrawOutline(gameTime, zero, _spriteBatch);
+
+                    foreach (var player in _player)
+                    {
+                        player.Draw(gameTime, zero, _spriteBatch);
+                        player.DrawOutline(gameTime, zero, _spriteBatch);
+                    }
+
+                    _spriteBatch.End();
+                    break;
+                case GameState.Menu:
+                    break;
+            }
 
             base.Draw(gameTime);
         }

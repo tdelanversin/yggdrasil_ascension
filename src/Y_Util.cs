@@ -1,3 +1,4 @@
+using System;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
@@ -11,25 +12,39 @@ namespace YGR
     {
         public const int RES_X = 1280;
         public const int RES_Y = 720;
+        static Game Game;
+        static GraphicsDeviceManager Gdm;
+        static GameWindow Window;
 
-        public static void ToggleFullscreen(GraphicsDeviceManager gdm, GameWindow window)
+        internal static void Initialize(A_Yggdrasil game)
         {
-            // TODO: hidpi scaling
-            if (gdm.IsFullScreen)
+            Game = game;
+            Gdm = game._graphics;
+            Window = game.Window;
+        }
+
+        public static void ToggleFullscreen()
+        {
+            if (Gdm.IsFullScreen)
             {
-                gdm.PreferredBackBufferWidth = RES_X;
-                gdm.PreferredBackBufferHeight = RES_Y;
-                gdm.IsFullScreen = false;
+                Gdm.PreferredBackBufferWidth = RES_X;
+                Gdm.PreferredBackBufferHeight = RES_Y;
+                Gdm.IsFullScreen = false;
                 Logger.Info("Turning fullscreen OFF. Resolution: " + RES_X.ToString() + "x" + RES_Y.ToString());
             }
             else
             {
-                gdm.PreferredBackBufferWidth = GraphicsAdapter.DefaultAdapter.CurrentDisplayMode.Width;
-                gdm.PreferredBackBufferHeight = GraphicsAdapter.DefaultAdapter.CurrentDisplayMode.Height;
-                gdm.IsFullScreen = true;
-                Logger.Info("Turning fullscreen ON. Resolution: " + gdm.PreferredBackBufferWidth.ToString() + "x" + gdm.PreferredBackBufferHeight.ToString());
+                Gdm.PreferredBackBufferWidth = GraphicsAdapter.DefaultAdapter.CurrentDisplayMode.Width;
+                Gdm.PreferredBackBufferHeight = GraphicsAdapter.DefaultAdapter.CurrentDisplayMode.Height;
+                Gdm.IsFullScreen = true;
+                Logger.Info("Turning fullscreen ON. Resolution: " + Gdm.PreferredBackBufferWidth.ToString() + "x" + Gdm.PreferredBackBufferHeight.ToString());
             }
-            gdm.ApplyChanges();
+            Gdm.ApplyChanges();
+        }
+
+        public static void Quit()
+        {
+            Game.Exit();
         }
     }
 }
