@@ -277,6 +277,7 @@ namespace YGR
             Vector3[] wallCoords = Enumerable.Repeat<Vector3>(Vector3.Zero, data.Length).ToArray();
             int[] textureMapFloor = Enumerable.Repeat<int>(0, data.Length).ToArray();
             int[] textureMapWall = Enumerable.Repeat<int>(0, data.Length).ToArray();
+            X_TileType[] tileType = new X_TileType[data.Length];
             var template = room.Collision.GetCollisionTemplate();
             
             var tileSize = room.TextureTileSize;
@@ -296,6 +297,7 @@ namespace YGR
                             {
                                 floorCoords[y * texture.Width + x] = new Vector3(x, y, -room.TextureTileSize - 0.1f);
                                 textureMapFloor[y * texture.Width + x] = (y + tileSize) * texture.Width + x;
+                                tileType[y * texture.Width + x] = (X_TileType)template[h][w];
                                 //shadowMap[y * texture.Width + x] = true;
                             }
                             //if (template[h][w] > 0) //template[h][w] == (int)X_TileType.Wall)
@@ -361,7 +363,7 @@ namespace YGR
                             //                    {
 
             texture.GetData<Color>(data);
-            Vector3 orig = new Vector3(12*16, (int)(7.5*16), 16);
+            Vector3 orig = new Vector3(12*16, (int)(7.5*16), 50);
             Vector3 hitPoint;
             for (int i=0; i<data.Length; ++i)
             {
@@ -372,22 +374,32 @@ namespace YGR
                 //}
                 //else
                 //{
-                    bool intersectFloor = false;
-                //bool intersectWall = false;
+
                 foreach (var cube in cubes)
+                {
+                    if (cube.RayIntersect(orig, floorCoords[i] - orig, out hitPoint))
                     {
-                        if (cube.RayIntersect(orig, floorCoords[i] - orig, out hitPoint))
-                        {
                         int hitH = (int)(hitPoint.Y + Math.Abs(hitPoint.Z));
                         int hitW = (int)(hitPoint.X);
                         int hit = hitH * texture.Width + hitW;
                         int hit2 = textureMapFloor[i];
-                        intersectFloor = true;
+
+                        //if (tileType[hit] == X_TileType.Wall) data[hit] = Color.Blue;
+
+                        //if (shadowMap[textureMapFloor[i]]) data[textureMapFloor[i]] = Color.Red;
+                        if (shadowMap[hit2] && tileType[hit2] != X_TileType.Wall)
+                        {
+                            data[hit2] = Color.Red;
                             break;
                             // we hit the floor
                         }
+                    }
                 }
-                if (!intersectFloor && shadowMap[textureMapFloor[i]]) data[textureMapFloor[i]] = Color.Red;
+
+
+
+
+                //if (!intersectFloor && shadowMap[textureMapFloor[i]]) data[textureMapFloor[i]] = Color.Red;
                 //if (!intersectWall && shadowMap[textureMapWall[i]]) data[textureMapWall[i]] = Color.Blue;
                 //}
             }
