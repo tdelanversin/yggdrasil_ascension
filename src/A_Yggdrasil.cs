@@ -36,9 +36,11 @@ namespace YGR
         protected override void Initialize()
         {
             State = GameState.PreGame;
+            Input.Initialize();
             Util.Initialize(this);
-            Util.ToggleFullscreen();
             Menu.Initialize(this);
+
+            Util.ToggleFullscreen();
 
             var res_x = _graphics.PreferredBackBufferWidth;
             var res_y = _graphics.PreferredBackBufferHeight;
@@ -64,6 +66,34 @@ namespace YGR
 
         internal void StartNewGame()
         {
+
+            /*
+            # PLAN
+
+            ## Basics
+            - Setup a small starting/tutorial room
+            - Initialize 4 (random) players, place them nicely spaced out
+            - Have a starting room section (marked rectangle)
+                - Every player that wants to play moves their character into the
+                  rectangle
+            - To start the game, all players shoot a start button / pillar
+                - Needs to be hit by >= X different players, where X is the
+                  amount of players standing in the marked rectangle
+
+            ## Further points
+            - Have either a pillar to shoot that switches a players character to
+              a different one, either random, or cycle through, or possibly have
+              different pillars to shoot at to select the character
+            - WASD+Mouse could either be
+                - Always the secondary controls for Player 1, alongside the
+                  first controller
+                - Configurable, so that if you have for example only a single
+                  controller, one can play with keyboard+mouse and the other
+                  with controller
+            - Start level generation directly from and with this initial room,
+              for a smooth transition.
+            */
+
             _level = new Y_Level("level_0", 32, "Levels/Level_0", GraphicsDevice);
             _player = new List<IVictim>{
                 new Ninja(
@@ -104,18 +134,31 @@ namespace YGR
 
         protected override void Update(GameTime gameTime)
         {
+            Input.Update();
             Keyboard.Update();
 
-            if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed ||
-            Keyboard.HasBeenPressed(Keys.Escape))
-                DesiredState = GameState.PreGame;
-            
+            if (Input.IsKeyTriggered(Keys.Escape) || Input.IsButtonTriggered(0, Buttons.Back))
+            {
+                if (State == GameState.InGame)
+                {
+                    DesiredState = GameState.Menu;
+                }
+                if (State == GameState.Menu)
+                {
+                    DesiredState = GameState.InGame;
+                }
+                if (State == GameState.PreGame){
+                    // Nothing for now
+                }
+            }
+
             // Only switch actual state during Update(), otherwise you can mess up the Draw call
             State = DesiredState;
 
-            if (Keyboard.HasBeenPressed(Keybinds.ToggleFullscreen))
+            if (Input.IsKeyTriggered(Keybinds.ToggleFullscreen))
+            {
                 Util.ToggleFullscreen();
-                Menu.RepositionMenuItems();
+            }
 
             switch (State)
             {
@@ -147,6 +190,7 @@ namespace YGR
             GraphicsDevice.Clear(Color.CornflowerBlue);
 
             float deltaTime = (float)gameTime.ElapsedGameTime.TotalMilliseconds;
+            Vector2 zero = Vector2.Zero;
 
             switch (State)
             {
@@ -158,7 +202,6 @@ namespace YGR
                     _spriteBatch.End();
                     break;
                 case GameState.InGame:
-                    Vector2 zero = Vector2.Zero;
 
                     _spriteBatch.Begin(
                         SpriteSortMode.Immediate, null, null, null, null, null,
@@ -179,6 +222,11 @@ namespace YGR
                     _spriteBatch.End();
                     break;
                 case GameState.Menu:
+                    _spriteBatch.Begin(
+                            SpriteSortMode.Immediate, null, null, null, null, null,
+                            null);
+                    Menu.Draw(_spriteBatch);
+                    _spriteBatch.End();
                     break;
             }
 

@@ -102,7 +102,7 @@ namespace YGR
                 os_exit_string = "Exit to Desktop"; // MacOS whatever
             }
 
-            SelectableItems = new List<MenuItem>{
+            SelectableItems = new List<MenuItem> {
                 new MenuItem("Play", NewGame),
                 new MenuItem("Restart", NewGame, isActive: false),
                 new MenuItem("Toggle Fullscreen", Util.ToggleFullscreen),
@@ -179,17 +179,17 @@ namespace YGR
 
         public static void Update()
         {
-            if (Keyboard.HasBeenPressed(Keybinds.P1Down))
+            if (Input.IsKeyTriggered(Keybinds.P1Down) || Input.IsKeyTriggered(Keys.Down) || Input.IsButtonTriggered(0, Buttons.DPadDown))
             {
                 SelectMenuNext();
             }
 
-            if (Keyboard.HasBeenPressed(Keybinds.P1Up))
+            if (Input.IsKeyTriggered(Keybinds.P1Up) || Input.IsKeyTriggered(Keys.Up) || Input.IsButtonTriggered(0, Buttons.DPadUp))
             {
                 SelectMenuPrev();
             }
 
-            if (Keyboard.HasBeenPressed(Keybinds.Enter))
+            if (Input.IsKeyTriggered(Keybinds.Enter) || Input.IsButtonTriggered(0, Buttons.A))
             {
                 SelectableItems[SelectedMenu].Dispatch();
             }

@@ -40,6 +40,7 @@ namespace YGR
                 Logger.Info("Turning fullscreen ON. Resolution: " + Gdm.PreferredBackBufferWidth.ToString() + "x" + Gdm.PreferredBackBufferHeight.ToString());
             }
             Gdm.ApplyChanges();
+            Menu.RepositionMenuItems();
         }
 
         public static void Quit()
