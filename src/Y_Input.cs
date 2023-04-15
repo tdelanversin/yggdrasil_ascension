@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using Microsoft.Xna.Framework.Input;
 
@@ -26,8 +25,8 @@ namespace YGR
 
             for (int i = 0; i < 4; i++)
             {
-                previousGamePadState.Add(Microsoft.Xna.Framework.Input.GamePad.GetState(i));
-                currentGamePadState.Add(Microsoft.Xna.Framework.Input.GamePad.GetState(i));
+                previousGamePadState.Add(GamePad.GetState(i));
+                currentGamePadState.Add(GamePad.GetState(i));
             }
         }
 
@@ -42,15 +41,15 @@ namespace YGR
             // triggering them multiple times in between letting go of it.
 
             previousKeyState = currentKeyState;
-            currentKeyState = Microsoft.Xna.Framework.Input.Keyboard.GetState();
+            currentKeyState = Keyboard.GetState();
 
             previousMouseState = currentMouseState;
-            currentMouseState = Microsoft.Xna.Framework.Input.Mouse.GetState();
+            currentMouseState = Mouse.GetState();
 
             for (int i = 0; i < 4; i++)
             {
                 previousGamePadState[i] = currentGamePadState[i];
-                currentGamePadState[i] = Microsoft.Xna.Framework.Input.GamePad.GetState(i);
+                currentGamePadState[i] = GamePad.GetState(i);
             }
         }
         public static bool IsKeyDown(Keys key)
@@ -71,45 +70,6 @@ namespace YGR
         public static bool IsButtonTriggered(int gamePadIndex, Buttons button)
         {
             return currentGamePadState[gamePadIndex].IsButtonDown(button) && !previousGamePadState[gamePadIndex].IsButtonDown(button);
-        }
-    }
-
-    // TODO: Phase out, it's superceeded by the Input class
-    // Leaving here only for backwards compatibility
-    public static class Keyboard
-    {
-        static KeyboardState currentKeyState;
-        static KeyboardState previousKeyState;
-
-        /// <summary>
-        /// Get new keyboard state. Only call this once per game update.
-        /// </summary>
-        /// <returns></returns>
-        public static KeyboardState Update()
-        {
-            previousKeyState = currentKeyState;
-            currentKeyState = Microsoft.Xna.Framework.Input.Keyboard.GetState();
-            return currentKeyState;
-        }
-
-        /// <summary>
-        /// Returns true if a key is currently being pressed
-        /// </summary>
-        /// <param name="key"></param>
-        /// <returns></returns>
-        public static bool IsPressed(Keys key)
-        {
-            return currentKeyState.IsKeyDown(key);
-        }
-
-        /// <summary>
-        /// Returns true exactly once when a key is pressed, holding down will not re-trigger
-        /// </summary>
-        /// <param name="key"></param>
-        /// <returns></returns>
-        public static bool HasBeenPressed(Keys key)
-        {
-            return currentKeyState.IsKeyDown(key) && !previousKeyState.IsKeyDown(key);
         }
     }
 }

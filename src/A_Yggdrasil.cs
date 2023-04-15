@@ -135,7 +135,6 @@ namespace YGR
         protected override void Update(GameTime gameTime)
         {
             Input.Update();
-            Keyboard.Update();
 
             if (Input.IsKeyTriggered(Keys.Escape) || Input.IsButtonTriggered(0, Buttons.Back))
             {
