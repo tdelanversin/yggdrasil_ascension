@@ -7,6 +7,7 @@ using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Content.Pipeline.Builder.Convertors;
 using Microsoft.Xna.Framework.Graphics;
 using SharpFont;
+using Supercluster.KDTree;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -16,6 +17,7 @@ using System.Reflection;
 using System.Reflection.Emit;
 using System.Text;
 using System.Threading.Tasks;
+
 
 namespace YGR
 {
@@ -158,6 +160,44 @@ namespace YGR
         }
     }
 
+    public class X_LightModel
+    {
+        private KDTree<float, int> _tree;
+        private float[][] generateData(int len, int mx, int my, int mz)
+        {
+            Random rand = new Random();
+            var d = new float[len][];
+            for(int i=0; i<len; ++i)
+            {
+                d[i] = new float[] { rand.Next(mx), rand.Next(my), rand.Next(mz) };
+            }
+            return d;
+        }
+        private int[] generateNodes(int len)
+        {
+            var d = new int[len];
+            for (int i = 0; i < len; ++i) d[i] = i;
+            return d;
+        }
+        
+        public X_LightModel(IWalkable room)
+        {
+            Func<float[], float[], double> norm3 = (x, y) =>
+            {
+                double dist =
+                (x[0] - y[0]) * (x[0] - y[0]) +
+                (x[1] - y[1]) * (x[1] - y[1]) +
+                (x[2] - y[2]) * (x[2] - y[2]);
+                return dist;
+            };
+
+            int len = 100000;
+            var data = generateData(len, 1000, 1000, 1000);
+            var nodes = generateNodes(len);
+            _tree = new KDTree<float, int>(dimensions: 3, points: data, nodes: nodes, metric: norm3);
+        }
+    }
+
     public static class Manager_Light
     {
         public static float Dot(Vector3 lhs, Vector3 rhs)
@@ -227,6 +267,8 @@ namespace YGR
                     }
                 }
             });
+
+
 
             texture.GetData<Color>(data);
             Parallel.For(0, data.Length, i =>
