@@ -303,7 +303,7 @@
 /processorParam:TextureFormat=Color
 /build:tester.png
 
-#begin title_image.jpg
+#begin title_image.png
 /importer:TextureImporter
 /processor:TextureProcessor
 /processorParam:ColorKeyColor=255,0,255,255
@@ -313,7 +313,7 @@
 /processorParam:ResizeToPowerOfTwo=False
 /processorParam:MakeSquare=False
 /processorParam:TextureFormat=Color
-/build:title_image.jpg
+/build:title_image.png
 
 #begin v_connector.png
 /importer:TextureImporter
