@@ -11,6 +11,7 @@
     <ApplicationIcon>Icon.ico</ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
+    <None Remove="Doors\roof - Copy.png" />
     <None Remove="Icon.ico" />
     <None Remove="Icon.bmp" />
     <None Remove="Levels\Level_0\R0\Collisions-int.png" />

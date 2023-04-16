@@ -34,9 +34,6 @@ namespace YGR
             var components = fitRectangles(_collisionTemplate);
             createCollisionModelRectangles(components.Item1, components.Item2);
 
-            //_collisionRectangles = new Rectangle[] { _collisionRectangles[0] };
-            //_collisionRectanglesHit = new bool[] { false };
-
             _collisionTemplate = cleanUpCollisionTemplate(_collisionTemplate);
 
             _records = new List<Manager_Collision.Record>();
@@ -132,6 +129,14 @@ namespace YGR
                 for (int j = 0; j < pattern[0].Length; ++j)
                 {
                     if (pattern[i][j] == 0) pattern[i][j] = (int)X_TileType.Floor;
+                }
+            }
+
+            for (int i = 0; i < pattern.Length; i++)
+            {
+                for (int j = 0; j < pattern[0].Length; ++j)
+                {
+                    if (pattern[i][j] < 0) pattern[i][j] = (int)X_TileType.Outside;
                 }
             }
             output(pattern, "./logs/pattern.csv");

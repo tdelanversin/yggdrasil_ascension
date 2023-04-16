@@ -14,6 +14,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -28,16 +29,15 @@ namespace YGR
         public Color Color { get; }
         public float ShadowP { get; }
         public float Scale { get; }
+        public Rectangle IlluminationRect { get; }
 
-        public X_Light(Vector3 position, Vector3 pointTo, int width, int height, Color color, float shadowP, float scale)
+        public X_Light(Vector3 position, Rectangle illuminationRect, Color color, float shadowP, float scale)
         {
             Position = position/scale; // new Vector3(position.Y, position.X, position.Z);
-            PointTo = pointTo/scale; // new Vector3(pointTo.Y, pointTo.X, pointTo.Z);
-            Width = width;
-            Height = height;
             Color = color;
             ShadowP = shadowP;
             Scale = scale;
+            IlluminationRect = illuminationRect;
         }
 
         public void DrawOutline(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)
@@ -46,6 +46,11 @@ namespace YGR
             int ypos = (int)(Position.Y * Scale - Position.Z*Scale);
             Factory_Debug.DrawPoint(xpos, ypos, 10, Color.Yellow, spriteBatch);
             Factory_Debug.DrawLine(xpos, ypos, (int)(Position.Z * Scale), (float)Math.PI/2, 5, Color.Yellow, spriteBatch);
+            Factory_Debug.DrawRectangle(
+                (int)(IlluminationRect.X),
+                (int)(IlluminationRect.Y),
+                (int)(IlluminationRect.Width),
+                (int)(IlluminationRect.Height), 5, Color.Orange, spriteBatch);
         }
 
     }
@@ -175,51 +180,54 @@ namespace YGR
         }
 
         public static void Illuminate(
-            X_Light light,
+            List<X_Light> lights,
             IWalkable room,
-            List<X_Cube> model
+            List<X_Cube> cubes
         )
         {
-            Vector3 offset = new Vector3(room.Rect.Location.X / light.Scale, room.Rect.Location.Y / light.Scale, 0);
-            Vector3 orig = light.Position;// + offset;
-
-            var cubes = model; // Manager_Light.Elevate(room);
-
             Texture2D texture = room.GetFloor();
             Color[] data = new Color[texture.Width * texture.Height];
+            texture.GetData<Color>(data);
+            bool[] lighted = Enumerable.Repeat<bool>(false, data.Length).ToArray();
+
+            Vector3 offset = new Vector3(room.Rect.Location.X / room.Scale, room.Rect.Location.Y / room.Scale, 0);
 
             bool[] shadowMap = Enumerable.Repeat<bool>(true, data.Length).ToArray();
             Vector3[] coords = Enumerable.Repeat<Vector3>(Vector3.Zero, data.Length).ToArray();
-            int[] textureMap = Enumerable.Repeat<int>(0, data.Length).ToArray();
+            int[] textureMap = Enumerable.Repeat<int>(-1, data.Length).ToArray();
+            X_TileType[] tileType = Enumerable.Repeat<X_TileType>(X_TileType.Floor, data.Length).ToArray();
             var template = room.Collision.GetCollisionTemplate();
             var tileSize = room.TextureTileSize;
+
+            int shadowSpotSize = 1;
 
             Parallel.For(0, template.Length, h =>
             //for (int h=0; h < template.Length; ++h)
             {
                 for (int w = 0; w < template[0].Length; ++w)
                 {
-                    int fromX = w * tileSize;
-                    int fromY = h * tileSize;
-                    int toX = fromX + tileSize;
-                    int toY = fromY + tileSize;
-                    for (int x = fromX; x < toX; ++x)
+                    int fromX = w * tileSize + shadowSpotSize / 2;
+                    int fromY = h * tileSize + shadowSpotSize / 2;
+                    int toX = fromX + tileSize - shadowSpotSize / 2;
+                    int toY = fromY + tileSize - shadowSpotSize / 2;
+                    for (int x = fromX; x < toX; x += shadowSpotSize)
                     {
-                        for (int y = fromY; y < toY; ++y)
+                        for (int y = fromY; y < toY; y += shadowSpotSize)
                         {
+                            tileType[y * texture.Width + x] = (X_TileType)template[h][w];
                             if (template[h][w] == (int)X_TileType.Floor || template[h][w] == (int)X_TileType.Roof)
                             {
                                 coords[y * texture.Width + x] = new Vector3(x, y - room.TextureTileSize, -room.TextureTileSize - 0.001f) + offset;
                                 textureMap[y * texture.Width + x] = (y) * texture.Width + x;
                                 //tileType[y * texture.Width + x] = (X_TileType)template[h][w];
                             }
-                            if (template[h][w] == (int)X_TileType.Wall)
+                            else if (template[h][w] == (int)X_TileType.Wall)
                             {
                                 coords[y * texture.Width + x] = new Vector3(x, fromY + 0.001f, -(y - fromY)) + offset;
                                 textureMap[y * texture.Width + x] = (y) * texture.Width + x;
                                 //tileType[y * texture.Width + x] = (X_TileType)template[h][w];
                             }
-                            if (template[h][w] == (int)X_TileType.Roof)
+                            if (template[h][w] == (int)X_TileType.Roof || template[h][w] == (int)X_TileType.Outside)
                             {
                                 shadowMap[y * texture.Width + x] = false;
                             }
@@ -228,56 +236,110 @@ namespace YGR
                 }
             });
 
-            texture.GetData<Color>(data);
-            Parallel.For(0, data.Length, i =>
-            //for (int i = 0; i < data.Length; ++i)
+            foreach (var light in lights)
             {
-                int hit2 = textureMap[i];
-                var sm = shadowMap[hit2];
-                //var tt = tileType[hit2];
-                bool intersected = false;
-                foreach (var cube in cubes)
+                Vector3 orig = light.Position;// + offset;
+                float scale = room.Scale;
+                Parallel.For(0, data.Length, i =>
+                //for (int i = 0; i < data.Length; ++i)
                 {
-                    if (cube.RayIntersect(orig, coords[i] - orig))
+                    if (!light.IlluminationRect.Contains(new Point((int)((coords[i].X) * scale), (int)((coords[i].Y) * scale)))) 
+                        return;
+
+                    int hit2 = textureMap[i];
+                    if (hit2 < 0) return;
+
+                    if (lighted[hit2]) return;
+
+                    var sm = shadowMap[hit2];
+                    if (!sm) return;
+
+                    //var tt = tileType[hit2];
+                    bool intersected = false;
+                    foreach (var cube in cubes)
                     {
-                        if (sm)
+                        if (cube.RayIntersect(orig, coords[i] - orig))
                         {
-                            intersected = true;
-                            break;
-                            //var col = data[hit2];
-                            //Color nCol = Color.White;
-                            //nCol.R = (byte)((1 - light.ShadowP) * col.R + light.ShadowP * light.Color.R);
-                            //nCol.G = (byte)((1 - light.ShadowP) * col.G + light.ShadowP * light.Color.G);
-                            //nCol.B = (byte)((1 - light.ShadowP) * col.B + light.ShadowP * light.Color.B);
-                            //data[hit2] = nCol;
-                            //break;
+                                intersected = true;
+                                break;
+                                //var col = data[hit2];
+                                //Color nCol = Color.White;
+                                //nCol.R = (byte)((1 - light.ShadowP) * col.R + light.ShadowP * light.Color.R);
+                                //nCol.G = (byte)((1 - light.ShadowP) * col.G + light.ShadowP * light.Color.G);
+                                //nCol.B = (byte)((1 - light.ShadowP) * col.B + light.ShadowP * light.Color.B);
+                                //data[hit2] = nCol;
+                                //break;
                         }
                     }
-                }
-                if (!intersected)
-                {
-                    //var col = data[hit2];
-                    //Color nCol = Color.White;
-                    //nCol.R = (byte)((1 - light.ShadowP) * col.R + light.ShadowP * light.Color.R);
-                    //nCol.G = (byte)((1 - light.ShadowP) * col.G + light.ShadowP * light.Color.G);
-                    //nCol.B = (byte)((1 - light.ShadowP) * col.B + light.ShadowP * light.Color.B);
-                    data[hit2] = 3*data[hit2];//nCol;
-                }
-            });
+                    if (!intersected)
+                    {
+                        //var col = data[hit2];
+                        //Color nCol = Color.White;
+                        //nCol.R = (byte)((1 - light.ShadowP) * col.R + light.ShadowP * light.Color.R);
+                        //nCol.G = (byte)((1 - light.ShadowP) * col.G + light.ShadowP * light.Color.G);
+                        //nCol.B = (byte)((1 - light.ShadowP) * col.B + light.ShadowP * light.Color.B);
+                        //data[hit2] = 2 * data[hit2];//nCol;
+                        lighted[hit2] = true;
+                    }
+                });
 
-            //// draw the light position
-            //for (int i = -11; i < 10; ++i)
-            //{
-            //    int index = (int)((orig.Y - orig.Z + i) * texture.Width + orig.X);
-            //    if (index >= 0 && index < data.Length)
-            //        data[index] = Color.Red;
-            //}
-            //for (int i = -11; i < 10; ++i)
-            //{
-            //    int index = (int)((orig.Y - orig.Z) * texture.Width + orig.X + i);
-            //    if (index >= 0 && index < data.Length)
-            //        data[index] = Color.Red;
-            //}
+                //Parallel.For(0, data.Length, i =>
+                //for (int i = 0; i < data.Length; ++i)
+                //{
+                //    int hit2 = textureMap[i];
+                //    if (hit2 < 0) continue;
+                //    if (!lighted[hit2])
+                //    {
+                //        var col = data[hit2];
+                //        Color nCol = Color.White;
+                //        nCol.R = (byte)((1 - light.ShadowP) * col.R + light.ShadowP * light.Color.R);
+                //        nCol.G = (byte)((1 - light.ShadowP) * col.G + light.ShadowP * light.Color.G);
+                //        nCol.B = (byte)((1 - light.ShadowP) * col.B + light.ShadowP * light.Color.B);
+                //        //if (c2.R > 200)
+                //        //    Logger.Info("lol");
+                //        data[hit2] = Color.Gray;
+                //        //var col = data[hit2];
+                //        //Color nCol = Color.White;
+                //        //nCol.R = (byte)((1 - light.ShadowP) * col.R + light.ShadowP * light.Color.R);
+                //        //nCol.G = (byte)((1 - light.ShadowP) * col.G + light.ShadowP * light.Color.G);
+                //        //nCol.B = (byte)((1 - light.ShadowP) * col.B + light.ShadowP * light.Color.B);
+                //        //data[hit2] = nCol;
+
+                //        //data[hit2] = 2 * data[hit2];
+                //        //data[i] = Color.Red;
+                //        //data[i].R = (byte)(0.5f * (float)data[i].R);
+                //        //data[i].G = (byte)(0.5f * (float)data[i].G);
+                //        //data[i].B = (byte)(0.5f * (float)data[i].B);
+                //    }
+                //}//);
+
+                //// draw the light position
+                //for (int i = -11; i < 10; ++i)
+                //{
+                //    int index = (int)((orig.Y - orig.Z + i) * texture.Width + orig.X);
+                //    if (index >= 0 && index < data.Length)
+                //        data[index] = Color.Red;
+                //}
+                //for (int i = -11; i < 10; ++i)
+                //{
+                //    int index = (int)((orig.Y - orig.Z) * texture.Width + orig.X + i);
+                //    if (index >= 0 && index < data.Length)
+                //        data[index] = Color.Red;
+                //}
+            }
+
+            for (int i = 0; i < lighted.Length; ++i)
+            {
+                if (!lighted[i] && shadowMap[i] )
+                {
+                    var col = data[i];
+                    Color nCol = Color.White;
+                    nCol.R = (byte)((1 - 0.4f) * col.R + 0.4f * Color.Black.R);
+                    nCol.G = (byte)((1 - 0.4f) * col.G + 0.4f * Color.Black.G);
+                    nCol.B = (byte)((1 - 0.4f) * col.B + 0.4f * Color.Black.B);
+                    data[i] = nCol;
+                }
+            }
 
             texture.SetData<Color>(data);
         }

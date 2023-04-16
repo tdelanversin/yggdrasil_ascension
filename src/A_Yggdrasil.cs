@@ -45,7 +45,7 @@ namespace YGR
         protected override void LoadContent()
         {
             _spriteBatch = new SpriteBatch(GraphicsDevice);
-            _background = Content.Load<Texture2D>("background");
+            //_background = Content.Load<Texture2D>("background");
 
             _level = new Y_Level("level_0", 40, "Levels/Level_0", GraphicsDevice);
 
@@ -109,7 +109,7 @@ namespace YGR
 
         protected override void Draw(GameTime gameTime)
         {
-            GraphicsDevice.Clear(Color.CornflowerBlue);
+            GraphicsDevice.Clear(_level.OutsideColor);
 
             float deltaTime = (float)gameTime.ElapsedGameTime.TotalMilliseconds;
 
@@ -120,7 +120,7 @@ namespace YGR
                 Camera.Transform);
 
             _level.Draw(gameTime, Vector2.Zero, _spriteBatch);
-            _level.DrawOutline(gameTime, Vector2.Zero, _spriteBatch);
+            //_level.DrawOutline(gameTime, Vector2.Zero, _spriteBatch);
 
             Manager_Projectile.Draw(gameTime, zero, _spriteBatch);
             Manager_Projectile.DrawOutline(gameTime, zero, _spriteBatch);
