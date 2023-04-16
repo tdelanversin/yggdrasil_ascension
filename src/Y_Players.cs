@@ -149,10 +149,10 @@ namespace YGR
             if (gpState.IsButtonDown(Buttons.LeftThumbstickDown)) input.Y -= gpState.ThumbSticks.Left.Y;
             if (gpState.IsButtonDown(Buttons.LeftThumbstickUp)) input.Y -= gpState.ThumbSticks.Left.Y;
 
-            if (Keyboard.IsPressed(Keybinds.P1Right)) input.X += 1;
-            if (Keyboard.IsPressed(Keybinds.P1Left)) input.X -= 1;
-            if (Keyboard.IsPressed(Keybinds.P1Down)) input.Y += 1;
-            if (Keyboard.IsPressed(Keybinds.P1Up)) input.Y -= 1;
+            if (Input.IsKeyDown(Keybinds.P1Right)) input.X += 1;
+            if (Input.IsKeyDown(Keybinds.P1Left)) input.X -= 1;
+            if (Input.IsKeyDown(Keybinds.P1Down)) input.Y += 1;
+            if (Input.IsKeyDown(Keybinds.P1Up)) input.Y -= 1;
 
             if (input.LengthSquared() > 1)
             {
@@ -200,7 +200,7 @@ namespace YGR
                 _dashCooldownTimer += timeStepMS;
             }
 
-            if (!_isDashing && Keyboard.IsPressed(Keybinds.P1Dash) && _dashCooldownTimer >= _dashCooldown)
+            if (!_isDashing && Input.IsKeyDown(Keybinds.P1Dash) && _dashCooldownTimer >= _dashCooldown)
             {
                 _isDashing = true;
                 _dashTimer = 0;

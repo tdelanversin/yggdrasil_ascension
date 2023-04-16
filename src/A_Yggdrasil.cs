@@ -1,21 +1,30 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using System;
 using System.Collections.Generic;
 
 namespace YGR
 {
+    public enum GameState
+    {
+        PreGame,
+        InGame,
+        Menu,
+    }
 
     public class A_Yggdrasil : Game
     {
         public Clearcove.Logging.Logger logger;
 
-        private GraphicsDeviceManager _graphics;
-        private SpriteBatch _spriteBatch;
+        public GraphicsDeviceManager _graphics;
+        public SpriteBatch _spriteBatch;
 
         Texture2D _background;
         IList<IVictim> _player;
         Y_Level _level;
+        public GameState State;
+        public GameState DesiredState;
 
         public A_Yggdrasil()
         {
@@ -26,7 +35,12 @@ namespace YGR
 
         protected override void Initialize()
         {
-            Util.ToggleFullscreen(_graphics, Window);
+            State = GameState.PreGame;
+            Input.Initialize();
+            Util.Initialize(this);
+            Menu.Initialize(this);
+
+            Util.ToggleFullscreen();
 
             var res_x = _graphics.PreferredBackBufferWidth;
             var res_y = _graphics.PreferredBackBufferHeight;
@@ -44,10 +58,43 @@ namespace YGR
 
         protected override void LoadContent()
         {
+            Fonts.LoadContent(Content);
+            Menu.LoadContent(Content);
             _spriteBatch = new SpriteBatch(GraphicsDevice);
-            //_background = Content.Load<Texture2D>("background");
-
             _level = new Y_Level("level_0", 40, "Levels/Level_0", GraphicsDevice);
+        }
+
+        internal void StartNewGame()
+        {
+
+            /*
+            # PLAN
+
+            ## Basics
+            - Setup a small starting/tutorial room
+            - Initialize 4 (random) players, place them nicely spaced out
+            - Have a starting room section (marked rectangle)
+                - Every player that wants to play moves their character into the
+                  rectangle
+            - To start the game, all players shoot a start button / pillar
+                - Needs to be hit by >= X different players, where X is the
+                  amount of players standing in the marked rectangle
+
+            ## Further points
+            - Have either a pillar to shoot that switches a players character to
+              a different one, either random, or cycle through, or possibly have
+              different pillars to shoot at to select the character
+            - WASD+Mouse could either be
+                - Always the secondary controls for Player 1, alongside the
+                  first controller
+                - Configurable, so that if you have for example only a single
+                  controller, one can play with keyboard+mouse and the other
+                  with controller
+            - Start level generation directly from and with this initial room,
+              for a smooth transition.
+            */
+
+            _level = new Y_Level("level_0", 32, "Levels/Level_0", GraphicsDevice);
 
             _player = new List<IVictim>{
                 //new Ninja(
@@ -79,30 +126,61 @@ namespace YGR
                 )
             };
 
+            // Pass players to camera so it can follow their positions
             Camera.Players = _player;
+
+            // Once everything is in place, inform Update() of the new desired state
+            DesiredState = GameState.InGame;
         }
 
         protected override void Update(GameTime gameTime)
         {
-            Keyboard.Update();
+            Input.Update();
 
-            if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed ||
-                Keyboard.IsPressed(Keys.Escape))
-                Exit();
-
-            if (Keyboard.HasBeenPressed(Keybinds.ToggleFullscreen))
-                Util.ToggleFullscreen(_graphics, Window);
-
-            float deltaTime = (float)gameTime.ElapsedGameTime.TotalSeconds;
-
-            Camera.UpdateCamera(_graphics.GraphicsDevice.Viewport, deltaTime);
-
-            foreach (var player in _player)
+            if (Input.IsKeyTriggered(Keys.Escape) || Input.IsButtonTriggered(0, Buttons.Back))
             {
-                player.Update(gameTime);
+                if (State == GameState.InGame)
+                {
+                    DesiredState = GameState.Menu;
+                }
+                if (State == GameState.Menu)
+                {
+                    DesiredState = GameState.InGame;
+                }
+                if (State == GameState.PreGame){
+                    // Nothing for now
+                }
             }
 
-            Manager_Projectile.Update(gameTime);
+            // Only switch actual state during Update(), otherwise you can mess up the Draw call
+            State = DesiredState;
+
+            if (Input.IsKeyTriggered(Keybinds.ToggleFullscreen))
+            {
+                Util.ToggleFullscreen();
+            }
+
+            switch (State)
+            {
+                case GameState.PreGame:
+                    Menu.Update();
+                    break;
+                case GameState.InGame:
+                    float deltaTime = (float)gameTime.ElapsedGameTime.TotalSeconds;
+
+                    Camera.UpdateCamera(_graphics.GraphicsDevice.Viewport, deltaTime);
+
+                    foreach (var player in _player)
+                    {
+                        player.Update(gameTime);
+                    }
+
+                    Manager_Projectile.Update(gameTime);
+                    break;
+                case GameState.Menu:
+                    Menu.Update();
+                    break;
+            }
 
             base.Update(gameTime);
         }
@@ -112,28 +190,45 @@ namespace YGR
             GraphicsDevice.Clear(_level.OutsideColor);
 
             float deltaTime = (float)gameTime.ElapsedGameTime.TotalMilliseconds;
-
             Vector2 zero = Vector2.Zero;
 
-            _spriteBatch.Begin(
-                SpriteSortMode.Immediate, null, null, null, null, null,
-                Camera.Transform);
-
-            _level.Draw(gameTime, Vector2.Zero, _spriteBatch);
-            
-
-            Manager_Projectile.Draw(gameTime, zero, _spriteBatch);
-            Manager_Projectile.DrawOutline(gameTime, zero, _spriteBatch);
-
-            foreach (var player in _player)
+            switch (State)
             {
-                player.Draw(gameTime, zero, _spriteBatch);
-                //player.DrawOutline(gameTime, zero, _spriteBatch);
+                case GameState.PreGame:
+                    _spriteBatch.Begin(
+                            SpriteSortMode.Immediate, null, null, null, null, null,
+                            null);
+                    Menu.Draw(_spriteBatch);
+                    _spriteBatch.End();
+                    break;
+                case GameState.InGame:
+
+                    _spriteBatch.Begin(
+                        SpriteSortMode.Immediate, null, null, null, null, null,
+                        Camera.Transform);
+
+                    _level.Draw(gameTime, Vector2.Zero, _spriteBatch);
+                    _level.DrawOutline(gameTime, Vector2.Zero, _spriteBatch);
+
+                    Manager_Projectile.Draw(gameTime, zero, _spriteBatch);
+                    Manager_Projectile.DrawOutline(gameTime, zero, _spriteBatch);
+
+                    foreach (var player in _player)
+                    {
+                        player.Draw(gameTime, zero, _spriteBatch);
+                        player.DrawOutline(gameTime, zero, _spriteBatch);
+                    }
+
+                    _spriteBatch.End();
+                    break;
+                case GameState.Menu:
+                    _spriteBatch.Begin(
+                            SpriteSortMode.Immediate, null, null, null, null, null,
+                            null);
+                    Menu.Draw(_spriteBatch);
+                    _spriteBatch.End();
+                    break;
             }
-
-            _level.DrawOutline(gameTime, Vector2.Zero, _spriteBatch);
-
-            _spriteBatch.End();
 
             base.Draw(gameTime);
         }

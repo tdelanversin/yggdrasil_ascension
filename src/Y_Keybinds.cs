@@ -15,6 +15,8 @@ namespace YGR
         public static Keys P2Down = Keys.Down;
         public static Keys P2Right = Keys.Right;
 
+        public static Keys Enter = Keys.Enter;
+
         public static Keys CameraMoveUp = Keys.T;
         public static Keys CameraMoveLeft = Keys.F;
         public static Keys CameraMoveDown = Keys.G;

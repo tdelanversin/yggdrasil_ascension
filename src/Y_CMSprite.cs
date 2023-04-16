@@ -114,17 +114,17 @@ namespace YGR
             {
                 if (_controlLayout == 1)
                 {
-                    if (Keyboard.IsPressed(Keybinds.P1Right)) input.X += 1;
-                    if (Keyboard.IsPressed(Keybinds.P1Left)) input.X -= 1;
-                    if (Keyboard.IsPressed(Keybinds.P1Down)) input.Y += 1;
-                    if (Keyboard.IsPressed(Keybinds.P1Up)) input.Y -= 1;
+                    if (Input.IsKeyDown(Keybinds.P1Right)) input.X += 1;
+                    if (Input.IsKeyDown(Keybinds.P1Left)) input.X -= 1;
+                    if (Input.IsKeyDown(Keybinds.P1Down)) input.Y += 1;
+                    if (Input.IsKeyDown(Keybinds.P1Up)) input.Y -= 1;
                 }
                 else
                 {
-                    if (Keyboard.IsPressed(Keybinds.P2Right)) input.X += 1;
-                    if (Keyboard.IsPressed(Keybinds.P2Left)) input.X -= 1;
-                    if (Keyboard.IsPressed(Keybinds.P2Down)) input.Y += 1;
-                    if (Keyboard.IsPressed(Keybinds.P2Up)) input.Y -= 1;
+                    if (Input.IsKeyDown(Keybinds.P2Right)) input.X += 1;
+                    if (Input.IsKeyDown(Keybinds.P2Left)) input.X -= 1;
+                    if (Input.IsKeyDown(Keybinds.P2Down)) input.Y += 1;
+                    if (Input.IsKeyDown(Keybinds.P2Up)) input.Y -= 1;
                 }
 
                 if (mouse.LeftButton == ButtonState.Pressed)
