@@ -194,18 +194,22 @@ namespace YGR
                 SelectableItems[SelectedMenu].Dispatch();
             }
 
-            MouseState mouseState = Mouse.GetState();
-            Point mousePos = mouseState.Position;
-            for (int i = 0; i < SelectableItems.Count; i++)
+            // Select item based on mouse hover only if it was moved
+            if (Input.HasMouseMoved() || Input.IsLeftMouseClick())
             {
-                if (SelectableItems[i].Bounds().Contains(mousePos))
+                Point mousePos = Mouse.GetState().Position;
+                for (int i = 0; i < SelectableItems.Count; i++)
                 {
-                    SelectMenu(i);
-                    if (mouseState.LeftButton == ButtonState.Pressed)
+                    if (SelectableItems[i].Bounds().Contains(mousePos))
                     {
-                        SelectableItems[SelectedMenu].Dispatch();
+                        SelectMenu(i);
+                        break;
                     }
                 }
+            }
+            if (Input.IsLeftMouseClick())
+            {
+                SelectableItems[SelectedMenu].Dispatch();
             }
         }
 
