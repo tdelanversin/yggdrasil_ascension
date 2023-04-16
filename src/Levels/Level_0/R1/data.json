@@ -18,37 +18,9 @@
 	"entities": {
 		"Door": [
 			{
-				/*left*/
-				"id": "Door",
-				"iid": "7450f150-c640-11ed-90fd-0d7dd79b54da",
-				"layer": "Entities",
-				"x": 24,
-				"y": 664,
-				"width": 16,
-				"height": 16,
-				"color": 16759620,
-				"customFields": {
-					"lockedWith": null
-				}
-			},
-			{
-				/*right*/
-				"id": "Door",
-				"iid": "754e8b30-c640-11ed-90fd-df1aeb567f49",
-				"layer": "Entities",
-				"x": 360,
-				"y": 664,
-				"width": 16,
-				"height": 16,
-				"color": 16759620,
-				"customFields": {
-					"lockedWith": null
-				}
-			},
-			{
 				/*top*/
 				"id": "Container",
-				"iid": "5cd3a5d0-c640-11ed-90fd-1f9d93f8f99f",
+				"iid": "802fdf43-c640-11ed-90fd-e1a610d643cf",
 				"layer": "Entities",
 				"x": 184,
 				"y": 40,
@@ -66,6 +38,34 @@
 				"layer": "Entities",
 				"x": 200,
 				"y": 696,
+				"width": 16,
+				"height": 16,
+				"color": 16759620,
+				"customFields": {
+					"lockedWith": null
+				}
+			},
+			{
+				/*left*/
+				"id": "Door",
+				"iid": "9e3bacd0-c640-11ed-90fd-d71304f63d0b",
+				"layer": "Entities",
+				"x": 40,
+				"y": 360,
+				"width": 16,
+				"height": 16,
+				"color": 16759620,
+				"customFields": {
+					"lockedWith": null
+				}
+			},
+			{
+				/*right*/
+				"id": "Door",
+				"iid": "9e3bacd0-c640-11ed-90fd-d71304f63d0b",
+				"layer": "Entities",
+				"x": 344,
+				"y": 344,
 				"width": 16,
 				"height": 16,
 				"color": 16759620,

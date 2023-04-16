@@ -2,19 +2,9 @@
 using Microsoft.Xna.Framework.Graphics;
 using System.Collections.Generic;
 using System;
-using Assimp;
-using System.Data;
 using System.Linq;
-using Microsoft.Xna.Framework.Content;
-using SharpFont.Cache;
 using System.IO;
-using System.IO.Pipes;
-using System.Reflection;
-using SharpDX;
-using SharpDX.Direct3D;
-using SharpFont;
-using static System.Net.Mime.MediaTypeNames;
-using System.Security.Cryptography;
+using Assimp.Unmanaged;
 
 namespace YGR
 {
@@ -32,6 +22,14 @@ namespace YGR
         Outside
     }
 
+    public enum X_DoorState
+    {
+        Open = 1,
+        Opening,
+        Closing,
+        Closed
+    }
+
     public class Y_Door : IWalkable
     {
         public float Scale { get; private set; }
@@ -46,10 +44,18 @@ namespace YGR
 
         private X_DoorDirection _direction;
         private Texture2D _floor;
+        private Texture2D _roof;
+        private Texture2D _door;
         const int _numTilesDoorWidth = 5;
 
-        Rectangle _outsideRect1;
-        Rectangle _outsideRect2;
+        private int _doorOpenOffset = 0;
+        int _tileSize;
+
+        //private Y_Door _door;
+
+
+        //Rectangle _outsideRect1;
+        //Rectangle _outsideRect2;
 
         public Y_Door(
             X_DoorDirection direction, 
@@ -109,96 +115,198 @@ namespace YGR
             floor.GetData<Color>(floorA);
             textels.Add(X_TileType.Floor, floorA);
 
-            
-
-            //int[][] pattern = _collision.Clone() as int[][];
-            //for(int i=0; i < pattern.Length; i++)
-            //{
-            //    for(int j=0; j<pattern[0].Length; ++j)
-            //    {
-            //        if (pattern[i][j] > 0) pattern[i][j] = (int)X_TileType.Roof;
-            //    }
-            //}
-
-            //for (int i = 1; i < pattern.Length; i++)
-            //{
-            //    for (int j = 0; j < pattern[0].Length; ++j)
-            //    {
-            //        if (pattern[i-1][j] == (int)X_TileType.Roof && pattern[i][j] == 0) pattern[i][j] = (int)X_TileType.Wall;
-            //    }
-            //}
-
-            //for (int i = 0; i < pattern.Length; i++)
-            //{
-            //    for (int j = 0; j < pattern[0].Length; ++j)
-            //    {
-            //        if (pattern[i][j] == 0) pattern[i][j] = (int)X_TileType.Floor;
-            //    }
-            //}
-
-            //output(pattern, "./logs/pattern.csv");
-
             int width = floor.Width;
             int height = floor.Height;
             var pattern = Collision.GetCollisionTemplate();
+            //createOutsideRects(pattern, tileWidth);
             _floor = new Texture2D(graphicsDevice, width * pattern[0].Length, height * pattern.Length);
+            _roof = new Texture2D(graphicsDevice, width * pattern[0].Length, height * pattern.Length);
+            _door = new Texture2D(graphicsDevice, width * pattern[0].Length, height * pattern.Length);
             Scale = (float)tileHeight / height;
 
+            Color[] transparent = Enumerable.Repeat<Color>(Color.Transparent, height * width).ToArray();
             for (int x = 0; x < pattern[0].Length; ++x)
             {
                 for (int y = 0; y < pattern.Length; ++y)
                 {
                     var index = pattern[y][x];
-                    Color[] elem;
+                    Color[] floorElem;
+                    Color[] roofElem;
+                    Color[] doorElem;
                     if ((X_TileType)index != X_TileType.Outside)
                     {
-                        elem = textels[(X_TileType)index];
+                        if((X_TileType)index == X_TileType.Roof)
+                            roofElem = textels[(X_TileType)index];
+                        else
+                            roofElem = transparent;
+                        if ((X_TileType)index == X_TileType.Floor || (X_TileType)index == X_TileType.Wall)
+                            floorElem = textels[(X_TileType)index];
+                        else
+                            floorElem = transparent;
                     }
                     else
                     {
-                        elem = Enumerable.Repeat<Color>(Color.Transparent, height * width).ToArray();
+                        floorElem = transparent;
+                        roofElem = transparent;
                     }
-                    //var elem = Enumerable.Repeat<Color>(Color.Red, height * width).ToArray();
-                    _floor.SetData(0, new Rectangle(x * width, y * height, width, height), elem, 0, elem.Length);
+                    if ((X_TileType)index != X_TileType.Outside && (X_TileType)index != X_TileType.Roof)
+                    {
+                        if (x < 1 || y < 1 || x > pattern[0].Length - 2)
+                            doorElem = Enumerable.Repeat<Color>(Color.Transparent, height * width).ToArray();
+                        else if(y > pattern.Length-2)
+                            doorElem = transparent;
+                        else
+                            doorElem = textels[X_TileType.Roof];
+                    }
+                    else
+                    {
+                        doorElem = Enumerable.Repeat<Color>(Color.Transparent, height * width).ToArray();
+                    }
+                    Rectangle rect = new Rectangle(x * width, y * height, width, height);
+
+                    //var elem = Enumerable.Repeat<Color>(Color.Transparent, height * width).ToArray();
+                    _floor.SetData(0, rect, floorElem, 0, floorElem.Length);
+                    _door.SetData(0, rect, doorElem, 0, doorElem.Length);
+                    _roof.SetData(0, rect, roofElem, 0, roofElem.Length);
                 }
             }
 
-            bool tl =
-                pattern[0][0] == (int)X_TileType.Outside &&
-                pattern[1][0] == (int)X_TileType.Outside &&
-                pattern[0][1] == (int)X_TileType.Outside &&
-                pattern[1][1] == (int)X_TileType.Outside;
-
-            int w = pattern[0].Length -1;
-            int h = pattern.Length-1;
-            bool tr =
-                pattern[0][w-1] == (int)X_TileType.Outside &&
-                pattern[1][w-1] == (int)X_TileType.Outside &&
-                pattern[0][w] == (int)X_TileType.Outside &&
-                pattern[1][w] == (int)X_TileType.Outside;
-
-            bool bl=
-                pattern[h-1][0] == (int)X_TileType.Outside &&
-                pattern[h][0] == (int)X_TileType.Outside &&
-                pattern[h-1][1] == (int)X_TileType.Outside &&
-                pattern[h][1] == (int)X_TileType.Outside;
-
-            bool br =
-                pattern[h - 1][w-1] == (int)X_TileType.Outside &&
-                pattern[h][w-1] == (int)X_TileType.Outside &&
-                pattern[h - 1][w] == (int)X_TileType.Outside &&
-                pattern[h][w] == (int)X_TileType.Outside;
-
-            int tWidth = (int)(2 * tileWidth);
-            if (tl)
-            {
-                _outsideRect1 = new Rectangle(0, 0, tWidth, tWidth);
-            }
-            else if (tr)
-            {
-                _outsideRect1 = new Rectangle(_floor.Width-tWidth, 0, tWidth, tWidth);
-            }
+            _tileSize = (int)(TextureTileSize * Scale);
         }
+
+        //private void createOutsideRects(int[][] pattern, int tileWidth)
+        //{
+        //    //output(pattern, "./logs/pattern.csv");
+        //    bool tl =
+        //        pattern[0][0] == (int)X_TileType.Outside &&
+        //        pattern[1][0] == (int)X_TileType.Outside &&
+        //        pattern[0][1] == (int)X_TileType.Outside &&
+        //        pattern[1][1] == (int)X_TileType.Outside;
+
+        //    int w = pattern[0].Length - 1;
+        //    int h = pattern.Length - 1;
+        //    bool tr =
+        //        pattern[0][w - 1] == (int)X_TileType.Outside &&
+        //        pattern[1][w - 1] == (int)X_TileType.Outside &&
+        //        pattern[0][w] == (int)X_TileType.Outside &&
+        //        pattern[1][w] == (int)X_TileType.Outside;
+
+        //    bool bl =
+        //        pattern[h - 1][0] == (int)X_TileType.Outside &&
+        //        pattern[h][0] == (int)X_TileType.Outside &&
+        //        pattern[h - 1][1] == (int)X_TileType.Outside &&
+        //        pattern[h][1] == (int)X_TileType.Outside;
+
+        //    bool br =
+        //        pattern[h - 1][w - 1] == (int)X_TileType.Outside &&
+        //        pattern[h][w - 1] == (int)X_TileType.Outside &&
+        //        pattern[h - 1][w] == (int)X_TileType.Outside &&
+        //        pattern[h][w] == (int)X_TileType.Outside;
+
+        //    if (tl)
+        //    {
+        //        int y = 0;
+        //        int x = 0;
+        //        if (_direction == X_DoorDirection.Vertical)
+        //        {
+        //            while (y < pattern.Length && pattern[y][0] == (int)X_TileType.Outside) y++;
+        //            y--;
+        //            while (x < pattern[0].Length && pattern[y][x] == (int)X_TileType.Outside) x++;
+        //            y++;
+        //        }
+        //        else
+        //        {
+        //            while (x < pattern[0].Length && pattern[0][x] == (int)X_TileType.Outside) x++;
+        //            x--;
+        //            while (y < pattern.Length && pattern[y][x] == (int)X_TileType.Outside) y++;
+        //            x++;
+        //        }
+        //        _outsideRect1 = new Rectangle(0, 0, x * tileWidth, y * tileWidth);
+        //    }
+        //    else if (tr)
+        //    {
+        //        int y = 0;
+        //        int x = pattern[0].Length - 1;
+        //        if (_direction == X_DoorDirection.Vertical)
+        //        {
+        //            while (y < pattern.Length && pattern[y][x] == (int)X_TileType.Outside) y++;
+        //            y--;
+        //            while (x >= 0 && pattern[y][x] == (int)X_TileType.Outside) x--;
+        //            y++; x++;
+
+        //        }
+        //        else
+        //        {
+        //            while (x >= 0 && pattern[y][x] == (int)X_TileType.Outside) x--;
+        //            x++;
+        //            while (y < pattern.Length && pattern[y][x] == (int)X_TileType.Outside) y++;
+        //        }
+        //        x = pattern[0].Length - x;
+        //        _outsideRect1 = new Rectangle((pattern[0].Length * tileWidth) - x * tileWidth, 0, x * tileWidth, y * tileWidth);
+        //    }
+        //    else
+        //    {
+        //        if (_direction == X_DoorDirection.Vertical) // left
+        //            _outsideRect1 = new Rectangle(0, 0, tileWidth/2, (pattern.Length-1)*tileWidth);
+        //        else // top
+        //            _outsideRect1 = new Rectangle(0, 0, (pattern[0].Length) * tileWidth, tileWidth / 2);
+        //    }
+        //    if (bl)
+        //    {
+        //        int y = pattern.Length - 1;
+        //        int x = 0;
+        //        if (_direction == X_DoorDirection.Vertical)
+        //        {
+        //            while (y >= 0 && pattern[y][0] == (int)X_TileType.Outside) y--;
+        //            y++;
+        //            while (x < pattern[0].Length && pattern[y][x] == (int)X_TileType.Outside) x++;
+        //        }
+        //        else
+        //        {
+        //            while (x < pattern[0].Length && pattern[y][x] == (int)X_TileType.Outside) x++;
+        //            x--;
+        //            while (y >= 0 && pattern[y][x] == (int)X_TileType.Outside) y--;
+        //            x++; y++;
+        //        }
+        //        _outsideRect2 = new Rectangle(0, y * tileWidth, x * tileWidth, (pattern.Length - y) * tileWidth);
+        //    }
+        //    else if (br)
+        //    {
+        //        int y = pattern.Length - 1;
+        //        int x = pattern[0].Length - 1;
+        //        if (_direction == X_DoorDirection.Vertical)
+        //        {
+        //            while (y >= 0 && pattern[y][x] == (int)X_TileType.Outside) y--;
+        //            y++;
+        //            while (x >= 0 && pattern[y][x] == (int)X_TileType.Outside) x--;
+        //            x++;
+
+        //        }
+        //        else
+        //        {
+        //            while (x >= 0 && pattern[y][x] == (int)X_TileType.Outside) x--;
+        //            x++;
+        //            while (y >= 0 && pattern[y][x] == (int)X_TileType.Outside) y--;
+        //            y++;
+        //        }
+        //        int xcord = x * tileWidth;
+        //        int ycord = y * tileWidth;
+        //        _outsideRect2 = new Rectangle(xcord, ycord, (pattern[0].Length - x) * tileWidth, (pattern.Length - y) * tileWidth);
+        //    }
+        //    else
+        //    {
+        //        if (_direction == X_DoorDirection.Vertical) // left
+        //            _outsideRect2 = new Rectangle(pattern[0].Length*tileWidth-tileWidth/2, 0, tileWidth / 2, (pattern.Length-1) * tileWidth);
+        //        else // bottom
+        //            _outsideRect2 = new Rectangle(0, (pattern.Length-1)*tileWidth + tileWidth/2, pattern[0].Length * tileWidth, tileWidth / 2);
+        //    }
+
+        //    // make the rects a tiny bit larger
+        //    int ox = tileWidth / 2;
+        //    int oy = tileWidth / 2;
+        //    _outsideRect1 = new Rectangle(_outsideRect1.X - ox, _outsideRect1.Y - oy, _outsideRect1.Width + 2*ox, _outsideRect1.Height + 2*oy);
+        //    _outsideRect2 = new Rectangle(_outsideRect2.X - ox, _outsideRect2.Y - oy, _outsideRect2.Width + 2*ox, _outsideRect2.Height + 2*oy);
+        //}
 
         private void output(int[][] pattern, string name)
         {
@@ -606,7 +714,8 @@ namespace YGR
                 }
             }
 
-            Factory_Debug.DrawRectangle(_outsideRect1.X, _outsideRect1.Y, _outsideRect1.Width, _outsideRect1.Height, 5, Color.Red, spriteBatch);
+            //Factory_Debug.DrawRectangle(_outsideRect1.X, _outsideRect1.Y, _outsideRect1.Width, _outsideRect1.Height, 5, Color.Red, spriteBatch);
+            //Factory_Debug.DrawRectangle(_outsideRect2.X, _outsideRect2.Y, _outsideRect2.Width, _outsideRect2.Height, 5, Color.Red, spriteBatch);
 
             //Factory_Debug.DrawPoint(_leftOrBottomConnector.Point.X, _leftOrBottomConnector.Point.Y, 11, Color.Red, spriteBatch);
             //Factory_Debug.DrawPoint(_rightOrTopConnector.Point.X, _rightOrTopConnector.Point.Y, 11, Color.Orange, spriteBatch);
@@ -614,10 +723,26 @@ namespace YGR
 
         public void Draw(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)
         {
+            
+
             spriteBatch.Draw(
-                _floor, Rect.Location.ToVector2(),
+            _floor, Rect.Location.ToVector2(),
+            new Rectangle(0, 0, _floor.Width, _floor.Height - _tileSize + _doorOpenOffset),
+            Color.White, 0, Vector2.Zero, Scale, SpriteEffects.None, 0);
+
+            Vector2 pos = Rect.Location.ToVector2();
+            pos.Y += _doorOpenOffset;
+            spriteBatch.Draw(
+                _door, pos,
                 new Rectangle(0, 0, _floor.Width, _floor.Height),
                 Color.White, 0, Vector2.Zero, Scale, SpriteEffects.None, 0);
+
+            spriteBatch.Draw(
+                _roof, Rect.Location.ToVector2(),
+                new Rectangle(0, 0, _roof.Width, _roof.Height),
+                Color.White, 0, Vector2.Zero, Scale, SpriteEffects.None, 0);
+
+            //_door.Draw(gameTime, globalOffset, spriteBatch);
         }
 
         public void MoveTo(Point position)
@@ -632,7 +757,8 @@ namespace YGR
                 }
             }
             Collision.MoveBy(p);
-            //_outsideRect1.Offset(new Point(-p.X, -p.Y));
+            //_outsideRect1.Offset(new Point(p.X, p.Y));
+            //_outsideRect2.Offset(new Point(p.X, p.Y));
         }
 
         public X_LevelElements WhatAreYou()

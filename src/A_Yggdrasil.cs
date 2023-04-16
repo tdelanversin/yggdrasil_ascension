@@ -50,15 +50,15 @@ namespace YGR
             _level = new Y_Level("level_0", 40, "Levels/Level_0", GraphicsDevice);
 
             _player = new List<IVictim>{
-                new Ninja(
-                    new X_CollisionModel_Victim(1.0f /* mass */, 0.0f /* elastic impact */),
-                    PlayerIndex.One,
-                    Content.Load<Texture2D>("charaset"),
-                    0.02f,
-                    new Vector2(200, 350),
-                    _level,
-                    new Y_StarterGun()
-                ),
+                //new Ninja(
+                //    new X_CollisionModel_Victim(1.0f /* mass */, 0.0f /* elastic impact */),
+                //    PlayerIndex.One,
+                //    Content.Load<Texture2D>("charaset"),
+                //    0.02f,
+                //    new Vector2(200, 350),
+                //    _level,
+                //    new Y_StarterGun()
+                //),
                 new Y_CMSprite(
                     new X_CollisionModel_Victim(1.0f /* mass */, 0.0f /* elastic impact */),
                     null,
@@ -120,7 +120,7 @@ namespace YGR
                 Camera.Transform);
 
             _level.Draw(gameTime, Vector2.Zero, _spriteBatch);
-            //_level.DrawOutline(gameTime, Vector2.Zero, _spriteBatch);
+            
 
             Manager_Projectile.Draw(gameTime, zero, _spriteBatch);
             Manager_Projectile.DrawOutline(gameTime, zero, _spriteBatch);
@@ -130,6 +130,8 @@ namespace YGR
                 player.Draw(gameTime, zero, _spriteBatch);
                 //player.DrawOutline(gameTime, zero, _spriteBatch);
             }
+
+            _level.DrawOutline(gameTime, Vector2.Zero, _spriteBatch);
 
             _spriteBatch.End();
 

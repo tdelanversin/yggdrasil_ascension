@@ -56,7 +56,7 @@ namespace YGR
                 { "door-center-to-middle", new Y_Door(X_DoorDirection.Vertical, connectorWidth, TileWidth, TileHeight, -7, graphicsDevice) },
                 { "door-center-to-left", new Y_Door(X_DoorDirection.Horizontal, connectorWidth, TileWidth, TileHeight, 9, graphicsDevice) },
                 { "door-center-to-right", new Y_Door(X_DoorDirection.Horizontal, connectorWidth, TileWidth, TileHeight, -3, graphicsDevice) },
-                { "door-center-to-bottom", new Y_Door(X_DoorDirection.Vertical, connectorWidth, TileWidth, TileHeight, -3, graphicsDevice) },
+                { "door-center-to-bottom", new Y_Door(X_DoorDirection.Vertical, connectorWidth, TileWidth, TileHeight, 0, graphicsDevice) },
                 { "door-middle-to-top", new Y_Door(X_DoorDirection.Vertical, connectorWidth, TileWidth, TileHeight, 3, graphicsDevice) },
             };
 
