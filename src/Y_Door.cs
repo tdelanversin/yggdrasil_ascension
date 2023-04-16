@@ -14,6 +14,7 @@ using SharpDX;
 using SharpDX.Direct3D;
 using SharpFont;
 using static System.Net.Mime.MediaTypeNames;
+using System.Security.Cryptography;
 
 namespace YGR
 {
@@ -46,6 +47,9 @@ namespace YGR
         private X_DoorDirection _direction;
         private Texture2D _floor;
         const int _numTilesDoorWidth = 5;
+
+        Rectangle _outsideRect1;
+        Rectangle _outsideRect2;
 
         public Y_Door(
             X_DoorDirection direction, 
@@ -157,6 +161,42 @@ namespace YGR
                     //var elem = Enumerable.Repeat<Color>(Color.Red, height * width).ToArray();
                     _floor.SetData(0, new Rectangle(x * width, y * height, width, height), elem, 0, elem.Length);
                 }
+            }
+
+            bool tl =
+                pattern[0][0] == (int)X_TileType.Outside &&
+                pattern[1][0] == (int)X_TileType.Outside &&
+                pattern[0][1] == (int)X_TileType.Outside &&
+                pattern[1][1] == (int)X_TileType.Outside;
+
+            int w = pattern[0].Length -1;
+            int h = pattern.Length-1;
+            bool tr =
+                pattern[0][w-1] == (int)X_TileType.Outside &&
+                pattern[1][w-1] == (int)X_TileType.Outside &&
+                pattern[0][w] == (int)X_TileType.Outside &&
+                pattern[1][w] == (int)X_TileType.Outside;
+
+            bool bl=
+                pattern[h-1][0] == (int)X_TileType.Outside &&
+                pattern[h][0] == (int)X_TileType.Outside &&
+                pattern[h-1][1] == (int)X_TileType.Outside &&
+                pattern[h][1] == (int)X_TileType.Outside;
+
+            bool br =
+                pattern[h - 1][w-1] == (int)X_TileType.Outside &&
+                pattern[h][w-1] == (int)X_TileType.Outside &&
+                pattern[h - 1][w] == (int)X_TileType.Outside &&
+                pattern[h][w] == (int)X_TileType.Outside;
+
+            int tWidth = (int)(2 * tileWidth);
+            if (tl)
+            {
+                _outsideRect1 = new Rectangle(0, 0, tWidth, tWidth);
+            }
+            else if (tr)
+            {
+                _outsideRect1 = new Rectangle(_floor.Width-tWidth, 0, tWidth, tWidth);
             }
         }
 
@@ -566,6 +606,8 @@ namespace YGR
                 }
             }
 
+            Factory_Debug.DrawRectangle(_outsideRect1.X, _outsideRect1.Y, _outsideRect1.Width, _outsideRect1.Height, 5, Color.Red, spriteBatch);
+
             //Factory_Debug.DrawPoint(_leftOrBottomConnector.Point.X, _leftOrBottomConnector.Point.Y, 11, Color.Red, spriteBatch);
             //Factory_Debug.DrawPoint(_rightOrTopConnector.Point.X, _rightOrTopConnector.Point.Y, 11, Color.Orange, spriteBatch);
         }
@@ -590,6 +632,7 @@ namespace YGR
                 }
             }
             Collision.MoveBy(p);
+            //_outsideRect1.Offset(new Point(-p.X, -p.Y));
         }
 
         public X_LevelElements WhatAreYou()
