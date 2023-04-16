@@ -125,11 +125,6 @@ namespace YGR
                 }
             }
 
-            //for (int i = 0; i < len; ++i)
-            //{
-            //    newData[i] = Color.Transparent;
-            //}
-
             minh = minh + TextureTileSize / 2;
             minw = minw + TextureTileSize / 2;
             maxh = maxh - TextureTileSize / 2;
@@ -148,18 +143,6 @@ namespace YGR
                     else newData[h * _window.Width + w] = RegionColor;
                 }
             }
-
-            //for (int i = 0; i < len; ++i)
-            //{
-            //    if (groundData[i].A == 0)
-            //    {
-            //        newData[i] = floorData[i];
-            //    }
-            //    else
-            //    {
-            //        newData[i] = Color.Transparent;
-            //    }
-            //}
 
             _floor.SetData<Color>(newData);
 
