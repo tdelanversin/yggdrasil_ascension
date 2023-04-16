@@ -27,7 +27,9 @@ namespace YGR
         Open = 1,
         Opening,
         Closing,
-        Closed
+        Closed,
+        LockedClosed,
+        LockedOpen
     }
 
     public class Y_Door : IWalkable
@@ -42,13 +44,19 @@ namespace YGR
         public Dictionary<X_ConnectorSide, IList<IWalkable>> DoorRooms { get; set; }
         public int TextureTileSize { get; }
 
+        private new Dictionary<X_DoorState, List<Rectangle>> _doorCollisionRectangles;
+
+        private X_DoorState _state;
+
         private X_DoorDirection _direction;
         private Texture2D _floor;
         private Texture2D _roof;
         private Texture2D _door;
         const int _numTilesDoorWidth = 5;
 
-        private int _doorOpenOffset = 0;
+        private int _currentDoorOpenOffset = 0;
+        private float _doorOpeningTime = 2000.0f;
+        private float _animationTime = 0.0f;
         int _tileSize;
 
         //private Y_Door _door;
@@ -79,6 +87,8 @@ namespace YGR
             Rect = new Rectangle(0, 0, tileWidth * collision[0].Length, tileHeight * collision.Length);
 
             Scale = 1.0f;
+
+            _doorCollisionRectangles = new Dictionary<X_DoorState, List<Rectangle>>();
 
             Texture2D roof;
             Texture2D floor;
@@ -172,6 +182,7 @@ namespace YGR
             }
 
             _tileSize = (int)(TextureTileSize * Scale);
+            _state = X_DoorState.Closed;
         }
 
         //private void createOutsideRects(int[][] pattern, int tileWidth)
@@ -519,6 +530,11 @@ namespace YGR
                 if (collision[1][y] != 0) collision[0][y] = -1;
                 if (collision[width - 2][y] != 0) collision[width - 1][y] = -1;
             }
+            //for (int y = 0; y < collision[0].Length; ++y)
+            //{
+            //    collision[0][y] = -1;
+            //    collision[width - 1][y] = -1;
+            //}
 
             collision[width-2][height-1-doorWidth/2] = 2;
             collision[1][doorWidth/2] = 3;
@@ -676,14 +692,23 @@ namespace YGR
 
         public void SplitConnectedCollisionModels()
         {
-            foreach(var room in DoorRooms)
+            foreach (var room in DoorRooms)
             {
                 if (room.Key == X_ConnectorSide.Left || room.Key == X_ConnectorSide.Right)
                 {
                     foreach (var r in room.Value)
                     {
                         // need vertical split
-                        r.Collision.SplitCollisionVerticallyAt(Doors[room.Key].First().Point, _numTilesDoorWidth);
+                        var res = r.Collision.SplitCollisionVerticallyAt(Doors[room.Key].First().Point, _numTilesDoorWidth);
+                        foreach(var rects in res)
+                        {
+                            List<Rectangle> cRect;
+                            if (!_doorCollisionRectangles.TryGetValue(rects.Key, out cRect))
+                            {
+                                _doorCollisionRectangles.Add(rects.Key, rects.Value);
+                            }
+                            else _doorCollisionRectangles[rects.Key].AddRange(rects.Value);
+                        }
                     }
                 }
                 else
@@ -691,15 +716,66 @@ namespace YGR
                     foreach (var r in room.Value)
                     {
                         // need horizontal split                    
-                        r.Collision.SplitCollisionHorizontallyAt(Doors[room.Key].First().Point, _numTilesDoorWidth);
+                        var res = r.Collision.SplitCollisionHorizontallyAt(Doors[room.Key].First().Point, _numTilesDoorWidth);
+                        foreach (var rects in res)
+                        {
+                            List<Rectangle> cRect;
+                            if (!_doorCollisionRectangles.TryGetValue(rects.Key, out cRect))
+                            {
+                                _doorCollisionRectangles.Add(rects.Key, rects.Value);
+                            }
+                            else _doorCollisionRectangles[rects.Key].AddRange(rects.Value);
+                        }
                     }
                 }
             }
+            Collision.SetExtraCollisionRectangles(_doorCollisionRectangles[X_DoorState.Closed]);
+        }
+
+        public bool LockDoor()
+        {
+            if (!(_state == X_DoorState.Open || _state == X_DoorState.Closed)) return false;
+            if(_state == X_DoorState.Open)
+                _state = X_DoorState.LockedOpen;
+            if(_state == X_DoorState.Closed)
+                _state = X_DoorState.LockedClosed;
+
+            return true;
         }
 
         public void Update(GameTime gameTime)
         {
-
+            bool keyPressed = Input.IsKeyTriggered(Keybinds.ToggleConnectors);
+            float dt = gameTime.ElapsedGameTime.Milliseconds;
+            switch (_state)
+            {
+                case X_DoorState.Closed:
+                    if (keyPressed)
+                    {
+                        _state = X_DoorState.Opening;
+                    }
+                    break;
+                case X_DoorState.Opening:
+                    if (!doorAnimation(dt, true))
+                    {
+                        _state = X_DoorState.Open;
+                        Collision.SetExtraCollisionRectangles(_doorCollisionRectangles[X_DoorState.Open]);
+                    }
+                    break;
+                case X_DoorState.Open:
+                    if (keyPressed)
+                    {
+                        _state = X_DoorState.Closing;
+                        Collision.SetExtraCollisionRectangles(_doorCollisionRectangles[X_DoorState.Closed]);
+                    }
+                    break;
+                case X_DoorState.Closing:
+                    if (!doorAnimation(dt, false))
+                    {
+                        _state = X_DoorState.Closed;
+                    }
+                    break;
+            }
         }
 
         public void DrawOutline(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)
@@ -721,28 +797,95 @@ namespace YGR
             //Factory_Debug.DrawPoint(_rightOrTopConnector.Point.X, _rightOrTopConnector.Point.Y, 11, Color.Orange, spriteBatch);
         }
 
+        //private void average(float a)
+        //{
+        //    int dx = (int)(Math.Ceiling(_dPos.X * a));
+        //    _rect.X = newPosition(_rect.X, dx, _newRect.X);
+
+        //    int dy = (int)(Math.Ceiling(_dPos.Y * a));
+        //    _rect.Y = newPosition(_rect.Y, dy, _newRect.Y);
+        //}
+
+        private bool doorAnimation(float dt, bool opening)
+        {
+            _animationTime += dt;
+            if (_animationTime < _doorOpeningTime)
+            {
+                float percent = 1.0f / _doorOpeningTime * _animationTime;
+                if(opening)
+                    _currentDoorOpenOffset = (int)Math.Round(_tileSize*percent);
+                else
+                    _currentDoorOpenOffset = (int)Math.Round(_tileSize * (1.0f - percent));
+            }
+            if (_animationTime >= _doorOpeningTime)
+            {
+                if(opening)
+                    _currentDoorOpenOffset = _tileSize;
+                else
+                    _currentDoorOpenOffset = 0;
+                _animationTime = 0;
+                return false;
+            }
+            return true;
+        }
+
         public void Draw(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)
         {
-            
 
-            spriteBatch.Draw(
-            _floor, Rect.Location.ToVector2(),
-            new Rectangle(0, 0, _floor.Width, _floor.Height - _tileSize + _doorOpenOffset),
-            Color.White, 0, Vector2.Zero, Scale, SpriteEffects.None, 0);
+            if (_state != X_DoorState.Closed && _state != X_DoorState.LockedClosed)
+            {
+                if(_direction == X_DoorDirection.Vertical)
+                {
+                    spriteBatch.Draw(
+                        _floor, Rect.Location.ToVector2(),
+                        new Rectangle(0, 0, _floor.Width, _floor.Height - _tileSize + _currentDoorOpenOffset),
+                        Color.White, 0, Vector2.Zero, Scale, SpriteEffects.None, 0);
+                }
+                else
+                {
+                    spriteBatch.Draw(
+                        _floor, Rect.Location.ToVector2(),
+                        new Rectangle(0, 0, _floor.Width, _floor.Height),
+                        Color.White, 0, Vector2.Zero, Scale, SpriteEffects.None, 0);
+                    spriteBatch.Draw(
+                        _floor, Rect.Location.ToVector2() + new Vector2(_floor.Width * Scale - _tileSize, 0),
+                        new Rectangle(_floor.Width - TextureTileSize, 0, TextureTileSize, _floor.Height),
+                        Color.White, 0, Vector2.Zero, Scale, SpriteEffects.None, 0);
+                }
+            }
+            else
+            {
+                if(_direction == X_DoorDirection.Horizontal)
+                {
+                    spriteBatch.Draw(
+                        _floor, Rect.Location.ToVector2(),
+                        new Rectangle(0, 0, _tileSize, _floor.Height),
+                        Color.White, 0, Vector2.Zero, Scale, SpriteEffects.None, 0);
 
-            Vector2 pos = Rect.Location.ToVector2();
-            pos.Y += _doorOpenOffset;
-            spriteBatch.Draw(
-                _door, pos,
-                new Rectangle(0, 0, _floor.Width, _floor.Height),
-                Color.White, 0, Vector2.Zero, Scale, SpriteEffects.None, 0);
 
+                }
+                else
+                {
+                    spriteBatch.Draw(
+                        _floor, Rect.Location.ToVector2(),
+                        new Rectangle(0, 0, _floor.Width, _tileSize),
+                        Color.White, 0, Vector2.Zero, Scale, SpriteEffects.None, 0);
+                }
+            }
+
+            if (_state != X_DoorState.Open && _state != X_DoorState.LockedOpen)
+            {
+                Vector2 pos = Rect.Location.ToVector2();
+                pos.Y += _currentDoorOpenOffset;
+                spriteBatch.Draw(
+                    _door, pos,
+                    new Rectangle(0, 0, _floor.Width, _floor.Height),
+                    Color.White, 0, Vector2.Zero, Scale, SpriteEffects.None, 0);
+            }
             spriteBatch.Draw(
                 _roof, Rect.Location.ToVector2(),
                 new Rectangle(0, 0, _roof.Width, _roof.Height),
                 Color.White, 0, Vector2.Zero, Scale, SpriteEffects.None, 0);
-
-            //_door.Draw(gameTime, globalOffset, spriteBatch);
         }
 
         public void MoveTo(Point position)
@@ -757,8 +900,12 @@ namespace YGR
                 }
             }
             Collision.MoveBy(p);
-            //_outsideRect1.Offset(new Point(p.X, p.Y));
-            //_outsideRect2.Offset(new Point(p.X, p.Y));
+
+            foreach(var rect in _doorCollisionRectangles)
+            {
+                foreach(var r in rect.Value)
+                    r.Offset(p);
+            }
         }
 
         public X_LevelElements WhatAreYou()

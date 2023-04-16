@@ -81,13 +81,14 @@ namespace YGR
             _lights = new List<X_Light>();
             foreach (var room in Rooms.Values)
             {
+                if (room.WhatAreYou() == X_LevelElements.Door) continue;
                 _lights.Add(
                     new X_Light(
                         //new Vector3((int)(3.5 * tileSize), (int)(4 * tileSize), 1 * tileSize),
                         new Vector3(room.Rect.X + tileSize, room.Rect.Y + tileSize, 5 * tileSize),
                         getLightRect(room, 2),
                         Color.Black,
-                        0.4f,
+                        0.5f,
                         scale
                 ));
             }
@@ -167,7 +168,10 @@ namespace YGR
 
         public void Update(GameTime gameTime)
         {
-
+            foreach(var room in Rooms.Values)
+            {
+                room.Update(gameTime);
+            }
         }
 
         public void DrawOutline(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)

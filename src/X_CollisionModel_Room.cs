@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection.Emit;
+using static YGR.Manager_Collision;
 
 namespace YGR
 {
@@ -17,6 +18,9 @@ namespace YGR
         private bool[] _collisionRectanglesHit;
         private Point _location;
         private List<Manager_Collision.Record> _records;
+
+        private Rectangle[] _extraCollisionRectangles;
+        private bool[] _extraCollisionRectanglesHit;
 
         public int TileWidth;
         public int TileHeight;
@@ -39,6 +43,15 @@ namespace YGR
             _records = new List<Manager_Collision.Record>();
 
             _floor = CreateFloorRectangles(TileWidth);
+
+            _extraCollisionRectangles = new Rectangle[0];
+            _extraCollisionRectanglesHit = new bool[0];
+    }
+
+        public void SetExtraCollisionRectangles(List<Rectangle> collisionRectangles)
+        {
+            _extraCollisionRectangles = collisionRectangles.ToArray();
+            _extraCollisionRectanglesHit = Enumerable.Repeat<bool>(false, collisionRectangles.Count).ToArray();
         }
 
         public int[][] GetCollisionTemplate()
@@ -51,7 +64,7 @@ namespace YGR
             return _collisionRectangles;
         }
 
-        public void SplitCollisionVerticallyAt(Point p, int tileCount)
+        public Dictionary<X_DoorState, List<Rectangle>> SplitCollisionVerticallyAt(Point p, int tileCount)
         {
             var col = _collisionRectangles.ToList();
             int index;
@@ -71,14 +84,20 @@ namespace YGR
                 old.Width,
                 old.Height - rectTop.Height - (tileCount - 2) * TileHeight - 1);
 
+            var res = new Dictionary<X_DoorState, List<Rectangle>> { 
+                { X_DoorState.Open, new List<Rectangle> { rectTop, rectBottom } }, 
+                { X_DoorState.Closed, new List<Rectangle> { col.ElementAt(index) } } };
+
             col.RemoveAt(index);
-            col.Add(rectTop);
-            col.Add(rectBottom);
+            //col.Add(rectTop);
+            //col.Add(rectBottom);
             _collisionRectangles = col.ToArray();
             _collisionRectanglesHit = Enumerable.Repeat<bool>(false, _collisionRectangles.Count()).ToArray();
+
+            return res;
         }
 
-        public void SplitCollisionHorizontallyAt(Point p, int tileCount)
+        public Dictionary<X_DoorState, List<Rectangle>> SplitCollisionHorizontallyAt(Point p, int tileCount)
         {
             var col = _collisionRectangles.ToList();
             int index;
@@ -97,11 +116,18 @@ namespace YGR
                 old.Width - rectLeft.Width - (tileCount - 2) * TileWidth - 1,
                 old.Height);
 
+            var res = new Dictionary<X_DoorState, List<Rectangle>> { 
+                { X_DoorState.Open, new List<Rectangle> { rectLeft, rectRight } }, 
+                { X_DoorState.Closed, new List<Rectangle> { col.ElementAt(index) } } };
+
             col.RemoveAt(index);
-            col.Add(rectLeft);
-            col.Add(rectRight);
+
+            //col.Add(rectLeft);
+            //col.Add(rectRight);
             _collisionRectangles = col.ToArray();
             _collisionRectanglesHit = Enumerable.Repeat<bool>(false, _collisionRectangles.Count()).ToArray();
+
+            return res;
         }
 
         private int[][] cleanUpCollisionTemplate(int[][] collision)
@@ -430,21 +456,6 @@ namespace YGR
 
         public void DrawOutline(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)
         {
-            //for (int x = 0; x < _collisionModel.GetLength(0); ++x)
-            //{
-            //    for (int y = 0; y < _collisionModel.GetLength(1); ++y)
-            //    {
-            //        var color = Color.Gray;
-            //        var lineWidth = 1;
-            //        if (_collisionTemplate[x][y] == 0)
-            //        {
-            //            Factory_Debug.DrawRectangle(
-            //            y * TileWidth + _location.X, x * TileHeight + _location.Y, TileWidth, TileHeight,
-            //            lineWidth, color, spriteBatch);
-            //        }
-            //    }
-            //}
-
             foreach (var rectRow in _floor)
             {
                 foreach(var rect in rectRow)
@@ -468,6 +479,23 @@ namespace YGR
                         _collisionRectangles[i].Y,
                         _collisionRectangles[i].Width,
                         _collisionRectangles[i].Height,
+                        3, color, spriteBatch);
+            }
+
+            for (int i = 0; i < _extraCollisionRectangles.Count(); ++i)
+            {
+                Color color = Manager_Collision.MissColor;
+                if (_extraCollisionRectanglesHit[i])
+                {
+                    color = Manager_Collision.HitColor;
+                    _extraCollisionRectanglesHit[i] = false;
+                }
+
+                Factory_Debug.DrawRectangle(
+                        _extraCollisionRectangles[i].X,
+                        _extraCollisionRectangles[i].Y,
+                        _extraCollisionRectangles[i].Width,
+                        _extraCollisionRectangles[i].Height,
                         3, color, spriteBatch);
             }
 
@@ -518,11 +546,11 @@ namespace YGR
             contactPoint = Point.Zero;
             contactNormal = Vector2.Zero;
             //float uHit;
-            List<Manager_Collision.Record> collided;
+            List<Manager_Collision.Record> collided = new List<Record>();
             bool collision = Manager_Collision.DynamicRectVsStaticRects(
                 ref movingRect, ref velocity, timeStepMS,
-                _collisionRectangles, _collisionRectanglesHit,
-                out collided
+                _collisionRectangles, _collisionRectanglesHit, _extraCollisionRectangles, _extraCollisionRectanglesHit,
+                ref collided
             );
 
             if (collision) unifyCollisions(ref collided, ref movingRect, out contactPoint, out contactNormal);
@@ -534,9 +562,9 @@ namespace YGR
         {
             contactPoint = Point.Zero;
             contactNormal = Vector2.Zero;
-            List<Manager_Collision.Record> collided;
+            List<Manager_Collision.Record> collided = new List<Record>();
             bool collision = Manager_Collision.FastRectVsStaticRects(
-                ref movingRect, velocity, timeStepMS, _collisionRectangles, _collisionRectanglesHit, out collided);
+                ref movingRect, velocity, timeStepMS, _collisionRectangles, _collisionRectanglesHit, _extraCollisionRectangles, _extraCollisionRectanglesHit, ref collided);
 
             if(collision) unifyCollisions(ref collided, ref movingRect, out contactPoint, out contactNormal);
 

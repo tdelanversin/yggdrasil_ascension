@@ -176,6 +176,7 @@ namespace YGR
                     }
 
                     Manager_Projectile.Update(gameTime);
+                    _level.Update(gameTime);
                     break;
                 case GameState.Menu:
                     Menu.Update();
