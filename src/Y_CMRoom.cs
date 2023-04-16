@@ -31,6 +31,8 @@ namespace YGR
         public Dictionary<X_ConnectorSide, IList<IWalkable>> DoorRooms { get; set; }
         public int TextureTileSize { get; }
 
+        public Color RegionColor { get; }
+
         private Texture2D _floor;
         private Texture2D _window;
 
@@ -104,25 +106,64 @@ namespace YGR
             Color[] floorData = new Color[len];
             _floor.GetData<Color>(floorData);
             Color[] newData = new Color[len];
-            for (int i = 0; i < len; ++i)
+
+            int minh = int.MaxValue;
+            int minw = int.MaxValue;
+            int maxh = int.MinValue;
+            int maxw = int.MinValue;
+            for (int h = 0; h < _window.Height; ++h)
             {
-                if (groundData[i].A == 0)
+                for (int w = 0; w < _window.Width; ++w)
                 {
-                    newData[i] = floorData[i];
-                }
-                else
-                {
-                    newData[i] = Color.Transparent;
+                    if(groundData[h*_window.Width +w].A == 0)
+                    {
+                        if (minh > h) minh = h;
+                        if (maxh < h) maxh = h;
+                        if (minw > w) minw = w;
+                        if (maxw < w) maxw = w;
+                    }
                 }
             }
+
+            //for (int i = 0; i < len; ++i)
+            //{
+            //    newData[i] = Color.Transparent;
+            //}
+
+            minh = minh + TextureTileSize / 2;
+            minw = minw + TextureTileSize / 2;
+            maxh = maxh - TextureTileSize / 2;
+            maxw = maxw - TextureTileSize / 2;
+
+            RegionColor = floorData[minh * _window.Width + minw];
+
+            for (int h = 0; h < _window.Height; ++h)
+            {
+                for (int w = 0; w < _window.Width; ++w)
+                {
+                    if (h >= minh && w >= minw && h < maxh && w < maxw)
+                    {
+                        newData[h * _window.Width + w] = floorData[h * _window.Width + w];
+                    }
+                    else newData[h * _window.Width + w] = RegionColor;
+                }
+            }
+
+            //for (int i = 0; i < len; ++i)
+            //{
+            //    if (groundData[i].A == 0)
+            //    {
+            //        newData[i] = floorData[i];
+            //    }
+            //    else
+            //    {
+            //        newData[i] = Color.Transparent;
+            //    }
+            //}
+
             _floor.SetData<Color>(newData);
 
             Scale = (float)tileHeight * collisions.Length / _floor.Height;
-        }
-
-        public void Illuminate(X_Light light, List<X_Cube> model)
-        {
-            Manager_Light.Illuminate(light, this, model);
         }
 
         public ref Texture2D GetFloor()

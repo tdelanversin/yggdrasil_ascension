@@ -25,9 +25,10 @@ namespace YGR
 
     public enum X_TileType
     {
-        Roof = 2,
+        Roof=2,
         Wall,
-        Floor
+        Floor,
+        Outside
     }
 
     public class Y_Door : IWalkable
@@ -145,7 +146,7 @@ namespace YGR
                 {
                     var index = pattern[y][x];
                     Color[] elem;
-                    if (index > 0)
+                    if ((X_TileType)index != X_TileType.Outside)
                     {
                         elem = textels[(X_TileType)index];
                     }
@@ -157,11 +158,6 @@ namespace YGR
                     _floor.SetData(0, new Rectangle(x * width, y * height, width, height), elem, 0, elem.Length);
                 }
             }
-        }
-
-        public void Illuminate(X_Light light, List<X_Cube> model)
-        {
-            Manager_Light.Illuminate(light, this, model);
         }
 
         private void output(int[][] pattern, string name)
