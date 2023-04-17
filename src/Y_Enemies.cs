@@ -24,6 +24,7 @@ namespace YGR
         public IShooter Gun { get; set; }
         private IList<IVictim> Players;
         private IVictim Target = null;
+        public float Scale { get; }
 
         public string Name { get; set; }
 
@@ -38,7 +39,7 @@ namespace YGR
 
             Velocity = new Vector2(0, 0);
             maxVelocity = 0.01f;
-            safetyDistance = 500f;
+            safetyDistance = 300f;
             FacingDirection = new Vector2(0, 0);
             Sprite = Manager_Enemies.enemy_textures["default_enemy"];
             Collision = new X_CollisionModel_Victim(1.0f, 0.0f);
@@ -52,6 +53,7 @@ namespace YGR
             Room = Level.GetRoom(this, Room);
             Gun = new Y_SimpleEnemyGun();
             Players = players;
+            Scale = 1.0f;
 
             Name = "base enemy";
 
@@ -59,7 +61,8 @@ namespace YGR
         }
 
 
-        private void FindTarget() {
+        private bool FindTargetAndVisibility()
+        {
             IVictim closestPlayer = null;
             float closestDistance = float.MaxValue;
             foreach (IVictim player in Players)
@@ -72,61 +75,69 @@ namespace YGR
                 }
             }
 
-            if (Target == null) {
+            if (Target == null)
+            {
                 Target = closestPlayer;
-                return;
+                return LineOfSight();
             }
 
             float distanceToTarget = Vector2.Distance(Target.Rect.Center.ToVector2(), Rect.Center.ToVector2());
 
-            if (distanceToTarget > 2 * closestDistance) {
+            bool canSee = LineOfSight();
+            if (distanceToTarget > 2 * closestDistance && !canSee)
+            {
                 Target = closestPlayer;
-                return;
+                return LineOfSight();
             }
+            return canSee;
+        }
+
+        private bool LineOfSight()
+        {
+            Point origin = Rect.Center;
+            Vector2 targetDirection = Target.Rect.Center.ToVector2() - Rect.Center.ToVector2();
+            targetDirection = Vector2.Normalize(targetDirection);
+            foreach (Rectangle rects in Room.Collision.GetCollisionRectangles())
+            {
+                Rectangle rect = rects;
+                Point contactPoint = Point.Zero;
+                Vector2 contactNormal = Vector2.Zero;
+                float uHit = 0.0f;
+                if (Manager_Collision.RayVsRect(ref origin, ref targetDirection, ref rect, out contactPoint, out contactNormal, out uHit)
+                    && Vector2.Distance(contactPoint.ToVector2(), origin.ToVector2()) < Vector2.Distance(Target.Rect.Center.ToVector2(), origin.ToVector2()))
+                {
+                    return false;
+                }
+            }
+            return true;
         }
 
         public void Update(GameTime gameTime)
         {
-            FindTarget();
+            Gun.Update(gameTime);
+            bool canSee = FindTargetAndVisibility();
 
-            if (Target == null)
+            if (!canSee || Vector2.Distance(Target.Rect.Center.ToVector2(), Rect.Center.ToVector2()) > safetyDistance)
             {
-                return;
-            }
-
-            // FacingDirection = Room.Graph.GetDirectionToTarget(this, Target);
-            FacingDirection = Target.Rect.Center.ToVector2() - Rect.Center.ToVector2();
-
-            float safetyPoint = (FacingDirection.Length() - safetyDistance);
-            if (safetyPoint < 0)
-            {
-                FacingDirection = Vector2.Zero;
-            } else {
+                FacingDirection = Target.Rect.Center.ToVector2() - Rect.Center.ToVector2();
                 FacingDirection = Vector2.Normalize(FacingDirection);
+                int timeStepMS = gameTime.ElapsedGameTime.Milliseconds;
+                Velocity = FacingDirection * maxVelocity * (float) timeStepMS;
+
+                IList<Vector2> contactNormals;
+                IList<Point> contactPoints;
+                IList<IGameElement> who;
+                if (Collision.Intersect(this, timeStepMS, out contactPoints, out contactNormals, out who))
+                {
+                    Logger.Info("Collided with something");
+                }
             }
-
-            Logger.Info("FacingDirection: " + FacingDirection.ToString() + " safetyPoint: " + safetyPoint.ToString());
-
-            int timeStepMS = gameTime.ElapsedGameTime.Milliseconds;
-
-            Velocity = FacingDirection * maxVelocity * timeStepMS;
-
-            Logger.Info("Velocity: " + Velocity.ToString());
-
-            IList<Vector2> contactNormal;
-            IList<Point> contactPoint;
-            IList<IGameElement> who;
-            if (Collision.Intersect(this, timeStepMS, out contactPoint, out contactNormal, out who))
+            
+            if (canSee)
             {
-                Logger.Info("Collided with something");
-            }
-
-            // Check line of sight to target and shoot if possible
-            if (Room.Graph.LineOfSight(this, Target))
-            {
+                Point origin = Rect.Center;
                 Vector2 targetDirection = Target.Rect.Center.ToVector2() - Rect.Center.ToVector2();
-                targetDirection = Vector2.Normalize(targetDirection);
-                Gun.Shoot(gameTime, Rect.Center.ToVector2(), targetDirection, Level, this);
+                Gun.Shoot(gameTime, origin.ToVector2(), targetDirection, Level, this);
             }
         }
 
