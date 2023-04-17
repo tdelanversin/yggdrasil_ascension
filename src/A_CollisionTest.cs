@@ -136,7 +136,7 @@ namespace YGR
             //_player.Update(gameTime);
 
             var mouse = Mouse.GetState();
-            //_line.direction = (mouse.Position - _line.origin).ToVector2();
+            _line.direction = (mouse.Position - _line.origin).ToVector2();
 
             int timeStep = gameTime.ElapsedGameTime.Milliseconds;
 
@@ -155,25 +155,41 @@ namespace YGR
             if(_velocity.Length() != 0.0f) _velocity.Normalize();
             _velocity *= 0.1f; // * gameTime.ElapsedGameTime.Milliseconds;
 
-            for(int i=0; i<_rects.Length; ++i)
+            for (int i = 0; i < _rects.Length; ++i)
             {
-                bool result = Manager_Collision.DynamicRectVsRect(
-                    _myRect, _velocity, timeStep, _rects[i],
-                    out _contactPoints[i], out _contactNormals[i], out _uHits[i]
-                );
+                bool result = Manager_Collision.RayVsRect(_line.origin, _line.direction, _rects[i], out _contactPoints[i], out _contactNormals[i], out _uHits[i]);
 
-                if (result)
+                if (result && (_uHits[i] >= 0.0f && _uHits[i] <= 1.0f))
                 {
-                    Manager_Collision.ResolveDynamicRectVsRect(_myRect, ref _velocity, timeStep, _rects[i]);
-                    //_velocity = Vector2.Zero;
                     _rectColors[i] = Color.Yellow;
                 }
-                else { 
+                else
+                {
                     _contactNormals[i] = Vector2.Zero;
                     _contactPoints[i] = Point.Zero;
                     _rectColors[i] = Color.Red;
                 }
             }
+
+            //for (int i=0; i<_rects.Length; ++i)
+            //{
+            //    bool result = Manager_Collision.DynamicRectVsRect(
+            //        _myRect, _velocity, timeStep, _rects[i],
+            //        out _contactPoints[i], out _contactNormals[i], out _uHits[i]
+            //    );
+
+            //    if (result)
+            //    {
+            //        Manager_Collision.ResolveDynamicRectVsRect(_myRect, ref _velocity, timeStep, _rects[i]);
+            //        //_velocity = Vector2.Zero;
+            //        _rectColors[i] = Color.Yellow;
+            //    }
+            //    else { 
+            //        _contactNormals[i] = Vector2.Zero;
+            //        _contactPoints[i] = Point.Zero;
+            //        _rectColors[i] = Color.Red;
+            //    }
+            //}
 
             _myRect.Location += (_velocity * timeStep).ToPoint();
 
@@ -195,11 +211,11 @@ namespace YGR
             //_player.Draw(gameTime, Vector2.Zero, _spriteBatch);
             //_player.DrawOutline(gameTime, Vector2.Zero, _spriteBatch);
 
-            //Factory_Debug.DrawLine(
-            //    _line.origin.X, _line.origin.Y, (int)_line.direction.Length(),
-            //    (float)Math.Atan2(_line.direction.Y, _line.direction.X),
-            //    3, Color.Blue, _spriteBatch
-            //);
+            Factory_Debug.DrawLine(
+                _line.origin.X, _line.origin.Y, (int)_line.direction.Length(),
+                (float)Math.Atan2(_line.direction.Y, _line.direction.X),
+                3, Color.Blue, _spriteBatch
+            );
 
             for (int i = 0; i < _rects.Length; ++i)
             {
