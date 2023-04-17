@@ -36,7 +36,7 @@ namespace YGR
             IList<IVictim> players
         )
         {
-            LifePoints = 1;
+            LifePoints = 3;
             HitInLastLoop = false;
 
             Velocity = new Vector2(0, 0);
@@ -186,6 +186,7 @@ namespace YGR
         public void Draw(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)
         {
             spriteBatch.Draw(Sprite, Rect, SpriteRect, Color.Red);
+            spriteBatch.DrawString(Fonts.Normal, LifePoints.ToString(), new Vector2(Rect.Location.X + 30 / 2, Rect.Location.Y - 10), Color.Wheat);
         }
 
         public void DrawOutline(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)

@@ -3,6 +3,7 @@ using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace YGR
 {
@@ -96,14 +97,21 @@ namespace YGR
         {
             if (Players == null || Players.Count < 1) return;
 
+            var playersAlive = ((List<IVictim>)Players).FindAll(x => x.WhatAreYou() == X_LevelElements.Victim).ToList();
+
+            if (playersAlive.Count == 0) {
+                return;
+            }
+
             var left = Players[0].Rect.X;
             var right = Players[0].Rect.X;
             var top = Players[0].Rect.Y;
             var bot = Players[0].Rect.Y;
 
             Vector2 playerMeanPos = Vector2.Zero;
-            foreach (var player in Players)
+            foreach (var player in playersAlive)
             {
+                if (player.WhatAreYou() == X_LevelElements.Ghost) continue;
                 playerMeanPos += player.Rect.Location.ToVector2();
                 left = Math.Min(player.Rect.X, left);
                 right = Math.Max(player.Rect.X, right);
@@ -112,7 +120,7 @@ namespace YGR
             }
 
             // Update camera position
-            playerMeanPos /= Players.Count;
+            playerMeanPos /= playersAlive.Count;
             Position = playerMeanPos;
             // Console.WriteLine(playerMeanPos);
 
