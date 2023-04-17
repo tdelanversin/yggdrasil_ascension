@@ -72,7 +72,7 @@ namespace YGR
                 foreach(var obj in who)
                 {
                     //Logger.Info(obj.WhatAreYou().ToString());
-                    if (obj.WhatAreYou() == WhatAreYou()) continue;
+                    if (obj.WhatAreYou() == WhoFiredMe.WhatAreYou()) continue;
 
                     if(obj.WhatAreYou() == X_LevelElements.Victim)
                     {
@@ -197,7 +197,7 @@ namespace YGR
                 Logger.Debug("Collided with something");
                 foreach (var obj in who)
                 {
-                    if (obj.WhatAreYou() == WhatAreYou()) continue;
+                    if (obj.WhatAreYou() == WhoFiredMe.WhatAreYou()) continue;
 
                     if (obj.WhatAreYou() == X_LevelElements.Victim)
                     {
