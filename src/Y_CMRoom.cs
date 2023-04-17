@@ -308,20 +308,6 @@ namespace YGR
         {
             Collision.DrawOutline(gameTime, globalOffset, spriteBatch);
             Factory_Debug.DrawRectangle(Rect.X, Rect.Y, Rect.Width, Rect.Height, 3, Color.Blue, spriteBatch);
-
-            //foreach(var door in Doors)
-            //{
-            //int x = (int)((float)door.x / door.width * Collision.TileWidth) + Rect.X;
-            //int y = (int)((float)door.y / door.height * Collision.TileHeight) + Rect.Y;
-            //foreach(var side in Doors)
-            //{
-            //    foreach (var door in side.Value)
-            //    {
-            //        door.DrawOutline(gameTime, Vector2.Zero, spriteBatch);
-            //        //Factory_Debug.DrawPoint(door.Item1, door.Item2, 11, color, spriteBatch);
-            //    }
-            //}
-            //}
         }
 
         /// <summary>
