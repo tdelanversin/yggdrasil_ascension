@@ -20,14 +20,7 @@ namespace YGR
 
             nextShotCooldown = shotDelay;
 
-            var projectile = new Y_StarterProjectile(
-                origin,
-                direction,
-                gameTime.TotalGameTime.TotalMilliseconds,
-                level,
-                who
-            );
-            Manager_Projectile.AddProjectile(projectile);
+            Manager_Projectile.AddProjectile_StarterProjectile(origin, direction, gameTime.TotalGameTime.TotalMilliseconds, level, who);
         }
 
         public void Update(GameTime gameTime)
@@ -60,14 +53,8 @@ namespace YGR
                     (float)(direction.X * Math.Cos(spread) - direction.Y * Math.Sin(spread)),
                     (float)(direction.X * Math.Sin(spread) + direction.Y * Math.Cos(spread))
                 );
-                var projectile = new Y_ShotGunProjectile(
-                    origin,
-                    new_dir,
-                    gameTime.TotalGameTime.TotalMilliseconds,
-                    level,
-                    who
-                );
-                Manager_Projectile.AddProjectile(projectile);
+
+                Manager_Projectile.AddProjectile_ShotGunProjectile(origin, new_dir, gameTime.TotalGameTime.TotalMilliseconds, level, who);
                 spread += shotSpread;
             }
         }
@@ -154,14 +141,8 @@ namespace YGR
                         (float)(_origin.X + timedelta * new_dir.X),
                         (float)(_origin.Y + timedelta * new_dir.Y)
                     );
-                    var projectile = new Y_ShotGunProjectile(
-                        new_origin,
-                        new_dir,
-                        gameTime.TotalGameTime.TotalMilliseconds,
-                        _level,
-                        _who
-                    );
-                    Manager_Projectile.AddProjectile(projectile);
+
+                    Manager_Projectile.AddProjectile_ShotGunProjectile(new_origin, new_dir, gameTime.TotalGameTime.TotalMilliseconds, _level, _who);
                     spread += shotSpread;
                 }
             }
@@ -245,14 +226,8 @@ namespace YGR
                         (float)(_origin.X + timedelta * new_dir.X + shift * perp.X),
                         (float)(_origin.Y + timedelta * new_dir.Y + shift * perp.Y)
                     );
-                    var projectile = new Y_ShotGunProjectile(
-                        new_origin,
-                        new_dir,
-                        gameTime.TotalGameTime.TotalMilliseconds,
-                        _level,
-                        _who
-                    );
-                    Manager_Projectile.AddProjectile(projectile);
+
+                    Manager_Projectile.AddProjectile_ShotGunProjectile(new_origin, new_dir, gameTime.TotalGameTime.TotalMilliseconds, _level, _who);
                 }
             }
         }
@@ -272,14 +247,7 @@ namespace YGR
 
             nextShotCooldown = shotDelay;
 
-            var projectile = new Y_StarterProjectile(
-                origin,
-                direction,
-                gameTime.TotalGameTime.TotalMilliseconds,
-                level,
-                who
-            );
-            Manager_Projectile.AddProjectile(projectile);
+            Manager_Projectile.AddProjectile_StarterProjectile(origin, direction, gameTime.TotalGameTime.TotalMilliseconds, level, who);
         }
 
         public void Update(GameTime gameTime)
