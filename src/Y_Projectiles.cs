@@ -71,7 +71,9 @@ namespace YGR
                 Logger.Debug("Collided with something");
                 foreach(var obj in who)
                 {
-                    Logger.Info(obj.WhatAreYou().ToString());
+                    //Logger.Info(obj.WhatAreYou().ToString());
+                    if (obj.WhatAreYou() == WhatAreYou()) continue;
+
                     if(obj.WhatAreYou() == X_LevelElements.Victim)
                     {
                         ((IVictim)obj).LifePoints = ((IVictim)obj).LifePoints - 1;
@@ -195,10 +197,17 @@ namespace YGR
                 Logger.Debug("Collided with something");
                 foreach (var obj in who)
                 {
+                    if (obj.WhatAreYou() == WhatAreYou()) continue;
+
                     if (obj.WhatAreYou() == X_LevelElements.Victim)
                     {
                         ((IVictim)obj).LifePoints = ((IVictim)obj).LifePoints - 1;
                         ((IVictim)obj).HitInLastLoop = true;
+                    }
+                    else if (obj.WhatAreYou() == X_LevelElements.Enemy)
+                    {
+                        ((IEnemy)obj).LifePoints = ((IEnemy)obj).LifePoints - 1;
+                        ((IEnemy)obj).HitInLastLoop = true;
                     }
                 }
             }
