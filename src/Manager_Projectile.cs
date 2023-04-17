@@ -29,7 +29,7 @@ namespace YGR
 
         private static void check()
         {
-            if (!_initialized) Logger.Error("Factory_Projectiles not initialized: call Factory_Projectiles.Initialize(ContentManager) somewhere!");
+            if (!_initialized) Logger.Error("Manager_Projectile not initialized: call Manager_Projectile.Initialize(ContentManager) somewhere!");
         }
 
         public static void AddProjectile(IProjectile projectile)

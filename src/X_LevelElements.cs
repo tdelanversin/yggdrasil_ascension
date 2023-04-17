@@ -9,6 +9,7 @@
         Room = 0,
         Door,
         Victim,
+        Enemy,
         Projectile,
         Level
     }

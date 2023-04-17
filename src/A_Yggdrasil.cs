@@ -53,6 +53,7 @@ namespace YGR
 
             Factory_Debug.Initialize(Content);
             Manager_Projectile.Initialize(Content);
+            Manager_Enemies.Initialize(Content);
 
             base.Initialize();
         }
@@ -171,6 +172,13 @@ namespace YGR
             // Pass players to camera so it can follow their positions
             Camera.Players = _player;
 
+            IEnemy _enemy = new Y_SimpleEnemy(
+                new Vector2(1300, 360),
+                _level,
+                _player
+            );
+            Manager_Enemies.AddEnemy(_enemy);
+
             // Once everything is in place, inform Update() of the new desired state
             DesiredState = GameState.InGame;
         }
@@ -219,6 +227,7 @@ namespace YGR
                     }
 
                     Manager_Projectile.Update(gameTime);
+                    Manager_Enemies.Update(gameTime);
                     _level.Update(gameTime);
                     break;
                 case GameState.Menu:
@@ -255,6 +264,10 @@ namespace YGR
                     _level.Draw(gameTime, Vector2.Zero, _spriteBatch);
 
                     Manager_Projectile.Draw(gameTime, zero, _spriteBatch);
+                    Manager_Projectile.DrawOutline(gameTime, zero, _spriteBatch);
+
+                    Manager_Enemies.Draw(gameTime, zero, _spriteBatch);
+                    Manager_Enemies.DrawOutline(gameTime, zero, _spriteBatch);
 
                     foreach (var player in _player)
                     {

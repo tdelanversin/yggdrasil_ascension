@@ -12,6 +12,7 @@ namespace YGR
     {
         public string Name { get; }
         public X_CollisionModel_Room Collision { get; }
+        public X_RoomGraph Graph { get; set; }
         public Dictionary<X_ConnectorSide, IList<X_ConnectorPoint>> Doors { get; set; }
         public Dictionary<X_ConnectorSide, IList<IWalkable>> DoorRooms { get; set; }
         public void MoveTo(Point position);
