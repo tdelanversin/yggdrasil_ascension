@@ -36,12 +36,12 @@ namespace YGR
         protected override void Initialize()
         {
             State = GameState.PreGame;
-            Settings.Initialize();
+            Settings.Initialize(this);
             Input.Initialize();
             Util.Initialize(this);
             Menu.Initialize(this);
 
-            Util.ToggleFullscreen();
+            Settings.ToggleFullscreen();
 
             var res_x = _graphics.PreferredBackBufferWidth;
             var res_y = _graphics.PreferredBackBufferHeight;
@@ -94,7 +94,7 @@ namespace YGR
               for a smooth transition.
             */
 
-            _level = new Y_Level("level_0", 40, "Levels/Level_0", GraphicsDevice);
+            _level = new Y_Level("level_0", 32, "Levels/Level_0", GraphicsDevice);
 
             _player = new List<IVictim>{
                 new Ninja(
@@ -200,7 +200,7 @@ namespace YGR
 
             if (Input.IsKeyTriggered(Keybinds.ToggleFullscreen))
             {
-                Util.ToggleFullscreen();
+                Settings.ToggleFullscreen();
             }
 
             switch (State)

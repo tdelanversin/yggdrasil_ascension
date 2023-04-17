@@ -10,8 +10,6 @@ namespace YGR
 {
     public static class Util
     {
-        public const int RES_X = 1280;
-        public const int RES_Y = 720;
         static Game Game;
         static GraphicsDeviceManager Gdm;
         static GameWindow Window;
@@ -21,26 +19,6 @@ namespace YGR
             Game = game;
             Gdm = game._graphics;
             Window = game.Window;
-        }
-
-        public static void ToggleFullscreen()
-        {
-            if (Gdm.IsFullScreen)
-            {
-                Gdm.PreferredBackBufferWidth = RES_X;
-                Gdm.PreferredBackBufferHeight = RES_Y;
-                Gdm.IsFullScreen = false;
-                Logger.Info("Turning fullscreen OFF. Resolution: " + RES_X.ToString() + "x" + RES_Y.ToString());
-            }
-            else
-            {
-                Gdm.PreferredBackBufferWidth = GraphicsAdapter.DefaultAdapter.CurrentDisplayMode.Width;
-                Gdm.PreferredBackBufferHeight = GraphicsAdapter.DefaultAdapter.CurrentDisplayMode.Height;
-                Gdm.IsFullScreen = true;
-                Logger.Info("Turning fullscreen ON. Resolution: " + Gdm.PreferredBackBufferWidth.ToString() + "x" + Gdm.PreferredBackBufferHeight.ToString());
-            }
-            Gdm.ApplyChanges();
-            Menu.RepositionMenuItems();
         }
 
         public static void Quit()
