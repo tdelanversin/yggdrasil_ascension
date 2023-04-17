@@ -1,7 +1,9 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace YGR
 {
@@ -65,6 +67,7 @@ namespace YGR
         {
             IVictim closestPlayer = null;
             float closestDistance = float.MaxValue;
+            List<Tuple<float, IVictim>> inRange = new List<Tuple<float, IVictim>>();
             foreach (IVictim player in Players)
             {
                 if (player.WhatAreYou() == X_LevelElements.Ghost)
@@ -72,36 +75,57 @@ namespace YGR
                     continue;
                 }
                 float distance = Vector2.Distance(player.Rect.Center.ToVector2(), Rect.Center.ToVector2());
-                if (distance < closestDistance)
-                {
-                    closestDistance = distance;
-                    closestPlayer = player;
-                }
-            }
-            Target = closestPlayer;
 
-            if (Target == null)
-            {
-                return LineOfSight();
+                inRange.Add(new Tuple<float, IVictim>(distance, player));
+
+                //if (distance < closestDistance)
+                //{
+                //    closestDistance = distance;
+                //    closestPlayer = player;
+                //}
             }
 
-            float distanceToTarget = Vector2.Distance(Target.Rect.Center.ToVector2(), Rect.Center.ToVector2());
+            Target = null;
+            if (inRange.Count == 0) return false;
 
-            bool canSee = LineOfSight();
-            if (distanceToTarget > 2 * closestDistance && !canSee)
-            {
-                Target = closestPlayer;
-                return LineOfSight();
-            }
-            return canSee;
+            inRange = inRange.OrderBy(t => t.Item1).ToList();
+            Target = inRange.First().Item2;
+
+            return LineOfSight(Target);
+
+            //foreach(var p in inRange)
+            //{
+            //    if (LineOfSight(p.Item2))
+            //    {
+            //        Target = p.Item2;
+            //        break;
+            //    }
+            //}
+            //Target = inRange.First().Item2;
+            //Target = closestPlayer;
+
+            //if (Target == null)
+            //{
+            //    return LineOfSight();
+            //}
+
+            //float distanceToTarget = Vector2.Distance(Target.Rect.Center.ToVector2(), Rect.Center.ToVector2());
+
+            //bool canSee = LineOfSight();
+            //if (distanceToTarget > 2 * closestDistance && !canSee)
+            //{
+            //    Target = closestPlayer;
+            //    return LineOfSight();
+            //}
+            //return Target != null;
         }
 
-        private bool LineOfSight()
+        private bool LineOfSight(IVictim target)
         {
             Point origin = Rect.Center;
-            Vector2 targetDirection = Target.Rect.Center.ToVector2() - Rect.Center.ToVector2();
+            Vector2 targetDirection = target.Rect.Center.ToVector2() - Rect.Center.ToVector2();
             targetDirection = Vector2.Normalize(targetDirection);
-            float targetDistance = Vector2.Distance(Target.Rect.Center.ToVector2(), Rect.Center.ToVector2());
+            float targetDistance = Vector2.Distance(target.Rect.Center.ToVector2(), Rect.Center.ToVector2());
             foreach (Rectangle rects in Room.Collision.GetCollisionRectangles())
             {
                 Rectangle rect = rects;
@@ -121,20 +145,30 @@ namespace YGR
         {
             Gun.Update(gameTime);
             bool canSee = FindTargetAndVisibility();
-
+            int timeStepMS = gameTime.ElapsedGameTime.Milliseconds;
             if (!canSee || Vector2.Distance(Target.Rect.Center.ToVector2(), Rect.Center.ToVector2()) > safetyDistance)
             {
-                FacingDirection = Target.Rect.Center.ToVector2() - Rect.Center.ToVector2();
-                FacingDirection = Vector2.Normalize(FacingDirection);
-                int timeStepMS = gameTime.ElapsedGameTime.Milliseconds;
-                Velocity = FacingDirection * maxVelocity * (float)timeStepMS;
+                if(Target != null)
+                {
+                    FacingDirection = Target.Rect.Center.ToVector2() - Rect.Center.ToVector2();
+                    FacingDirection = Vector2.Normalize(FacingDirection);
+                    Velocity = FacingDirection * maxVelocity * (float)timeStepMS;
+                }
+                else
+                {
+                    Room = Level.GetRoom(this, Room);
+                    FacingDirection = Room.Rect.Center.ToVector2() - Rect.Center.ToVector2();
+                    FacingDirection = Vector2.Normalize(FacingDirection);
+                    Velocity = FacingDirection * maxVelocity * (float)timeStepMS;
+                }
 
                 IList<Vector2> contactNormals;
                 IList<Point> contactPoints;
                 IList<IGameElement> who;
                 if (Collision.Intersect(this, timeStepMS, out contactPoints, out contactNormals, out who))
                 {
-                    Logger.Info("Collided with something");
+                    Logger.Debug("Collided with something");
+
                 }
             }
 
