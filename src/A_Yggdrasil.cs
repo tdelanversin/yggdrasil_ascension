@@ -61,7 +61,6 @@ namespace YGR
             Fonts.LoadContent(Content);
             Menu.LoadContent(Content);
             _spriteBatch = new SpriteBatch(GraphicsDevice);
-            _level = new Y_Level("level_0", 40, "Levels/Level_0", GraphicsDevice);
         }
 
         internal void StartNewGame()
@@ -94,18 +93,18 @@ namespace YGR
               for a smooth transition.
             */
 
-            _level = new Y_Level("level_0", 32, "Levels/Level_0", GraphicsDevice);
+            _level = new Y_Level("level_0", 40, "Levels/Level_0", GraphicsDevice);
 
             _player = new List<IVictim>{
-                //new Ninja(
-                //    new X_CollisionModel_Victim(1.0f /* mass */, 0.0f /* elastic impact */),
-                //    PlayerIndex.One,
-                //    Content.Load<Texture2D>("charaset"),
-                //    0.02f,
-                //    new Vector2(200, 350),
-                //    _level,
-                //    new Y_StarterGun()
-                //),
+                new Ninja(
+                   new X_CollisionModel_Victim(1.0f /* mass */, 0.0f /* elastic impact */),
+                   PlayerIndex.One,
+                   Content.Load<Texture2D>("charaset"),
+                   0.02f,
+                   new Vector2(200, 350),
+                   _level,
+                   new Y_StarterGun()
+                ),
                 new Y_CMSprite(
                     new X_CollisionModel_Victim(1.0f /* mass */, 0.0f /* elastic impact */),
                     null,
@@ -188,7 +187,6 @@ namespace YGR
 
         protected override void Draw(GameTime gameTime)
         {
-            GraphicsDevice.Clear(_level.OutsideColor);
 
             float deltaTime = (float)gameTime.ElapsedGameTime.TotalMilliseconds;
             Vector2 zero = Vector2.Zero;
@@ -196,6 +194,7 @@ namespace YGR
             switch (State)
             {
                 case GameState.PreGame:
+                    GraphicsDevice.Clear(Color.CornflowerBlue);
                     _spriteBatch.Begin(
                             SpriteSortMode.Immediate, null, null, null, null, null,
                             null);
@@ -203,6 +202,7 @@ namespace YGR
                     _spriteBatch.End();
                     break;
                 case GameState.InGame:
+                    GraphicsDevice.Clear(_level.OutsideColor);
 
                     _spriteBatch.Begin(
                         SpriteSortMode.Immediate, null, null, null, null, null,
@@ -223,6 +223,7 @@ namespace YGR
                     _spriteBatch.End();
                     break;
                 case GameState.Menu:
+                    GraphicsDevice.Clear(Color.CornflowerBlue);
                     _spriteBatch.Begin(
                             SpriteSortMode.Immediate, null, null, null, null, null,
                             null);

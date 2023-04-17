@@ -1,22 +1,9 @@
-﻿using Assimp;
-using Assimp.Configs;
-using Microsoft.VisualBasic;
-using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Audio;
-using Microsoft.Xna.Framework.Content;
-using Microsoft.Xna.Framework.Content.Pipeline.Builder.Convertors;
+﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using SharpFont;
-using Supercluster.KDTree;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.IO;
 using System.Linq;
-using System.Reflection;
-using System.Reflection.Emit;
-using System.Runtime.CompilerServices;
-using System.Text;
 using System.Threading.Tasks;
 
 
@@ -167,7 +154,6 @@ namespace YGR
 
     public class X_LightModel
     {
-        private KDTree<float, int> _tree;
         private float[][] generateData(int len, int mx, int my, int mz)
         {
             Random rand = new Random();
@@ -199,7 +185,6 @@ namespace YGR
             int len = 100000;
             var data = generateData(len, 1000, 1000, 1000);
             var nodes = generateNodes(len);
-            _tree = new KDTree<float, int>(dimensions: 3, points: data, nodes: nodes, metric: norm3);
         }
     }
 
