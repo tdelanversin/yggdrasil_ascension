@@ -16,7 +16,7 @@ namespace YGR
             public string Text;
             public bool IsSelected;
             public bool IsActive;
-            Action Handler;
+            public Action Handler;
 
             public MenuItem(string text, Action handler)
             {
@@ -59,10 +59,37 @@ namespace YGR
                 return new Rectangle((int)topLeft.X, (int)topLeft.Y, (int)size.X, (int)size.Y);
             }
 
-            public void Dispatch()
+            public virtual void Dispatch()
             {
                 if (IsActive && Handler != null)
                     Handler();
+            }
+        }
+
+        private class SettingsItem : MenuItem
+        {
+            string BaseText;
+            Func<bool> ToggleFunc;
+            public SettingsItem(string baseText, bool status, Func<bool> toggleFunc) : base(baseText, null)
+            {
+                BaseText = baseText;
+                this.ToggleFunc = toggleFunc;
+                this.UpdateText(status);
+            }
+
+            private void UpdateText(bool status)
+            {
+                string statusText = status ? "On" : "Off";
+                this.Text = BaseText + statusText;
+            }
+
+            public override void Dispatch()
+            {
+                if (IsActive && ToggleFunc != null)
+                {
+                    bool status = ToggleFunc();
+                    UpdateText(status);
+                }
             }
         }
 
@@ -76,7 +103,7 @@ namespace YGR
         {
             Bounds = Game._graphics.GraphicsDevice.Viewport.Bounds;
             float x = Bounds.Width / 2;
-            float y = Bounds.Height * 3 / 5;
+            float y = Bounds.Height / 2;
             for (int i = 0; i < SelectableItems.Count; i++)
             {
                 SelectableItems[i].Position = new Vector2(x, y + i * 40);
@@ -105,7 +132,9 @@ namespace YGR
             SelectableItems = new List<MenuItem> {
                 new MenuItem("Play", NewGame),
                 new MenuItem("Restart", NewGame, isActive: false),
-                new MenuItem("Toggle Fullscreen", Util.ToggleFullscreen),
+                new SettingsItem("Fullscreen: ", true, toggleFunc: Settings.ToggleFullscreen),
+                new SettingsItem("Lighting: ", Settings.Lighting, toggleFunc: Settings.ToggleLighting),
+                new SettingsItem("Outlines: ", Settings.Outlines, toggleFunc: Settings.ToggleOutlines),
                 new MenuItem(os_exit_string, Util.Quit),
             };
             SelectableItems[SelectedMenu].IsSelected = true;
@@ -194,18 +223,22 @@ namespace YGR
                 SelectableItems[SelectedMenu].Dispatch();
             }
 
-            MouseState mouseState = Mouse.GetState();
-            Point mousePos = mouseState.Position;
-            for (int i = 0; i < SelectableItems.Count; i++)
+            // Select item based on mouse hover only if it was moved
+            if (Input.HasMouseMoved() || Input.IsLeftMouseClick())
             {
-                if (SelectableItems[i].Bounds().Contains(mousePos))
+                Point mousePos = Mouse.GetState().Position;
+                for (int i = 0; i < SelectableItems.Count; i++)
                 {
-                    SelectMenu(i);
-                    if (mouseState.LeftButton == ButtonState.Pressed)
+                    if (SelectableItems[i].Bounds().Contains(mousePos))
                     {
-                        SelectableItems[SelectedMenu].Dispatch();
+                        SelectMenu(i);
+                        break;
                     }
                 }
+            }
+            if (Input.IsLeftMouseClick())
+            {
+                SelectableItems[SelectedMenu].Dispatch();
             }
         }
 

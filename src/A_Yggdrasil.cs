@@ -36,11 +36,12 @@ namespace YGR
         protected override void Initialize()
         {
             State = GameState.PreGame;
+            Settings.Initialize(this);
             Input.Initialize();
             Util.Initialize(this);
             Menu.Initialize(this);
 
-            Util.ToggleFullscreen();
+            Settings.ToggleFullscreen();
 
             var res_x = _graphics.PreferredBackBufferWidth;
             var res_y = _graphics.PreferredBackBufferHeight;
@@ -93,26 +94,49 @@ namespace YGR
               for a smooth transition.
             */
 
-            _level = new Y_Level("level_0", 40, "Levels/Level_0", GraphicsDevice);
+            _level = new Y_Level("level_0", 32, "Levels/Level_0", GraphicsDevice);
 
             _player = new List<IVictim>{
                 new Ninja(
-                   new X_CollisionModel_Victim(1.0f /* mass */, 0.0f /* elastic impact */),
-                   PlayerIndex.One,
-                   Content.Load<Texture2D>("charaset"),
-                   0.02f,
-                   new Vector2(200, 350),
-                   _level,
-                   new Y_StarterGun()
+                    new X_CollisionModel_Victim(1.0f /* mass */, 0.0f /* elastic impact */),
+                    PlayerIndex.One,
+                    Content.Load<Texture2D>("charaset"),
+                    Content.Load<Texture2D>("target_indicator_blue"),
+                    0.02f,
+                    new Vector2(350, 150),
+                    _level,
+                    new Y_StarterGun(),
+                    1, // Controll
+                    1.0f
                 ),
                 new Y_CMSprite(
                     new X_CollisionModel_Victim(1.0f /* mass */, 0.0f /* elastic impact */),
-                    null,
+                    PlayerIndex.Two,
                     Content.Load<Texture2D>("tester_60"),
+                    Content.Load<Texture2D>("target_indicator_red"),
                     new Rectangle(0, 0, 42, 60),
                     0.004f, // acceleration
                     0.4f,  // max velocity
-                    new Vector2(100, 100),
+                    new Vector2(350, 250),
+                    _level,
+                    200.0f,
+                    new Dictionary<string, int[]> {
+                                    { "stand", new int[] { 0, 1, 8, 9 } },
+                                    { "walk_left", new int[] { 2, 3, 4 } },
+                                    { "walk_right", new int[] { 5, 6, 7 } }},
+                    new Y_FunkyGun(),
+                    0, // control input
+                    1.0f
+                ),
+                new Y_CMSprite(
+                    new X_CollisionModel_Victim(1.0f /* mass */, 0.0f /* elastic impact */),
+                    PlayerIndex.Three,
+                    Content.Load<Texture2D>("tester_60"),
+                    Content.Load<Texture2D>("target_indicator_green"),
+                    new Rectangle(0, 0, 42, 60),
+                    0.004f, // acceleration
+                    0.4f,  // max velocity
+                    new Vector2(1050, 150),
                     _level,
                     200.0f,
                     new Dictionary<string, int[]> {
@@ -120,7 +144,26 @@ namespace YGR
                                     { "walk_left", new int[] { 2, 3, 4 } },
                                     { "walk_right", new int[] { 5, 6, 7 } }},
                     new Y_WideGun(),
-                    2, // control input
+                    0, // control input
+                    1.0f
+                ),
+                new Y_CMSprite(
+                    new X_CollisionModel_Victim(1.0f /* mass */, 0.0f /* elastic impact */),
+                    PlayerIndex.Four,
+                    Content.Load<Texture2D>("tester_60"),
+                    Content.Load<Texture2D>("target_indicator_yellow"),
+                    new Rectangle(0, 0, 42, 60),
+                    0.004f, // acceleration
+                    0.4f,  // max velocity
+                    new Vector2(1050, 250),
+                    _level,
+                    200.0f,
+                    new Dictionary<string, int[]> {
+                                    { "stand", new int[] { 0, 1, 8, 9 } },
+                                    { "walk_left", new int[] { 2, 3, 4 } },
+                                    { "walk_right", new int[] { 5, 6, 7 } }},
+                    new Y_WideGun(),
+                    0, // control input
                     1.0f
                 )
             };
@@ -146,7 +189,8 @@ namespace YGR
                 {
                     DesiredState = GameState.InGame;
                 }
-                if (State == GameState.PreGame){
+                if (State == GameState.PreGame)
+                {
                     // Nothing for now
                 }
             }
@@ -156,7 +200,7 @@ namespace YGR
 
             if (Input.IsKeyTriggered(Keybinds.ToggleFullscreen))
             {
-                Util.ToggleFullscreen();
+                Settings.ToggleFullscreen();
             }
 
             switch (State)
@@ -209,15 +253,22 @@ namespace YGR
                         Camera.Transform);
 
                     _level.Draw(gameTime, Vector2.Zero, _spriteBatch);
-                    _level.DrawOutline(gameTime, Vector2.Zero, _spriteBatch);
 
                     Manager_Projectile.Draw(gameTime, zero, _spriteBatch);
-                    Manager_Projectile.DrawOutline(gameTime, zero, _spriteBatch);
 
                     foreach (var player in _player)
                     {
                         player.Draw(gameTime, zero, _spriteBatch);
-                        player.DrawOutline(gameTime, zero, _spriteBatch);
+                    }
+
+                    if (Settings.Outlines)
+                    {
+                        _level.DrawOutline(gameTime, Vector2.Zero, _spriteBatch);
+                        Manager_Projectile.DrawOutline(gameTime, zero, _spriteBatch);
+                        foreach (var player in _player)
+                        {
+                            player.DrawOutline(gameTime, zero, _spriteBatch);
+                        }
                     }
 
                     _spriteBatch.End();

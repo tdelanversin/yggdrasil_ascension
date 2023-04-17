@@ -71,5 +71,25 @@ namespace YGR
         {
             return currentGamePadState[gamePadIndex].IsButtonDown(button) && !previousGamePadState[gamePadIndex].IsButtonDown(button);
         }
+
+        public static bool HasMouseMoved()
+        {
+            return currentMouseState.Position != previousMouseState.Position;
+        }
+
+        public static bool IsLeftMouseClick()
+        {
+            return currentMouseState.LeftButton == ButtonState.Pressed && previousMouseState.LeftButton != ButtonState.Pressed;
+        }
+
+        public static bool IsRightMouseClick()
+        {
+            return currentMouseState.RightButton == ButtonState.Pressed && previousMouseState.RightButton != ButtonState.Pressed;
+        }
+
+        public static bool IsMiddleMouseClick()
+        {
+            return currentMouseState.MiddleButton == ButtonState.Pressed && previousMouseState.MiddleButton != ButtonState.Pressed;
+        }
     }
 }

@@ -9,6 +9,7 @@ namespace YGR
     public class Y_CMSprite : IVictim
     {
         Texture2D _sprite;
+        Texture2D _targetIndicator;
         Rectangle _window;
         Dictionary<string, int[]> _animations;
         int _animationIndex;
@@ -18,6 +19,8 @@ namespace YGR
         X_ConnectorSide _lastSide;
         int _hitCounter;
         int _maxHitCounter;
+        bool _isAiming;
+        Vector2 _aimDirection;
 
         public float Scale { get; private set; }
         public Vector2 Position { get; private set; }
@@ -41,6 +44,7 @@ namespace YGR
             X_CollisionModel_Victim collision,
             PlayerIndex? playerIndex,
             Texture2D texture,
+            Texture2D targetIndicator,
             Rectangle window,
             float acceleration,
             float maxVelocity,
@@ -54,6 +58,7 @@ namespace YGR
             )
         {
             _sprite = texture;
+            _targetIndicator = targetIndicator;
             _window = window;
             _animations = animations;
             _animationIndex = 0;
@@ -70,6 +75,9 @@ namespace YGR
             _maxVelocity = Vector2.One * maxVelocity;
             Position = position;
 
+            _isAiming = false;
+            _aimDirection = Vector2.Zero;
+
             Level = level;
             LifePoints = 100;
             HitInLastLoop = false;
@@ -77,9 +85,9 @@ namespace YGR
             Collision = collision;
 
             Rect = new Rectangle(
-                (int)position.X - (int)(scale*_window.Width / 2),
-                (int)position.Y - (int)(scale*_window.Height / 2),
-                (int)(scale*_window.Width), (int)(scale*_window.Height)
+                (int)position.X - (int)(scale * _window.Width / 2),
+                (int)position.Y - (int)(scale * _window.Height / 2),
+                (int)(scale * _window.Width), (int)(scale * _window.Height)
             );
 
             Scale = (float)Rect.Width / (float)_window.Width;
@@ -99,7 +107,7 @@ namespace YGR
         public void Update(GameTime gameTime)
         {
             Vector2 input = Vector2.Zero;
-            MouseState mouse = Mouse.GetState();
+            GamePadState gpState = GamePad.GetState(_playerIndex.Value);
 
             if (HitInLastLoop)
             {
@@ -109,8 +117,41 @@ namespace YGR
             if (_hitCounter > 0 && _hitCounter < _maxHitCounter) _hitCounter++;
             else _hitCounter = 0;
 
-            bool controls = false;
-            if (_playerIndex == null)
+            // Gamepad control
+            if (_playerIndex != null)
+            {
+                if (gpState.IsButtonDown(Buttons.LeftThumbstickRight)) input.X += gpState.ThumbSticks.Left.X;
+                if (gpState.IsButtonDown(Buttons.LeftThumbstickLeft)) input.X += gpState.ThumbSticks.Left.X;
+                if (gpState.IsButtonDown(Buttons.LeftThumbstickDown)) input.Y -= gpState.ThumbSticks.Left.Y;
+                if (gpState.IsButtonDown(Buttons.LeftThumbstickUp)) input.Y -= gpState.ThumbSticks.Left.Y;
+
+                if (
+                    gpState.IsButtonDown(Buttons.RightThumbstickRight) ||
+                    gpState.IsButtonDown(Buttons.RightThumbstickLeft) ||
+                    gpState.IsButtonDown(Buttons.RightThumbstickDown) ||
+                    gpState.IsButtonDown(Buttons.RightThumbstickUp)
+                )
+                {
+                    Vector2 newAimDirection = Vector2.One;
+                    newAimDirection.X *= gpState.ThumbSticks.Right.X;
+                    newAimDirection.Y *= -gpState.ThumbSticks.Right.Y;
+                    newAimDirection.Normalize();
+                    _aimDirection = newAimDirection;
+                    _isAiming = true;
+                }
+                else
+                {
+                    _isAiming = false;
+                }
+                if (gpState.IsButtonDown(Buttons.RightShoulder) || gpState.IsButtonDown(Buttons.RightTrigger))
+                {
+                    _isAiming = true; // Show the aim indicator when firing
+                    _gun.Shoot(gameTime, Rect.Center.ToVector2(), _aimDirection, Level, this);
+                }
+            }
+
+            // Mouse & Keyboard control
+            if (_controlLayout > 0)
             {
                 if (_controlLayout == 1)
                 {
@@ -119,57 +160,31 @@ namespace YGR
                     if (Input.IsKeyDown(Keybinds.P1Down)) input.Y += 1;
                     if (Input.IsKeyDown(Keybinds.P1Up)) input.Y -= 1;
                 }
-                else
+                else if (_controlLayout == 2)
                 {
                     if (Input.IsKeyDown(Keybinds.P2Right)) input.X += 1;
                     if (Input.IsKeyDown(Keybinds.P2Left)) input.X -= 1;
                     if (Input.IsKeyDown(Keybinds.P2Down)) input.Y += 1;
                     if (Input.IsKeyDown(Keybinds.P2Up)) input.Y -= 1;
                 }
-
+                MouseState mouse = Mouse.GetState();
+                Vector2 playerCenter = Rect.Center.ToVector2();
+                if (Input.HasMouseMoved() && !_isAiming) // Skip if controller is already aiming
+                {
+                    Vector2 mouseInGamePosition = mouse.Position.ToVector2() / Camera.Zoom + Camera.VisibleArea.Location.ToVector2();
+                    Vector2 newAimDirection = mouseInGamePosition - playerCenter;
+                    newAimDirection.Normalize();
+                    _aimDirection = newAimDirection;
+                }
                 if (mouse.LeftButton == ButtonState.Pressed)
                 {
-                    Vector2 playerCenter = Rect.Location.ToVector2() + new Vector2(Rect.Width / 2, +Rect.Height / 2);
-                    Vector2 mouseInGamePosition = mouse.Position.ToVector2() / Camera.Zoom + Camera.VisibleArea.Location.ToVector2();
-                    Vector2 shotDirection = mouseInGamePosition - playerCenter;
-                    shotDirection.Normalize();
-                    _gun.Shoot(gameTime, playerCenter, shotDirection, Level, this);
-                }
-            }
-            else
-            {
-                GamePadState gpState = GamePad.GetState(_playerIndex.Value);
-                if (gpState.IsButtonDown(Buttons.LeftThumbstickRight)) input.X += gpState.ThumbSticks.Left.X;
-                if (gpState.IsButtonDown(Buttons.LeftThumbstickLeft)) input.X += gpState.ThumbSticks.Left.X;
-                if (gpState.IsButtonDown(Buttons.LeftThumbstickDown)) input.Y -= gpState.ThumbSticks.Left.Y;
-                if (gpState.IsButtonDown(Buttons.LeftThumbstickUp)) input.Y -= gpState.ThumbSticks.Left.Y;
-
-                if (gpState.IsButtonDown(Buttons.RightShoulder) || gpState.IsButtonDown(Buttons.RightTrigger))
-                {
-                    Vector2 shootDir = Vector2.One;
-                    if (
-                        gpState.IsButtonDown(Buttons.RightThumbstickRight) ||
-                        gpState.IsButtonDown(Buttons.RightThumbstickLeft) ||
-                        gpState.IsButtonDown(Buttons.RightThumbstickDown) ||
-                        gpState.IsButtonDown(Buttons.RightThumbstickUp)
-                    )
-                    {
-                        shootDir.X *= gpState.ThumbSticks.Right.X;
-                        shootDir.Y *= -gpState.ThumbSticks.Right.Y;
-                        shootDir.Normalize();
-                    }
-                    else
-                    {
-                        shootDir.X = -1.0f;
-                        shootDir.Y = 0.0f;
-                    }
-
-                    _gun.Shoot(gameTime, Rect.Location.ToVector2() + new Vector2(Rect.Width / 2, Rect.Height / 2), shootDir, Level, this);
+                    _gun.Shoot(gameTime, playerCenter, _aimDirection, Level, this);
                 }
             }
 
             _gun.Update(gameTime);
 
+            bool controls = false;
             if (input != Vector2.Zero) controls = true;
             if (input.LengthSquared() > 1)
             {
@@ -231,6 +246,16 @@ namespace YGR
                 _sprite, Rect.Location.ToVector2(), 
                 new Rectangle(_animationIndex * _window.Width, 0, _window.Width, _window.Height), 
                 Color.White, 0, Vector2.Zero, Scale, SpriteEffects.None, 0);
+
+            // Draw a targeting indicator if the player is actively aiming or using mouse controls
+            if (_isAiming || _controlLayout > 0)
+            {
+                var angle = Math.Atan2(_aimDirection.Y, _aimDirection.X) + Math.PI / 2;
+                spriteBatch.Draw(
+                    _targetIndicator, Rect.Location.ToVector2() + _window.Center.ToVector2() + _aimDirection * _sprite.Height,
+                    null,
+                    Color.White, (float)angle, new Vector2(_targetIndicator.Width / 2, 0), 0.1f, SpriteEffects.None, 0);
+            }
         }
 
         /// <summary>
