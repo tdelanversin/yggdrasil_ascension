@@ -126,10 +126,13 @@ namespace YGR
             //            scale
             //    ));
 
-            var model = Manager_Light.Elevate(this);
-            foreach (var room in Rooms.Values)
+            if (Settings.Lighting)
             {
-                Manager_Light.Illuminate(_lights, room, model);
+                var model = Manager_Light.Elevate(this);
+                foreach (var room in Rooms.Values)
+                {
+                    Manager_Light.Illuminate(_lights, room, model);
+                }
             }
 
             OutsideColor = ((Y_CMRoom)(Rooms.Values.First())).RegionColor;
@@ -168,7 +171,7 @@ namespace YGR
 
         public void Update(GameTime gameTime)
         {
-            foreach(var room in Rooms.Values)
+            foreach (var room in Rooms.Values)
             {
                 room.Update(gameTime);
             }
@@ -176,11 +179,11 @@ namespace YGR
 
         public void DrawOutline(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)
         {
-            foreach(var room in Rooms)
+            foreach (var room in Rooms)
             {
                 room.Value.DrawOutline(gameTime, globalOffset, spriteBatch);
             }
-            foreach(var light in _lights)
+            foreach (var light in _lights)
             {
                 light.DrawOutline(gameTime, globalOffset, spriteBatch);
             }
@@ -188,7 +191,7 @@ namespace YGR
 
         public void Draw(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)
         {
-            foreach(var room in Rooms)
+            foreach (var room in Rooms)
             {
                 room.Value.Draw(gameTime, globalOffset, spriteBatch);
             }

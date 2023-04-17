@@ -103,7 +103,7 @@ namespace YGR
         {
             Bounds = Game._graphics.GraphicsDevice.Viewport.Bounds;
             float x = Bounds.Width / 2;
-            float y = Bounds.Height * 3 / 5;
+            float y = Bounds.Height / 2;
             for (int i = 0; i < SelectableItems.Count; i++)
             {
                 SelectableItems[i].Position = new Vector2(x, y + i * 40);
@@ -133,6 +133,7 @@ namespace YGR
                 new MenuItem("Play", NewGame),
                 new MenuItem("Restart", NewGame, isActive: false),
                 new MenuItem("Toggle Fullscreen", Util.ToggleFullscreen),
+                new SettingsItem("Lighting: ", Settings.Lighting, toggleFunc: Settings.ToggleLighting),
                 new SettingsItem("Outlines: ", Settings.Outlines, toggleFunc: Settings.ToggleOutlines),
                 new MenuItem(os_exit_string, Util.Quit),
             };
