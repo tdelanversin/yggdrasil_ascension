@@ -67,7 +67,6 @@ namespace YGR
 
         internal void StartNewGame()
         {
-
             /*
             # PLAN
 
@@ -110,76 +109,96 @@ namespace YGR
                     new Y_StarterGun(),
                     1, // Controll
                     1.0f
-                ),
+                )
+            };
+            if (GamePad.GetState(PlayerIndex.Two).IsConnected)
+            {
+                _player.Add(
+                    new Y_CMSprite(
+                        new X_CollisionModel_Victim(1.0f /* mass */, 0.0f /* elastic impact */),
+                        PlayerIndex.Two,
+                        Content.Load<Texture2D>("tester_60"),
+                        Content.Load<Texture2D>("ghost"),
+                        Content.Load<Texture2D>("target_indicator_red"),
+                        new Rectangle(0, 0, 42, 60),
+                        0.004f, // acceleration
+                        0.4f,  // max velocity
+                        new Vector2(350, 250),
+                        _level,
+                        200.0f,
+                        new Dictionary<string, int[]> {
+                                        { "stand", new int[] { 0, 1, 8, 9 } },
+                                        { "walk_left", new int[] { 2, 3, 4 } },
+                                        { "walk_right", new int[] { 5, 6, 7 } }},
+                        new Y_FunkyGun(),
+                        0, // control input
+                        1.0f
+                    )
+                );
+            }
+            if (GamePad.GetState(PlayerIndex.Three).IsConnected)
+            {
+                _player.Add(
                 new Y_CMSprite(
                     new X_CollisionModel_Victim(1.0f /* mass */, 0.0f /* elastic impact */),
-                    PlayerIndex.Two,
+                    PlayerIndex.Three,
                     Content.Load<Texture2D>("tester_60"),
                     Content.Load<Texture2D>("ghost"),
-                    Content.Load<Texture2D>("target_indicator_red"),
+                    Content.Load<Texture2D>("target_indicator_green"),
                     new Rectangle(0, 0, 42, 60),
                     0.004f, // acceleration
                     0.4f,  // max velocity
-                    new Vector2(350, 250),
+                    new Vector2(1050, 150),
                     _level,
                     200.0f,
                     new Dictionary<string, int[]> {
                                     { "stand", new int[] { 0, 1, 8, 9 } },
                                     { "walk_left", new int[] { 2, 3, 4 } },
                                     { "walk_right", new int[] { 5, 6, 7 } }},
-                    new Y_FunkyGun(),
+                    new Y_WideGun(),
                     0, // control input
                     1.0f
-                ),
-                // new Y_CMSprite(
-                //     new X_CollisionModel_Victim(1.0f /* mass */, 0.0f /* elastic impact */),
-                //     PlayerIndex.Three,
-                //     Content.Load<Texture2D>("tester_60"),
-                //     Content.Load<Texture2D>("target_indicator_green"),
-                //     new Rectangle(0, 0, 42, 60),
-                //     0.004f, // acceleration
-                //     0.4f,  // max velocity
-                //     new Vector2(1050, 150),
-                //     _level,
-                //     200.0f,
-                //     new Dictionary<string, int[]> {
-                //                     { "stand", new int[] { 0, 1, 8, 9 } },
-                //                     { "walk_left", new int[] { 2, 3, 4 } },
-                //                     { "walk_right", new int[] { 5, 6, 7 } }},
-                //     new Y_WideGun(),
-                //     0, // control input
-                //     1.0f
-                // ),
-                // new Y_CMSprite(
-                //     new X_CollisionModel_Victim(1.0f /* mass */, 0.0f /* elastic impact */),
-                //     PlayerIndex.Four,
-                //     Content.Load<Texture2D>("tester_60"),
-                //     Content.Load<Texture2D>("target_indicator_yellow"),
-                //     new Rectangle(0, 0, 42, 60),
-                //     0.004f, // acceleration
-                //     0.4f,  // max velocity
-                //     new Vector2(1050, 250),
-                //     _level,
-                //     200.0f,
-                //     new Dictionary<string, int[]> {
-                //                     { "stand", new int[] { 0, 1, 8, 9 } },
-                //                     { "walk_left", new int[] { 2, 3, 4 } },
-                //                     { "walk_right", new int[] { 5, 6, 7 } }},
-                //     new Y_WideGun(),
-                //     0, // control input
-                //     1.0f
-                // )
-            };
+                )
+                );
+            }
+            if (GamePad.GetState(PlayerIndex.Four).IsConnected)
+            {
+                _player.Add(
+                    new Y_CMSprite(
+                        new X_CollisionModel_Victim(1.0f /* mass */, 0.0f /* elastic impact */),
+                        PlayerIndex.Four,
+                        Content.Load<Texture2D>("tester_60"),
+                        Content.Load<Texture2D>("ghost"),
+                        Content.Load<Texture2D>("target_indicator_yellow"),
+                        new Rectangle(0, 0, 42, 60),
+                        0.004f, // acceleration
+                        0.4f,  // max velocity
+                        new Vector2(1050, 250),
+                        _level,
+                        200.0f,
+                        new Dictionary<string, int[]> {
+                                        { "stand", new int[] { 0, 1, 8, 9 } },
+                                        { "walk_left", new int[] { 2, 3, 4 } },
+                                        { "walk_right", new int[] { 5, 6, 7 } }},
+                        new Y_WideGun(),
+                        0, // control input
+                        1.0f
+                    )
+                );
+            }
 
             // Pass players to camera so it can follow their positions
             Camera.Players = _player;
 
-            IEnemy _enemy = new Y_SimpleEnemy(
-                new Vector2(400, 1300),
-                _level,
-                _player
-            );
-            Manager_Enemies.AddEnemy(_enemy);
+            for (int i = 0; i < 6; i++)
+            {
+                IEnemy _enemy = new Y_SimpleEnemy(
+                    new Vector2(1050 + i * 200, 350),
+                    _level,
+                    _player
+                );
+                Manager_Enemies.AddEnemy(_enemy);
+            }
 
             // Once everything is in place, inform Update() of the new desired state
             DesiredState = GameState.InGame;
@@ -269,7 +288,6 @@ namespace YGR
                     Manager_Projectile.DrawOutline(gameTime, zero, _spriteBatch);
 
                     Manager_Enemies.Draw(gameTime, zero, _spriteBatch);
-                    Manager_Enemies.DrawOutline(gameTime, zero, _spriteBatch);
 
                     foreach (var player in _player)
                     {
@@ -284,6 +302,7 @@ namespace YGR
                         {
                             player.DrawOutline(gameTime, zero, _spriteBatch);
                         }
+                        Manager_Enemies.DrawOutline(gameTime, zero, _spriteBatch);
                     }
 
                     _spriteBatch.End();
