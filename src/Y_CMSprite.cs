@@ -9,6 +9,7 @@ namespace YGR
     public class Y_CMSprite : IVictim
     {
         Texture2D _sprite;
+        Texture2D _ghostSprite;
         Texture2D _targetIndicator;
         Rectangle _window;
         Dictionary<string, int[]> _animations;
@@ -44,6 +45,7 @@ namespace YGR
             X_CollisionModel_Victim collision,
             PlayerIndex? playerIndex,
             Texture2D texture,
+            Texture2D ghostTexture,
             Texture2D targetIndicator,
             Rectangle window,
             float acceleration,
@@ -58,6 +60,7 @@ namespace YGR
             )
         {
             _sprite = texture;
+            _ghostSprite = ghostTexture;
             _targetIndicator = targetIndicator;
             _window = window;
             _animations = animations;
@@ -79,7 +82,7 @@ namespace YGR
             _aimDirection = Vector2.Zero;
 
             Level = level;
-            LifePoints = 100;
+            LifePoints = 10;
             HitInLastLoop = false;
 
             Collision = collision;
@@ -97,7 +100,14 @@ namespace YGR
 
         public X_LevelElements WhatAreYou()
         {
-            return X_LevelElements.Victim;
+            if (LifePoints < 1)
+            {
+                return X_LevelElements.Ghost;
+            }
+            else
+            {
+                return X_LevelElements.Victim;
+            }
         }
 
         /// <summary>
@@ -111,11 +121,13 @@ namespace YGR
 
             if (HitInLastLoop)
             {
-                _hitCounter = 1;
                 HitInLastLoop = false;
             }
-            if (_hitCounter > 0 && _hitCounter < _maxHitCounter) _hitCounter++;
-            else _hitCounter = 0;
+
+            if (LifePoints < 1)
+            {
+                return; // he dead
+            }
 
             // Gamepad control
             if (_playerIndex != null)
@@ -232,20 +244,21 @@ namespace YGR
         public void Draw(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)
         {
             Color color = Color.White;
-            if (_hitCounter != 0)
+            if (LifePoints < 1)
             {
-                color = Color.OrangeRed;
+                // Render ghosty 👻
+                spriteBatch.Draw(
+                    _ghostSprite,
+                    new Rectangle(Rect.X, Rect.Y, Rect.Width, Rect.Height),
+                    new Rectangle(0, 0, 180, 180), Color.White);
+                return;
             }
-            //spriteBatch.Draw(
-            //    _sprite, Rect,
-            //    new Rectangle(_animationIndex * _window.Width, 0, _window.Width, _window.Height),
-            //    color
-            //);
 
             spriteBatch.Draw(
-                _sprite, Rect.Location.ToVector2(), 
-                new Rectangle(_animationIndex * _window.Width, 0, _window.Width, _window.Height), 
+                _sprite, Rect.Location.ToVector2(),
+                new Rectangle(_animationIndex * _window.Width, 0, _window.Width, _window.Height),
                 Color.White, 0, Vector2.Zero, Scale, SpriteEffects.None, 0);
+            spriteBatch.DrawString(Fonts.Normal, LifePoints.ToString(), new Vector2(Rect.Location.X + 30, Rect.Location.Y - 10), Color.Wheat);
 
             // Draw a targeting indicator if the player is actively aiming or using mouse controls
             if (_isAiming || _controlLayout > 0)

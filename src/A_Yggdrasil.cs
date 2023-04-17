@@ -53,6 +53,7 @@ namespace YGR
 
             Factory_Debug.Initialize(Content);
             Manager_Projectile.Initialize(Content);
+            Manager_Enemies.Initialize(Content);
 
             base.Initialize();
         }
@@ -66,7 +67,6 @@ namespace YGR
 
         internal void StartNewGame()
         {
-
             /*
             # PLAN
 
@@ -94,13 +94,14 @@ namespace YGR
               for a smooth transition.
             */
 
-            _level = new Y_Level("level_0", 32, "Levels/Level_0", GraphicsDevice);
+            _level = new Y_Level("level_0", 48, "Levels/Level_0", GraphicsDevice);
 
             _player = new List<IVictim>{
                 new Ninja(
                     new X_CollisionModel_Victim(1.0f /* mass */, 0.0f /* elastic impact */),
                     PlayerIndex.One,
                     Content.Load<Texture2D>("charaset"),
+                    Content.Load<Texture2D>("ghost"),
                     Content.Load<Texture2D>("target_indicator_blue"),
                     0.02f,
                     new Vector2(350, 150),
@@ -108,30 +109,41 @@ namespace YGR
                     new Y_StarterGun(),
                     1, // Controll
                     1.0f
-                ),
-                new Y_CMSprite(
-                    new X_CollisionModel_Victim(1.0f /* mass */, 0.0f /* elastic impact */),
-                    PlayerIndex.Two,
-                    Content.Load<Texture2D>("tester_60"),
-                    Content.Load<Texture2D>("target_indicator_red"),
-                    new Rectangle(0, 0, 42, 60),
-                    0.004f, // acceleration
-                    0.4f,  // max velocity
-                    new Vector2(350, 250),
-                    _level,
-                    200.0f,
-                    new Dictionary<string, int[]> {
-                                    { "stand", new int[] { 0, 1, 8, 9 } },
-                                    { "walk_left", new int[] { 2, 3, 4 } },
-                                    { "walk_right", new int[] { 5, 6, 7 } }},
-                    new Y_FunkyGun(),
-                    0, // control input
-                    1.0f
-                ),
+                )
+            };
+            if (GamePad.GetState(PlayerIndex.Two).IsConnected)
+            {
+                _player.Add(
+                    new Y_CMSprite(
+                        new X_CollisionModel_Victim(1.0f /* mass */, 0.0f /* elastic impact */),
+                        PlayerIndex.Two,
+                        Content.Load<Texture2D>("tester_60"),
+                        Content.Load<Texture2D>("ghost"),
+                        Content.Load<Texture2D>("target_indicator_red"),
+                        new Rectangle(0, 0, 42, 60),
+                        0.004f, // acceleration
+                        0.4f,  // max velocity
+                        new Vector2(350, 250),
+                        _level,
+                        200.0f,
+                        new Dictionary<string, int[]> {
+                                        { "stand", new int[] { 0, 1, 8, 9 } },
+                                        { "walk_left", new int[] { 2, 3, 4 } },
+                                        { "walk_right", new int[] { 5, 6, 7 } }},
+                        new Y_FunkyGun(),
+                        0, // control input
+                        1.0f
+                    )
+                );
+            }
+            if (GamePad.GetState(PlayerIndex.Three).IsConnected)
+            {
+                _player.Add(
                 new Y_CMSprite(
                     new X_CollisionModel_Victim(1.0f /* mass */, 0.0f /* elastic impact */),
                     PlayerIndex.Three,
                     Content.Load<Texture2D>("tester_60"),
+                    Content.Load<Texture2D>("ghost"),
                     Content.Load<Texture2D>("target_indicator_green"),
                     new Rectangle(0, 0, 42, 60),
                     0.004f, // acceleration
@@ -146,30 +158,47 @@ namespace YGR
                     new Y_WideGun(),
                     0, // control input
                     1.0f
-                ),
-                new Y_CMSprite(
-                    new X_CollisionModel_Victim(1.0f /* mass */, 0.0f /* elastic impact */),
-                    PlayerIndex.Four,
-                    Content.Load<Texture2D>("tester_60"),
-                    Content.Load<Texture2D>("target_indicator_yellow"),
-                    new Rectangle(0, 0, 42, 60),
-                    0.004f, // acceleration
-                    0.4f,  // max velocity
-                    new Vector2(1050, 250),
-                    _level,
-                    200.0f,
-                    new Dictionary<string, int[]> {
-                                    { "stand", new int[] { 0, 1, 8, 9 } },
-                                    { "walk_left", new int[] { 2, 3, 4 } },
-                                    { "walk_right", new int[] { 5, 6, 7 } }},
-                    new Y_WideGun(),
-                    0, // control input
-                    1.0f
                 )
-            };
+                );
+            }
+            if (GamePad.GetState(PlayerIndex.Four).IsConnected)
+            {
+                _player.Add(
+                    new Y_CMSprite(
+                        new X_CollisionModel_Victim(1.0f /* mass */, 0.0f /* elastic impact */),
+                        PlayerIndex.Four,
+                        Content.Load<Texture2D>("tester_60"),
+                        Content.Load<Texture2D>("ghost"),
+                        Content.Load<Texture2D>("target_indicator_yellow"),
+                        new Rectangle(0, 0, 42, 60),
+                        0.004f, // acceleration
+                        0.4f,  // max velocity
+                        new Vector2(1050, 250),
+                        _level,
+                        200.0f,
+                        new Dictionary<string, int[]> {
+                                        { "stand", new int[] { 0, 1, 8, 9 } },
+                                        { "walk_left", new int[] { 2, 3, 4 } },
+                                        { "walk_right", new int[] { 5, 6, 7 } }},
+                        new Y_WideGun(),
+                        0, // control input
+                        1.0f
+                    )
+                );
+            }
 
             // Pass players to camera so it can follow their positions
             Camera.Players = _player;
+
+            for (int i = 0; i < 6; i++)
+            {
+                IEnemy _enemy = new Y_SimpleEnemy(
+                    new Vector2(1050 + i * 200, 350),
+                    _level,
+                    _player
+                );
+                Manager_Enemies.AddEnemy(_enemy);
+            }
 
             // Once everything is in place, inform Update() of the new desired state
             DesiredState = GameState.InGame;
@@ -219,6 +248,7 @@ namespace YGR
                     }
 
                     Manager_Projectile.Update(gameTime);
+                    Manager_Enemies.Update(gameTime);
                     _level.Update(gameTime);
                     break;
                 case GameState.Menu:
@@ -255,6 +285,9 @@ namespace YGR
                     _level.Draw(gameTime, Vector2.Zero, _spriteBatch);
 
                     Manager_Projectile.Draw(gameTime, zero, _spriteBatch);
+                    Manager_Projectile.DrawOutline(gameTime, zero, _spriteBatch);
+
+                    Manager_Enemies.Draw(gameTime, zero, _spriteBatch);
 
                     foreach (var player in _player)
                     {
@@ -269,6 +302,7 @@ namespace YGR
                         {
                             player.DrawOutline(gameTime, zero, _spriteBatch);
                         }
+                        Manager_Enemies.DrawOutline(gameTime, zero, _spriteBatch);
                     }
 
                     _spriteBatch.End();

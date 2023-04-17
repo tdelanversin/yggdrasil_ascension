@@ -26,6 +26,7 @@ namespace YGR
         public float Scale { get; private set; }
         public string Name { get; set; }
         public X_CollisionModel_Room Collision { get; }
+        public X_RoomGraph Graph { get; set; }
         public Rectangle Rect { get; set; }
         public Dictionary<X_ConnectorSide, IList<X_ConnectorPoint>> Doors { get; set; }
         public Dictionary<X_ConnectorSide, IList<IWalkable>> DoorRooms { get; set; }
@@ -62,6 +63,7 @@ namespace YGR
 
             collisions = paddOutline(collisions);
             Collision = new X_CollisionModel_Room(collisions, tileWidth, tileHeight);
+            Graph = new X_RoomGraph(this, collisions, tileWidth, tileHeight);
             Rect = new Rectangle(0, 0, collisions[0].Length * Collision.TileWidth, collisions.Length * Collision.TileHeight);
 
             Doors = new Dictionary<X_ConnectorSide, IList<X_ConnectorPoint>>();

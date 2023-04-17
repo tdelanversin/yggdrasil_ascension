@@ -16,6 +16,7 @@ namespace YGR
         private int _dashCooldownTimer;
 
         private Texture2D _sprite;
+        private Texture2D _ghostSprite;
         private Texture2D _targetIndicator;
 
         // A timer that stores milliseconds.
@@ -49,6 +50,7 @@ namespace YGR
             X_CollisionModel_Victim collision,
             PlayerIndex playerIndex,
             Texture2D texture,
+            Texture2D ghostTexture,
             Texture2D targetIndicator,
             float maxVelocity,
             Vector2 position,
@@ -65,6 +67,7 @@ namespace YGR
             _dashCooldown = 2000; // Dash cooldown in ms
             _dashCooldownTimer = 2000;
             _sprite = texture;
+            _ghostSprite = ghostTexture;
             _targetIndicator = targetIndicator;
             _playerIndex = playerIndex;
             _controlLayout = controlLayout;
@@ -76,7 +79,7 @@ namespace YGR
 
             Collision = collision;
             Level = level;
-            LifePoints = 100;
+            LifePoints = 10;
             HitInLastLoop = false;
             Scale = 1.0f;
             Level.Victims.Add(this);
@@ -146,11 +149,28 @@ namespace YGR
 
         public X_LevelElements WhatAreYou()
         {
-            return X_LevelElements.Victim;
+            if (LifePoints < 1)
+            {
+                return X_LevelElements.Ghost;
+            }
+            else
+            {
+                return X_LevelElements.Victim;
+            }
         }
         public void Update(GameTime gameTime)
         {
             int timeStepMS = gameTime.ElapsedGameTime.Milliseconds;
+
+            if (HitInLastLoop)
+            {
+                HitInLastLoop = false;
+            }
+
+            if (LifePoints < 1)
+            {
+                return; // he dead
+            }
 
             Vector2 input = Vector2.Zero;
             GamePadState gpState = GamePad.GetState(_playerIndex.Value);
@@ -186,7 +206,7 @@ namespace YGR
                     _isAiming = true; // Show the aim indicator when firing
                     _gun.Shoot(gameTime, Rect.Center.ToVector2(), _aimDirection, Level, this);
                 }
-                
+
             }
 
             // Mouse & Keyboard control
@@ -335,11 +355,22 @@ namespace YGR
 
         public void Draw(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)
         {
+            if (LifePoints < 1)
+            {
+                // Render ghosty 👻
+                spriteBatch.Draw(
+                    _ghostSprite,
+                    new Rectangle(Rect.X, Rect.Y, Rect.Width, Rect.Height),
+                    new Rectangle(0, 0, 180, 180), Color.White);
+                return;
+            }
+
             spriteBatch.Draw(
-                _sprite,
-                new Rectangle(
-                    Rect.X, Rect.Y, Rect.Width, Rect.Height),
-                    sourceRectangles[currentAnimationIndex], Color.White);
+                    _sprite,
+                    new Rectangle(
+                        Rect.X, Rect.Y, Rect.Width, Rect.Height),
+                        sourceRectangles[currentAnimationIndex], Color.White);
+            spriteBatch.DrawString(Fonts.Normal, LifePoints.ToString(), new Vector2(Rect.Location.X + 30 / 2, Rect.Location.Y - 10), Color.Wheat);
 
             // Draw a targeting indicator if the player is actively aiming or using mouse controls
             if (_isAiming || _controlLayout > 0)

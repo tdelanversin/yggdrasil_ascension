@@ -256,37 +256,35 @@ namespace YGR
                 }
             }
         }
+    }
 
+    public class Y_SimpleEnemyGun : IShooter
+    {
+        double nextShotCooldown = 0.0f;
+        static int shotDelay = 1000;
 
-        public class Y_SimpleEnemyGun : IShooter
+        public Y_SimpleEnemyGun() { }
+
+        public void Shoot(GameTime gameTime, Vector2 origin, Vector2 direction, Y_Level level, IGameElement who)
         {
-            double nextShotCooldown = 0.0f;
-            static int shotDelay = 1000;
+            if (nextShotCooldown > 0.0f)
+                return;
 
-            public Y_SimpleEnemyGun() { }
+            nextShotCooldown = shotDelay;
 
-            public void Shoot(GameTime gameTime, Vector2 origin, Vector2 direction, Y_Level level, IGameElement who)
-            {
-                if (nextShotCooldown > 0.0f)
-                    return;
+            var projectile = new Y_StarterProjectile(
+                origin,
+                direction,
+                gameTime.TotalGameTime.TotalMilliseconds,
+                level,
+                who
+            );
+            Manager_Projectile.AddProjectile(projectile);
+        }
 
-                nextShotCooldown = shotDelay;
-
-                var projectile = new Y_StarterProjectile(
-                    origin,
-                    direction,
-                    gameTime.TotalGameTime.TotalMilliseconds,
-                    level,
-                    who
-                );
-            }
-
-
-            public void Update(GameTime gameTime)
-            {
-                nextShotCooldown = Math.Max(0, nextShotCooldown - gameTime.ElapsedGameTime.TotalMilliseconds);
-            }
-
+        public void Update(GameTime gameTime)
+        {
+            nextShotCooldown = Math.Max(0, nextShotCooldown - gameTime.ElapsedGameTime.TotalMilliseconds);
         }
     }
 }

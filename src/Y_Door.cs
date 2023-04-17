@@ -38,6 +38,7 @@ namespace YGR
         public Rectangle Rect { get; set; }
         public string Name { get; }
         public X_CollisionModel_Room Collision { get; }
+        public X_RoomGraph Graph { get; set; }
         public IList<IProjectile> Projectiles { get; }
         public IList<IVictim> Victims { get; }
         public Dictionary<X_ConnectorSide, IList<X_ConnectorPoint>> Doors { get; set; }
