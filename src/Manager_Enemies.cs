@@ -2,6 +2,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 
 namespace YGR
 {
@@ -25,23 +26,26 @@ namespace YGR
             if (!_initialized) Logger.Error("Manager_Enemies not initialized: call Manager_Enemies.Initialize(ContentManager) somewhere!");
         }
 
-        public static void AddEnemy(IEnemy enemy)
+        public static void AddEnemy_SimpleEnemy(Vector2 position, Y_Level level, IList<IVictim> players)
         {
             check();
-            _enemies.Add(enemy);
+            _enemies.Add(new Y_SimpleEnemy(position, level, players));
+        }
 
-            Logger.Debug("Added enemy " + enemy.Name);
+        public static ReadOnlyCollection<IEnemy> GetEnemies()
+        {
+            return _enemies.AsReadOnly();
         }
 
         public static void Update(GameTime gameTime)
         {
             check();
-            _enemies.RemoveAll(enemy => enemy.LifePoints <= 0);
             float deltaTime = (float)gameTime.ElapsedGameTime.TotalSeconds;
             foreach (IEnemy enemy in _enemies)
             {
                 enemy.Update(gameTime);
             }
+            _enemies.RemoveAll(enemy => enemy.LifePoints <= 0);
         }
 
         public static void Draw(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)

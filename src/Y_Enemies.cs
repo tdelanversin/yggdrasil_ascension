@@ -30,6 +30,14 @@ namespace YGR
 
         public string Name { get; set; }
 
+        private Color _hitColor;
+        private Color _regularColor;
+        private Color _color;
+        int _hitFrames = 10;
+        int _hitFramesCounter = 0;
+
+        public string Identifier;
+
         public Y_SimpleEnemy(
             Vector2 position,
             Y_Level level,
@@ -59,14 +67,17 @@ namespace YGR
 
             Name = "base enemy";
 
-            Level.Victims.Add(this);
+            _hitColor = Color.Blue;
+            _regularColor = Color.Red;
+            _color = _regularColor;
+
+            var rand = new Random();
+            Identifier = DateTime.Now.Hour.ToString() + "-" + DateTime.Now.Second.ToString() + "-" + DateTime.Now.Millisecond.ToString() + "-" + rand.NextSingle().ToString();
         }
 
 
         private bool FindTargetAndVisibility()
         {
-            IVictim closestPlayer = null;
-            float closestDistance = float.MaxValue;
             List<Tuple<float, IVictim>> inRange = new List<Tuple<float, IVictim>>();
             foreach (IVictim player in Players)
             {
@@ -77,12 +88,6 @@ namespace YGR
                 float distance = Vector2.Distance(player.Rect.Center.ToVector2(), Rect.Center.ToVector2());
 
                 inRange.Add(new Tuple<float, IVictim>(distance, player));
-
-                //if (distance < closestDistance)
-                //{
-                //    closestDistance = distance;
-                //    closestPlayer = player;
-                //}
             }
 
             Target = null;
@@ -92,32 +97,6 @@ namespace YGR
             Target = inRange.First().Item2;
 
             return LineOfSight(Target);
-
-            //foreach(var p in inRange)
-            //{
-            //    if (LineOfSight(p.Item2))
-            //    {
-            //        Target = p.Item2;
-            //        break;
-            //    }
-            //}
-            //Target = inRange.First().Item2;
-            //Target = closestPlayer;
-
-            //if (Target == null)
-            //{
-            //    return LineOfSight();
-            //}
-
-            //float distanceToTarget = Vector2.Distance(Target.Rect.Center.ToVector2(), Rect.Center.ToVector2());
-
-            //bool canSee = LineOfSight();
-            //if (distanceToTarget > 2 * closestDistance && !canSee)
-            //{
-            //    Target = closestPlayer;
-            //    return LineOfSight();
-            //}
-            //return Target != null;
         }
 
         private bool LineOfSight(IVictim target)
@@ -145,6 +124,21 @@ namespace YGR
         {
             Room = Level.GetRoom(this, Room);
 
+            if (HitInLastLoop)
+            {
+                _color = _hitColor;
+                _hitFramesCounter++;
+                if(_hitFramesCounter > _hitFrames)
+                {
+                    HitInLastLoop = false;
+                    _hitFramesCounter = 0;
+                }
+            }
+            else
+            {
+                _color = _regularColor;
+            }
+
             Gun.Update(gameTime);
             bool canSee = FindTargetAndVisibility();
             int timeStepMS = gameTime.ElapsedGameTime.Milliseconds;
@@ -169,8 +163,7 @@ namespace YGR
                 IList<IGameElement> who;
                 if (Collision.Intersect(this, timeStepMS, out contactPoints, out contactNormals, out who))
                 {
-                    Logger.Debug("Collided with something");
-
+                    //Logger.Debug("Collided with something");
                 }
             }
 
@@ -185,7 +178,7 @@ namespace YGR
 
         public void Draw(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)
         {
-            spriteBatch.Draw(Sprite, Rect, SpriteRect, Color.Red);
+            spriteBatch.Draw(Sprite, Rect, SpriteRect, _color);
             spriteBatch.DrawString(Fonts.Normal, LifePoints.ToString(), new Vector2(Rect.Location.X + 30 / 2, Rect.Location.Y - 10), Color.Wheat);
         }
 
