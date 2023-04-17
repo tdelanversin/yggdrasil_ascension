@@ -21,8 +21,13 @@ namespace YGR
             Window = game.Window;
 
             // Defaults
+#if DEBUG
+            Lighting = false;
+            Outlines = true;
+#else
             Lighting = true;
             Outlines = false;
+#endif
         }
 
         internal static bool ToggleLighting()

@@ -19,9 +19,6 @@ namespace YGR
         private Point _location;
         private List<Manager_Collision.Record> _records;
 
-        private Rectangle[] _extraCollisionRectangles;
-        private bool[] _extraCollisionRectanglesHit;
-
         public int TileWidth;
         public int TileHeight;
 
@@ -43,15 +40,12 @@ namespace YGR
             _records = new List<Manager_Collision.Record>();
 
             _floor = CreateFloorRectangles(TileWidth);
-
-            _extraCollisionRectangles = new Rectangle[0];
-            _extraCollisionRectanglesHit = new bool[0];
     }
 
-        public void SetExtraCollisionRectangles(List<Rectangle> collisionRectangles)
+        public void UpdateCollisionRectangles(List<Rectangle> collisionRectangles)
         {
-            _extraCollisionRectangles = collisionRectangles.ToArray();
-            _extraCollisionRectanglesHit = Enumerable.Repeat<bool>(false, collisionRectangles.Count).ToArray();
+            _collisionRectangles = collisionRectangles.ToArray();
+            _collisionRectanglesHit = Enumerable.Repeat<bool>(false, collisionRectangles.Count).ToArray();
         }
 
         public int[][] GetCollisionTemplate()
@@ -482,22 +476,22 @@ namespace YGR
                         3, color, spriteBatch);
             }
 
-            for (int i = 0; i < _extraCollisionRectangles.Count(); ++i)
-            {
-                Color color = Manager_Collision.MissColor;
-                if (_extraCollisionRectanglesHit[i])
-                {
-                    color = Manager_Collision.HitColor;
-                    _extraCollisionRectanglesHit[i] = false;
-                }
+            //for (int i = 0; i < _extraCollisionRectangles.Count(); ++i)
+            //{
+            //    Color color = Manager_Collision.MissColor;
+            //    if (_extraCollisionRectanglesHit[i])
+            //    {
+            //        color = Manager_Collision.HitColor;
+            //        _extraCollisionRectanglesHit[i] = false;
+            //    }
 
-                Factory_Debug.DrawRectangle(
-                        _extraCollisionRectangles[i].X,
-                        _extraCollisionRectangles[i].Y,
-                        _extraCollisionRectangles[i].Width,
-                        _extraCollisionRectangles[i].Height,
-                        3, color, spriteBatch);
-            }
+            //    Factory_Debug.DrawRectangle(
+            //            _extraCollisionRectangles[i].X,
+            //            _extraCollisionRectangles[i].Y,
+            //            _extraCollisionRectangles[i].Width,
+            //            _extraCollisionRectangles[i].Height,
+            //            3, color, spriteBatch);
+            //}
 
             _records.RemoveAll(rec => (rec.TimeStampMS + Manager_Collision.DrawTimeoutMS < (DateTime.Now - Manager_Collision.StartTime).TotalMilliseconds));
             foreach (var rec in _records)
@@ -549,7 +543,7 @@ namespace YGR
             List<Manager_Collision.Record> collided = new List<Record>();
             bool collision = Manager_Collision.DynamicRectVsStaticRects(
                 ref movingRect, ref velocity, timeStepMS,
-                _collisionRectangles, _collisionRectanglesHit, _extraCollisionRectangles, _extraCollisionRectanglesHit,
+                _collisionRectangles, _collisionRectanglesHit,
                 ref collided
             );
 
@@ -564,7 +558,7 @@ namespace YGR
             contactNormal = Vector2.Zero;
             List<Manager_Collision.Record> collided = new List<Record>();
             bool collision = Manager_Collision.FastRectVsStaticRects(
-                ref movingRect, velocity, timeStepMS, _collisionRectangles, _collisionRectanglesHit, _extraCollisionRectangles, _extraCollisionRectanglesHit, ref collided);
+                ref movingRect, velocity, timeStepMS, _collisionRectangles, _collisionRectanglesHit, ref collided);
 
             if(collision) unifyCollisions(ref collided, ref movingRect, out contactPoint, out contactNormal);
 

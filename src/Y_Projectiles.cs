@@ -46,12 +46,15 @@ namespace YGR
             DeleteNext = false;
             Collision = new X_CollisionModel_Projectile(0.5f, 1.0f);
 
-            Rect = new Rectangle((int)position.X - _window.Width/2, (int)position.Y - _window.Height/2, _window.Width, _window.Height);
-
             Level.Projectiles.Add(this);
             WhoFiredMe = who;
             Room = Level.GetRoom(this, Room);
-            Scale = 1.0f;
+            Scale = 0.25f*Room.Scale;
+            Rect = new Rectangle(
+                (int)position.X - (int)((float)_window.Width / 2.0f * Scale), 
+                (int)position.Y - (int)((float)_window.Height / 2.0f * Scale), 
+                (int)(_window.Width * Scale), 
+                (int)(_window.Height * Scale));
         }
 
         public void Update(GameTime gameTime) {
@@ -65,9 +68,10 @@ namespace YGR
             IList<IGameElement> who;
             if (Collision.Intersect(this, timeStepMS, out contactPoint, out contactNormal, out who))
             {
-                Logger.Info("Collided with something");
+                Logger.Debug("Collided with something");
                 foreach(var obj in who)
                 {
+                    Logger.Info(obj.WhatAreYou().ToString());
                     if(obj.WhatAreYou() == X_LevelElements.Victim)
                     {
                         ((IVictim)obj).HitInLastLoop = true;
@@ -92,13 +96,12 @@ namespace YGR
                 _window.Width,
                 _window.Height
             );
-            Logger.Debug("Drawing projectile at " + destinationRectangle.ToString() + " with source " + sourceRectangle.ToString());
+            //Logger.Debug("Drawing projectile at " + destinationRectangle.ToString() + " with source " + sourceRectangle.ToString());
+
             spriteBatch.Draw(
-                _sprite,
-                destinationRectangle,
+                _sprite, destinationRectangle.Location.ToVector2(),
                 sourceRectangle,
-                Color.White
-            );
+                Color.White, 0, Vector2.Zero, Scale, SpriteEffects.None, 0);
         }
 
         /// <summary>
@@ -109,7 +112,7 @@ namespace YGR
         /// <param name="spriteBatch">Mogogame SpriteBatch</param>
         void IGameElement.DrawOutline(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)
         {
-            Factory_Debug.DrawRectangle(Rect.X, Rect.Y, _window.Width, _window.Height, 3, Color.BlueViolet, spriteBatch);
+            Factory_Debug.DrawRectangle(Rect.X, Rect.Y, Rect.Width, Rect.Height, 1, Color.BlueViolet, spriteBatch);
             Collision.DrawOutline(gameTime, globalOffset, spriteBatch);
         }
 
@@ -160,11 +163,16 @@ namespace YGR
             DeleteNext = false;
             Collision = new X_CollisionModel_Projectile(0.1f, 1.0f);
 
-            Rect = new Rectangle((int)position.X - _window.Width / 2, (int)position.Y - _window.Height / 2, _window.Width, _window.Height);
             Level.Projectiles.Add(this);
             WhoFiredMe = who;
             Room = Level.GetRoom(this, Room);
-            Scale = 1.0f;
+            Scale = 0.15f * Room.Scale;
+
+            Rect = new Rectangle(
+                (int)position.X - (int)((float)_window.Width / 2.0f * Scale), 
+                (int)position.Y - (int)((float)_window.Height / 2.0f * Scale), 
+                (int)(_window.Width * Scale), 
+                (int)(_window.Height * Scale));
         }
 
         public void Update(GameTime gameTime) {
@@ -178,7 +186,7 @@ namespace YGR
             int timeStepMS = (int)gameTime.ElapsedGameTime.TotalMilliseconds;
             if (Collision.Intersect(this, timeStepMS, out contactPoint, out contactNormal, out who))
             {
-                Logger.Info("Collided with something");
+                Logger.Debug("Collided with something");
                 foreach (var obj in who)
                 {
                     if (obj.WhatAreYou() == X_LevelElements.Victim)
@@ -204,13 +212,20 @@ namespace YGR
                 _window.Width,
                 _window.Height
             );
-            Logger.Debug("Drawing projectile at " + destinationRectangle.ToString() + " with source " + sourceRectangle.ToString());
+            
+            //Logger.Debug("Drawing projectile at " + destinationRectangle.ToString() + " with source " + sourceRectangle.ToString());
+
             spriteBatch.Draw(
-                _sprite,
-                destinationRectangle,
+                _sprite, destinationRectangle.Location.ToVector2(),
                 sourceRectangle,
-                Color.White
-            );
+                Color.White, 0, Vector2.Zero, Scale, SpriteEffects.None, 0);
+
+            //spriteBatch.Draw(
+            //    _sprite,
+            //    destinationRectangle,
+            //    sourceRectangle,
+            //    Color.White
+            //);
         }
 
         /// <summary>
@@ -221,7 +236,7 @@ namespace YGR
         /// <param name="spriteBatch">Mogogame SpriteBatch</param>
         void IGameElement.DrawOutline(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)
         {
-            Factory_Debug.DrawRectangle(Rect.X, Rect.Y, Rect.Width, Rect.Height, 3, Color.BlueViolet, spriteBatch);
+            Factory_Debug.DrawRectangle(Rect.X, Rect.Y, Rect.Width, Rect.Height, 1, Color.BlueViolet, spriteBatch);
         }
 
         public X_LevelElements WhatAreYou()
