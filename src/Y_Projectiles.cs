@@ -74,7 +74,13 @@ namespace YGR
                     Logger.Info(obj.WhatAreYou().ToString());
                     if(obj.WhatAreYou() == X_LevelElements.Victim)
                     {
+                        ((IVictim)obj).LifePoints = ((IVictim)obj).LifePoints - 1;
                         ((IVictim)obj).HitInLastLoop = true;
+                    }
+                    else if (obj.WhatAreYou() == X_LevelElements.Enemy)
+                    {
+                        ((IEnemy)obj).LifePoints = ((IEnemy)obj).LifePoints - 1;
+                        ((IEnemy)obj).HitInLastLoop = true;
                     }
                 }
             }
@@ -191,6 +197,7 @@ namespace YGR
                 {
                     if (obj.WhatAreYou() == X_LevelElements.Victim)
                     {
+                        ((IVictim)obj).LifePoints = ((IVictim)obj).LifePoints - 1;
                         ((IVictim)obj).HitInLastLoop = true;
                     }
                 }

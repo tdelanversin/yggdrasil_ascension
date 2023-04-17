@@ -79,7 +79,7 @@ namespace YGR
 
             Collision = collision;
             Level = level;
-            LifePoints = 3;
+            LifePoints = 10;
             HitInLastLoop = false;
             Scale = 1.0f;
             Level.Victims.Add(this);
@@ -164,7 +164,6 @@ namespace YGR
 
             if (HitInLastLoop)
             {
-                LifePoints -= 1;
                 HitInLastLoop = false;
             }
 

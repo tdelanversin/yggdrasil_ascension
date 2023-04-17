@@ -37,6 +37,7 @@ namespace YGR
 
             foreach (var victim in me.Level.Victims)
             {
+                if (victim.WhatAreYou() == me.WhatAreYou()) continue;
                 if (victim == me.WhoFiredMe) continue;
 
                 otherRect = victim.Rect;

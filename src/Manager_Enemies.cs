@@ -36,6 +36,7 @@ namespace YGR
         public static void Update(GameTime gameTime)
         {
             check();
+            _enemies.RemoveAll(enemy => enemy.LifePoints <= 0);
             float deltaTime = (float)gameTime.ElapsedGameTime.TotalSeconds;
             foreach (IEnemy enemy in _enemies)
             {

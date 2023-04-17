@@ -143,6 +143,8 @@ namespace YGR
 
         public void Update(GameTime gameTime)
         {
+            Room = Level.GetRoom(this, Room);
+
             Gun.Update(gameTime);
             bool canSee = FindTargetAndVisibility();
             int timeStepMS = gameTime.ElapsedGameTime.Milliseconds;

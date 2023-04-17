@@ -82,7 +82,7 @@ namespace YGR
             _aimDirection = Vector2.Zero;
 
             Level = level;
-            LifePoints = 5;
+            LifePoints = 10;
             HitInLastLoop = false;
 
             Collision = collision;
@@ -121,7 +121,6 @@ namespace YGR
 
             if (HitInLastLoop)
             {
-                LifePoints -= 1;
                 HitInLastLoop = false;
             }
 
