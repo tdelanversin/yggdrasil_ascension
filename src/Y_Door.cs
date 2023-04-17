@@ -595,7 +595,12 @@ namespace YGR
                     }
                 }
             }
-            Collision.SetExtraCollisionRectangles(_doorCollisionRectangles[X_DoorState.Closed]);
+            foreach(var state in _doorCollisionRectangles)
+            {
+                state.Value.AddRange(Collision.GetCollisionRectangles());
+            }
+
+            Collision.UpdateCollisionRectangles(_doorCollisionRectangles[X_DoorState.Closed]);
         }
 
         public bool LockDoor()
@@ -625,14 +630,14 @@ namespace YGR
                     if (!doorAnimation(dt, true))
                     {
                         _state = X_DoorState.Open;
-                        Collision.SetExtraCollisionRectangles(_doorCollisionRectangles[X_DoorState.Open]);
+                        Collision.UpdateCollisionRectangles(_doorCollisionRectangles[X_DoorState.Open]);
                     }
                     break;
                 case X_DoorState.Open:
                     if (keyPressed)
                     {
                         _state = X_DoorState.Closing;
-                        Collision.SetExtraCollisionRectangles(_doorCollisionRectangles[X_DoorState.Closed]);
+                        Collision.UpdateCollisionRectangles(_doorCollisionRectangles[X_DoorState.Closed]);
                     }
                     break;
                 case X_DoorState.Closing:

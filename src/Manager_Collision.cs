@@ -149,8 +149,6 @@ namespace YGR
             int timeStepMS,
             Rectangle[] staticRects,
             bool[] staticRectsHit,
-            Rectangle[] extraStaticRects,
-            bool[] extraStaticRectsHit,
             ref List<Record> collided
         )
         {
@@ -173,19 +171,6 @@ namespace YGR
                 {
                     collided.Add(new Record((DateTime.Now - StartTime).TotalMilliseconds, contactPoint, contactNormal, uHit));
                     if (staticRectsHit.Length > 0) staticRectsHit[i] = true;
-                }
-            }
-
-            for (int i = 0; i < extraStaticRects.Length; ++i)
-            {
-                bool result = DynamicRectVsStaticRect(
-                    ref movingRect, velocity, timeStepMS,
-                    ref extraStaticRects[i], out contactPoint, out contactNormal, out uHit);
-
-                if (result)
-                {
-                    collided.Add(new Record((DateTime.Now - StartTime).TotalMilliseconds, contactPoint, contactNormal, uHit));
-                    if (extraStaticRectsHit.Length > 0) extraStaticRectsHit[i] = true;
                 }
             }
 
@@ -221,8 +206,6 @@ namespace YGR
             int timeStepMS,
             Rectangle[] staticRects,
             bool[] staticRectsHit,
-            Rectangle[] extraStaticRects,
-            bool[] extraStaticRectsHit,
             ref List<Record> collided
         )
         {
@@ -238,18 +221,6 @@ namespace YGR
                     {
                         collided.Add(new Record((DateTime.Now - StartTime).TotalMilliseconds, contactPoint, contactNormal, 0));
                         if (staticRectsHit.Length > 0) staticRectsHit[i] = true;
-                    }
-                }
-            }
-
-            for (int i = 0; i < extraStaticRects.Length; ++i)
-            {
-                bool result = FastRectVsRect(ref myRect, velocity, timeStepMS, ref extraStaticRects[i], out contactPoint, out contactNormal);
-                {
-                    if (result)
-                    {
-                        collided.Add(new Record((DateTime.Now - StartTime).TotalMilliseconds, contactPoint, contactNormal, 0));
-                        if (extraStaticRectsHit.Length > 0) extraStaticRectsHit[i] = true;
                     }
                 }
             }
