@@ -258,6 +258,7 @@ namespace YGR
                 _sprite, Rect.Location.ToVector2(),
                 new Rectangle(_animationIndex * _window.Width, 0, _window.Width, _window.Height),
                 Color.White, 0, Vector2.Zero, Scale, SpriteEffects.None, 0);
+            spriteBatch.DrawString(Fonts.Normal, LifePoints.ToString(), new Vector2(Rect.Location.X + 30, Rect.Location.Y - 10), Color.Wheat);
 
             // Draw a targeting indicator if the player is actively aiming or using mouse controls
             if (_isAiming || _controlLayout > 0)
