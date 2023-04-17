@@ -46,7 +46,6 @@ namespace YGR
             DeleteNext = false;
             Collision = new X_CollisionModel_Projectile(0.5f, 1.0f);
 
-            Level.Projectiles.Add(this);
             WhoFiredMe = who;
             Room = Level.GetRoom(this, Room);
             Scale = 0.25f*Room.Scale;
@@ -68,7 +67,7 @@ namespace YGR
             IList<IGameElement> who;
             if (Collision.Intersect(this, timeStepMS, out contactPoint, out contactNormal, out who))
             {
-                Logger.Debug("Collided with something");
+                //Logger.Debug("Collided with something");
                 foreach(var obj in who)
                 {
                     //Logger.Info(obj.WhatAreYou().ToString());
@@ -81,7 +80,9 @@ namespace YGR
                     }
                     else if (obj.WhatAreYou() == X_LevelElements.Enemy)
                     {
+                        //Logger.Info("### " + WhoFiredMe.WhatAreYou().ToString() + " hit an " + obj.WhatAreYou().ToString() + " with id " + ((Y_SimpleEnemy)obj).Identifier + " | lifepoints: " + ((IEnemy)obj).LifePoints.ToString());
                         ((IEnemy)obj).LifePoints = ((IEnemy)obj).LifePoints - 1;
+                        //Logger.Info("#2# " + WhoFiredMe.WhatAreYou().ToString() + " hit an " + obj.WhatAreYou().ToString() + " | lifepoints: " + ((IEnemy)obj).LifePoints.ToString());
                         ((IEnemy)obj).HitInLastLoop = true;
                     }
                 }
@@ -171,7 +172,6 @@ namespace YGR
             DeleteNext = false;
             Collision = new X_CollisionModel_Projectile(0.1f, 1.0f);
 
-            Level.Projectiles.Add(this);
             WhoFiredMe = who;
             Room = Level.GetRoom(this, Room);
             Scale = 0.15f * Room.Scale;
@@ -194,7 +194,7 @@ namespace YGR
             int timeStepMS = (int)gameTime.ElapsedGameTime.TotalMilliseconds;
             if (Collision.Intersect(this, timeStepMS, out contactPoint, out contactNormal, out who))
             {
-                Logger.Debug("Collided with something");
+                //Logger.Debug("Collided with something");
                 foreach (var obj in who)
                 {
                     if (obj.WhatAreYou() == WhoFiredMe.WhatAreYou()) continue;
@@ -235,13 +235,6 @@ namespace YGR
                 _sprite, destinationRectangle.Location.ToVector2(),
                 sourceRectangle,
                 Color.White, 0, Vector2.Zero, Scale, SpriteEffects.None, 0);
-
-            //spriteBatch.Draw(
-            //    _sprite,
-            //    destinationRectangle,
-            //    sourceRectangle,
-            //    Color.White
-            //);
         }
 
         /// <summary>

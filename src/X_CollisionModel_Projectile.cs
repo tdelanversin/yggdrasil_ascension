@@ -3,6 +3,7 @@ using Microsoft.Xna.Framework.Graphics;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using static Assimp.Metadata;
 using static YGR.Manager_Collision;
 
 namespace YGR
@@ -32,33 +33,33 @@ namespace YGR
             Vector2 normal;
             Rectangle myRect = me.Rect;
             Vector2 myVelocity = me.Velocity;
-            Rectangle otherRect;
-            Vector2 otherVelocity;
 
-            foreach (var victim in me.Level.Victims)
+            if(me.WhoFiredMe.WhatAreYou() == X_LevelElements.Victim)
             {
-                if (victim.WhatAreYou() == me.WhoFiredMe.WhatAreYou()) continue;
-                if (victim == me.WhoFiredMe) continue;
-
-                otherRect = victim.Rect;
-                otherVelocity = victim.Velocity;
-                result = Manager_Collision.MovingRectVsMovingRectFast(
-                    ref myRect, ref myVelocity, Mass,
-                    ref otherRect, ref otherVelocity, victim.Collision.Mass,
-                    Cr, timeStepMS, out point, out normal);
-                if (result)
+                // regular player shot the projectile
+                foreach (var enemy in Manager_Enemies.GetEnemies())
                 {
-                    who.Add(victim);
-                    contactPoint.Add(point);
-                    contactNormal.Add(normal);
-                    me.Velocity = Vector2.Zero;
-                    victim.Velocity = otherVelocity;
-                    Logger.Debug("impacted with someone at " + point.ToString());
+                    if (enemy == me.WhoFiredMe) continue;
 
-                    _records.Add(new Manager_Collision.Record(
-                        (DateTime.Now - Manager_Collision.StartTime).TotalMilliseconds,
-                        point, Vector2.Zero, 0));
-                    break;
+                    if(handlePotentialImpact(me, (IVictim)enemy, ref myRect, ref myVelocity, ref contactPoint, ref contactNormal, ref who, timeStepMS))
+                    {
+                        result = true;
+                        break;
+                    }
+                }
+            }
+            else
+            {
+                // enemy shot the projectile
+                foreach (var victim in me.Level.Victims)
+                {
+                    if (victim == me.WhoFiredMe) continue;
+
+                    if (handlePotentialImpact(me, victim, ref myRect, ref myVelocity, ref contactPoint, ref contactNormal, ref who, timeStepMS))
+                    {
+                        result = true;
+                        break;
+                    }
                 }
             }
 
@@ -74,7 +75,7 @@ namespace YGR
                         contactPoint.Add(point);
                         contactNormal.Add(normal);
                         me.Velocity = Vector2.Zero;
-                        Logger.Debug("impacted at " + point.ToString() + " with room " + room.Name);
+                        //Logger.Debug("### " + room.WhatAreYou().ToString() + " => " + me.WhoFiredMe.WhatAreYou().ToString() + ":impacted at " + point.ToString() + " with room 1 " + room.Name);
                     }
 
                     // check the connected connectors, just to be sure
@@ -87,7 +88,7 @@ namespace YGR
                             contactPoint.Add(point);
                             contactNormal.Add(normal);
                             me.Velocity = myVelocity;
-                            Logger.Debug("impacted at " + point.ToString() + " with room " + room.Name);
+                            //Logger.Debug("### " + room.WhatAreYou().ToString() + " => " + me.WhoFiredMe.WhatAreYou().ToString() + ":impacted at " + point.ToString() + " with room 2 " + room.Name);
                         }
                     }
                 }
@@ -103,6 +104,34 @@ namespace YGR
             me.Rect = rect;
 
             return result;
+        }
+
+        private bool handlePotentialImpact(IProjectile me, IVictim impactedObject, ref Rectangle myRect, ref Vector2 myVelocity, ref IList<Point> contactPoint, ref IList<Vector2> contactNormal, ref IList<IGameElement> who, int timeStepMS)
+        {
+            Point point;
+            Vector2 normal;
+            Rectangle otherRect = impactedObject.Rect;
+            Vector2 otherVelocity = impactedObject.Velocity;
+            bool result = Manager_Collision.MovingRectVsMovingRectFast(
+                ref myRect, ref myVelocity, Mass,
+                ref otherRect, ref otherVelocity, impactedObject.Collision.Mass,
+                Cr, timeStepMS, out point, out normal);
+
+            if (result)
+            {
+                who.Add(impactedObject);
+                contactPoint.Add(point);
+                contactNormal.Add(normal);
+                me.Velocity = Vector2.Zero;
+                impactedObject.Velocity = otherVelocity;
+                //Logger.Debug("### " + victim.WhatAreYou().ToString() + " => " + me.WhoFiredMe.WhatAreYou().ToString() + ": impacted with someone at " + point.ToString());
+
+                _records.Add(new Manager_Collision.Record(
+                    (DateTime.Now - Manager_Collision.StartTime).TotalMilliseconds,
+                    point, Vector2.Zero, 0));
+                return true;
+            }
+            return false;
         }
 
         public void DrawOutline(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)
