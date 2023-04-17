@@ -67,6 +67,10 @@ namespace YGR
             float closestDistance = float.MaxValue;
             foreach (IVictim player in Players)
             {
+                if (player.WhatAreYou() == X_LevelElements.Ghost)
+                {
+                    continue;
+                }
                 float distance = Vector2.Distance(player.Rect.Center.ToVector2(), Rect.Center.ToVector2());
                 if (distance < closestDistance)
                 {
@@ -74,10 +78,10 @@ namespace YGR
                     closestPlayer = player;
                 }
             }
+            Target = closestPlayer;
 
             if (Target == null)
             {
-                Target = closestPlayer;
                 return LineOfSight();
             }
 
@@ -123,7 +127,7 @@ namespace YGR
                 FacingDirection = Target.Rect.Center.ToVector2() - Rect.Center.ToVector2();
                 FacingDirection = Vector2.Normalize(FacingDirection);
                 int timeStepMS = gameTime.ElapsedGameTime.Milliseconds;
-                Velocity = FacingDirection * maxVelocity * (float) timeStepMS;
+                Velocity = FacingDirection * maxVelocity * (float)timeStepMS;
 
                 IList<Vector2> contactNormals;
                 IList<Point> contactPoints;
@@ -133,7 +137,7 @@ namespace YGR
                     Logger.Info("Collided with something");
                 }
             }
-            
+
             if (canSee)
             {
                 Point origin = Rect.Center;

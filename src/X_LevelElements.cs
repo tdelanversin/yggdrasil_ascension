@@ -10,6 +10,7 @@
         Door,
         Victim,
         Enemy,
+        Ghost,
         Projectile,
         Level
     }

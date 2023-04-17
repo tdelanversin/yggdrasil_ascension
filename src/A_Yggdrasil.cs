@@ -49,7 +49,7 @@ namespace YGR
             Camera.Bounds = _graphics.GraphicsDevice.Viewport.Bounds;
 
             // Set the camera mode, e.g. 'Follow' to follow players, 'Manual' for keyboard controlled
-            Camera.Mode = CameraMode.Room;
+            Camera.Mode = CameraMode.Follow;
 
             Factory_Debug.Initialize(Content);
             Manager_Projectile.Initialize(Content);
@@ -102,6 +102,7 @@ namespace YGR
                     new X_CollisionModel_Victim(1.0f /* mass */, 0.0f /* elastic impact */),
                     PlayerIndex.One,
                     Content.Load<Texture2D>("charaset"),
+                    Content.Load<Texture2D>("ghost"),
                     Content.Load<Texture2D>("target_indicator_blue"),
                     0.02f,
                     new Vector2(350, 150),
@@ -114,6 +115,7 @@ namespace YGR
                     new X_CollisionModel_Victim(1.0f /* mass */, 0.0f /* elastic impact */),
                     PlayerIndex.Two,
                     Content.Load<Texture2D>("tester_60"),
+                    Content.Load<Texture2D>("ghost"),
                     Content.Load<Texture2D>("target_indicator_red"),
                     new Rectangle(0, 0, 42, 60),
                     0.004f, // acceleration
@@ -129,44 +131,44 @@ namespace YGR
                     0, // control input
                     1.0f
                 ),
-                new Y_CMSprite(
-                    new X_CollisionModel_Victim(1.0f /* mass */, 0.0f /* elastic impact */),
-                    PlayerIndex.Three,
-                    Content.Load<Texture2D>("tester_60"),
-                    Content.Load<Texture2D>("target_indicator_green"),
-                    new Rectangle(0, 0, 42, 60),
-                    0.004f, // acceleration
-                    0.4f,  // max velocity
-                    new Vector2(1050, 150),
-                    _level,
-                    200.0f,
-                    new Dictionary<string, int[]> {
-                                    { "stand", new int[] { 0, 1, 8, 9 } },
-                                    { "walk_left", new int[] { 2, 3, 4 } },
-                                    { "walk_right", new int[] { 5, 6, 7 } }},
-                    new Y_WideGun(),
-                    0, // control input
-                    1.0f
-                ),
-                new Y_CMSprite(
-                    new X_CollisionModel_Victim(1.0f /* mass */, 0.0f /* elastic impact */),
-                    PlayerIndex.Four,
-                    Content.Load<Texture2D>("tester_60"),
-                    Content.Load<Texture2D>("target_indicator_yellow"),
-                    new Rectangle(0, 0, 42, 60),
-                    0.004f, // acceleration
-                    0.4f,  // max velocity
-                    new Vector2(1050, 250),
-                    _level,
-                    200.0f,
-                    new Dictionary<string, int[]> {
-                                    { "stand", new int[] { 0, 1, 8, 9 } },
-                                    { "walk_left", new int[] { 2, 3, 4 } },
-                                    { "walk_right", new int[] { 5, 6, 7 } }},
-                    new Y_WideGun(),
-                    0, // control input
-                    1.0f
-                )
+                // new Y_CMSprite(
+                //     new X_CollisionModel_Victim(1.0f /* mass */, 0.0f /* elastic impact */),
+                //     PlayerIndex.Three,
+                //     Content.Load<Texture2D>("tester_60"),
+                //     Content.Load<Texture2D>("target_indicator_green"),
+                //     new Rectangle(0, 0, 42, 60),
+                //     0.004f, // acceleration
+                //     0.4f,  // max velocity
+                //     new Vector2(1050, 150),
+                //     _level,
+                //     200.0f,
+                //     new Dictionary<string, int[]> {
+                //                     { "stand", new int[] { 0, 1, 8, 9 } },
+                //                     { "walk_left", new int[] { 2, 3, 4 } },
+                //                     { "walk_right", new int[] { 5, 6, 7 } }},
+                //     new Y_WideGun(),
+                //     0, // control input
+                //     1.0f
+                // ),
+                // new Y_CMSprite(
+                //     new X_CollisionModel_Victim(1.0f /* mass */, 0.0f /* elastic impact */),
+                //     PlayerIndex.Four,
+                //     Content.Load<Texture2D>("tester_60"),
+                //     Content.Load<Texture2D>("target_indicator_yellow"),
+                //     new Rectangle(0, 0, 42, 60),
+                //     0.004f, // acceleration
+                //     0.4f,  // max velocity
+                //     new Vector2(1050, 250),
+                //     _level,
+                //     200.0f,
+                //     new Dictionary<string, int[]> {
+                //                     { "stand", new int[] { 0, 1, 8, 9 } },
+                //                     { "walk_left", new int[] { 2, 3, 4 } },
+                //                     { "walk_right", new int[] { 5, 6, 7 } }},
+                //     new Y_WideGun(),
+                //     0, // control input
+                //     1.0f
+                // )
             };
 
             // Pass players to camera so it can follow their positions
