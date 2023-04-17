@@ -36,6 +36,7 @@ namespace YGR
         protected override void Initialize()
         {
             State = GameState.PreGame;
+            Settings.Initialize();
             Input.Initialize();
             Util.Initialize(this);
             Menu.Initialize(this);
