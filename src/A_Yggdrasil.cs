@@ -189,7 +189,8 @@ namespace YGR
                 {
                     DesiredState = GameState.InGame;
                 }
-                if (State == GameState.PreGame){
+                if (State == GameState.PreGame)
+                {
                     // Nothing for now
                 }
             }
@@ -252,15 +253,22 @@ namespace YGR
                         Camera.Transform);
 
                     _level.Draw(gameTime, Vector2.Zero, _spriteBatch);
-                    _level.DrawOutline(gameTime, Vector2.Zero, _spriteBatch);
 
                     Manager_Projectile.Draw(gameTime, zero, _spriteBatch);
-                    Manager_Projectile.DrawOutline(gameTime, zero, _spriteBatch);
 
                     foreach (var player in _player)
                     {
                         player.Draw(gameTime, zero, _spriteBatch);
-                        player.DrawOutline(gameTime, zero, _spriteBatch);
+                    }
+
+                    if (Settings.Outlines)
+                    {
+                        _level.DrawOutline(gameTime, Vector2.Zero, _spriteBatch);
+                        Manager_Projectile.DrawOutline(gameTime, zero, _spriteBatch);
+                        foreach (var player in _player)
+                        {
+                            player.DrawOutline(gameTime, zero, _spriteBatch);
+                        }
                     }
 
                     _spriteBatch.End();

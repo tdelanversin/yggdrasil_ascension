@@ -1,4 +1,6 @@
-﻿namespace YGR
+﻿using System;
+
+namespace YGR
 {
 
     public static class Settings
@@ -11,6 +13,18 @@
             // Defaults
             Lighting = true;
             Outlines = false;
+        }
+
+        internal static bool ToggleLighting()
+        {
+            Lighting = !Lighting;
+            return Lighting;
+        }
+
+        internal static bool ToggleOutlines()
+        {
+            Outlines = !Outlines;
+            return Outlines;
         }
     }
 

@@ -16,7 +16,7 @@ namespace YGR
             public string Text;
             public bool IsSelected;
             public bool IsActive;
-            Action Handler;
+            public Action Handler;
 
             public MenuItem(string text, Action handler)
             {
@@ -59,10 +59,37 @@ namespace YGR
                 return new Rectangle((int)topLeft.X, (int)topLeft.Y, (int)size.X, (int)size.Y);
             }
 
-            public void Dispatch()
+            public virtual void Dispatch()
             {
                 if (IsActive && Handler != null)
                     Handler();
+            }
+        }
+
+        private class SettingsItem : MenuItem
+        {
+            string BaseText;
+            Func<bool> ToggleFunc;
+            public SettingsItem(string baseText, bool status, Func<bool> toggleFunc) : base(baseText, null)
+            {
+                BaseText = baseText;
+                this.ToggleFunc = toggleFunc;
+                this.UpdateText(status);
+            }
+
+            private void UpdateText(bool status)
+            {
+                string statusText = status ? "On" : "Off";
+                this.Text = BaseText + statusText;
+            }
+
+            public override void Dispatch()
+            {
+                if (IsActive && ToggleFunc != null)
+                {
+                    bool status = ToggleFunc();
+                    UpdateText(status);
+                }
             }
         }
 
@@ -106,6 +133,7 @@ namespace YGR
                 new MenuItem("Play", NewGame),
                 new MenuItem("Restart", NewGame, isActive: false),
                 new MenuItem("Toggle Fullscreen", Util.ToggleFullscreen),
+                new SettingsItem("Outlines: ", Settings.Outlines, toggleFunc: Settings.ToggleOutlines),
                 new MenuItem(os_exit_string, Util.Quit),
             };
             SelectableItems[SelectedMenu].IsSelected = true;
