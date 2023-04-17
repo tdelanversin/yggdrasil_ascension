@@ -2,15 +2,9 @@
 using Microsoft.Xna.Framework.Graphics;
 using System.Collections.Generic;
 using System;
-using Assimp;
-using System.Data;
 using System.Linq;
-using Microsoft.Xna.Framework.Content;
-using SharpFont.Cache;
 using System.IO;
-using System.IO.Pipes;
-using System.Reflection;
-using SharpDX;
+using Assimp.Unmanaged;
 
 namespace YGR
 {
@@ -20,8 +14,27 @@ namespace YGR
         Vertical
     }
 
+    public enum X_TileType
+    {
+        Roof=2,
+        Wall,
+        Floor,
+        Outside
+    }
+
+    public enum X_DoorState
+    {
+        Open = 1,
+        Opening,
+        Closing,
+        Closed,
+        LockedClosed,
+        LockedOpen
+    }
+
     public class Y_Door : IWalkable
     {
+        public float Scale { get; private set; }
         public Rectangle Rect { get; set; }
         public string Name { get; }
         public X_CollisionModel_Room Collision { get; }
@@ -29,24 +42,28 @@ namespace YGR
         public IList<IVictim> Victims { get; }
         public Dictionary<X_ConnectorSide, IList<X_ConnectorPoint>> Doors { get; set; }
         public Dictionary<X_ConnectorSide, IList<IWalkable>> DoorRooms { get; set; }
+        public int TextureTileSize { get; }
 
-        private int[][] _collision;
+        private new Dictionary<X_DoorState, List<Rectangle>> _doorCollisionRectangles;
+
+        private X_DoorState _state;
+
         private X_DoorDirection _direction;
         private Texture2D _floor;
-        private float _scale;
+        private Texture2D _roof;
+        private Texture2D _door;
         const int _numTilesDoorWidth = 5;
 
-        //Texture2D _TL_3x3;
-        //Texture2D _TR_3x3;
-        //Texture2D _BL_3x3;
-        //Texture2D _BR_3x3;
-        //Texture2D _FR_1x1;
-        //Texture2D _FS_L_1x1;
-        //Texture2D _FS_T_1x1;
-        //Texture2D _FS_R_1x1;
-        //Texture2D _WS_1x1;
-        //Texture2D _WT_H_1x1;
-        //Texture2D _WT_V_1x1;
+        private int _currentDoorOpenOffset = 0;
+        private float _doorOpeningTime = 2000.0f;
+        private float _animationTime = 0.0f;
+        int _tileSize;
+
+        //private Y_Door _door;
+
+
+        //Rectangle _outsideRect1;
+        //Rectangle _outsideRect2;
 
         public Y_Door(
             X_DoorDirection direction, 
@@ -61,441 +78,111 @@ namespace YGR
 
             collision = flipToPosition(collision, direction, tileOffset);
 
-            _collision = getDoorPoints(collision, tileWidth, tileHeight);
+            collision = getDoorPoints(collision, tileWidth, tileHeight);
 
             _direction = direction;
+            
+            Collision = new X_CollisionModel_Room(collision, tileWidth, tileHeight);
 
-            Collision = new X_CollisionModel_Room(_collision, tileWidth, tileHeight);
+            Rect = new Rectangle(0, 0, tileWidth * collision[0].Length, tileHeight * collision.Length);
 
-            Rect = new Rectangle(0, 0, tileWidth * _collision[0].Length, tileHeight * _collision.Length);
+            Scale = 1.0f;
 
-            Texture2D T_TL_1x1;
-            Texture2D T_TR_1x1;
-            Texture2D T_BL_1x1;
-            Texture2D T_BR_1x1;
-            Texture2D T_FR_1x1;
-            Texture2D T_FS_L_1x1;
-            Texture2D T_FS_T_1x1;
-            Texture2D T_FS_R_1x1;
-            Texture2D T_FS_TL_1x1;
-            Texture2D T_FS_TR_1x1;
-            Texture2D T_WS_1x1;
-            Texture2D T_WT_H_1x1;
-            Texture2D T_WT_V_1x1;
-            Texture2D T_FS_BL_1x1;
-            Texture2D T_FS_BR_1x1;
+            _doorCollisionRectangles = new Dictionary<X_DoorState, List<Rectangle>>();
 
-            using (FileStream fileStream = new FileStream("./Doors/TL-1x1.png", FileMode.Open))
-                T_TL_1x1 = Texture2D.FromStream(graphicsDevice, fileStream);
-            using (FileStream fileStream = new FileStream("./Doors/TR-1x1.png", FileMode.Open))
-                T_TR_1x1 = Texture2D.FromStream(graphicsDevice, fileStream);
-            using (FileStream fileStream = new FileStream("./Doors/BL-1x1.png", FileMode.Open))
-                T_BL_1x1 = Texture2D.FromStream(graphicsDevice, fileStream);
-            using (FileStream fileStream = new FileStream("./Doors/BR-1x1.png", FileMode.Open))
-                T_BR_1x1 = Texture2D.FromStream(graphicsDevice, fileStream);
-            using (FileStream fileStream = new FileStream("./Doors/FR-1x1.png", FileMode.Open))
-                T_FR_1x1 = Texture2D.FromStream(graphicsDevice, fileStream);
-            using (FileStream fileStream = new FileStream("./Doors/FS-L-1x1.png", FileMode.Open))
-                T_FS_L_1x1 = Texture2D.FromStream(graphicsDevice, fileStream);
-            using (FileStream fileStream = new FileStream("./Doors/FS-T-1x1.png", FileMode.Open))
-                T_FS_T_1x1 = Texture2D.FromStream(graphicsDevice, fileStream);
-            using (FileStream fileStream = new FileStream("./Doors/FS-R-1x1.png", FileMode.Open))
-                T_FS_R_1x1 = Texture2D.FromStream(graphicsDevice, fileStream);
-            using (FileStream fileStream = new FileStream("./Doors/FS-TR-1x1.png", FileMode.Open))
-                T_FS_TR_1x1 = Texture2D.FromStream(graphicsDevice, fileStream);
-            using (FileStream fileStream = new FileStream("./Doors/FS-TL-1x1.png", FileMode.Open))
-                T_FS_TL_1x1 = Texture2D.FromStream(graphicsDevice, fileStream);
-            using (FileStream fileStream = new FileStream("./Doors/WS-1x1.png", FileMode.Open))
-                T_WS_1x1 = Texture2D.FromStream(graphicsDevice, fileStream);
-            using (FileStream fileStream = new FileStream("./Doors/WT-H-1x1.png", FileMode.Open))
-                T_WT_H_1x1 = Texture2D.FromStream(graphicsDevice, fileStream);
-            using (FileStream fileStream = new FileStream("./Doors/WT-V-1x1.png", FileMode.Open))
-                T_WT_V_1x1 = Texture2D.FromStream(graphicsDevice, fileStream);
-            using (FileStream fileStream = new FileStream("./Doors/FS-BR-1x1.png", FileMode.Open))
-                T_FS_BR_1x1 = Texture2D.FromStream(graphicsDevice, fileStream);
-            using (FileStream fileStream = new FileStream("./Doors/FS-BL-1x1.png", FileMode.Open))
-                T_FS_BL_1x1 = Texture2D.FromStream(graphicsDevice, fileStream);
+            Texture2D roof;
+            Texture2D floor;
+            Texture2D wall;
 
-            Color[] TL_1x1;
-            Color[] TR_1x1;
-            Color[] BL_1x1;
-            Color[] BR_1x1;
-            Color[] FR_1x1;
-            Color[] FS_L_1x1;
-            Color[] FS_T_1x1;
-            Color[] FS_R_1x1;
-            Color[] FS_TL_1x1;
-            Color[] FS_TR_1x1;
-            Color[] WS_1x1;
-            Color[] WT_H_1x1;
-            Color[] WT_V_1x1;
-            Color[] FS_BR_1x1;
-            Color[] FS_BL_1x1;
+            using (FileStream fileStream = new FileStream("./Doors/roof.png", FileMode.Open))
+                roof = Texture2D.FromStream(graphicsDevice, fileStream);
+            using (FileStream fileStream = new FileStream("./Doors/floor.png", FileMode.Open))
+                floor = Texture2D.FromStream(graphicsDevice, fileStream);
+            using (FileStream fileStream = new FileStream("./Doors/wall.png", FileMode.Open))
+                wall = Texture2D.FromStream(graphicsDevice, fileStream);
 
-            List<Color[]> textels = new List<Color[]>();
+            TextureTileSize = wall.Width;
 
-            int len = T_BL_1x1.Width * T_BL_1x1.Height;
+            Color[] roofA;
+            Color[] floorA;
+            Color[] wallA;
+
+            Dictionary<X_TileType, Color[]> textels = new Dictionary<X_TileType, Color[]>();
+
+            int len = roof.Width * roof.Height;
+            /* 1 */
+            roofA = new Color[len];
+            roof.GetData<Color>(roofA);
+            textels.Add(X_TileType.Roof, roofA);
+
             /* 2 */
-            TL_1x1 = new Color[len];
-            T_TL_1x1.GetData<Color>(TL_1x1);
-            textels.Add(TL_1x1);
+            wallA = new Color[len];
+            wall.GetData<Color>(wallA);
+            textels.Add(X_TileType.Wall, wallA);
 
             /* 3 */
-            TR_1x1 = new Color[len];
-            T_TR_1x1.GetData<Color>(TR_1x1);
-            textels.Add(TR_1x1);
+            floorA = new Color[len];
+            floor.GetData<Color>(floorA);
+            textels.Add(X_TileType.Floor, floorA);
 
-            /* 4 */
-            BL_1x1 = new Color[len];
-            T_BL_1x1.GetData<Color>(BL_1x1);
-            textels.Add(BL_1x1);
+            int width = floor.Width;
+            int height = floor.Height;
+            var pattern = Collision.GetCollisionTemplate();
+            //createOutsideRects(pattern, tileWidth);
+            _floor = new Texture2D(graphicsDevice, width * pattern[0].Length, height * pattern.Length);
+            _roof = new Texture2D(graphicsDevice, width * pattern[0].Length, height * pattern.Length);
+            _door = new Texture2D(graphicsDevice, width * pattern[0].Length, height * pattern.Length);
+            Scale = (float)tileHeight / height;
 
-            /* 5 */
-            BR_1x1 = new Color[len];
-            T_BR_1x1.GetData<Color>(BR_1x1);
-            textels.Add(BR_1x1);
-
-            /* 6 */
-            FR_1x1 = new Color[len];
-            T_FR_1x1.GetData<Color>(FR_1x1);
-            textels.Add(FR_1x1);
-
-            /* 7 */
-            FS_L_1x1 = new Color[len];
-            T_FS_L_1x1.GetData<Color>(FS_L_1x1);
-            textels.Add(FS_L_1x1);
-
-            /* 8 */
-            FS_R_1x1 = new Color[len];
-            T_FS_R_1x1.GetData<Color>(FS_R_1x1);
-            textels.Add(FS_R_1x1);
-
-            /* 9 */
-            FS_T_1x1 = new Color[len];
-            T_FS_T_1x1.GetData<Color>(FS_T_1x1);
-            textels.Add(FS_T_1x1);
-
-            /* 10 */
-            FS_TL_1x1 = new Color[len];
-            T_FS_TL_1x1.GetData<Color>(FS_TL_1x1);
-            textels.Add(FS_TL_1x1);
-
-            /* 11 */
-            FS_TR_1x1 = new Color[len];
-            T_FS_TR_1x1.GetData<Color>(FS_TR_1x1);
-            textels.Add(FS_TR_1x1);
-
-            /* 12 */
-            WS_1x1 = new Color[len];
-            T_WS_1x1.GetData<Color>(WS_1x1);
-            textels.Add(WS_1x1);
-
-            /* 13 */
-            WT_H_1x1 = new Color[len];
-            T_WT_H_1x1.GetData<Color>(WT_H_1x1);
-            textels.Add(WT_H_1x1);
-
-            /* 14 */
-            WT_V_1x1 = new Color[len];
-            T_WT_V_1x1.GetData<Color>(WT_V_1x1);
-            textels.Add(WT_V_1x1);
-
-            /* 15 */
-            FS_BR_1x1 = new Color[len];
-            T_FS_BR_1x1.GetData<Color>(FS_BR_1x1);
-            textels.Add(FS_BR_1x1);
-
-            /* 16 */
-            FS_BL_1x1 = new Color[len];
-            T_FS_BL_1x1.GetData<Color>(FS_BL_1x1);
-            textels.Add(FS_BL_1x1);
-
-            //Color[] floorData = new Color[len];
-            //_floor.GetData<Color>(floorData);
-            //Color[] newData = new Color[len];
-            //for (int i = 0; i < len; ++i)
-            //{
-            //    if (groundData[i].A == 0)
-            //    {
-            //        newData[i] = floorData[i];
-            //    }
-            //    else
-            //    {
-            //        newData[i] = Color.Transparent;
-            //    }
-            //}
-            //_floor.SetData<Color>(newData);
-
-            int[][] pattern = _collision.Clone() as int[][];
-            for(int i=0; i < pattern.Length; i++)
+            Color[] transparent = Enumerable.Repeat<Color>(Color.Transparent, height * width).ToArray();
+            for (int x = 0; x < pattern[0].Length; ++x)
             {
-                for(int j=0; j<pattern[0].Length; ++j)
+                for (int y = 0; y < pattern.Length; ++y)
                 {
-                    if (pattern[i][j] > 0) pattern[i][j] = 1;
-                }
-            }
-
-            int[,] cornerTL = new int[,] { 
-                { 1, 1 }, 
-                { 1, 0 } };
-            int[,] cornerTR = new int[,] {
-                { 1, 1 },
-                { 0, 1 } };
-            int[,] cornerBL = new int[,] {
-                { 1, 0 },
-                { 1, 1 } };
-            int[,] cornerBR = new int[,] {
-                { 0, 1 },
-                { 1, 1 } };
-
-            var tl = findMatch(cornerTL, pattern, 0, 0);
-            var tr = findMatch(cornerTR, pattern, 0, 1);
-            var bl = findMatch(cornerBL, pattern, 1, 0);
-            var br = findMatch(cornerBR, pattern, 1, 1);
-            
-
-            int[][] result = pattern.Clone() as int[][];
-            foreach (var t in tl)
-            {
-                result[t.Item1][t.Item2] = 2;
-                if (t.Item1 + 2 < result.Length && t.Item2+1 < result[0].Length && result[t.Item1 + 2][t.Item2 + 1] == 0) result[t.Item1 + 2][t.Item2 + 1] = 10;
-                if (t.Item2 - 1 >= 0 && result[t.Item1][t.Item2 - 1] == 0) result[t.Item1][t.Item2 - 1] = 8;
-                if (t.Item2 + 1 < result[0].Length && result[t.Item1][t.Item2 + 1] == 0) result[t.Item1][t.Item2 + 1] = 7;
-            }
-            foreach (var t in tr)
-            {
-                result[t.Item1][t.Item2] = 3;
-                if (t.Item1 + 1 < result.Length && t.Item2 - 1 >= 0 && result[t.Item1 + 1][t.Item2 - 1] == 0) result[t.Item1 + 1][t.Item2 - 1] = 12;
-                if (t.Item1 + 2 < result.Length && t.Item2 - 1 >= 0 && result[t.Item1 + 2][t.Item2 - 1] >= 0) result[t.Item1 + 2][t.Item2 - 1] = 11;
-                if (t.Item2 - 1 >= 0 && result[t.Item1][t.Item2 - 1] == 0) result[t.Item1][t.Item2 - 1] = 8;
-                if (t.Item2 + 1 < result[0].Length && result[t.Item1][t.Item2 + 1] == 0) result[t.Item1][t.Item2 + 1] = 7;
-            }
-            foreach (var t in bl)
-            {
-                result[t.Item1][t.Item2] = 4;
-                if (t.Item1 + 1 < result.Length && result[t.Item1 + 1][t.Item2] <= 0) result[t.Item1 + 1][t.Item2] = 12;
-                if (t.Item1 + 2 < result.Length && result[t.Item1 + 2][t.Item2] == 0) result[t.Item1 + 2][t.Item2] = 9;
-                if (t.Item2 - 1 >= 0 && result[t.Item1][t.Item2 - 1] == 0) result[t.Item1][t.Item2 - 1] = 8;
-                if (t.Item1 + 1 < result.Length && t.Item2 - 1 >= 0 && result[t.Item1 + 1][t.Item2 - 1] == 0) result[t.Item1 + 1][t.Item2 - 1] = 8;
-                if (t.Item1 + 2 < result.Length && t.Item2 - 1 >= 0 && result[t.Item1 + 2][t.Item2 - 1] == 0) result[t.Item1 + 2][t.Item2 - 1] = 16;
-            }
-            foreach (var t in br)
-            {
-                result[t.Item1][t.Item2] = 5;
-                if (t.Item1 + 1 < result.Length && result[t.Item1 + 1][t.Item2] <= 0) result[t.Item1 + 1][t.Item2] = 12;
-                if (t.Item1 + 2 < result.Length && result[t.Item1 + 2][t.Item2] == 0) result[t.Item1 + 2][t.Item2] = 9;
-                if (t.Item2 + 1 < result[0].Length && result[t.Item1][t.Item2+1] == 0) result[t.Item1][t.Item2+1] = 7;
-                if (t.Item1 + 1 < result.Length && t.Item2 + 1 < result[0].Length && result[t.Item1 + 1][t.Item2+1] == 0) result[t.Item1+1][t.Item2 + 1] = 7;
-                if (t.Item1 + 2 < result.Length && t.Item2 + 1 < result[0].Length && result[t.Item1 + 2][t.Item2 + 1] == 0) result[t.Item1 + 2][t.Item2 + 1] = 15;
-            }
-
-            if(direction == X_DoorDirection.Horizontal)
-            {
-                // h: 3 - 4
-                // h: 2 - 5
-                for (int i = 0; i < result.Length; i++)
-                {
-                    int j = 2;
-                    while (j < result[0].Length && result[i][j] == 1)
+                    var index = pattern[y][x];
+                    Color[] floorElem;
+                    Color[] roofElem;
+                    Color[] doorElem;
+                    if ((X_TileType)index != X_TileType.Outside)
                     {
-                        result[i][j] = 13;
-                        if (i + 1 < result.Length && result[i + 1][j] == 0) result[i + 1][j] = 12;
-                        if (i + 2 < result.Length && result[i + 2][j] == 0) result[i + 2][j] = 9;
-                        j++;
-                    }
-
-                    j = result[0].Length - 3;
-                    while (j > 0 && result[i][j] == 1)
-                    {
-                        result[i][j] = 13;
-                        if (i + 1 < result.Length && result[i + 1][j] == 0) result[i + 1][j] = 12;
-                        if (i + 2 < result.Length && result[i + 2][j] == 0) result[i + 2][j] = 9;
-                        j--;
-                    }
-                }
-
-                for (int i = 0; i < result[0].Length; ++i)
-                {
-                    if (result[0][i] == 2 || result[0][i] == 3)
-                    {
-                        int j = 1;
-                        while (result[j][i] == 1)
-                        {
-                            result[j][i] = 14;
-                            if (i - 1 >= 0 && result[j][i - 1] == 0) result[j][i - 1] = 8;
-                            if (i + 1 < result[0].Length && result[j][i + 1] == 0) result[j][i + 1] = 7;
-                            j++;
-                        }
-                    }
-                    else if (result[result.Length - 1][i] == 4 || result[result.Length - 1][i] == 5)
-                    {
-                        int j = result.Length - 2;
-                        while (result[j][i] == 1)
-                        {
-                            result[j][i] = 14;
-                            if (i - 1 >= 0 && result[j][i - 1] == 0) result[j][i - 1] = 8;
-                            if (i + 1 < result[0].Length && result[j][i + 1] == 0) result[j][i + 1] = 7;
-                            j--;
-                        }
-                    }
-                }
-
-                bool topL = true;
-                bool topR = true;
-                for (int i = 0; i < result.Length; ++i)
-                {
-                    if(i<2 || i > _numTilesDoorWidth)
-                    {
-                        result[i][0] = -1;
-                        result[i][1] = -1;
-                        result[i][result[0].Length - 2] = -1;
-                        result[i][result[0].Length - 1] = -1;
-                    }
-                    if (result[i][2] == 13)
-                    {
-                        if (topL)
-                        {
-                            result[i][2] = 4;
-                            topL = false;
-                        }
+                        if((X_TileType)index == X_TileType.Roof)
+                            roofElem = textels[(X_TileType)index];
                         else
-                        {
-                            result[i][2] = 2;
-                        }
-                    }
-                    if (result[i][result[0].Length-3] == 13)
-                    {
-                        if (topR)
-                        {
-                            result[i][result[0].Length - 3] = 5;
-                            topR = false;
-                        }
+                            roofElem = transparent;
+                        if ((X_TileType)index == X_TileType.Floor || (X_TileType)index == X_TileType.Wall)
+                            floorElem = textels[(X_TileType)index];
                         else
-                        {
-                            result[i][result[0].Length - 3] = 3;
-                        }
-                    }
-                }
-            }
-            else
-            {
-                // v: 2 - 5
-                // v: 4 - 3
-                for (int i = 0; i < result[0].Length; i++)
-                {
-                    int j = 2;
-                    while (j < result.Length && result[j][i] == 1)
-                    {
-                        result[j][i] = 14;
-                        if (i - 1 >= 0 && result[j][i - 1] == 0) result[j][i - 1] = 8;
-                        if (i + 1 < result[0].Length && result[j][i + 1] == 0) result[j][i + 1] = 7;
-                        j++;
-                    }
-
-                    j = result.Length - 3;
-                    while (j > 0 && result[j][i] == 1)
-                    {
-                        //if(j == result.Length - 2) result[j+1][i] = 12;
-                        result[j][i] = 14;
-                        if (i - 1 >= 0 && result[j][i - 1] == 0) result[j][i - 1] = 8;
-                        if (i + 1 < result[0].Length && result[j][i + 1] == 0) result[j][i + 1] = 7;
-                        j--;
-                    }
-                }
-
-                for (int i = 0; i < result.Length; ++i)
-                {
-                    if (result[i][0] == 2 || result[i][0] == 4)
-                    {
-                        int j = 1;
-                        while (result[i][j] == 1)
-                        {
-                            result[i][j] = 13;
-                            if (i + 1 < result.Length && result[i + 1][j] <= 0) result[i + 1][j] = 12;
-                            if (i + 2 < result.Length && result[i + 2][j] == 0) result[i + 2][j] = 9;
-                            j++;
-                        }
-                    }
-                    else if(result[i][result[0].Length-1] == 5 || result[i][result[0].Length - 1] == 3)
-                    {
-                        int j = result[0].Length-2;
-                        while (result[i][j] == 1)
-                        {
-                            result[i][j] = 13;
-                            if (i + 1 < result.Length && result[i + 1][j] <= 0) result[i + 1][j] = 12;
-                            if (i + 2 < result.Length && result[i + 2][j] == 0) result[i + 2][j] = 9;
-                            j--;
-                        }
-                    }
-                }
-
-                bool topL = true;
-                bool topR = true;
-                result[0][0] = -1;
-                result[1][0] = -1;
-                if(result[2][0] == 14) result[2][0] = 3;
-                result[0][result[0].Length - 1] = -1;
-                result[1][result[0].Length - 1] = -1;
-                if (result[2][result[0].Length - 1] == 14) result[2][result[0].Length - 1] = 2;
-
-                result[result.Length - 2][0] = -1;
-                result[result.Length - 1][0] = -1;
-                if (result[result.Length - 3][0] == 14) result[result.Length - 3][0] = 5;
-                result[result.Length - 2][result[0].Length-1] = -1;
-                result[result.Length - 1][result[0].Length - 1] = -1;
-                if (result[result.Length - 3][result[0].Length - 1] == 14) result[result.Length - 3][result[0].Length - 1] = 4;
-
-                for (int i = 0; i < result[0].Length; ++i)
-                {
-                    if (result[2][i] == 14 && result[1][i] != 14)
-                    {
-                        result[2][i] = 2;
-                        result[1][i] = -1;
-                        result[0][i] = -1;
-                    }
-
-                    if (result[result.Length-3][i] == 14 && result[result.Length - 2][i] != 14)
-                    {
-                        result[result.Length - 3][i] = 5;
-                        result[result.Length - 2][i] = -1;
-                        result[result.Length - 1][i] = -1;
-                    }
-                }
-            }
-
-            for(int x=0; x<result.Length; ++x)
-            {
-                for(int y=0; y < result[0].Length; ++y)
-                {
-                    if(result[x][y] == 0) result[x][y] = 6;
-                }
-            }
-
-            //output(result, "./logs/pattern.csv");
-
-            int width = T_BL_1x1.Width;
-            int height = T_BL_1x1.Height;
-            _floor = new Texture2D(graphicsDevice, tileWidth * result[0].Length, tileHeight * result.Length);
-            _scale = (float)tileHeight / height;
-
-            for (int x = 0; x < result[0].Length; ++x)
-            {
-                for (int y = 0; y < result.Length; ++y)
-                {
-                    var index = result[y][x] - 2;
-                    Color[] elem;
-                    if (index >= 0)
-                    {
-                        elem = textels.ElementAt(index);
+                            floorElem = transparent;
                     }
                     else
                     {
-                        elem = Enumerable.Repeat<Color>(Color.Transparent, width * height).ToArray();
+                        floorElem = transparent;
+                        roofElem = transparent;
                     }
-                    //var elem = textels.ElementAt(1);
-                    _floor.SetData(0, new Rectangle(x * width, y * height, width, height), elem, 0, elem.Length);
+                    if ((X_TileType)index != X_TileType.Outside && (X_TileType)index != X_TileType.Roof)
+                    {
+                        if (x < 1 || y < 1 || x > pattern[0].Length - 2)
+                            doorElem = Enumerable.Repeat<Color>(Color.Transparent, height * width).ToArray();
+                        else if(y > pattern.Length-2)
+                            doorElem = transparent;
+                        else
+                            doorElem = textels[X_TileType.Roof];
+                    }
+                    else
+                    {
+                        doorElem = Enumerable.Repeat<Color>(Color.Transparent, height * width).ToArray();
+                    }
+                    Rectangle rect = new Rectangle(x * width, y * height, width, height);
+
+                    //var elem = Enumerable.Repeat<Color>(Color.Transparent, height * width).ToArray();
+                    _floor.SetData(0, rect, floorElem, 0, floorElem.Length);
+                    _door.SetData(0, rect, doorElem, 0, doorElem.Length);
+                    _roof.SetData(0, rect, roofElem, 0, roofElem.Length);
                 }
             }
+
+            _tileSize = (int)(TextureTileSize * Scale);
+            _state = X_DoorState.Closed;
         }
 
         private void output(int[][] pattern, string name)
@@ -514,6 +201,11 @@ namespace YGR
                 }
                 writer.WriteLine(s);
             }
+        }
+
+        public ref Texture2D GetFloor()
+        {
+            return ref _floor;
         }
 
         private IList<Tuple<int, int>> findMatch(int[,] match, int[][] pattern, int ox, int oy)
@@ -663,28 +355,28 @@ namespace YGR
 
             int half1 = (int)Math.Floor((float)width / 2.0f) + 2;
 
-            for (int x = 2; x < half1; ++x)
+            for (int x = 1; x < half1; ++x)
             {
                 collision[x][0] = 1;
             }
-            //output(collision, "./logs/pattern.csv");
+
             for (int y = doorWidth; y < collision[0].Length; ++y)
             {
                 collision[0][y] = -1;
                 collision[1][y] = -1;
             }
-            for (int x = 2; x < half1 - doorWidth; ++x)
+            for (int x = 1; x < half1 - doorWidth; ++x)
             {
                 collision[x][doorWidth - 1] = 1;
                 for(int y=doorWidth; y < collision[0].Length; ++y) collision[x][y] = -1;
             }
-            //output(collision, "./logs/pattern.csv");
-            for (int x = half1-doorWidth; x < width-2; ++x)
+
+            for (int x = half1-doorWidth; x < width-1; ++x)
             {
                 collision[x][height - 1] = 1;
             }
-            //output(collision, "./logs/pattern.csv");
-            for (int x = half1; x<width-2; ++x)
+
+            for (int x = half1; x<width-1; ++x)
             {
                 collision[x][Math.Abs(tileOffset)] = 1;
                 for (int y = 0; y <= Math.Abs(tileOffset)-1; ++y) collision[x][y] = -1;
@@ -693,15 +385,25 @@ namespace YGR
                 collision[width - 1][y] = -1;
                 collision[width - 2][y] = -1;
             } 
-            //output(collision, "./logs/pattern.csv");
+
             for (int y = 0; y < Math.Abs(tileOffset); ++y)
             {
                 collision[half1 - 1][y + 1] = 1;
                 collision[half1 - doorWidth][height - y - 2] = 1;
             }
-            //output(collision, "./logs/pattern.csv");
-            collision[width-3][height-1-doorWidth/2] = 2;
-            collision[2][doorWidth/2] = 3;
+            for (int y = 0; y < collision[0].Length; ++y)
+            {
+                if (collision[1][y] != 0) collision[0][y] = -1;
+                if (collision[width - 2][y] != 0) collision[width - 1][y] = -1;
+            }
+            //for (int y = 0; y < collision[0].Length; ++y)
+            //{
+            //    collision[0][y] = -1;
+            //    collision[width - 1][y] = -1;
+            //}
+
+            collision[width-2][height-1-doorWidth/2] = 2;
+            collision[1][doorWidth/2] = 3;
 
             return collision;
         }
@@ -856,14 +558,23 @@ namespace YGR
 
         public void SplitConnectedCollisionModels()
         {
-            foreach(var room in DoorRooms)
+            foreach (var room in DoorRooms)
             {
                 if (room.Key == X_ConnectorSide.Left || room.Key == X_ConnectorSide.Right)
                 {
                     foreach (var r in room.Value)
                     {
                         // need vertical split
-                        r.Collision.SplitCollisionVerticallyAt(Doors[room.Key].First().Point, _numTilesDoorWidth);
+                        var res = r.Collision.SplitCollisionVerticallyAt(Doors[room.Key].First().Point, _numTilesDoorWidth);
+                        foreach(var rects in res)
+                        {
+                            List<Rectangle> cRect;
+                            if (!_doorCollisionRectangles.TryGetValue(rects.Key, out cRect))
+                            {
+                                _doorCollisionRectangles.Add(rects.Key, rects.Value);
+                            }
+                            else _doorCollisionRectangles[rects.Key].AddRange(rects.Value);
+                        }
                     }
                 }
                 else
@@ -871,15 +582,66 @@ namespace YGR
                     foreach (var r in room.Value)
                     {
                         // need horizontal split                    
-                        r.Collision.SplitCollisionHorizontallyAt(Doors[room.Key].First().Point, _numTilesDoorWidth);
+                        var res = r.Collision.SplitCollisionHorizontallyAt(Doors[room.Key].First().Point, _numTilesDoorWidth);
+                        foreach (var rects in res)
+                        {
+                            List<Rectangle> cRect;
+                            if (!_doorCollisionRectangles.TryGetValue(rects.Key, out cRect))
+                            {
+                                _doorCollisionRectangles.Add(rects.Key, rects.Value);
+                            }
+                            else _doorCollisionRectangles[rects.Key].AddRange(rects.Value);
+                        }
                     }
                 }
             }
+            Collision.SetExtraCollisionRectangles(_doorCollisionRectangles[X_DoorState.Closed]);
+        }
+
+        public bool LockDoor()
+        {
+            if (!(_state == X_DoorState.Open || _state == X_DoorState.Closed)) return false;
+            if(_state == X_DoorState.Open)
+                _state = X_DoorState.LockedOpen;
+            if(_state == X_DoorState.Closed)
+                _state = X_DoorState.LockedClosed;
+
+            return true;
         }
 
         public void Update(GameTime gameTime)
         {
-
+            bool keyPressed = Input.IsKeyTriggered(Keybinds.ToggleConnectors);
+            float dt = gameTime.ElapsedGameTime.Milliseconds;
+            switch (_state)
+            {
+                case X_DoorState.Closed:
+                    if (keyPressed)
+                    {
+                        _state = X_DoorState.Opening;
+                    }
+                    break;
+                case X_DoorState.Opening:
+                    if (!doorAnimation(dt, true))
+                    {
+                        _state = X_DoorState.Open;
+                        Collision.SetExtraCollisionRectangles(_doorCollisionRectangles[X_DoorState.Open]);
+                    }
+                    break;
+                case X_DoorState.Open:
+                    if (keyPressed)
+                    {
+                        _state = X_DoorState.Closing;
+                        Collision.SetExtraCollisionRectangles(_doorCollisionRectangles[X_DoorState.Closed]);
+                    }
+                    break;
+                case X_DoorState.Closing:
+                    if (!doorAnimation(dt, false))
+                    {
+                        _state = X_DoorState.Closed;
+                    }
+                    break;
+            }
         }
 
         public void DrawOutline(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)
@@ -894,16 +656,102 @@ namespace YGR
                 }
             }
 
+            //Factory_Debug.DrawRectangle(_outsideRect1.X, _outsideRect1.Y, _outsideRect1.Width, _outsideRect1.Height, 5, Color.Red, spriteBatch);
+            //Factory_Debug.DrawRectangle(_outsideRect2.X, _outsideRect2.Y, _outsideRect2.Width, _outsideRect2.Height, 5, Color.Red, spriteBatch);
+
             //Factory_Debug.DrawPoint(_leftOrBottomConnector.Point.X, _leftOrBottomConnector.Point.Y, 11, Color.Red, spriteBatch);
             //Factory_Debug.DrawPoint(_rightOrTopConnector.Point.X, _rightOrTopConnector.Point.Y, 11, Color.Orange, spriteBatch);
         }
 
+        //private void average(float a)
+        //{
+        //    int dx = (int)(Math.Ceiling(_dPos.X * a));
+        //    _rect.X = newPosition(_rect.X, dx, _newRect.X);
+
+        //    int dy = (int)(Math.Ceiling(_dPos.Y * a));
+        //    _rect.Y = newPosition(_rect.Y, dy, _newRect.Y);
+        //}
+
+        private bool doorAnimation(float dt, bool opening)
+        {
+            _animationTime += dt;
+            if (_animationTime < _doorOpeningTime)
+            {
+                float percent = 1.0f / _doorOpeningTime * _animationTime;
+                if(opening)
+                    _currentDoorOpenOffset = (int)Math.Round(_tileSize*percent);
+                else
+                    _currentDoorOpenOffset = (int)Math.Round(_tileSize * (1.0f - percent));
+            }
+            if (_animationTime >= _doorOpeningTime)
+            {
+                if(opening)
+                    _currentDoorOpenOffset = _tileSize;
+                else
+                    _currentDoorOpenOffset = 0;
+                _animationTime = 0;
+                return false;
+            }
+            return true;
+        }
+
         public void Draw(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)
         {
+
+            if (_state != X_DoorState.Closed && _state != X_DoorState.LockedClosed)
+            {
+                if(_direction == X_DoorDirection.Vertical)
+                {
+                    spriteBatch.Draw(
+                        _floor, Rect.Location.ToVector2(),
+                        new Rectangle(0, 0, _floor.Width, _floor.Height - _tileSize + _currentDoorOpenOffset),
+                        Color.White, 0, Vector2.Zero, Scale, SpriteEffects.None, 0);
+                }
+                else
+                {
+                    spriteBatch.Draw(
+                        _floor, Rect.Location.ToVector2(),
+                        new Rectangle(0, 0, _floor.Width, _floor.Height),
+                        Color.White, 0, Vector2.Zero, Scale, SpriteEffects.None, 0);
+                    spriteBatch.Draw(
+                        _floor, Rect.Location.ToVector2() + new Vector2(_floor.Width * Scale - _tileSize, 0),
+                        new Rectangle(_floor.Width - TextureTileSize, 0, TextureTileSize, _floor.Height),
+                        Color.White, 0, Vector2.Zero, Scale, SpriteEffects.None, 0);
+                }
+            }
+            else
+            {
+                if(_direction == X_DoorDirection.Horizontal)
+                {
+                    spriteBatch.Draw(
+                        _floor, Rect.Location.ToVector2(),
+                        new Rectangle(0, 0, _tileSize, _floor.Height),
+                        Color.White, 0, Vector2.Zero, Scale, SpriteEffects.None, 0);
+
+
+                }
+                else
+                {
+                    spriteBatch.Draw(
+                        _floor, Rect.Location.ToVector2(),
+                        new Rectangle(0, 0, _floor.Width, _tileSize),
+                        Color.White, 0, Vector2.Zero, Scale, SpriteEffects.None, 0);
+                }
+            }
+
+            if (_state != X_DoorState.Open && _state != X_DoorState.LockedOpen)
+            {
+                Vector2 pos = Rect.Location.ToVector2();
+                pos.Y += _currentDoorOpenOffset;
+                spriteBatch.Draw(
+                    _door, pos,
+                    new Rectangle(0, 0, _floor.Width, _floor.Height),
+                    Color.White, 0, Vector2.Zero, Scale, SpriteEffects.None, 0);
+            }
             spriteBatch.Draw(
-                _floor, Rect.Location.ToVector2(),
-                new Rectangle(0, 0, _floor.Width, _floor.Height),
-                Color.White, 0, Vector2.Zero, _scale, SpriteEffects.None, 0);
+                _roof, Rect.Location.ToVector2(),
+                new Rectangle(0, 0, _roof.Width, _roof.Height),
+                Color.White, 0, Vector2.Zero, Scale, SpriteEffects.None, 0);
         }
 
         public void MoveTo(Point position)
@@ -918,6 +766,12 @@ namespace YGR
                 }
             }
             Collision.MoveBy(p);
+
+            foreach(var rect in _doorCollisionRectangles)
+            {
+                foreach(var r in rect.Value)
+                    r.Offset(p);
+            }
         }
 
         public X_LevelElements WhatAreYou()

@@ -11,6 +11,7 @@
     <ApplicationIcon>Icon.ico</ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
+    <None Remove="Doors\roof - Copy.png" />
     <None Remove="Icon.ico" />
     <None Remove="Icon.bmp" />
     <None Remove="Levels\Level_0\R0\Collisions-int.png" />
@@ -33,6 +34,7 @@
     <None Remove="Levels\Level_0\R2\Wall_outlines.png" />
     <None Remove="Levels\Level_0\R2\_bg.png" />
     <None Remove="Levels\Level_0\R2\_composite.png" />
+    <None Remove="Levels\Level_0\R3\Collisions.csv" />
     <None Remove="Rooms\Collisions2.csv" />
     <None Remove="Rooms\R0\Collisions2.csv" />
     <None Remove="Rooms\R0\data.json" />

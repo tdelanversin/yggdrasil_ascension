@@ -19,6 +19,7 @@ namespace YGR
         int _hitCounter;
         int _maxHitCounter;
 
+        public float Scale { get; private set; }
         public Vector2 Position { get; private set; }
         public int LifePoints { get; set; }
         public bool HitInLastLoop { get; set; }
@@ -81,6 +82,7 @@ namespace YGR
                 (int)(scale*_window.Width), (int)(scale*_window.Height)
             );
 
+            Scale = (float)Rect.Width / (float)_window.Width;
             Level.Victims.Add(this);
             Room = Level.GetRoom(this, Room);
         }
@@ -225,11 +227,10 @@ namespace YGR
             //    color
             //);
 
-            float scale = (float)Rect.Width / (float)_window.Width;
             spriteBatch.Draw(
                 _sprite, Rect.Location.ToVector2(), 
                 new Rectangle(_animationIndex * _window.Width, 0, _window.Width, _window.Height), 
-                Color.White, 0, Vector2.Zero, scale, SpriteEffects.None, 0);
+                Color.White, 0, Vector2.Zero, Scale, SpriteEffects.None, 0);
         }
 
         /// <summary>

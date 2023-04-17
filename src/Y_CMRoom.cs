@@ -23,15 +23,18 @@ namespace YGR
 
     public class Y_CMRoom : IWalkable
     {
+        public float Scale { get; private set; }
         public string Name { get; set; }
         public X_CollisionModel_Room Collision { get; }
         public Rectangle Rect { get; set; }
         public Dictionary<X_ConnectorSide, IList<X_ConnectorPoint>> Doors { get; set; }
         public Dictionary<X_ConnectorSide, IList<IWalkable>> DoorRooms { get; set; }
+        public int TextureTileSize { get; }
+
+        public Color RegionColor { get; }
 
         private Texture2D _floor;
         private Texture2D _window;
-        private float _scale;
 
         public Y_CMRoom(
             string name,
@@ -57,6 +60,7 @@ namespace YGR
                 counter++;
             }
 
+            collisions = paddOutline(collisions);
             Collision = new X_CollisionModel_Room(collisions, tileWidth, tileHeight);
             Rect = new Rectangle(0, 0, collisions[0].Length * Collision.TileWidth, collisions.Length * Collision.TileHeight);
 
@@ -94,32 +98,124 @@ namespace YGR
                 _window = Texture2D.FromStream(graphicsDevice, fileStream);
             }
 
+            TextureTileSize = _floor.Height / collisions.Length;
+
             int len = _window.Width * _window.Height;
             Color[] groundData = new Color[len];
             _window.GetData<Color>(groundData);
             Color[] floorData = new Color[len];
             _floor.GetData<Color>(floorData);
             Color[] newData = new Color[len];
-            for (int i = 0; i < len; ++i)
+
+            int minh = int.MaxValue;
+            int minw = int.MaxValue;
+            int maxh = int.MinValue;
+            int maxw = int.MinValue;
+            for (int h = 0; h < _window.Height; ++h)
             {
-                if (groundData[i].A == 0)
+                for (int w = 0; w < _window.Width; ++w)
                 {
-                    newData[i] = floorData[i];
-                }
-                else
-                {
-                    newData[i] = Color.Transparent;
+                    if(groundData[h*_window.Width +w].A == 0)
+                    {
+                        if (minh > h) minh = h;
+                        if (maxh < h) maxh = h;
+                        if (minw > w) minw = w;
+                        if (maxw < w) maxw = w;
+                    }
                 }
             }
+
+            minh = minh + TextureTileSize / 2;
+            minw = minw + TextureTileSize / 2;
+            maxh = maxh - TextureTileSize / 2;
+            maxw = maxw - TextureTileSize / 2;
+
+            RegionColor = floorData[minh * _window.Width + minw];
+
+            for (int h = 0; h < _window.Height; ++h)
+            {
+                for (int w = 0; w < _window.Width; ++w)
+                {
+                    if (h >= minh && w >= minw && h < maxh && w < maxw)
+                    {
+                        newData[h * _window.Width + w] = floorData[h * _window.Width + w];
+                    }
+                    else newData[h * _window.Width + w] = RegionColor;
+                }
+            }
+
             _floor.SetData<Color>(newData);
 
-            _scale = (float)tileHeight * collisions.Length / _floor.Height;
+            Scale = (float)tileHeight * collisions.Length / _floor.Height;
+        }
+
+        public ref Texture2D GetFloor()
+        {
+            return ref _floor;
         }
 
         public X_ConnectorPoint GetConnectorPoint(X_ConnectorSide side, string name = "")
         {
             if (!Doors.ContainsKey(side)) return null;
             return Doors[side].First();
+        }
+
+        private int[][] paddOutline(int[][] collision)
+        {
+            int x = 0;
+            int y = 0;
+            while (x < collision.Length)
+            {
+                y = 0;
+                while (y < collision[0].Length)
+                {
+                    if (collision[x][y] == 1) break;
+                    collision[x][y] = -1;
+                    y++;
+                }
+                x++;
+            }
+
+            x = collision.Length - 1;
+            while (x >= 0)
+            {
+                y = collision[0].Length - 1;
+                while (y >= 0)
+                {
+                    if (collision[x][y] == 1) break;
+                    collision[x][y] = -1;
+                    y--;
+                }
+                x--;
+            }
+
+            x = 0;
+            while (x < collision.Length)
+            {
+                y = collision[0].Length - 1;
+                while (y >= 0)
+                {
+                    if (collision[x][y] == 1) break;
+                    collision[x][y] = -1;
+                    y--;
+                }
+                x++;
+            }
+
+            x = collision.Length - 1;
+            while (x >= 0)
+            {
+                y = 0;
+                while (y < collision[0].Length)
+                {
+                    if (collision[x][y] == 1) break;
+                    collision[x][y] = -1;
+                    y++;
+                }
+                x--;
+            }
+
+            return collision;
         }
 
         private X_ConnectorSide determineSide(int x0, int y0)
@@ -215,14 +311,14 @@ namespace YGR
             //{
             //int x = (int)((float)door.x / door.width * Collision.TileWidth) + Rect.X;
             //int y = (int)((float)door.y / door.height * Collision.TileHeight) + Rect.Y;
-            foreach(var side in Doors)
-            {
-                foreach (var door in side.Value)
-                {
-                    door.DrawOutline(gameTime, Vector2.Zero, spriteBatch);
-                    //Factory_Debug.DrawPoint(door.Item1, door.Item2, 11, color, spriteBatch);
-                }
-            }
+            //foreach(var side in Doors)
+            //{
+            //    foreach (var door in side.Value)
+            //    {
+            //        door.DrawOutline(gameTime, Vector2.Zero, spriteBatch);
+            //        //Factory_Debug.DrawPoint(door.Item1, door.Item2, 11, color, spriteBatch);
+            //    }
+            //}
             //}
         }
 
@@ -237,7 +333,7 @@ namespace YGR
             spriteBatch.Draw(
                 _floor, Rect.Location.ToVector2(),
                 new Rectangle(0, 0, _floor.Width, _floor.Height),
-                Color.White, 0, Vector2.Zero, _scale, SpriteEffects.None, 0);
+                Color.White, 0, Vector2.Zero, Scale, SpriteEffects.None, 0);
         }
 
         /// <summary>

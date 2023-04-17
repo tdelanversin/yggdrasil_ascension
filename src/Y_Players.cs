@@ -28,6 +28,7 @@ namespace YGR
         byte currentAnimationIndex;
         PlayerIndex _playerIndex;
 
+        public float Scale { get; private set; }
         public int LifePoints { get; set; }
         public bool HitInLastLoop { get; set; }
         public X_CollisionModel_Victim Collision { get; }
@@ -66,7 +67,7 @@ namespace YGR
             Level = level;
             LifePoints = 100;
             HitInLastLoop = false;
-
+            Scale = 1.0f;
             Level.Victims.Add(this);
 
             // Set a default timer value.

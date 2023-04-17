@@ -7,6 +7,7 @@ namespace YGR
 {
     public class Y_StarterProjectile: IProjectile
     {
+        public float Scale { get; private set; }
         public bool DeleteNext { get; set; }
         public string Name { get; set; }
         public double TimeCreated { get; set; }
@@ -50,6 +51,7 @@ namespace YGR
             Level.Projectiles.Add(this);
             WhoFiredMe = who;
             Room = Level.GetRoom(this, Room);
+            Scale = 1.0f;
         }
 
         public void Update(GameTime gameTime) {
@@ -119,6 +121,7 @@ namespace YGR
 
     public class Y_ShotGunProjectile: IProjectile
     {
+        public float Scale { get; private set; }
         public bool DeleteNext { get; set; }
         public string Name { get; set; }
         public double TimeCreated { get; set; }
@@ -161,6 +164,7 @@ namespace YGR
             Level.Projectiles.Add(this);
             WhoFiredMe = who;
             Room = Level.GetRoom(this, Room);
+            Scale = 1.0f;
         }
 
         public void Update(GameTime gameTime) {
