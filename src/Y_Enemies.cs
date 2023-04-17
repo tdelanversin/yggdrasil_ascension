@@ -97,16 +97,17 @@ namespace YGR
             Point origin = Rect.Center;
             Vector2 targetDirection = Target.Rect.Center.ToVector2() - Rect.Center.ToVector2();
             targetDirection = Vector2.Normalize(targetDirection);
+            float targetDistance = Vector2.Distance(Target.Rect.Center.ToVector2(), Rect.Center.ToVector2());
             foreach (Rectangle rects in Room.Collision.GetCollisionRectangles())
             {
                 Rectangle rect = rects;
                 Point contactPoint = Point.Zero;
                 Vector2 contactNormal = Vector2.Zero;
                 float uHit = 0.0f;
-                if (Manager_Collision.RayVsRect(ref origin, ref targetDirection, ref rect, out contactPoint, out contactNormal, out uHit)
-                    && Vector2.Distance(contactPoint.ToVector2(), origin.ToVector2()) < Vector2.Distance(Target.Rect.Center.ToVector2(), origin.ToVector2()))
+                if (Manager_Collision.RayVsRect(ref origin, ref targetDirection, ref rect, out contactPoint, out contactNormal, out uHit))
                 {
-                    return false;
+                    if (Vector2.Distance(contactPoint.ToVector2(), origin.ToVector2()) < targetDistance)
+                        return false;
                 }
             }
             return true;
@@ -137,6 +138,7 @@ namespace YGR
             {
                 Point origin = Rect.Center;
                 Vector2 targetDirection = Target.Rect.Center.ToVector2() - Rect.Center.ToVector2();
+                targetDirection.Normalize();
                 Gun.Shoot(gameTime, origin.ToVector2(), targetDirection, Level, this);
             }
         }
