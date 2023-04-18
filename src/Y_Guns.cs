@@ -2,6 +2,7 @@ using Microsoft.Xna.Framework;
 using System.Collections.Generic;
 using System.Linq;
 using System;
+using Microsoft.Xna.Framework.Audio;
 #nullable enable
 
 namespace YGR
@@ -17,6 +18,8 @@ namespace YGR
         {
             if (nextShotCooldown > 0.0f)
                 return;
+
+            Manager_Sound.AddSound_Fireball().Play();
 
             nextShotCooldown = shotDelay;
 
@@ -41,8 +44,11 @@ namespace YGR
 
         public void Shoot(GameTime gameTime, Vector2 origin, Vector2 direction, Y_Level level, IGameElement who)
         {
+            
             if (nextShotCooldown > 0.0f)
                 return;
+
+            Manager_Sound.AddSound_Shotgun().Play();
 
             nextShotCooldown = shotDelay;
 
@@ -96,6 +102,7 @@ namespace YGR
 
         public void Shoot(GameTime gameTime, Vector2 origin, Vector2 direction, Y_Level level, IGameElement who)
         {
+           
             if (timeSinceShot < shotDelay)
                 return;
 
@@ -180,6 +187,7 @@ namespace YGR
 
         public void Shoot(GameTime gameTime, Vector2 origin, Vector2 direction, Y_Level level, IGameElement who)
         {
+
             if (timeSinceShot < shotDelay)
                 return;
 
@@ -200,7 +208,7 @@ namespace YGR
 
             shotSpeeds.Last();
             if (lastUpdate >= shotSpeeds.Last())
-                return;
+                return; 
 
             for (int i = 0; i < shotSpeeds.GetLength(0); ++i)
             {

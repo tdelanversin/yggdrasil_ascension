@@ -3,6 +3,8 @@ using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using System;
 using System.Collections.Generic;
+using Microsoft.Xna.Framework.Media;
+using Microsoft.Xna.Framework.Audio;
 
 namespace YGR
 {
@@ -25,7 +27,6 @@ namespace YGR
         Y_Level _level;
         public GameState State;
         public GameState DesiredState;
-
         public A_Yggdrasil()
         {
             _graphics = new GraphicsDeviceManager(this);
@@ -62,7 +63,15 @@ namespace YGR
         {
             Fonts.LoadContent(Content);
             Menu.LoadContent(Content);
+            Manager_Sound.LoadContent(Content);
             _spriteBatch = new SpriteBatch(GraphicsDevice);
+
+
+            
+            // Uncomment to play intro sound in a loop
+            MediaPlayer.Play(Manager_Sound.AddSong_Intro());
+            MediaPlayer.IsRepeating = true;
+            MediaPlayer.MediaStateChanged += MediaPlayer_MediaStateChanged;
         }
 
         internal void StartNewGame()
@@ -198,7 +207,13 @@ namespace YGR
             // Once everything is in place, inform Update() of the new desired state
             DesiredState = GameState.InGame;
         }
-
+        void MediaPlayer_MediaStateChanged(object sender, System.
+                                   EventArgs e)
+        {
+            // 0.0f is silent, 1.0f is full volume
+            // MediaPlayer.Volume -= 0.1f;
+            // MediaPlayer.Play(song);
+        }
         protected override void Update(GameTime gameTime)
         {
             Input.Update();
