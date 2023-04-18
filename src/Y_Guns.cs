@@ -19,6 +19,8 @@ namespace YGR
             if (nextShotCooldown > 0.0f)
                 return;
 
+            Manager_Sound.AddSound_Fireball().Play();
+
             nextShotCooldown = shotDelay;
 
             Manager_Projectile.AddProjectile_StarterProjectile(origin, direction, gameTime.TotalGameTime.TotalMilliseconds, level, who);
@@ -45,6 +47,8 @@ namespace YGR
             
             if (nextShotCooldown > 0.0f)
                 return;
+
+            Manager_Sound.AddSound_Shotgun().Play();
 
             nextShotCooldown = shotDelay;
 
@@ -183,8 +187,6 @@ namespace YGR
 
         public void Shoot(GameTime gameTime, Vector2 origin, Vector2 direction, Y_Level level, IGameElement who)
         {
-            // need to fix weird sound modification
-            Y_SoundEffectManager.Instance.GetShotgun().Play();
 
             if (timeSinceShot < shotDelay)
                 return;

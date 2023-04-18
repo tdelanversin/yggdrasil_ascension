@@ -27,15 +27,11 @@ namespace YGR
         Y_Level _level;
         public GameState State;
         public GameState DesiredState;
-        Song song;
-        List<SoundEffect> soundEffects;
         public A_Yggdrasil()
         {
             _graphics = new GraphicsDeviceManager(this);
             Content.RootDirectory = "Content";
             IsMouseVisible = true;
-
-            soundEffects = new List<SoundEffect>();
         }
 
         protected override void Initialize()
@@ -67,19 +63,15 @@ namespace YGR
         {
             Fonts.LoadContent(Content);
             Menu.LoadContent(Content);
-            soundEffects.Add(Content.Load<SoundEffect>("fireball"));
-            soundEffects.Add(Content.Load<SoundEffect>("explosion"));
-            //soundEffects.Add(Content.Load<SoundEffect>("icecream"));
-            //soundEffects.Add(Content.Load<SoundEffect>("sneeze"));
-            song = Content.Load<Song>("example_intro_song");
-            //soundEffects[0].Play();
+            Manager_Sound.LoadContent(Content);
+            _spriteBatch = new SpriteBatch(GraphicsDevice);
 
-            MediaPlayer.Play(song);
+
+            
             // Uncomment to play intro sound in a loop
-            // MediaPlayer.Play(song);
+            MediaPlayer.Play(Manager_Sound.AddSong_Intro());
             MediaPlayer.IsRepeating = true;
             MediaPlayer.MediaStateChanged += MediaPlayer_MediaStateChanged;
-            _spriteBatch = new SpriteBatch(GraphicsDevice);
         }
 
         internal void StartNewGame()
@@ -219,8 +211,8 @@ namespace YGR
                                    EventArgs e)
         {
             // 0.0f is silent, 1.0f is full volume
-            MediaPlayer.Volume -= 0.1f;
-            MediaPlayer.Play(song);
+            // MediaPlayer.Volume -= 0.1f;
+            // MediaPlayer.Play(song);
         }
         protected override void Update(GameTime gameTime)
         {
