@@ -44,6 +44,7 @@ namespace YGR
         public Dictionary<X_ConnectorSide, IList<X_ConnectorPoint>> Doors { get; set; }
         public Dictionary<X_ConnectorSide, IList<IWalkable>> DoorRooms { get; set; }
         public int TextureTileSize { get; }
+        public string ResourceFolder { get; }
 
         private new Dictionary<X_DoorState, List<Rectangle>> _doorCollisionRectangles;
 
@@ -90,6 +91,8 @@ namespace YGR
             Scale = 1.0f;
 
             _doorCollisionRectangles = new Dictionary<X_DoorState, List<Rectangle>>();
+
+            ResourceFolder = "";
 
             Texture2D roof;
             Texture2D floor;

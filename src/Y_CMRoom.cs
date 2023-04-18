@@ -31,7 +31,7 @@ namespace YGR
         public Dictionary<X_ConnectorSide, IList<X_ConnectorPoint>> Doors { get; set; }
         public Dictionary<X_ConnectorSide, IList<IWalkable>> DoorRooms { get; set; }
         public int TextureTileSize { get; }
-
+        public string ResourceFolder { get; }
         public Color RegionColor { get; }
 
         private Texture2D _floor;
@@ -52,6 +52,7 @@ namespace YGR
             if (resourceFolder.Substring(resourceFolder.Length - 2, 1) != "/")
                 resourceFolder += "/";
 
+            ResourceFolder = resourceFolder;
             string[] lines = File.ReadAllLines(resourceFolder + "Collisions.csv");
             int[][] collisions = new int[lines.Length][];
             int counter = 0;

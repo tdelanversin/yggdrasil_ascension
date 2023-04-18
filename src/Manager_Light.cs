@@ -1,5 +1,7 @@
-﻿using Microsoft.Xna.Framework;
+﻿using Assimp;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using SharpDX.D3DCompiler;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -12,9 +14,6 @@ namespace YGR
     public class X_Light
     {
         public Vector3 Position { get; }
-        public Vector3 PointTo { get; }
-        public int Width { get; }
-        public int Height { get; }
         public Color Color { get; }
         public float ShadowP { get; }
         public float Scale { get; }
@@ -42,31 +41,38 @@ namespace YGR
                 (int)(IlluminationRect.Height), 5, Color.Orange, spriteBatch);
         }
 
+        public string GetIdentifier(IWalkable room)
+        {
+            Rectangle rect = room.Rect;
+            float px = Position.X - rect.X;
+            float py = Position.Y - rect.Y;
+            int ipx = IlluminationRect.X - rect.X;
+            int ipy = IlluminationRect.Y - rect.Y;
+            int ipw = IlluminationRect.Width;
+            int iph = IlluminationRect.Height;
+            float scale = room.Scale;
+            return "PX" + px + "PY" + py + "IRX" + ipx + "IRY" + ipy + "IRW" + ipw + "IRH" + iph + "S" + scale;
+        }
     }
-
     public class X_Cube
     {
         Vector3[] _vertices;
         int[,] _triangles;
         public bool IsWall { get; }
-
         public X_Cube(Vector3[] vertices, int[,] triangles, bool isWall)
         {
             _vertices = vertices;
             _triangles = triangles;
             IsWall = isWall;
         }
-
         public int VertexCount()
         {
             return _vertices.Length;
         }
-
         public int TriangleCount()
         {
             return _triangles.GetLength(0);
         }
-
         public string toWavefrontObj(int offset)
         {
             string s = "";
@@ -149,42 +155,6 @@ namespace YGR
 
             //hitPoint = new Vector3(0, 0, 0);
             return false;
-        }
-    }
-
-    public class X_LightModel
-    {
-        private float[][] generateData(int len, int mx, int my, int mz)
-        {
-            Random rand = new Random();
-            var d = new float[len][];
-            for(int i=0; i<len; ++i)
-            {
-                d[i] = new float[] { rand.Next(mx), rand.Next(my), rand.Next(mz) };
-            }
-            return d;
-        }
-        private int[] generateNodes(int len)
-        {
-            var d = new int[len];
-            for (int i = 0; i < len; ++i) d[i] = i;
-            return d;
-        }
-        
-        public X_LightModel(IWalkable room)
-        {
-            Func<float[], float[], double> norm3 = (x, y) =>
-            {
-                double dist =
-                (x[0] - y[0]) * (x[0] - y[0]) +
-                (x[1] - y[1]) * (x[1] - y[1]) +
-                (x[2] - y[2]) * (x[2] - y[2]);
-                return dist;
-            };
-
-            int len = 100000;
-            var data = generateData(len, 1000, 1000, 1000);
-            var nodes = generateNodes(len);
         }
     }
 
@@ -309,8 +279,33 @@ namespace YGR
                 }
             }
 
+            saveShadeToFile(lighted, room, lights);
+
             texture.SetData<Color>(data);
         }
+
+        private static void saveShadeToFile(bool[] shadeTemplate, IWalkable room, List<X_Light> lights)
+        {
+            if (room.ResourceFolder != "")
+            {
+                string fileName = "shade";
+                string identifier = DateTime.Now.ToLongDateString() + " - " + DateTime.Now.ToLongTimeString() + "\n";
+                foreach (var light in lights)
+                {
+                    identifier += light.GetIdentifier(room) + "|";
+                }
+                identifier = identifier.Substring(0, identifier.Length - 1);
+                identifier += "\n";
+                identifier += string.Join("", shadeTemplate.Select(x => x ? "1" : "0"));
+
+                File.WriteAllText(room.ResourceFolder + fileName, identifier);
+            }
+        }
+
+        //public static bool[] LoadShadeTemplate(IWalkable room)
+        //{
+        //    string[] shadeData = File.ReadAllLines(room.ResourceFolder + "shade");
+        //}
 
         private static void output(bool[,] pattern, string name)
         {

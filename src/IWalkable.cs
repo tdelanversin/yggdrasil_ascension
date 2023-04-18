@@ -19,5 +19,6 @@ namespace YGR
         public X_ConnectorPoint GetConnectorPoint(X_ConnectorSide side, string name="");
         public ref Texture2D GetFloor();
         public int TextureTileSize { get; }
+        public string ResourceFolder { get; }
     }
 }
