@@ -20,7 +20,7 @@ namespace YGR
             _records = new List<Manager_Collision.Record>();
         }
 
-        public bool Intersect(IVictim me, int timeStepMS, out IList<Point> contactPoint, out IList<Vector2> contactNormal, out IList<IGameElement> who)
+        public bool Intersect(IVictim me, int timeStepMS, out Vector2 newVelocity, out IList<Point> contactPoint, out IList<Vector2> contactNormal, out IList<IGameElement> who)
         {
             who = new List<IGameElement>();
             contactPoint = new List<Point>();
@@ -30,41 +30,32 @@ namespace YGR
             Point point;
             Vector2 normal;
             Rectangle myRect = me.Rect;
-            Vector2 myVelocity = me.Velocity;
-            Rectangle otherRect;
-            Vector2 otherVelocity;
-
+            newVelocity = me.Velocity;
             // check the room
             IWalkable room = me.Level.GetRoom(me, me.Room);
             if(room != null)
             {
-                if (room.Collision.Intersect(ref myRect, ref myVelocity, timeStepMS, out point, out normal))
+                if (room.Collision.Intersect(ref myRect, ref newVelocity, timeStepMS, out point, out normal))
                 {
                     result = true;
                     who.Add(room);
                     contactPoint.Add(point);
                     contactNormal.Add(normal);
-                    me.Velocity = myVelocity;
                     //Logger.Debug("impacted at " + point.ToString() + " with room " + room.Name);
                 }
 
                 // check the connected connectors, just to be sure
                 foreach (var door in room.DoorRooms)
                 {
-                    if (door.Value.First().Collision.Intersect(ref myRect, ref myVelocity, timeStepMS, out point, out normal))
+                    if (door.Value.First().Collision.Intersect(ref myRect, ref newVelocity, timeStepMS, out point, out normal))
                     {
                         result = true;
                         who.Add(room);
                         contactPoint.Add(point);
                         contactNormal.Add(normal);
-                        me.Velocity = myVelocity;
                         //Logger.Debug("impacted at " + point.ToString() + " with room " + room.Name);
                     }
                 }
-
-                Rectangle rect = me.Rect;
-                rect.Location += (me.Velocity * timeStepMS).ToPoint();
-                me.Rect = rect;
             }
 
             return result;

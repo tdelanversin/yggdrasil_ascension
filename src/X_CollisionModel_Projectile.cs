@@ -22,7 +22,7 @@ namespace YGR
             _records = new List<Manager_Collision.Record>();
         }
 
-        public bool Intersect(IProjectile me, int timeStepMS, out IList<Point> contactPoint, out IList<Vector2> contactNormal, out IList<IGameElement> who)
+        public bool Intersect(IProjectile me, int timeStepMS, out Vector2 newVelocity, out IList<Point> contactPoint, out IList<Vector2> contactNormal, out IList<IGameElement> who)
         {
             // TODO: fix issue eith the widespread projectiles causing too many sounds for monogame == crashes game
             // Manager_Sound.AddSound_Explosion().Play();
@@ -35,7 +35,7 @@ namespace YGR
             Point point;
             Vector2 normal;
             Rectangle myRect = me.Rect;
-            Vector2 myVelocity = me.Velocity;
+            newVelocity = me.Velocity;
 
             if(me.WhoFiredMe.WhatAreYou() == X_LevelElements.Victim)
             {
@@ -44,7 +44,7 @@ namespace YGR
                 {
                     if (enemy == me.WhoFiredMe) continue;
 
-                    if(handlePotentialImpact(me, (IVictim)enemy, ref myRect, ref myVelocity, ref contactPoint, ref contactNormal, ref who, timeStepMS))
+                    if(handlePotentialImpact(me, (IVictim)enemy, ref myRect, ref newVelocity, ref contactPoint, ref contactNormal, ref who, timeStepMS))
                     {
                         result = true;
                         break;
@@ -58,7 +58,7 @@ namespace YGR
                 {
                     if (victim == me.WhoFiredMe) continue;
 
-                    if (handlePotentialImpact(me, victim, ref myRect, ref myVelocity, ref contactPoint, ref contactNormal, ref who, timeStepMS))
+                    if (handlePotentialImpact(me, victim, ref myRect, ref newVelocity, ref contactPoint, ref contactNormal, ref who, timeStepMS))
                     {
                         result = true;
                         break;
@@ -71,26 +71,28 @@ namespace YGR
                 var room = me.Level.GetRoom(me, me.Room);
                 if (room != null)
                 {
-                    if (room.Collision.IntersectFast(ref myRect, ref myVelocity, timeStepMS, out point, out normal))
+                    if (room.Collision.IntersectFast(ref myRect, ref newVelocity, timeStepMS, out point, out normal))
                     {
                         result = true;
                         who.Add(room);
                         contactPoint.Add(point);
                         contactNormal.Add(normal);
-                        me.Velocity = Vector2.Zero;
+                        newVelocity = Vector2.Zero;
+                        //me.Velocity = Vector2.Zero;
                         //Logger.Debug("### " + room.WhatAreYou().ToString() + " => " + me.WhoFiredMe.WhatAreYou().ToString() + ":impacted at " + point.ToString() + " with room 1 " + room.Name);
                     }
 
                     // check the connected connectors, just to be sure
                     foreach (var door in room.DoorRooms)
                     {
-                        if (door.Value.First().Collision.Intersect(ref myRect, ref myVelocity, timeStepMS, out point, out normal))
+                        if (door.Value.First().Collision.Intersect(ref myRect, ref newVelocity, timeStepMS, out point, out normal))
                         {
                             result = true;
                             who.Add(room);
                             contactPoint.Add(point);
                             contactNormal.Add(normal);
-                            me.Velocity = myVelocity;
+                            //me.Velocity = myVelocity;
+                            //newVelocity = myVelocity;
                             //Logger.Debug("### " + room.WhatAreYou().ToString() + " => " + me.WhoFiredMe.WhatAreYou().ToString() + ":impacted at " + point.ToString() + " with room 2 " + room.Name);
                         }
                     }
@@ -101,10 +103,10 @@ namespace YGR
             {
                 me.DeleteNext = true;
             }
-
-            Rectangle rect = me.Rect;
-            rect.Location += (me.Velocity * timeStepMS).ToPoint();
-            me.Rect = rect;
+            else
+            {
+                newVelocity = me.Velocity;
+            }
 
             return result;
         }

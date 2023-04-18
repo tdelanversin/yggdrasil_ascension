@@ -11,20 +11,21 @@ namespace YGR
         public bool DeleteNext { get; set; }
         public string Name { get; set; }
         public double TimeCreated { get; set; }
-        public Vector2 Position { get; private set; }
         public X_CollisionModel_Projectile Collision { get; }
         public Vector2 Velocity { get; set; }
         public Y_Level Level { get; set; }
         public IWalkable Room { get; set; }
-        public Rectangle Rect { get; set; }
+        public Rectangle Rect { get { return _rect; } set { _rect = value; } }
         public IGameElement WhoFiredMe { get; }
 
+        private Vector2 _position;
         private Texture2D _sprite;
         public Rectangle _window;
         private int _animationIndex;
         private Vector2 _direction;
         private bool _isEnemy;
         X_ConnectorSide _lastSide;
+        Rectangle _rect;
 
         public Y_StarterProjectile(
             Vector2 position,
@@ -36,7 +37,7 @@ namespace YGR
             _sprite = Manager_Projectile.projectile_textures["smaller_projectile"];
             _window = new Rectangle(0, 0, 32, 32);
             _animationIndex = 0;
-            Position = position;
+            _position = position;
             _direction = direction;
             Velocity = Vector2.One * direction;
             TimeCreated = timeCreated;
@@ -49,7 +50,7 @@ namespace YGR
             WhoFiredMe = who;
             Room = Level.GetRoom(this, Room);
             Scale = 0.25f*Room.Scale;
-            Rect = new Rectangle(
+            _rect = new Rectangle(
                 (int)position.X - (int)((float)_window.Width / 2.0f * Scale), 
                 (int)position.Y - (int)((float)_window.Height / 2.0f * Scale), 
                 (int)(_window.Width * Scale), 
@@ -65,7 +66,8 @@ namespace YGR
             IList<Vector2> contactNormal;
             IList<Point> contactPoint;
             IList<IGameElement> who;
-            if (Collision.Intersect(this, timeStepMS, out contactPoint, out contactNormal, out who))
+            Vector2 newVelocity = Velocity;
+            if (Collision.Intersect(this, timeStepMS, out newVelocity, out contactPoint, out contactNormal, out who))
             {
                 //Logger.Debug("Collided with something");
                 foreach(var obj in who)
@@ -85,17 +87,25 @@ namespace YGR
                         //Logger.Info("#2# " + WhoFiredMe.WhatAreYou().ToString() + " hit an " + obj.WhatAreYou().ToString() + " | lifepoints: " + ((IEnemy)obj).LifePoints.ToString());
                         ((IEnemy)obj).HitInLastLoop = true;
                     }
+
+                    Velocity = newVelocity;
                 }
+
+                //Rectangle rect = me.Rect;
+                //rect.Location += (me.Velocity * timeStepMS).ToPoint();
+                //me.Rect = rect;
             }
             /* ########################################################################## */
 
+            _position += newVelocity * timeStepMS;
+            _rect.Location = _position.ToPoint();
             _animationIndex = (int)(5 - (gameTime.TotalGameTime.TotalMilliseconds - TimeCreated) / 300);
         }
 
         public void Draw(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch) {
             var destinationRectangle = new Rectangle(
-                Rect.X - (int)globalOffset.X,
-                Rect.Y - (int)globalOffset.Y,
+                _rect.X - (int)globalOffset.X,
+                _rect.Y - (int)globalOffset.Y,
                 _window.Width,
                 _window.Height
             );
@@ -137,20 +147,22 @@ namespace YGR
         public bool DeleteNext { get; set; }
         public string Name { get; set; }
         public double TimeCreated { get; set; }
-        public Vector2 Position { get; private set; }
         public X_CollisionModel_Projectile Collision { get; }
         public Vector2 Velocity { get; set; }
         public Y_Level Level { get; set; }
         public IWalkable Room { get; set; }
-        public Rectangle Rect { get; set; }
+        //public Rectangle Rect { get; set; }
+        public Rectangle Rect { get { return _rect; } set { _rect = value; } }
         public IGameElement WhoFiredMe { get; }
 
+        private Vector2 _position;
         private Texture2D _sprite;
         public Rectangle _window;
         private int _animationIndex;
         private Vector2 _direction;
         private bool _isEnemy;
         X_ConnectorSide _lastSide;
+        Rectangle _rect;
 
         public Y_ShotGunProjectile(
             Vector2 position,
@@ -162,7 +174,7 @@ namespace YGR
             _sprite = Manager_Projectile.projectile_textures["smaller_projectile"];
             _window = new Rectangle(0, 0, 32, 32);
             _animationIndex = 0;
-            Position = position;
+            _position = position;
             _direction = direction;
             Velocity = 0.7f * direction;
             TimeCreated = timeCreated;
@@ -176,7 +188,7 @@ namespace YGR
             Room = Level.GetRoom(this, Room);
             Scale = 0.15f * Room.Scale;
 
-            Rect = new Rectangle(
+            _rect = new Rectangle(
                 (int)position.X - (int)((float)_window.Width / 2.0f * Scale), 
                 (int)position.Y - (int)((float)_window.Height / 2.0f * Scale), 
                 (int)(_window.Width * Scale), 
@@ -191,8 +203,9 @@ namespace YGR
             IList<Vector2> contactNormal;
             IList<Point> contactPoint;
             IList<IGameElement> who;
+            Vector2 newVelocity = Velocity;
             int timeStepMS = (int)gameTime.ElapsedGameTime.TotalMilliseconds;
-            if (Collision.Intersect(this, timeStepMS, out contactPoint, out contactNormal, out who))
+            if (Collision.Intersect(this, timeStepMS, out newVelocity, out contactPoint, out contactNormal, out who))
             {
                 //Logger.Debug("Collided with something");
                 foreach (var obj in who)
@@ -210,15 +223,18 @@ namespace YGR
                         ((IEnemy)obj).HitInLastLoop = true;
                     }
                 }
-            }
 
+                Velocity = newVelocity;
+            }
+            _position += newVelocity * timeStepMS;
+            _rect.Location = _position.ToPoint();
             _animationIndex = (int)(5 - (gameTime.TotalGameTime.TotalMilliseconds - TimeCreated) / 300);
         }
 
         public void Draw(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch) {
             var destinationRectangle = new Rectangle(
-                Rect.X - (int)globalOffset.X,
-                Rect.Y - (int)globalOffset.Y,
+                _rect.X - (int)globalOffset.X,
+                _rect.Y - (int)globalOffset.Y,
                 _window.Width,
                 _window.Height
             );
