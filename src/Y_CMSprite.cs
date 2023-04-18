@@ -24,20 +24,21 @@ namespace YGR
         Vector2 _aimDirection;
 
         public float Scale { get; private set; }
-        public Vector2 Position { get; private set; }
         public int LifePoints { get; set; }
         public bool HitInLastLoop { get; set; }
         public X_CollisionModel_Victim Collision { get; }
         public Vector2 Velocity { get; set; }
         public Y_Level Level { get; set; }
         public IWalkable Room { get; set; }
-        public Rectangle Rect { get; set; }
+        public Rectangle Rect { get { return _rect; } set { _rect = value; } }
 
         private Vector2 _acceleration;
         private Vector2 _deceleration;
         private Vector2 _maxVelocity;
         private float _mass;
         private float _cr;
+        private Rectangle _rect;
+        private Vector2 _position;
 
         private int _controlLayout;
 
@@ -76,7 +77,7 @@ namespace YGR
             _acceleration = Vector2.One * acceleration;
             _deceleration = Vector2.One * acceleration;
             _maxVelocity = Vector2.One * maxVelocity;
-            Position = position;
+            _position = position;
 
             _isAiming = false;
             _aimDirection = Vector2.Zero;
@@ -87,7 +88,7 @@ namespace YGR
 
             Collision = collision;
 
-            Rect = new Rectangle(
+            _rect = new Rectangle(
                 (int)position.X - (int)(scale * _window.Width / 2),
                 (int)position.Y - (int)(scale * _window.Height / 2),
                 (int)(scale * _window.Width), (int)(scale * _window.Height)
@@ -228,10 +229,18 @@ namespace YGR
             IList<Vector2> contactNormal;
             IList<Point> contactPoint;
             IList<IGameElement> who;
-            if (Collision.Intersect(this, timeStepMS, out contactPoint, out contactNormal, out who))
+            Vector2 newVelocity = Velocity;
+            if (Collision.Intersect(this, timeStepMS, out newVelocity, out contactPoint, out contactNormal, out who))
             {
                 //Logger.Info("Collided with something");
+                Velocity = newVelocity;
             }
+            //Rectangle rect = me.Rect;
+            //rect.Location += (me.Velocity * timeStepMS).ToPoint();
+            //me.Rect = rect;
+
+            _position += newVelocity * timeStepMS;
+            _rect.Location = _position.ToPoint();
             /* ########################################################################## */
         }
 
@@ -249,23 +258,23 @@ namespace YGR
                 // Render ghosty 👻
                 spriteBatch.Draw(
                     _ghostSprite,
-                    new Rectangle(Rect.X, Rect.Y, Rect.Width, Rect.Height),
+                    new Rectangle(_rect.X, _rect.Y, _rect.Width, _rect.Height),
                     new Rectangle(0, 0, 180, 180), Color.White);
                 return;
             }
 
             spriteBatch.Draw(
-                _sprite, Rect.Location.ToVector2(),
+                _sprite, _rect.Location.ToVector2(),
                 new Rectangle(_animationIndex * _window.Width, 0, _window.Width, _window.Height),
                 Color.White, 0, Vector2.Zero, Scale, SpriteEffects.None, 0);
-            spriteBatch.DrawString(Fonts.Normal, LifePoints.ToString(), new Vector2(Rect.Location.X + 30, Rect.Location.Y - 10), Color.Wheat);
+            spriteBatch.DrawString(Fonts.Normal, LifePoints.ToString(), new Vector2(_rect.Location.X + 30, _rect.Location.Y - 10), Color.Wheat);
 
             // Draw a targeting indicator if the player is actively aiming or using mouse controls
             if (_isAiming || _controlLayout > 0)
             {
                 var angle = Math.Atan2(_aimDirection.Y, _aimDirection.X) + Math.PI / 2;
                 spriteBatch.Draw(
-                    _targetIndicator, Rect.Location.ToVector2() + _window.Center.ToVector2() + _aimDirection * _sprite.Height,
+                    _targetIndicator, _rect.Location.ToVector2() + _window.Center.ToVector2() + _aimDirection * _sprite.Height,
                     null,
                     Color.White, (float)angle, new Vector2(_targetIndicator.Width / 2, 0), 0.1f, SpriteEffects.None, 0);
             }
@@ -279,7 +288,7 @@ namespace YGR
         /// <param name="spriteBatch">Mogogame SpriteBatch</param>
         public void DrawOutline(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)
         {
-            Factory_Debug.DrawRectangle(Rect.X, Rect.Y, Rect.Width, Rect.Height, 1, Color.OrangeRed, spriteBatch);
+            Factory_Debug.DrawRectangle(_rect.X, _rect.Y, _rect.Width, _rect.Height, 1, Color.OrangeRed, spriteBatch);
             Collision.DrawOutline(gameTime, globalOffset, spriteBatch);
         }
     }

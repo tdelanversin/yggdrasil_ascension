@@ -19,7 +19,7 @@ namespace YGR
         public Texture2D Sprite { get; set; }
         public Rectangle SpriteRect = new Rectangle(0, 0, 42, 60);
         public X_CollisionModel_Victim Collision { get; }
-        public Rectangle Rect { get; set; }
+        public Rectangle Rect { get { return _rect; } set { _rect = value; } }
 
         public Y_Level Level { get; set; }
         public IWalkable Room { get; set; }
@@ -30,11 +30,13 @@ namespace YGR
 
         public string Name { get; set; }
 
+        private Vector2 _position;
         private Color _hitColor;
         private Color _regularColor;
         private Color _color;
         int _hitFrames = 10;
         int _hitFramesCounter = 0;
+        Rectangle _rect;
 
         public string Identifier;
 
@@ -53,7 +55,8 @@ namespace YGR
             FacingDirection = new Vector2(0, 0);
             Sprite = Manager_Enemies.enemy_textures["default_enemy"];
             Collision = new X_CollisionModel_Victim(1.0f, 0.0f);
-            Rect = new Rectangle(
+            _position = position;
+            _rect = new Rectangle(
                 (int)position.X - SpriteRect.Width / 2,
                 (int)position.Y - SpriteRect.Height / 2,
                 SpriteRect.Width, SpriteRect.Height
@@ -161,16 +164,23 @@ namespace YGR
                 IList<Vector2> contactNormals;
                 IList<Point> contactPoints;
                 IList<IGameElement> who;
-                if (Collision.Intersect(this, timeStepMS, out contactPoints, out contactNormals, out who))
+                Vector2 newVelocity = Velocity;
+                if (Collision.Intersect(this, timeStepMS, out newVelocity, out contactPoints, out contactNormals, out who))
                 {
-                    //Logger.Debug("Collided with something");
+                    Velocity = newVelocity;
                 }
+                //Rectangle rect = me.Rect;
+                //rect.Location += (me.Velocity * timeStepMS).ToPoint();
+                //me.Rect = rect;
+
+                _position += newVelocity * timeStepMS;
+                _rect.Location = _position.ToPoint();
             }
 
             if (canSee)
             {
-                Point origin = Rect.Center;
-                Vector2 targetDirection = Target.Rect.Center.ToVector2() - Rect.Center.ToVector2();
+                Point origin = _rect.Center;
+                Vector2 targetDirection = Target.Rect.Center.ToVector2() - _rect.Center.ToVector2();
                 targetDirection.Normalize();
                 Gun.Shoot(gameTime, origin.ToVector2(), targetDirection, Level, this);
             }
@@ -178,13 +188,13 @@ namespace YGR
 
         public void Draw(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)
         {
-            spriteBatch.Draw(Sprite, Rect, SpriteRect, _color);
-            spriteBatch.DrawString(Fonts.Normal, LifePoints.ToString(), new Vector2(Rect.Location.X + 30 / 2, Rect.Location.Y - 10), Color.Wheat);
+            spriteBatch.Draw(Sprite, _rect, SpriteRect, _color);
+            spriteBatch.DrawString(Fonts.Normal, LifePoints.ToString(), new Vector2(_rect.Location.X + 30 / 2, _rect.Location.Y - 10), Color.Wheat);
         }
 
         public void DrawOutline(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)
         {
-            Factory_Debug.DrawRectangle(Rect.X, Rect.Y, Rect.Width, Rect.Height, 1, Color.OrangeRed, spriteBatch);
+            Factory_Debug.DrawRectangle(_rect.X, _rect.Y, Rect.Width, _rect.Height, 1, Color.OrangeRed, spriteBatch);
             Collision.DrawOutline(gameTime, globalOffset, spriteBatch);
         }
 

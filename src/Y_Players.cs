@@ -36,11 +36,13 @@ namespace YGR
         public bool HitInLastLoop { get; set; }
         public X_CollisionModel_Victim Collision { get; }
         public Vector2 Velocity { get; set; }
-        public Rectangle Rect { get; set; }
+        public Rectangle Rect { get { return _rect; } set { _rect = value; } }
         public Y_Level Level { get; set; }
         public IWalkable Room { get; set; }
         IShooter _gun;
 
+        private Rectangle _rect;
+        Vector2 _position;
         Vector2 _maxVelocity;
         private int _controlLayout;
         private bool _isAiming;
@@ -134,7 +136,8 @@ namespace YGR
             };
 
             Rectangle rr = directionSourceRectangles["down"][0];
-            Rect = new Rectangle(
+            _position = position;
+            _rect = new Rectangle(
                 (int)position.X - rr.Width / 2,
                 (int)position.Y - rr.Height / 2,
                 rr.Width, rr.Height
@@ -278,13 +281,20 @@ namespace YGR
             }
 
             //base.Update(gameTime);
-            IList<Vector2> contactNormal;
-            IList<Point> contactPoint;
+            IList<Vector2> contactNormals;
+            IList<Point> contactPoints;
             IList<IGameElement> who;
-            if (Collision.Intersect(this, timeStepMS, out contactPoint, out contactNormal, out who))
+            Vector2 newVelocity = Velocity;
+            if (Collision.Intersect(this, timeStepMS, out newVelocity, out contactPoints, out contactNormals, out who))
             {
-                //Logger.Info("Collided with something");
+                Velocity = newVelocity;
             }
+            //Rectangle rect = me.Rect;
+            //rect.Location += (me.Velocity * timeStepMS).ToPoint();
+            //me.Rect = rect;
+
+            _position += newVelocity * timeStepMS;
+            _rect.Location = _position.ToPoint();
 
             if (_isDashing)
             {
@@ -360,7 +370,7 @@ namespace YGR
                 // Render ghosty 👻
                 spriteBatch.Draw(
                     _ghostSprite,
-                    new Rectangle(Rect.X, Rect.Y, Rect.Width, Rect.Height),
+                    new Rectangle(_rect.X, _rect.Y, _rect.Width, _rect.Height),
                     new Rectangle(0, 0, 180, 180), Color.White);
                 return;
             }
@@ -368,16 +378,16 @@ namespace YGR
             spriteBatch.Draw(
                     _sprite,
                     new Rectangle(
-                        Rect.X, Rect.Y, Rect.Width, Rect.Height),
+                        _rect.X, _rect.Y, _rect.Width, _rect.Height),
                         sourceRectangles[currentAnimationIndex], Color.White);
-            spriteBatch.DrawString(Fonts.Normal, LifePoints.ToString(), new Vector2(Rect.Location.X + 30 / 2, Rect.Location.Y - 10), Color.Wheat);
+            spriteBatch.DrawString(Fonts.Normal, LifePoints.ToString(), new Vector2(_rect.Location.X + 30 / 2, _rect.Location.Y - 10), Color.Wheat);
 
             // Draw a targeting indicator if the player is actively aiming or using mouse controls
             if (_isAiming || _controlLayout > 0)
             {
                 var angle = Math.Atan2(_aimDirection.Y, _aimDirection.X) + Math.PI / 2;
                 spriteBatch.Draw(
-                    _targetIndicator, Rect.Center.ToVector2() + _aimDirection * 60,
+                    _targetIndicator, _rect.Center.ToVector2() + _aimDirection * 60,
                     null,
                     Color.White, (float)angle, new Vector2(_targetIndicator.Width / 2, 0), 0.1f, SpriteEffects.None, 0);
             }
@@ -391,7 +401,7 @@ namespace YGR
         /// <param name="spriteBatch">Mogogame SpriteBatch</param>
         public void DrawOutline(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)
         {
-            Factory_Debug.DrawRectangle(Rect.X, Rect.Y, Rect.Width, Rect.Height, 1, Color.OrangeRed, spriteBatch);
+            Factory_Debug.DrawRectangle(_rect.X, _rect.Y, _rect.Width, _rect.Height, 1, Color.OrangeRed, spriteBatch);
             Collision.DrawOutline(gameTime, globalOffset, spriteBatch);
         }
     }
