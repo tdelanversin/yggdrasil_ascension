@@ -661,22 +661,7 @@ namespace YGR
                     d.DrawOutline(gameTime, globalOffset, spriteBatch);
                 }
             }
-
-            //Factory_Debug.DrawRectangle(_outsideRect1.X, _outsideRect1.Y, _outsideRect1.Width, _outsideRect1.Height, 5, Color.Red, spriteBatch);
-            //Factory_Debug.DrawRectangle(_outsideRect2.X, _outsideRect2.Y, _outsideRect2.Width, _outsideRect2.Height, 5, Color.Red, spriteBatch);
-
-            //Factory_Debug.DrawPoint(_leftOrBottomConnector.Point.X, _leftOrBottomConnector.Point.Y, 11, Color.Red, spriteBatch);
-            //Factory_Debug.DrawPoint(_rightOrTopConnector.Point.X, _rightOrTopConnector.Point.Y, 11, Color.Orange, spriteBatch);
         }
-
-        //private void average(float a)
-        //{
-        //    int dx = (int)(Math.Ceiling(_dPos.X * a));
-        //    _rect.X = newPosition(_rect.X, dx, _newRect.X);
-
-        //    int dy = (int)(Math.Ceiling(_dPos.Y * a));
-        //    _rect.Y = newPosition(_rect.Y, dy, _newRect.Y);
-        //}
 
         private bool doorAnimation(float dt, bool opening)
         {

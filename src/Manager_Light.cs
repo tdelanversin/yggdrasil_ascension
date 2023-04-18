@@ -263,7 +263,7 @@ namespace YGR
 
             foreach (var light in lights)
             {
-                Vector3 orig = light.Position;// + offset;
+                Vector3 orig = light.Position;
                 float scale = room.Scale;
                 Parallel.For(0, data.Length, i =>
                 //for (int i = 0; i < data.Length; ++i)
@@ -285,72 +285,15 @@ namespace YGR
                     {
                         if (cube.RayIntersect(orig, coords[i] - orig))
                         {
-                                intersected = true;
-                                break;
-                                //var col = data[hit2];
-                                //Color nCol = Color.White;
-                                //nCol.R = (byte)((1 - light.ShadowP) * col.R + light.ShadowP * light.Color.R);
-                                //nCol.G = (byte)((1 - light.ShadowP) * col.G + light.ShadowP * light.Color.G);
-                                //nCol.B = (byte)((1 - light.ShadowP) * col.B + light.ShadowP * light.Color.B);
-                                //data[hit2] = nCol;
-                                //break;
+                            intersected = true;
+                            break;
                         }
                     }
                     if (!intersected)
                     {
-                        //var col = data[hit2];
-                        //Color nCol = Color.White;
-                        //nCol.R = (byte)((1 - light.ShadowP) * col.R + light.ShadowP * light.Color.R);
-                        //nCol.G = (byte)((1 - light.ShadowP) * col.G + light.ShadowP * light.Color.G);
-                        //nCol.B = (byte)((1 - light.ShadowP) * col.B + light.ShadowP * light.Color.B);
-                        //data[hit2] = 2 * data[hit2];//nCol;
                         lighted[hit2] = true;
                     }
                 });
-
-                //Parallel.For(0, data.Length, i =>
-                //for (int i = 0; i < data.Length; ++i)
-                //{
-                //    int hit2 = textureMap[i];
-                //    if (hit2 < 0) continue;
-                //    if (!lighted[hit2])
-                //    {
-                //        var col = data[hit2];
-                //        Color nCol = Color.White;
-                //        nCol.R = (byte)((1 - light.ShadowP) * col.R + light.ShadowP * light.Color.R);
-                //        nCol.G = (byte)((1 - light.ShadowP) * col.G + light.ShadowP * light.Color.G);
-                //        nCol.B = (byte)((1 - light.ShadowP) * col.B + light.ShadowP * light.Color.B);
-                //        //if (c2.R > 200)
-                //        //    Logger.Info("lol");
-                //        data[hit2] = Color.Gray;
-                //        //var col = data[hit2];
-                //        //Color nCol = Color.White;
-                //        //nCol.R = (byte)((1 - light.ShadowP) * col.R + light.ShadowP * light.Color.R);
-                //        //nCol.G = (byte)((1 - light.ShadowP) * col.G + light.ShadowP * light.Color.G);
-                //        //nCol.B = (byte)((1 - light.ShadowP) * col.B + light.ShadowP * light.Color.B);
-                //        //data[hit2] = nCol;
-
-                //        //data[hit2] = 2 * data[hit2];
-                //        //data[i] = Color.Red;
-                //        //data[i].R = (byte)(0.5f * (float)data[i].R);
-                //        //data[i].G = (byte)(0.5f * (float)data[i].G);
-                //        //data[i].B = (byte)(0.5f * (float)data[i].B);
-                //    }
-                //}//);
-
-                //// draw the light position
-                //for (int i = -11; i < 10; ++i)
-                //{
-                //    int index = (int)((orig.Y - orig.Z + i) * texture.Width + orig.X);
-                //    if (index >= 0 && index < data.Length)
-                //        data[index] = Color.Red;
-                //}
-                //for (int i = -11; i < 10; ++i)
-                //{
-                //    int index = (int)((orig.Y - orig.Z) * texture.Width + orig.X + i);
-                //    if (index >= 0 && index < data.Length)
-                //        data[index] = Color.Red;
-                //}
             }
 
             for (int i = 0; i < lighted.Length; ++i)

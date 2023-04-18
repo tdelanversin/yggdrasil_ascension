@@ -16,7 +16,6 @@ namespace YGR
         public IDictionary<string, IWalkable> Rooms { get; private set; }
         public int TileWidth { get; }
         public int TileHeight { get; }
-        public IList<IProjectile> Projectiles { get; }
         public IList<IVictim> Victims { get; }
         public Color OutsideColor { get; set; }
 
@@ -136,7 +135,6 @@ namespace YGR
             }
 
             OutsideColor = ((Y_CMRoom)(Rooms.Values.First())).RegionColor;
-            Projectiles = new List<IProjectile>();
             Victims = new List<IVictim>();
         }
 

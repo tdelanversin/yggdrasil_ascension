@@ -45,7 +45,7 @@ namespace YGR
                     contactPoint.Add(point);
                     contactNormal.Add(normal);
                     me.Velocity = myVelocity;
-                    Logger.Debug("impacted at " + point.ToString() + " with room " + room.Name);
+                    //Logger.Debug("impacted at " + point.ToString() + " with room " + room.Name);
                 }
 
                 // check the connected connectors, just to be sure
@@ -58,7 +58,7 @@ namespace YGR
                         contactPoint.Add(point);
                         contactNormal.Add(normal);
                         me.Velocity = myVelocity;
-                        Logger.Debug("impacted at " + point.ToString() + " with room " + room.Name);
+                        //Logger.Debug("impacted at " + point.ToString() + " with room " + room.Name);
                     }
                 }
 

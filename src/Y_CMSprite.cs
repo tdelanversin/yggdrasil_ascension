@@ -230,7 +230,7 @@ namespace YGR
             IList<IGameElement> who;
             if (Collision.Intersect(this, timeStepMS, out contactPoint, out contactNormal, out who))
             {
-                Logger.Info("Collided with something");
+                //Logger.Info("Collided with something");
             }
             /* ########################################################################## */
         }
