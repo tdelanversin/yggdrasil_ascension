@@ -164,7 +164,7 @@ namespace YGR
                 IList<Vector2> contactNormals;
                 IList<Point> contactPoints;
                 IList<IGameElement> who;
-                Vector2 newVelocity = Velocity;
+                Vector2 newVelocity;
                 if (Collision.Intersect(this, timeStepMS, out newVelocity, out contactPoints, out contactNormals, out who))
                 {
                     Velocity = newVelocity;
@@ -173,7 +173,7 @@ namespace YGR
                 //rect.Location += (me.Velocity * timeStepMS).ToPoint();
                 //me.Rect = rect;
 
-                _position += newVelocity * timeStepMS;
+                _position += Velocity * timeStepMS;
                 _rect.Location = _position.ToPoint();
             }
 
