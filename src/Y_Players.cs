@@ -83,7 +83,6 @@ namespace YGR
             Level = level;
             LifePoints = 10;
             HitInLastLoop = false;
-            Scale = 1.0f;
             Level.Victims.Add(this);
 
             // Set a default timer value.
@@ -138,15 +137,16 @@ namespace YGR
             Rectangle rr = directionSourceRectangles["down"][0];
             _position = position;
             _rect = new Rectangle(
-                (int)position.X - rr.Width / 2,
-                (int)position.Y - rr.Height / 2,
-                rr.Width, rr.Height
+                (int)position.X - (int)(scale*rr.Width / 2),
+                (int)position.Y - (int)(scale*rr.Height / 2),
+                (int)(scale*rr.Width), (int)(scale*rr.Height)
             );
 
             // This tells the animation to start on the left-side sprite.
             previousAnimationIndex = 2;
             currentAnimationIndex = 1;
 
+            Scale = (float)_rect.Width / (float)rr.Width; ;
             Room = Level.GetRoom(this, Room);
         }
 
@@ -284,7 +284,7 @@ namespace YGR
             IList<Vector2> contactNormals;
             IList<Point> contactPoints;
             IList<IGameElement> who;
-            Vector2 newVelocity = Velocity;
+            Vector2 newVelocity;
             if (Collision.Intersect(this, timeStepMS, out newVelocity, out contactPoints, out contactNormals, out who))
             {
                 Velocity = newVelocity;
@@ -293,7 +293,7 @@ namespace YGR
             //rect.Location += (me.Velocity * timeStepMS).ToPoint();
             //me.Rect = rect;
 
-            _position += newVelocity * timeStepMS;
+            _position += Velocity * timeStepMS;
             _rect.Location = _position.ToPoint();
 
             if (_isDashing)
