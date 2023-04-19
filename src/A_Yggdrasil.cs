@@ -101,6 +101,7 @@ namespace YGR
             Manager_Players.ClearPlayers();
 
             Manager_Players.AddPlayer_Ninja(PlayerIndex.One, new Vector2(200, 180), _level, ControlLayout.KeyboardWASD);
+            Manager_Players.AddPlayer_SimplePlayer(PlayerIndex.Two, new Vector2(200, 360), _level, ControlLayout.KeyboardArrows);
 
             for (int i = 2; i < 4; i++)
             {
