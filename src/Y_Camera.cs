@@ -21,8 +21,8 @@ namespace YGR
         public static Rectangle VisibleArea { get; set; }
         public static Matrix Transform { get; set; }
         public static CameraMode Mode { get; set; }
-        public static IWalkable Room { get; set; }
-        public static IList<IVictim> Players { get; set; }
+        public static IWalkable Room; // Room to focus on
+        public static IList<IVictim> Players { get; set; } // Players to focus
 
         // Zoom levels for...              { Follow, Room, Manual }
         private static readonly float[] minZoom = { 0.60f, 0.25f, 0.05f };
@@ -99,7 +99,8 @@ namespace YGR
 
             var playersAlive = ((List<IVictim>)Players).FindAll(x => x.WhatAreYou() == X_LevelElements.Victim).ToList();
 
-            if (playersAlive.Count == 0) {
+            if (playersAlive.Count == 0)
+            {
                 return;
             }
 
@@ -129,6 +130,18 @@ namespace YGR
             UpdateZoom(.75f / stretch);
         }
 
+        private static void focusOnRoom()
+        {
+            if (Room == null)
+            {
+                Logger.Error("CameraMode set to Room but Room is not defined.");
+                return;
+            }
+            Position = new Vector2(Room.Rect.X + Room.Rect.Width / 2, Room.Rect.Y + Room.Rect.Height / 2);
+            var stretch = Math.Max((float)Room.Rect.Width / Bounds.Width, (float)Room.Rect.Height / Bounds.Height);
+            UpdateZoom(.95f / stretch);
+        }
+
         public static void UpdateCamera(Viewport bounds, float deltaTime)
         {
             Bounds = bounds.Bounds;
@@ -145,7 +158,7 @@ namespace YGR
                     break;
 
                 case CameraMode.Room:
-                    // All good here, we only update once when setting the room
+                    focusOnRoom();
                     break;
             }
         }
@@ -154,9 +167,6 @@ namespace YGR
         {
             Room = room;
             Mode = CameraMode.Room;
-            Position = new Vector2(Room.Rect.X + Room.Rect.Width / 2, Room.Rect.Y + Room.Rect.Height / 2);
-            var stretch = Math.Max((float)Room.Rect.Width / Bounds.Width, (float)Room.Rect.Height / Bounds.Height);
-            UpdateZoom(.95f / stretch);
         }
     }
 }
