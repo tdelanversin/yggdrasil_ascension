@@ -52,7 +52,7 @@ namespace YGR
                 position,
                 level,
                 new Y_WideGun(),
-                ControlLayout.ControllerOnly,
+                controlLayout,
                 scale: 1.0f
             ));
         }

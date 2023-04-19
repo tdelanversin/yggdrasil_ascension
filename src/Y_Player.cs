@@ -36,7 +36,6 @@ namespace YGR
         int _animationIndex;
         IShooter _gun;
         PlayerIndex _playerIndex;
-        X_ConnectorSide _lastSide;
         bool _isAiming;
         Vector2 _aimDirection;
         private Vector2 _acceleration;
@@ -47,6 +46,13 @@ namespace YGR
         private Rectangle _rect;
         private Vector2 _position;
         private ControlLayout _controlLayout;
+        private InputType _currentAimInput;
+
+        private enum InputType
+        {
+            Controller = 0,
+            KeyboardMouse,
+        }
 
         public SimplePlayer(
             PlayerIndex playerIndex,
@@ -104,36 +110,25 @@ namespace YGR
 
         public X_LevelElements WhatAreYou()
         {
-            if (LifePoints < 1)
-            {
-                return X_LevelElements.Ghost;
-            }
-            else
+            if (IsAlive())
             {
                 return X_LevelElements.Victim;
             }
+            else
+            {
+                return X_LevelElements.Ghost;
+            }
         }
 
-        /// <summary>
-        /// Regular Monogame Update method
-        /// </summary>
-        /// <param name="gameTime">Monogame GameTime</param>
-        public void Update(GameTime gameTime)
+        public bool IsAlive()
         {
-            Vector2 input = Vector2.Zero;
+            return LifePoints > 0;
+        }
+
+        /* Handle GamePad movement, aiming and shooting */
+        public void HandleGamepadInput(GameTime gameTime, ref Vector2 input)
+        {
             GamePadState gpState = GamePad.GetState(_playerIndex);
-
-            if (HitInLastLoop)
-            {
-                HitInLastLoop = false;
-            }
-
-            if (LifePoints < 1)
-            {
-                return; // he dead
-            }
-
-            // Gamepad control
             if (gpState.IsConnected)
             {
                 if (gpState.IsButtonDown(Buttons.LeftThumbstickRight)) input.X += gpState.ThumbSticks.Left.X;
@@ -154,19 +149,24 @@ namespace YGR
                     newAimDirection.Normalize();
                     _aimDirection = newAimDirection;
                     _isAiming = true;
+                    _currentAimInput = InputType.Controller;
                 }
                 else
                 {
                     _isAiming = false;
                 }
-                if (gpState.IsButtonDown(Buttons.RightShoulder) || gpState.IsButtonDown(Buttons.RightTrigger))
+                if ((gpState.IsButtonDown(Buttons.RightShoulder) || gpState.IsButtonDown(Buttons.RightTrigger)) && IsAlive())
                 {
                     _isAiming = true; // Show the aim indicator when firing
+                    _currentAimInput = InputType.Controller;
                     _gun.Shoot(gameTime, Rect.Center.ToVector2(), _aimDirection, Level, this);
                 }
             }
+        }
 
-            // Mouse & Keyboard control
+        /* Handle Keyboard & Mouse movement, aiming and shooting */
+        public void HandleMouseKeyboardInput(GameTime gameTime, ref Vector2 input)
+        {
             if (_controlLayout > 0)
             {
                 if (_controlLayout == ControlLayout.KeyboardWASD)
@@ -192,30 +192,32 @@ namespace YGR
                     newAimDirection.Normalize();
                     _aimDirection = newAimDirection;
                 }
-                if (mouse.LeftButton == ButtonState.Pressed)
+                if (mouse.LeftButton == ButtonState.Pressed && IsAlive())
                 {
                     _gun.Shoot(gameTime, playerCenter, _aimDirection, Level, this);
                 }
+
+                if (Input.HasMouseStateChanged())
+                {
+                    _currentAimInput = InputType.KeyboardMouse;
+                }
             }
+        }
 
-            _gun.Update(gameTime);
-
-            bool controls = false;
-            if (input != Vector2.Zero) controls = true;
-            if (input.LengthSquared() > 1)
-            {
-                input.Normalize();
-            }
-
+        public void UpdateVelocity(Vector2 input, GameTime gameTime)
+        {
+            int timeStepMS = gameTime.ElapsedGameTime.Milliseconds;
 
             /* ##########################################################################
              * Speed and velocity handling based on control input
              *  => must happen before collision handling <=
              * ########################################################################## */
-            int timeStepMS = gameTime.ElapsedGameTime.Milliseconds;
-            //Logger.Info(Velocity.ToString() + "    " + MaxVelocity.ToString());
-            if (controls)
+            if (input != Vector2.Zero)
             {
+                if (input.LengthSquared() > 1)
+                {
+                    input.Normalize();
+                }
                 Velocity += input * _acceleration * timeStepMS;
             }
             else
@@ -224,6 +226,7 @@ namespace YGR
                     Math.Sign(Velocity.X) * Math.Max(0.0f, Math.Abs(Velocity.X) - _deceleration.X * timeStepMS),
                     Math.Sign(Velocity.Y) * Math.Max(0.0f, Math.Abs(Velocity.Y) - _deceleration.Y * timeStepMS));
             }
+
             Velocity = Vector2.Clamp(Velocity, -_maxVelocity, _maxVelocity);
 
             /* ##########################################################################
@@ -238,13 +241,21 @@ namespace YGR
                 //Logger.Info("Collided with something");
                 Velocity = newVelocity;
             }
-            //Rectangle rect = me.Rect;
-            //rect.Location += (me.Velocity * timeStepMS).ToPoint();
-            //me.Rect = rect;
 
             _position += newVelocity * timeStepMS;
             _rect.Location = _position.ToPoint();
-            /* ########################################################################## */
+        }
+
+        public void Update(GameTime gameTime)
+        {
+            GamePadState gpState = GamePad.GetState(_playerIndex);
+
+            Vector2 input = Vector2.Zero;
+            HandleGamepadInput(gameTime, ref input);
+            HandleMouseKeyboardInput(gameTime, ref input);
+            UpdateVelocity(input, gameTime);
+
+            _gun.Update(gameTime);
         }
 
         /// <summary>
@@ -256,7 +267,7 @@ namespace YGR
         public void Draw(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)
         {
             Color color = Color.White;
-            if (LifePoints < 1)
+            if (!IsAlive())
             {
                 // Render ghosty 👻
                 spriteBatch.Draw(
@@ -272,8 +283,8 @@ namespace YGR
                 Color.White, 0, Vector2.Zero, Scale, SpriteEffects.None, 0);
             spriteBatch.DrawString(Fonts.Normal, LifePoints.ToString(), new Vector2(_rect.Location.X + 30, _rect.Location.Y - 10), Color.Wheat);
 
-            // Draw a targeting indicator if the player is actively aiming or using mouse controls
-            if (_isAiming || _controlLayout > 0)
+            // Draw an aiming indicator if the player is actively aiming or using mouse controls
+            if (_currentAimInput == InputType.Controller && _isAiming || _currentAimInput == InputType.KeyboardMouse)
             {
                 var angle = Math.Atan2(_aimDirection.Y, _aimDirection.X) + Math.PI / 2;
                 spriteBatch.Draw(
