@@ -150,7 +150,7 @@ namespace YGR
 
         public IWalkable GetRoom(IGameElement elem, IWalkable currentRoom)
         {
-            var location = elem.Rect.Location + new Point(Rect.Width / 2, Rect.Height / 2);
+            var location = elem.Rect.Location + new Point(elem.Rect.Width / 2, elem.Rect.Height / 2);
             if (currentRoom != null && currentRoom.Rect.Contains(location))
             {
                 return currentRoom;
