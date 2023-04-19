@@ -51,7 +51,7 @@ namespace YGR
                 playerIndex,
                 position,
                 level,
-                new Y_WideGun(),
+                Util.getRandomGun(),
                 controlLayout,
                 scale: 1.0f
             ));
@@ -68,7 +68,7 @@ namespace YGR
                 playerIndex,
                 position,
                 level,
-                new Y_FunkyGun(),
+                Util.getRandomGun(),
                 controlLayout,
                 scale: 1.0f
                 ));
