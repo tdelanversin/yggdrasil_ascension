@@ -100,14 +100,14 @@ namespace YGR
 
             Manager_Players.ClearPlayers();
 
-            Manager_Players.AddPlayer_Ninja(PlayerIndex.One, new Vector2(350, 150), _level, ControlLayout.KeyboardWASD);
+            Manager_Players.AddPlayer_Ninja(PlayerIndex.One, new Vector2(200, 180), _level, ControlLayout.KeyboardWASD);
 
-            for (int i = 1; i < 4; i++)
+            for (int i = 2; i < 4; i++)
             {
                 PlayerIndex playerIndex = (PlayerIndex)i;
                 if (GamePad.GetState(playerIndex).IsConnected)
                 {
-                    Manager_Players.AddPlayer_SimplePlayer(playerIndex, position: new Vector2(350, 150 + i * 100), _level);
+                    Manager_Players.AddPlayer_SimplePlayer(playerIndex, position: new Vector2(200, 180 + i * 180), _level);
                 }
             }
             
