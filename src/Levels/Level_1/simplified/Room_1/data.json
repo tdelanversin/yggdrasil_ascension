@@ -1,0 +1,72 @@
+{
+	"identifier": "Room_1",
+	"uniqueIdentifer": "b5fa6fa0-c640-11ed-a825-1ba82e6baeb4",
+	"x": -1,
+	"y": -1,
+	"width": 896,
+	"height": 704,
+	"bgColor": "#1B1B2E",
+	"neighbourLevels": [],
+	"customFields" : {},
+	"layers": [
+		"Tiles3.png",
+		"Tiles2.png",
+		"Tiles.png"
+	],
+	"entities": {
+		"Door": [
+			{
+				"id": "Door",
+				"iid": "b5fa96b4-c640-11ed-a825-c18e8834b6d6",
+				"layer": "Triggerables",
+				"x": 240,
+				"y": 32,
+				"width": 32,
+				"height": 32,
+				"color": 11111280,
+				"customFields": {
+					"locked": false
+				}
+			},
+			{
+				"id": "Door",
+				"iid": "b5fa96b5-c640-11ed-a825-698b6a88949c",
+				"layer": "Triggerables",
+				"x": 656,
+				"y": 704,
+				"width": 32,
+				"height": 32,
+				"color": 11111280,
+				"customFields": {
+					"locked": false
+				}
+			},
+			{
+				"id": "Door",
+				"iid": "b5fa96b6-c640-11ed-a825-21c29135eb29",
+				"layer": "Triggerables",
+				"x": 16,
+				"y": 352,
+				"width": 32,
+				"height": 32,
+				"color": 11111280,
+				"customFields": {
+					"locked": false
+				}
+			},
+			{
+				"id": "Door",
+				"iid": "b5fa96b7-c640-11ed-a825-65ac37d696a7",
+				"layer": "Triggerables",
+				"x": 880,
+				"y": 352,
+				"width": 32,
+				"height": 32,
+				"color": 11111280,
+				"customFields": {
+					"locked": false
+				}
+			}
+		]
+	}
+}

@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using Microsoft.Xna.Framework.Media;
 using Microsoft.Xna.Framework.Audio;
+using System.Linq;
 
 namespace YGR
 {
@@ -50,7 +51,7 @@ namespace YGR
             Camera.Bounds = _graphics.GraphicsDevice.Viewport.Bounds;
 
             // Set the camera mode, e.g. 'Follow' to follow players, 'Manual' for keyboard controlled
-            Camera.Mode = CameraMode.Follow;
+            Camera.Mode = CameraMode.Room;
 
             Factory_Debug.Initialize(Content);
             Manager_Projectile.Initialize(Content);
@@ -69,7 +70,7 @@ namespace YGR
 
             
             // Uncomment to play intro sound in a loop
-            MediaPlayer.Play(Manager_Sound.AddSong_Intro());
+            //MediaPlayer.Play(Manager_Sound.AddSong_Intro());
             MediaPlayer.IsRepeating = true;
             MediaPlayer.MediaStateChanged += MediaPlayer_MediaStateChanged;
         }
@@ -103,7 +104,7 @@ namespace YGR
               for a smooth transition.
             */
 
-            _level = new Y_Level("level_0", 48, "Levels/Level_0", GraphicsDevice);
+            _level = new Y_Level("level_0", 32, "Levels/Level_1/simplified", GraphicsDevice);
 
             _player = new List<IVictim>{
                 new Ninja(
@@ -195,6 +196,8 @@ namespace YGR
                     )
                 );
             }
+
+            Camera.focusOnRoom(_player.ElementAt(0).Room);
 
             // Pass players to camera so it can follow their positions
             Camera.Players = _player;

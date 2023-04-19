@@ -1,4 +1,5 @@
 ﻿using Assimp;
+using Microsoft.VisualBasic;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using SharpDX.D3DCompiler;
@@ -6,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 
 
@@ -288,19 +290,47 @@ namespace YGR
         {
             if (room.ResourceFolder != "")
             {
-                string fileName = "shade";
+                string fileName = "shade_";
                 string identifier = DateTime.Now.ToLongDateString() + " - " + DateTime.Now.ToLongTimeString() + "\n";
+                identifier += "V2\n";
                 foreach (var light in lights)
                 {
-                    identifier += light.GetIdentifier(room) + "|";
+                    if (light.IlluminationRect.Intersects(room.Rect))
+                    {
+                        identifier += light.GetIdentifier(room) + "|";
+                    }
                 }
-                identifier = identifier.Substring(0, identifier.Length - 1);
+                if(identifier.EndsWith("|"))
+                    identifier = identifier.Substring(0, identifier.Length - 1);
                 identifier += "\n";
                 identifier += string.Join("", shadeTemplate.Select(x => x ? "1" : "0"));
 
+                var srcPath = Util.GetAbsResourceFolderPath(room.ResourceFolder);
+
+                var time = DateAndTime.Now;
+                var random = new Random();
+
+                fileName += 
+                    time.Year.ToString() +
+                    time.Month.ToString().PadLeft(2, '0') +
+                    time.Day.ToString().PadLeft(2, '0') +
+                    time.Hour.ToString().PadLeft(2, '0') +
+                    time.Minute.ToString().PadLeft(2, '0') +
+                    time.Second.ToString().PadLeft(2, '0') +
+                    time.Millisecond.ToString() +
+                    "_" +
+                    random.Next().ToString();
+
+                // write to all available directories: current runtime directory and source code directory
                 File.WriteAllText(room.ResourceFolder + fileName, identifier);
+                File.WriteAllText(srcPath + fileName, identifier);
             }
         }
+
+        //private static bool[] loadShadeFromFile()
+        //{
+
+        //}
 
         //public static bool[] LoadShadeTemplate(IWalkable room)
         //{

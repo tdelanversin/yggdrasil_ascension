@@ -45,15 +45,8 @@ namespace YGR
             GraphicsDevice graphicsDevice
         )
         {
-            if (resourceFolder.Substring(0, 1) == "/")
-                resourceFolder = "." + resourceFolder;
-            else if (resourceFolder.Substring(0, 2) != "./")
-                resourceFolder = "./" + resourceFolder;
-            if (resourceFolder.Substring(resourceFolder.Length - 2, 1) != "/")
-                resourceFolder += "/";
-
-            ResourceFolder = resourceFolder;
-            string[] lines = File.ReadAllLines(resourceFolder + "Collisions.csv");
+            ResourceFolder = Util.PathOsNormalization(resourceFolder);
+            string[] lines = File.ReadAllLines(ResourceFolder + "Collisions.csv");
             int[][] collisions = new int[lines.Length][];
             int counter = 0;
             foreach (var line in lines)
@@ -69,7 +62,7 @@ namespace YGR
 
             Doors = new Dictionary<X_ConnectorSide, IList<X_ConnectorPoint>>();
             DoorRooms = new Dictionary<X_ConnectorSide, IList<IWalkable>>();
-            using (StreamReader stream = new StreamReader(resourceFolder + "data.json"))
+            using (StreamReader stream = new StreamReader(ResourceFolder + "data.json"))
             {
                 string json = stream.ReadToEnd();
                 dynamic array = JsonConvert.DeserializeObject(json);
@@ -93,61 +86,61 @@ namespace YGR
 
             Name = name;
 
-            using(FileStream fileStream = new FileStream(resourceFolder + "_composite.png", FileMode.Open)){
+            using(FileStream fileStream = new FileStream(ResourceFolder + "_composite.png", FileMode.Open)){
                 _floor = Texture2D.FromStream(graphicsDevice, fileStream);
             }
-            using (FileStream fileStream = new FileStream(resourceFolder + "Custom_grounds.png", FileMode.Open))
-            {
-                _window = Texture2D.FromStream(graphicsDevice, fileStream);
-            }
+            //using (FileStream fileStream = new FileStream(ResourceFolder + "Custom_grounds.png", FileMode.Open))
+            //{
+            //    _window = Texture2D.FromStream(graphicsDevice, fileStream);
+            //}
 
             TextureTileSize = _floor.Height / collisions.Length;
 
-            int len = _window.Width * _window.Height;
-            Color[] groundData = new Color[len];
-            _window.GetData<Color>(groundData);
-            Color[] floorData = new Color[len];
-            _floor.GetData<Color>(floorData);
-            Color[] newData = new Color[len];
+            //int len = _window.Width * _window.Height;
+            //Color[] groundData = new Color[len];
+            //_window.GetData<Color>(groundData);
+            //Color[] floorData = new Color[len];
+            //_floor.GetData<Color>(floorData);
+            //Color[] newData = new Color[len];
 
-            int minh = int.MaxValue;
-            int minw = int.MaxValue;
-            int maxh = int.MinValue;
-            int maxw = int.MinValue;
-            for (int h = 0; h < _window.Height; ++h)
-            {
-                for (int w = 0; w < _window.Width; ++w)
-                {
-                    if(groundData[h*_window.Width +w].A == 0)
-                    {
-                        if (minh > h) minh = h;
-                        if (maxh < h) maxh = h;
-                        if (minw > w) minw = w;
-                        if (maxw < w) maxw = w;
-                    }
-                }
-            }
+            //int minh = int.MaxValue;
+            //int minw = int.MaxValue;
+            //int maxh = int.MinValue;
+            //int maxw = int.MinValue;
+            //for (int h = 0; h < _window.Height; ++h)
+            //{
+            //    for (int w = 0; w < _window.Width; ++w)
+            //    {
+            //        if(groundData[h*_window.Width +w].A == 0)
+            //        {
+            //            if (minh > h) minh = h;
+            //            if (maxh < h) maxh = h;
+            //            if (minw > w) minw = w;
+            //            if (maxw < w) maxw = w;
+            //        }
+            //    }
+            //}
 
-            minh = minh + TextureTileSize / 2;
-            minw = minw + TextureTileSize / 2;
-            maxh = maxh - TextureTileSize / 2;
-            maxw = maxw - TextureTileSize / 2;
+            //minh = minh + TextureTileSize / 2;
+            //minw = minw + TextureTileSize / 2;
+            //maxh = maxh - TextureTileSize / 2;
+            //maxw = maxw - TextureTileSize / 2;
 
-            RegionColor = floorData[minh * _window.Width + minw];
+            //RegionColor = floorData[minh * _window.Width + minw];
 
-            for (int h = 0; h < _window.Height; ++h)
-            {
-                for (int w = 0; w < _window.Width; ++w)
-                {
-                    if (h >= minh && w >= minw && h < maxh && w < maxw)
-                    {
-                        newData[h * _window.Width + w] = floorData[h * _window.Width + w];
-                    }
-                    else newData[h * _window.Width + w] = RegionColor;
-                }
-            }
+            //for (int h = 0; h < _window.Height; ++h)
+            //{
+            //    for (int w = 0; w < _window.Width; ++w)
+            //    {
+            //        if (h >= minh && w >= minw && h < maxh && w < maxw)
+            //        {
+            //            newData[h * _window.Width + w] = floorData[h * _window.Width + w];
+            //        }
+            //        else newData[h * _window.Width + w] = RegionColor;
+            //    }
+            //}
 
-            _floor.SetData<Color>(newData);
+            //_floor.SetData<Color>(newData);
 
             Scale = (float)tileHeight * collisions.Length / _floor.Height;
         }

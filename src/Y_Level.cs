@@ -32,12 +32,7 @@ namespace YGR
         {
             _name = name;
 
-            if (resourceFolder.Substring(0, 1) == "/")
-                resourceFolder = "." + resourceFolder;
-            else if (resourceFolder.Substring(0, 2) != "./")
-                resourceFolder = "./" + resourceFolder;
-            if (resourceFolder.Substring(resourceFolder.Length - 2, 1) != "/")
-                resourceFolder += "/";
+            resourceFolder = Util.PathOsNormalization(resourceFolder);
 
             TileWidth = tileSize;
             TileHeight = tileSize;
@@ -46,12 +41,12 @@ namespace YGR
             int connectorWidth = 17;
             Rooms = new Dictionary<string, IWalkable>
             {
-                { "center", new Y_CMRoom("r2", TileWidth, TileHeight, resourceFolder + "R2", graphicsDevice) },
-                { "middle", new Y_CMRoom("r0", TileWidth, TileHeight, resourceFolder + "R0", graphicsDevice) },
-                { "top", new Y_CMRoom("r1", TileWidth, TileHeight, resourceFolder + "R1", graphicsDevice) },
-                { "left", new Y_CMRoom("r3-L", TileWidth, TileHeight, resourceFolder + "R3", graphicsDevice) },
-                { "right", new Y_CMRoom("r3-R", TileWidth, TileHeight, resourceFolder + "R3", graphicsDevice) },
-                { "bottom", new Y_CMRoom("r3-B", TileWidth, TileHeight, resourceFolder + "R3", graphicsDevice) },
+                { "center", new Y_CMRoom("r2", TileWidth, TileHeight, resourceFolder + "Room_0", graphicsDevice) },
+                { "middle", new Y_CMRoom("r0", TileWidth, TileHeight, resourceFolder + "Room_0", graphicsDevice) },
+                { "top", new Y_CMRoom("r1", TileWidth, TileHeight, resourceFolder + "Room_0", graphicsDevice) },
+                { "left", new Y_CMRoom("r3-L", TileWidth, TileHeight, resourceFolder + "Room_0", graphicsDevice) },
+                { "right", new Y_CMRoom("r3-R", TileWidth, TileHeight, resourceFolder + "Room_0", graphicsDevice) },
+                { "bottom", new Y_CMRoom("r3-B", TileWidth, TileHeight, resourceFolder + "Room_0", graphicsDevice) },
                 { "door-center-to-middle", new Y_Door(X_DoorDirection.Vertical, connectorWidth, TileWidth, TileHeight, -7, graphicsDevice) },
                 { "door-center-to-left", new Y_Door(X_DoorDirection.Horizontal, connectorWidth, TileWidth, TileHeight, 9, graphicsDevice) },
                 { "door-center-to-right", new Y_Door(X_DoorDirection.Horizontal, connectorWidth, TileWidth, TileHeight, -3, graphicsDevice) },
