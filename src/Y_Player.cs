@@ -16,7 +16,7 @@ namespace YGR
     public class SimplePlayer : IVictim
     {
         // IGameElement fields
-        public float Scale { get; private set; }
+        public float Scale { get; protected set; }
         public Rectangle Rect { get { return _rect; } set { _rect = value; } }
 
         // IVictim fields
@@ -28,27 +28,27 @@ namespace YGR
         public IWalkable Room { get; set; }
 
         // private fields
-        Texture2D _spritePlayer;
-        Texture2D _spriteGhost;
-        Texture2D _spriteAimIndicator;
-        Rectangle _spriteDimensions;
-        Dictionary<string, int[]> _animations;
-        int _animationIndex;
-        IShooter _gun;
-        PlayerIndex _playerIndex;
-        bool _isAiming;
-        Vector2 _aimDirection;
-        private Vector2 _acceleration;
-        private Vector2 _deceleration;
-        private Vector2 _maxVelocity;
-        private float _mass;
-        private float _cr;
-        private Rectangle _rect;
-        private Vector2 _position;
-        private ControlLayout _controlLayout;
-        private InputType _currentAimInput;
+        protected bool _isAiming;
+        protected ControlLayout _controlLayout;
+        protected Dictionary<string, int[]> _animations;
+        protected float _cr;
+        protected float _mass;
+        protected InputType _currentAimInput;
+        protected int _animationIndex;
+        protected IShooter _gun;
+        protected PlayerIndex _playerIndex;
+        protected Rectangle _rect;
+        protected Rectangle _spriteDimensions;
+        protected Texture2D _spriteAimIndicator;
+        protected Texture2D _spriteGhost;
+        protected Texture2D _spritePlayer;
+        protected Vector2 _acceleration;
+        protected Vector2 _aimDirection;
+        protected Vector2 _deceleration;
+        protected Vector2 _maxVelocity;
+        protected Vector2 _position;
 
-        private enum InputType
+        protected enum InputType
         {
             Controller = 0,
             KeyboardMouse,
@@ -83,8 +83,8 @@ namespace YGR
                 { "walk_right", new int[] { 5, 6, 7 } }};
 
             Velocity = Vector2.Zero;
-            _acceleration = Vector2.One * 0.004f;
-            _deceleration = Vector2.One * 0.004f;
+            _acceleration = Vector2.One * 0.008f;
+            _deceleration = Vector2.One * 0.008f;
             _maxVelocity = Vector2.One * 0.4f;
 
             _mass = 1.0f;
@@ -204,7 +204,7 @@ namespace YGR
             }
         }
 
-        public void UpdateVelocity(Vector2 input, GameTime gameTime)
+        public virtual void UpdateVelocity(Vector2 input, GameTime gameTime)
         {
             int timeStepMS = gameTime.ElapsedGameTime.Milliseconds;
 
@@ -228,7 +228,11 @@ namespace YGR
             }
 
             Velocity = Vector2.Clamp(Velocity, -_maxVelocity, _maxVelocity);
+        }
 
+        public virtual void UpdateCollision(GameTime gameTime)
+        {
+            int timeStepMS = gameTime.ElapsedGameTime.Milliseconds;
             /* ##########################################################################
              * Collision with everything handling (takes care of location update as well)
              * ########################################################################## */
@@ -246,52 +250,67 @@ namespace YGR
             _rect.Location = _position.ToPoint();
         }
 
-        public void Update(GameTime gameTime)
+        public virtual void Update(GameTime gameTime)
         {
-            GamePadState gpState = GamePad.GetState(_playerIndex);
-
             Vector2 input = Vector2.Zero;
             HandleGamepadInput(gameTime, ref input);
             HandleMouseKeyboardInput(gameTime, ref input);
             UpdateVelocity(input, gameTime);
-
+            UpdateCollision(gameTime);
             _gun.Update(gameTime);
         }
 
-        /// <summary>
-        /// Regular Draw method for all drawable objects
-        /// </summary>
-        /// <param name="gameTime">Monogame GameTime</param>
-        /// <param name="globalOffset">If you don't know what, put Vector2.Zero</param>
-        /// <param name="spriteBatch">Active Monogame SpriteBatch</param>
-        public void Draw(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)
+        // Render ghosty 👻
+        protected virtual void DrawGhost(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)
         {
-            Color color = Color.White;
-            if (!IsAlive())
-            {
-                // Render ghosty 👻
-                spriteBatch.Draw(
-                    _spriteGhost,
-                    new Rectangle(_rect.X, _rect.Y, _rect.Width, _rect.Height),
-                    new Rectangle(0, 0, 180, 180), Color.White);
-                return;
-            }
+            spriteBatch.Draw(
+                _spriteGhost,
+                new Rectangle(_rect.X, _rect.Y, _rect.Width, _rect.Height),
+                new Rectangle(0, 0, 180, 180), Color.White);
+        }
 
+        protected virtual void DrawPlayer(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)
+        {
             spriteBatch.Draw(
                 _spritePlayer, _rect.Location.ToVector2(),
                 new Rectangle(_animationIndex * _spriteDimensions.Width, 0, _spriteDimensions.Width, _spriteDimensions.Height),
                 Color.White, 0, Vector2.Zero, Scale, SpriteEffects.None, 0);
-            spriteBatch.DrawString(Fonts.Normal, LifePoints.ToString(), new Vector2(_rect.Location.X + 30, _rect.Location.Y - 10), Color.Wheat);
+        }
 
-            // Draw an aiming indicator if the player is actively aiming or using mouse controls
+        protected virtual void DrawOverheadString(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)
+        {
+            // TODO: Improve
+            string str = "P" + (int)_playerIndex + ": " + LifePoints.ToString();
+            float str_width = Fonts.Normal.MeasureString(str).X;
+            spriteBatch.DrawString(Fonts.Normal, str, new Vector2(_rect.Location.X + _rect.Width / 2 - str_width / 2, _rect.Location.Y - 16), Color.Wheat);
+        }
+
+        protected virtual void DrawAimIndicator(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)
+        {
+            // Draw an indicator only if a) the player is actively aiming on the gamepad or b) is using mouse to aim
             if (_currentAimInput == InputType.Controller && _isAiming || _currentAimInput == InputType.KeyboardMouse)
             {
                 var angle = Math.Atan2(_aimDirection.Y, _aimDirection.X) + Math.PI / 2;
                 spriteBatch.Draw(
-                    _spriteAimIndicator, _rect.Location.ToVector2() + _spriteDimensions.Center.ToVector2() + _aimDirection * _spritePlayer.Height,
+                    _spriteAimIndicator, _rect.Location.ToVector2() + _spriteDimensions.Center.ToVector2() + _aimDirection * _spriteDimensions.Height,
                     null,
                     Color.White, (float)angle, new Vector2(_spriteAimIndicator.Width / 2, 0), 0.1f, SpriteEffects.None, 0);
             }
+        }
+
+        public virtual void Draw(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)
+        {
+            if (IsAlive())
+            {
+                DrawPlayer(gameTime, globalOffset, spriteBatch);
+                DrawOverheadString(gameTime, globalOffset, spriteBatch);
+            }
+            else
+            {
+                DrawGhost(gameTime, globalOffset, spriteBatch);
+            }
+
+            DrawAimIndicator(gameTime, globalOffset, spriteBatch);
         }
 
         /// <summary>
@@ -300,13 +319,13 @@ namespace YGR
         /// <param name="gameTime">Monogame GameTime object</param>
         /// <param name="globalOffset">If it's not clear, then Vector2.Zero</param>
         /// <param name="spriteBatch">Mogogame SpriteBatch</param>
-        public void DrawOutline(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)
+        public virtual void DrawOutline(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)
         {
             Factory_Debug.DrawRectangle(_rect.X, _rect.Y, _rect.Width, _rect.Height, 1, Color.OrangeRed, spriteBatch);
             Collision.DrawOutline(gameTime, globalOffset, spriteBatch);
         }
     }
-    public class Ninja : IVictim // Y_Sprite
+    public class Ninja : SimplePlayer // Y_Sprite
     {
         private bool _isDashing;
         private int _dashDuration;
@@ -314,10 +333,6 @@ namespace YGR
         private int _dashTimer;
         private int _dashCooldown;
         private int _dashCooldownTimer;
-
-        private Texture2D _sprite;
-        private Texture2D _ghostSprite;
-        private Texture2D _targetIndicator;
 
         // A timer that stores milliseconds.
         float timer;
@@ -329,61 +344,28 @@ namespace YGR
         // These bytes tell the spriteBatch.Draw() what sourceRectangle to display.
         byte previousAnimationIndex;
         byte currentAnimationIndex;
-        PlayerIndex? _playerIndex;
-
-        public float Scale { get; private set; }
-        public int LifePoints { get; set; }
-        public bool HitInLastLoop { get; set; }
-        public X_CollisionModel_Victim Collision { get; }
-        public Vector2 Velocity { get; set; }
-        public Rectangle Rect { get { return _rect; } set { _rect = value; } }
-        public Y_Level Level { get; set; }
-        public IWalkable Room { get; set; }
-        IShooter _gun;
-
-        private Rectangle _rect;
-        Vector2 _position;
-        Vector2 _maxVelocity;
-        private int _controlLayout;
-        private bool _isAiming;
-        private Vector2 _aimDirection;
 
         public Ninja(
-            X_CollisionModel_Victim collision,
             PlayerIndex playerIndex,
-            Texture2D texture,
-            Texture2D ghostTexture,
-            Texture2D targetIndicator,
-            float maxVelocity,
-            Vector2 position,
+            Vector2 initialPosition,
             Y_Level level,
             IShooter gun,
-            int controlLayout = 1,
+            ControlLayout controlLayout = ControlLayout.ControllerOnly,
             float scale = 1.0f
-        )
+            ) : base(playerIndex, initialPosition, level, gun, controlLayout, scale)
         {
+            /* Overrides from base class */
+            _spritePlayer = Manager_Players.SpriteNinja;
+            LifePoints = 8; // Ninja squishy
+            _maxVelocity = Vector2.One * 0.5f; // Ninja go fast
+
+            /* Class specifics */
             _isDashing = false;
             _dashDuration = 100; // Dash duration in ms
-            _dashSpeed = 4f; // Dash speed multiplier
+            _dashSpeed = 3f; // Dash speed multiplier
             _dashTimer = 0;
-            _dashCooldown = 2000; // Dash cooldown in ms
-            _dashCooldownTimer = 2000;
-            _sprite = texture;
-            _ghostSprite = ghostTexture;
-            _targetIndicator = targetIndicator;
-            _playerIndex = playerIndex;
-            _controlLayout = controlLayout;
-            _gun = gun;
-            _aimDirection = new Vector2(1, 0);
-
-            Velocity = Vector2.Zero;
-            _maxVelocity = Vector2.One * maxVelocity;
-
-            Collision = collision;
-            Level = level;
-            LifePoints = 10;
-            HitInLastLoop = false;
-            Level.Victims.Add(this);
+            _dashCooldown = 1000; // Dash cooldown in ms
+            _dashCooldownTimer = _dashCooldown;
 
             // Set a default timer value.
             timer = 0;
@@ -435,131 +417,31 @@ namespace YGR
             };
 
             Rectangle rr = directionSourceRectangles["down"][0];
-            _position = position;
+            _spriteDimensions = new Rectangle(0, 0, rr.Width, rr.Height);
             _rect = new Rectangle(
-                (int)position.X - (int)(scale * rr.Width / 2),
-                (int)position.Y - (int)(scale * rr.Height / 2),
-                (int)(scale * rr.Width), (int)(scale * rr.Height)
+                (int)_position.X - (int)(scale * _spriteDimensions.Width / 2),
+                (int)_position.Y - (int)(scale * _spriteDimensions.Height / 2),
+                (int)(scale * _spriteDimensions.Width), (int)(scale * _spriteDimensions.Height)
             );
+
+            Scale = (float)Rect.Width / (float)_spriteDimensions.Width;
 
             // This tells the animation to start on the left-side sprite.
             previousAnimationIndex = 2;
             currentAnimationIndex = 1;
-
-            Scale = (float)_rect.Width / (float)rr.Width; ;
-            Room = Level.GetRoom(this, Room);
         }
 
-        public X_LevelElements WhatAreYou()
+        private void UpdateDash(GameTime gameTime)
         {
-            if (LifePoints < 1)
-            {
-                return X_LevelElements.Ghost;
-            }
-            else
-            {
-                return X_LevelElements.Victim;
-            }
-        }
-        public void Update(GameTime gameTime)
-        {
+            // Handle dash
             int timeStepMS = gameTime.ElapsedGameTime.Milliseconds;
-
-            if (HitInLastLoop)
-            {
-                HitInLastLoop = false;
-            }
-
-            if (LifePoints < 1)
-            {
-                return; // he dead
-            }
-
-            Vector2 input = Vector2.Zero;
-            GamePadState gpState = GamePad.GetState(_playerIndex.Value);
-
-            // Gamepad control
-            if (_playerIndex != null)
-            {
-                if (gpState.IsButtonDown(Buttons.LeftThumbstickRight)) input.X += gpState.ThumbSticks.Left.X;
-                if (gpState.IsButtonDown(Buttons.LeftThumbstickLeft)) input.X += gpState.ThumbSticks.Left.X;
-                if (gpState.IsButtonDown(Buttons.LeftThumbstickDown)) input.Y -= gpState.ThumbSticks.Left.Y;
-                if (gpState.IsButtonDown(Buttons.LeftThumbstickUp)) input.Y -= gpState.ThumbSticks.Left.Y;
-
-                if (
-                    gpState.IsButtonDown(Buttons.RightThumbstickRight) ||
-                    gpState.IsButtonDown(Buttons.RightThumbstickLeft) ||
-                    gpState.IsButtonDown(Buttons.RightThumbstickDown) ||
-                    gpState.IsButtonDown(Buttons.RightThumbstickUp)
-                )
-                {
-                    Vector2 newAimDirection = Vector2.One;
-                    newAimDirection.X *= gpState.ThumbSticks.Right.X;
-                    newAimDirection.Y *= -gpState.ThumbSticks.Right.Y;
-                    newAimDirection.Normalize();
-                    _aimDirection = newAimDirection;
-                    _isAiming = true;
-                }
-                else
-                {
-                    _isAiming = false;
-                }
-                if (gpState.IsButtonDown(Buttons.RightShoulder) || gpState.IsButtonDown(Buttons.RightTrigger))
-                {
-                    _isAiming = true; // Show the aim indicator when firing
-                    _gun.Shoot(gameTime, Rect.Center.ToVector2(), _aimDirection, Level, this);
-                }
-
-            }
-
-            // Mouse & Keyboard control
-            if (_controlLayout > 0)
-            {
-                if (_controlLayout == 1)
-                {
-                    if (Input.IsKeyDown(Keybinds.P1Right)) input.X += 1;
-                    if (Input.IsKeyDown(Keybinds.P1Left)) input.X -= 1;
-                    if (Input.IsKeyDown(Keybinds.P1Down)) input.Y += 1;
-                    if (Input.IsKeyDown(Keybinds.P1Up)) input.Y -= 1;
-                }
-                else if (_controlLayout == 2)
-                {
-                    if (Input.IsKeyDown(Keybinds.P2Right)) input.X += 1;
-                    if (Input.IsKeyDown(Keybinds.P2Left)) input.X -= 1;
-                    if (Input.IsKeyDown(Keybinds.P2Down)) input.Y += 1;
-                    if (Input.IsKeyDown(Keybinds.P2Up)) input.Y -= 1;
-                }
-                MouseState mouse = Mouse.GetState();
-                Vector2 playerCenter = Rect.Center.ToVector2();
-                if (!_isAiming) // Skip if controller is already aiming
-                {
-                    Vector2 mouseInGamePosition = mouse.Position.ToVector2() / Camera.Zoom + Camera.VisibleArea.Location.ToVector2();
-                    Vector2 newAimDirection = mouseInGamePosition - playerCenter;
-                    newAimDirection.Normalize();
-                    _aimDirection = newAimDirection;
-                }
-                if (mouse.LeftButton == ButtonState.Pressed)
-                {
-                    _gun.Shoot(gameTime, playerCenter, _aimDirection, Level, this);
-                }
-            }
-
-            _gun.Update(gameTime);
-            Velocity = input * _maxVelocity * timeStepMS;
-
             // Update the cooldown timer
             if (_dashCooldownTimer < _dashCooldown)
             {
                 _dashCooldownTimer += timeStepMS;
             }
 
-            if (!_isDashing && Input.IsKeyDown(Keybinds.P1Dash) && _dashCooldownTimer >= _dashCooldown)
-            {
-                _isDashing = true;
-                _dashTimer = 0;
-                _dashCooldownTimer = 0; // Reset timer
-            }
-            else if (!_isDashing && gpState.IsButtonDown(Buttons.A) && _dashCooldownTimer >= _dashCooldown)
+            if (!_isDashing && (Input.IsKeyDown(Keybinds.ActionOne) || Input.IsButtonDown(_playerIndex, Buttons.A)) && _dashCooldownTimer >= _dashCooldown)
             {
                 _isDashing = true;
                 _dashTimer = 0;
@@ -579,28 +461,21 @@ namespace YGR
                     Velocity *= _dashSpeed;
                 }
             }
+        }
 
-            //base.Update(gameTime);
-            IList<Vector2> contactNormals;
-            IList<Point> contactPoints;
-            IList<IGameElement> who;
-            Vector2 newVelocity;
-            if (Collision.Intersect(this, timeStepMS, out newVelocity, out contactPoints, out contactNormals, out who))
-            {
-                Velocity = newVelocity;
-            }
-            //Rectangle rect = me.Rect;
-            //rect.Location += (me.Velocity * timeStepMS).ToPoint();
-            //me.Rect = rect;
+        override public void Update(GameTime gameTime)
+        {
+            Vector2 input = Vector2.Zero;
+            HandleGamepadInput(gameTime, ref input);
+            HandleMouseKeyboardInput(gameTime, ref input);
 
-            _position += Velocity * timeStepMS;
-            _rect.Location = _position.ToPoint();
+            UpdateVelocity(input, gameTime);
+            UpdateDash(gameTime); // Updates Velocity directly for now, so call before UpdateCollision()
+            UpdateCollision(gameTime);
 
-            if (_isDashing)
-            {
-                Velocity /= _dashSpeed;
-            }
+            _gun.Update(gameTime);
 
+            // TODO: Improve sprite/animation stuff
             string direction = "down";
             if (input.X > 0)
             {
@@ -625,8 +500,6 @@ namespace YGR
 
             // Update the sourceRectangles array based on direction
             sourceRectangles = directionSourceRectangles[direction];
-
-
 
             // Check if the timer has exceeded the threshold.
             if (timer > threshold)
@@ -663,46 +536,13 @@ namespace YGR
 
         }
 
-        public void Draw(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)
+        override protected void DrawPlayer(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)
         {
-            if (LifePoints < 1)
-            {
-                // Render ghosty 👻
-                spriteBatch.Draw(
-                    _ghostSprite,
-                    new Rectangle(_rect.X, _rect.Y, _rect.Width, _rect.Height),
-                    new Rectangle(0, 0, 180, 180), Color.White);
-                return;
-            }
-
             spriteBatch.Draw(
-                    _sprite,
+                    _spritePlayer,
                     new Rectangle(
                         _rect.X, _rect.Y, _rect.Width, _rect.Height),
                         sourceRectangles[currentAnimationIndex], Color.White);
-            spriteBatch.DrawString(Fonts.Normal, LifePoints.ToString(), new Vector2(_rect.Location.X + 30 / 2, _rect.Location.Y - 10), Color.Wheat);
-
-            // Draw a targeting indicator if the player is actively aiming or using mouse controls
-            if (_isAiming || _controlLayout > 0)
-            {
-                var angle = Math.Atan2(_aimDirection.Y, _aimDirection.X) + Math.PI / 2;
-                spriteBatch.Draw(
-                    _targetIndicator, _rect.Center.ToVector2() + _aimDirection * 60,
-                    null,
-                    Color.White, (float)angle, new Vector2(_targetIndicator.Width / 2, 0), 0.1f, SpriteEffects.None, 0);
-            }
-        }
-
-        /// <summary>
-        /// Regular DrawOutline method for debugging
-        /// </summary>
-        /// <param name="gameTime">Monogame GameTime object</param>
-        /// <param name="globalOffset">If it's not clear, then Vector2.Zero</param>
-        /// <param name="spriteBatch">Mogogame SpriteBatch</param>
-        public void DrawOutline(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)
-        {
-            Factory_Debug.DrawRectangle(_rect.X, _rect.Y, _rect.Width, _rect.Height, 1, Color.OrangeRed, spriteBatch);
-            Collision.DrawOutline(gameTime, globalOffset, spriteBatch);
         }
     }
 }

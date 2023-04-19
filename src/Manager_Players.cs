@@ -64,19 +64,13 @@ namespace YGR
             ControlLayout controlLayout = ControlLayout.ControllerOnly
         )
         {
-            // TODO: clean this up after improving player -> ninja subclassing
             Players.Add(new Ninja(
-                    new X_CollisionModel_Victim(1.0f /* mass */, 0.0f /* elastic impact */),
-                    playerIndex,
-                    SpriteNinja,
-                    SpriteGhost,
-                    SpriteAimIndicator[(int)playerIndex],
-                    0.02f,
-                    position,
-                    level,
-                    new Y_StarterGun(),
-                    (int)controlLayout,
-                    1.0f
+                playerIndex,
+                position,
+                level,
+                new Y_FunkyGun(),
+                controlLayout,
+                scale: 1.0f
                 ));
         }
 
