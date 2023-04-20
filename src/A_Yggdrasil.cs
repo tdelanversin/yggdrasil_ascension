@@ -1,10 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
-using System;
-using System.Collections.Generic;
 using Microsoft.Xna.Framework.Media;
-using Microsoft.Xna.Framework.Audio;
 
 namespace YGR
 {
@@ -22,8 +19,6 @@ namespace YGR
         public GraphicsDeviceManager _graphics;
         public SpriteBatch _spriteBatch;
 
-        Texture2D _background;
-        IList<IVictim> _player;
         Y_Level _level;
         public GameState State;
         public GameState DesiredState;
@@ -48,13 +43,12 @@ namespace YGR
             var res_y = _graphics.PreferredBackBufferHeight;
             Camera.Position = new Vector2(res_x / 2, res_y / 2);
             Camera.Bounds = _graphics.GraphicsDevice.Viewport.Bounds;
-
-            // Set the camera mode, e.g. 'Follow' to follow players, 'Manual' for keyboard controlled
-            Camera.Mode = CameraMode.Follow;
+            Camera.Mode = CameraMode.Follow; /* 'Follow' to follow players, 'Manual' for keyboard controlled */
 
             Factory_Debug.Initialize(Content);
             Manager_Projectile.Initialize(Content);
             Manager_Enemies.Initialize(Content);
+            Manager_Players.Initialize();
 
             base.Initialize();
         }
@@ -64,10 +58,9 @@ namespace YGR
             Fonts.LoadContent(Content);
             Menu.LoadContent(Content);
             Manager_Sound.LoadContent(Content);
+            Manager_Players.LoadContent(Content);
             _spriteBatch = new SpriteBatch(GraphicsDevice);
 
-
-            
             // Uncomment to play intro sound in a loop
             MediaPlayer.Play(Manager_Sound.AddSong_Intro());
             MediaPlayer.IsRepeating = true;
@@ -105,103 +98,26 @@ namespace YGR
 
             _level = new Y_Level("level_0", 48, "Levels/Level_0", GraphicsDevice);
 
-            _player = new List<IVictim>{
-                new Ninja(
-                    new X_CollisionModel_Victim(1.0f /* mass */, 0.0f /* elastic impact */),
-                    PlayerIndex.One,
-                    Content.Load<Texture2D>("charaset"),
-                    Content.Load<Texture2D>("ghost"),
-                    Content.Load<Texture2D>("target_indicator_blue"),
-                    0.02f,
-                    new Vector2(350, 150),
-                    _level,
-                    new Y_StarterGun(),
-                    1, // Controll
-                    1.0f
-                )
-            };
-            if (GamePad.GetState(PlayerIndex.Two).IsConnected)
-            {
-                _player.Add(
-                    new Y_CMSprite(
-                        new X_CollisionModel_Victim(1.0f /* mass */, 0.0f /* elastic impact */),
-                        PlayerIndex.Two,
-                        Content.Load<Texture2D>("tester_60"),
-                        Content.Load<Texture2D>("ghost"),
-                        Content.Load<Texture2D>("target_indicator_red"),
-                        new Rectangle(0, 0, 42, 60),
-                        0.004f, // acceleration
-                        0.4f,  // max velocity
-                        new Vector2(350, 250),
-                        _level,
-                        200.0f,
-                        new Dictionary<string, int[]> {
-                                        { "stand", new int[] { 0, 1, 8, 9 } },
-                                        { "walk_left", new int[] { 2, 3, 4 } },
-                                        { "walk_right", new int[] { 5, 6, 7 } }},
-                        new Y_FunkyGun(),
-                        0, // control input
-                        1.0f
-                    )
-                );
-            }
-            if (GamePad.GetState(PlayerIndex.Three).IsConnected)
-            {
-                _player.Add(
-                new Y_CMSprite(
-                    new X_CollisionModel_Victim(1.0f /* mass */, 0.0f /* elastic impact */),
-                    PlayerIndex.Three,
-                    Content.Load<Texture2D>("tester_60"),
-                    Content.Load<Texture2D>("ghost"),
-                    Content.Load<Texture2D>("target_indicator_green"),
-                    new Rectangle(0, 0, 42, 60),
-                    0.004f, // acceleration
-                    0.4f,  // max velocity
-                    new Vector2(1050, 150),
-                    _level,
-                    200.0f,
-                    new Dictionary<string, int[]> {
-                                    { "stand", new int[] { 0, 1, 8, 9 } },
-                                    { "walk_left", new int[] { 2, 3, 4 } },
-                                    { "walk_right", new int[] { 5, 6, 7 } }},
-                    new Y_WideGun(),
-                    0, // control input
-                    1.0f
-                )
-                );
-            }
-            if (GamePad.GetState(PlayerIndex.Four).IsConnected)
-            {
-                _player.Add(
-                    new Y_CMSprite(
-                        new X_CollisionModel_Victim(1.0f /* mass */, 0.0f /* elastic impact */),
-                        PlayerIndex.Four,
-                        Content.Load<Texture2D>("tester_60"),
-                        Content.Load<Texture2D>("ghost"),
-                        Content.Load<Texture2D>("target_indicator_yellow"),
-                        new Rectangle(0, 0, 42, 60),
-                        0.004f, // acceleration
-                        0.4f,  // max velocity
-                        new Vector2(1050, 250),
-                        _level,
-                        200.0f,
-                        new Dictionary<string, int[]> {
-                                        { "stand", new int[] { 0, 1, 8, 9 } },
-                                        { "walk_left", new int[] { 2, 3, 4 } },
-                                        { "walk_right", new int[] { 5, 6, 7 } }},
-                        new Y_WideGun(),
-                        0, // control input
-                        1.0f
-                    )
-                );
-            }
+            Manager_Players.ClearPlayers();
 
+            Manager_Players.AddPlayer_Ninja(PlayerIndex.One, new Vector2(200, 180), _level, ControlLayout.KeyboardWASD);
+            Manager_Players.AddPlayer_SimplePlayer(PlayerIndex.Two, new Vector2(200, 360), _level, ControlLayout.KeyboardArrows);
+
+            for (int i = 2; i < 4; i++)
+            {
+                PlayerIndex playerIndex = (PlayerIndex)i;
+                if (GamePad.GetState(playerIndex).IsConnected)
+                {
+                    Manager_Players.AddPlayer_SimplePlayer(playerIndex, position: new Vector2(200, 180 + i * 180), _level);
+                }
+            }
+            
             // Pass players to camera so it can follow their positions
-            Camera.Players = _player;
+            Camera.Players = Manager_Players.Players;
 
             for (int i = 0; i < 6; i++)
             {
-                Manager_Enemies.AddEnemy_SimpleEnemy(new Vector2(1050 + i * 200, 350), _level, _player);
+                Manager_Enemies.AddEnemy_SimpleEnemy(new Vector2(1050 + i * 200, 350), _level, Manager_Players.Players);
             }
 
             // Once everything is in place, inform Update() of the new desired state
@@ -252,11 +168,7 @@ namespace YGR
 
                     Camera.UpdateCamera(_graphics.GraphicsDevice.Viewport, deltaTime);
 
-                    foreach (var player in _player)
-                    {
-                        player.Update(gameTime);
-                    }
-
+                    Manager_Players.Update(gameTime);
                     Manager_Projectile.Update(gameTime);
                     Manager_Enemies.Update(gameTime);
                     _level.Update(gameTime);
@@ -295,23 +207,15 @@ namespace YGR
                     _level.Draw(gameTime, Vector2.Zero, _spriteBatch);
 
                     Manager_Projectile.Draw(gameTime, zero, _spriteBatch);
-                    Manager_Projectile.DrawOutline(gameTime, zero, _spriteBatch);
 
                     Manager_Enemies.Draw(gameTime, zero, _spriteBatch);
-
-                    foreach (var player in _player)
-                    {
-                        player.Draw(gameTime, zero, _spriteBatch);
-                    }
+                    Manager_Players.Draw(gameTime, zero, _spriteBatch);
 
                     if (Settings.Outlines)
                     {
                         _level.DrawOutline(gameTime, Vector2.Zero, _spriteBatch);
                         Manager_Projectile.DrawOutline(gameTime, zero, _spriteBatch);
-                        foreach (var player in _player)
-                        {
-                            player.DrawOutline(gameTime, zero, _spriteBatch);
-                        }
+                        Manager_Players.DrawOutline(gameTime, zero, _spriteBatch);
                         Manager_Enemies.DrawOutline(gameTime, zero, _spriteBatch);
                     }
 

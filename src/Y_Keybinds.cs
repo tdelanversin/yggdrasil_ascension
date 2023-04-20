@@ -8,7 +8,7 @@ namespace YGR
         public static Keys P1Left = Keys.A;
         public static Keys P1Down = Keys.S;
         public static Keys P1Right = Keys.D;
-        public static Keys P1Dash = Keys.Space;
+        public static Keys ActionOne = Keys.Space;
 
         public static Keys P2Up = Keys.Up;
         public static Keys P2Left = Keys.Left;

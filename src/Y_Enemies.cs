@@ -186,10 +186,18 @@ namespace YGR
             }
         }
 
+        protected virtual void DrawOverheadString(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)
+        {
+            // TODO: Improve
+            string str = LifePoints.ToString();
+            float str_width = Fonts.Normal.MeasureString(str).X;
+            spriteBatch.DrawString(Fonts.Normal, str, new Vector2(_rect.Location.X + _rect.Width / 2 - str_width / 2, _rect.Location.Y - 16), Color.OrangeRed);
+        }
+
         public void Draw(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)
         {
             spriteBatch.Draw(Sprite, _rect, SpriteRect, _color);
-            spriteBatch.DrawString(Fonts.Normal, LifePoints.ToString(), new Vector2(_rect.Location.X + 30 / 2, _rect.Location.Y - 10), Color.Wheat);
+            DrawOverheadString(gameTime, globalOffset, spriteBatch);
         }
 
         public void DrawOutline(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)

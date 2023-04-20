@@ -5,7 +5,7 @@ using System.Collections.Generic;
 
 namespace YGR
 {
-    public class Y_StarterProjectile: IProjectile
+    public class Y_StarterProjectile : IProjectile
     {
         public float Scale { get; private set; }
         public bool DeleteNext { get; set; }
@@ -33,7 +33,8 @@ namespace YGR
             double timeCreated,
             Y_Level level,
             IGameElement who
-        ) {
+        )
+        {
             _sprite = Manager_Projectile.projectile_textures["smaller_projectile"];
             _window = new Rectangle(0, 0, 32, 32);
             _animationIndex = 0;
@@ -48,16 +49,26 @@ namespace YGR
             Collision = new X_CollisionModel_Projectile(0.5f, 1.0f);
 
             WhoFiredMe = who;
+            if (WhoFiredMe is IVictim)
+            { // Add 50% of the players momentum to the bullet. Adds 50% more fun to the game.
+                Velocity += ((IVictim)WhoFiredMe).Velocity * .5f;
+                /* 
+                TODO: Clamp the velocity and make sure the bullets don't go
+                backwards if the player is going backwards super fast (looking
+                at you, Ninja...)
+                */
+            }
             Room = Level.GetRoom(this, Room);
-            Scale = 0.25f*Room.Scale;
+            Scale = 0.25f * Room.Scale;
             _rect = new Rectangle(
-                (int)position.X - (int)((float)_window.Width / 2.0f * Scale), 
-                (int)position.Y - (int)((float)_window.Height / 2.0f * Scale), 
-                (int)(_window.Width * Scale), 
+                (int)position.X - (int)((float)_window.Width / 2.0f * Scale),
+                (int)position.Y - (int)((float)_window.Height / 2.0f * Scale),
+                (int)(_window.Width * Scale),
                 (int)(_window.Height * Scale));
         }
 
-        public void Update(GameTime gameTime) {
+        public void Update(GameTime gameTime)
+        {
             int timeStepMS = (int)gameTime.ElapsedGameTime.TotalMilliseconds;
 
             /* ##########################################################################
@@ -70,12 +81,12 @@ namespace YGR
             if (Collision.Intersect(this, timeStepMS, out newVelocity, out contactPoint, out contactNormal, out who))
             {
                 //Logger.Debug("Collided with something");
-                foreach(var obj in who)
+                foreach (var obj in who)
                 {
                     //Logger.Info(obj.WhatAreYou().ToString());
                     if (obj.WhatAreYou() == WhoFiredMe.WhatAreYou()) continue;
 
-                    if(obj.WhatAreYou() == X_LevelElements.Victim)
+                    if (obj.WhatAreYou() == X_LevelElements.Victim)
                     {
                         ((IVictim)obj).LifePoints = ((IVictim)obj).LifePoints - 1;
                         ((IVictim)obj).HitInLastLoop = true;
@@ -102,7 +113,8 @@ namespace YGR
             _animationIndex = (int)(5 - (gameTime.TotalGameTime.TotalMilliseconds - TimeCreated) / 300);
         }
 
-        public void Draw(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch) {
+        public void Draw(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)
+        {
             var destinationRectangle = new Rectangle(
                 _rect.X - (int)globalOffset.X,
                 _rect.Y - (int)globalOffset.Y,
@@ -141,7 +153,7 @@ namespace YGR
         }
     }
 
-    public class Y_ShotGunProjectile: IProjectile
+    public class Y_ShotGunProjectile : IProjectile
     {
         public float Scale { get; private set; }
         public bool DeleteNext { get; set; }
@@ -170,7 +182,8 @@ namespace YGR
             double timeCreated,
             Y_Level level,
             IGameElement who
-        ) {
+        )
+        {
             _sprite = Manager_Projectile.projectile_textures["smaller_projectile"];
             _window = new Rectangle(0, 0, 32, 32);
             _animationIndex = 0;
@@ -185,17 +198,27 @@ namespace YGR
             Collision = new X_CollisionModel_Projectile(0.1f, 1.0f);
 
             WhoFiredMe = who;
+            if (WhoFiredMe is IVictim)
+            { // Add 50% of the players momentum to the bullet. Adds 50% more fun to the game.
+                Velocity += ((IVictim)WhoFiredMe).Velocity * .5f;
+                /* 
+                TODO: Clamp the velocity and make sure the bullets don't go
+                backwards if the player is going backwards super fast (looking
+                at you, Ninja...)
+                */
+            }
             Room = Level.GetRoom(this, Room);
             Scale = 0.15f * Room.Scale;
 
             _rect = new Rectangle(
-                (int)position.X - (int)((float)_window.Width / 2.0f * Scale), 
-                (int)position.Y - (int)((float)_window.Height / 2.0f * Scale), 
-                (int)(_window.Width * Scale), 
+                (int)position.X - (int)((float)_window.Width / 2.0f * Scale),
+                (int)position.Y - (int)((float)_window.Height / 2.0f * Scale),
+                (int)(_window.Width * Scale),
                 (int)(_window.Height * Scale));
         }
 
-        public void Update(GameTime gameTime) {
+        public void Update(GameTime gameTime)
+        {
 
             /* ##########################################################################
              * Collision with everything handling (takes care of location update as well)
@@ -231,7 +254,8 @@ namespace YGR
             _animationIndex = (int)(5 - (gameTime.TotalGameTime.TotalMilliseconds - TimeCreated) / 300);
         }
 
-        public void Draw(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch) {
+        public void Draw(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)
+        {
             var destinationRectangle = new Rectangle(
                 _rect.X - (int)globalOffset.X,
                 _rect.Y - (int)globalOffset.Y,
@@ -244,7 +268,7 @@ namespace YGR
                 _window.Width,
                 _window.Height
             );
-            
+
             //Logger.Debug("Drawing projectile at " + destinationRectangle.ToString() + " with source " + sourceRectangle.ToString());
 
             spriteBatch.Draw(

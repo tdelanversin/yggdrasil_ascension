@@ -94,9 +94,9 @@ namespace YGR
                                     { false, true, false, true, false },
                                     { true, false, true, false, true },
                                     { false, true, false, true, false }};
-        // shotSpeeds is an array of doubles that represent the time in milliseconds that each bullet row should be fired
-        // static double[] shotSpeeds = { 0.0, 60.0, 120.0 };
-        static double[] shotSpeeds = { 0.0, 60.0, 120.0, 180.0, 240.0, 300.0, 360.0, 420.0 };
+        // shotTimings is an array of doubles that represent the time in milliseconds that each bullet row should be fired
+        // static double[] shotTimings = { 0.0, 60.0, 120.0 };
+        static double[] shotTimings = { 0.0, 60.0, 120.0, 180.0, 240.0, 300.0, 360.0, 420.0 };
 
         public Y_FunkyGun() { }
 
@@ -121,16 +121,16 @@ namespace YGR
             var lastUpdate = timeSinceShot;
             timeSinceShot += gameTime.ElapsedGameTime.TotalMilliseconds;
 
-            shotSpeeds.Last();
-            if (lastUpdate >= shotSpeeds.Last())
+            shotTimings.Last();
+            if (lastUpdate >= shotTimings.Last())
                 return;
 
-            for (int i = 0; i < shotSpeeds.GetLength(0); ++i)
+            for (int i = 0; i < shotTimings.GetLength(0); ++i)
             {
-                if (lastUpdate > shotSpeeds[i] || timeSinceShot <= shotSpeeds[i])
+                if (lastUpdate > shotTimings[i] || timeSinceShot <= shotTimings[i])
                     continue;
 
-                double timedelta = timeSinceShot - shotSpeeds[i];
+                double timedelta = timeSinceShot - shotTimings[i];
                 double spread = -bulletArray.GetLength(1) / 2 * shotSpread;
                 for (int j = 0; j < bulletArray.GetLength(1); j++)
                 {
@@ -145,8 +145,8 @@ namespace YGR
                         (float)(_direction.X * Math.Sin(spread) + _direction.Y * Math.Cos(spread))
                     );
                     var new_origin = new Vector2(
-                        (float)(_origin.X + timedelta * new_dir.X),
-                        (float)(_origin.Y + timedelta * new_dir.Y)
+                        (float)(_who.Rect.Center.X + timedelta * new_dir.X),
+                        (float)(_who.Rect.Center.Y + timedelta * new_dir.Y)
                     );
 
                     Manager_Projectile.AddProjectile_ShotGunProjectile(new_origin, new_dir, gameTime.TotalGameTime.TotalMilliseconds, _level, _who);
@@ -176,9 +176,9 @@ namespace YGR
                                     { false, true, false, true, false },
                                     { true, false, true, false, true },
                                     { false, true, false, true, false }};
-        // shotSpeeds is an array of doubles that represent the time in milliseconds that each bullet row should be fired
-        // static double[] shotSpeeds = { 0.0, 60.0, 120.0 };
-        static double[] shotSpeeds = { 30.0, 60.0, 120.0, 180.0, 240.0, 300.0, 360.0, 420.0 };
+        // shotTimings is an array of doubles that represent the time in milliseconds that each bullet row should be fired
+        // static double[] shotTimings = { 0.0, 60.0, 120.0 };
+        static double[] shotTimings = { 30.0, 60.0, 120.0, 180.0, 240.0, 300.0, 360.0, 420.0 };
         static double[] positionShift = { 50, 20, 0, -20, -50 };
         static double[] shotSpread = { 0, 0, 0, 0, 0 };
 
@@ -206,16 +206,16 @@ namespace YGR
             var lastUpdate = timeSinceShot;
             timeSinceShot += gameTime.ElapsedGameTime.TotalMilliseconds;
 
-            shotSpeeds.Last();
-            if (lastUpdate >= shotSpeeds.Last())
+            shotTimings.Last();
+            if (lastUpdate >= shotTimings.Last())
                 return; 
 
-            for (int i = 0; i < shotSpeeds.GetLength(0); ++i)
+            for (int i = 0; i < shotTimings.GetLength(0); ++i)
             {
-                if (lastUpdate > shotSpeeds[i] || timeSinceShot <= shotSpeeds[i])
+                if (lastUpdate > shotTimings[i] || timeSinceShot <= shotTimings[i])
                     continue;
 
-                double timedelta = timeSinceShot - shotSpeeds[i];
+                double timedelta = timeSinceShot - shotTimings[i];
                 for (int j = 0; j < bulletArray.GetLength(1); j++)
                 {
                     if (!bulletArray[i, j])
@@ -231,8 +231,8 @@ namespace YGR
 
                     var perp = new Vector2(-new_dir.Y, new_dir.X);
                     var new_origin = new Vector2(
-                        (float)(_origin.X + timedelta * new_dir.X + shift * perp.X),
-                        (float)(_origin.Y + timedelta * new_dir.Y + shift * perp.Y)
+                        (float)(_who.Rect.Center.X + timedelta * new_dir.X + shift * perp.X),
+                        (float)(_who.Rect.Center.Y + timedelta * new_dir.Y + shift * perp.Y)
                     );
 
                     Manager_Projectile.AddProjectile_ShotGunProjectile(new_origin, new_dir, gameTime.TotalGameTime.TotalMilliseconds, _level, _who);
