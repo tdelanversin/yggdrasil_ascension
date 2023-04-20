@@ -6,6 +6,9 @@ using System.Linq;
 using System.IO;
 using Assimp.Unmanaged;
 using Newtonsoft.Json;
+using System.Reflection.Emit;
+using Nvidia.TextureTools;
+using System.Reflection;
 
 namespace YGR
 {
@@ -34,10 +37,23 @@ namespace YGR
         LockedOpen
     }
 
+    internal enum X_DoorTextureLayer
+    {
+        Floor,
+        Wall,
+        Door
+    }
+
     internal struct Textel
     {
         public int x;
         public int y;
+    }
+
+    internal class TileData
+    {
+        public string[,][] mask;
+        public List<Textel> coordinates;
     }
 
     internal class X_Data
@@ -46,66 +62,201 @@ namespace YGR
         {
             public string textureName;
             public int size;
-            public List<Textel> floor;
-            public List<Textel> roofStraight;
-            public List<Textel> roofCorner;
-            public List<Textel> roofCover;
-            public List<Textel> wall;
+            public Dictionary<string, TileData> tiles;
+            //public List<Textel> floor;
+            //public List<Textel> roofStraightVertical;
+            //public List<Textel> roofStraightHorizontal;
+            //public List<Textel> roofCornerOutsideBr;
+            //public List<Textel> roofCornerOutsideBl;
+            //public List<Textel> roofCornerOutsideTr;
+            //public List<Textel> roofCornerOutsideTl;
+            //public List<Textel> roofCornerInsideBr;
+            //public List<Textel> roofCornerInsideBl;
+            //public List<Textel> roofCornerInsideTr;
+            //public List<Textel> roofCornerInsideTl;
+            //public List<Textel> roofCover;
+            //public List<Textel> wall;
         }
 
         private static Random random;
-        private static List<Color[]> floor;
-        private static List<Color[]> roofStraight;
-        private static List<Color[]> roofCorner;
-        private static List<Color[]> roofCover;
-        private static List<Color[]> wall;
+        private static int tileSize;
+        private static Dictionary<string, List<Color[]>> tiles;
+        private static Dictionary<string, X_TileType[,][]> masks;
+        private static Dictionary<string, X_DoorTextureLayer> textures;
 
-        private static Color[] flipX(Color[] tile, Data data)
+        //Func<X_TileType, bool>[,] downL = new Func<X_TileType, bool>[,]
+        //    {
+        //        { (t) => true, (t) => true, (t) => true },
+        //        { (t) => true, (t) => t == X_TileType.Roof, (t) => t == X_TileType.Floor || t == X_TileType.Wall },
+        //        { (t) => true, (t) => t == X_TileType.Roof, (t) => t == X_TileType.Floor },
+        //    };
+        ////var tDownL = X_Data.match(padded, downL);
+        ////output(tDownL, "./logs/data.csv", pattern[0].Length, pattern.Length);
+
+        //Func<X_TileType, bool>[,] downR = new Func<X_TileType, bool>[,]
+        //{
+        //        { (t) => true, (t) => true, (t) => true },
+        //        { (t) => t == X_TileType.Floor || t == X_TileType.Wall, (t) => t == X_TileType.Roof, (t) => true },
+        //        { (t) => t == X_TileType.Floor || t == X_TileType.Roof, (t) => t == X_TileType.Roof, (t) => true },
+        //};
+        ////var tDownR = X_Data.match(padded, downR);
+        ////output(tDownR, "./logs/data.csv", pattern[0].Length, pattern.Length);
+
+        //Func<X_TileType, bool>[,] levelT = new Func<X_TileType, bool>[,]
+        //{
+        //        { (t) => true, (t) => true, (t) => true },
+        //        { (t) => true, (t) => t == X_TileType.Roof, (t) => t == X_TileType.Roof },
+        //        { (t) => true, (t) => t == X_TileType.Wall, (t) => t == X_TileType.Wall },
+        //};
+        ////var tLevelT = X_Data.match(padded, levelT);
+        ////output(tLevelT, "./logs/data.csv", pattern[0].Length, pattern.Length);
+
+        //Func<X_TileType, bool>[,] levelB = new Func<X_TileType, bool>[,]
+        //{
+        //        { (t) => true, (t) => t == X_TileType.Floor, (t) => t == X_TileType.Floor || t == X_TileType.Roof },
+        //        { (t) => true, (t) => t == X_TileType.Roof, (t) => t == X_TileType.Roof},
+        //        { (t) => true, (t) => true, (t) => true },
+        //};
+        ////var tLevelB = X_Data.match(padded, levelB);
+        ////output(tLevelB, "./logs/data.csv", pattern[0].Length, pattern.Length);
+
+        //Func<X_TileType, bool>[,] tli = new Func<X_TileType, bool>[,]
+        //{
+        //        { (t) => t == X_TileType.Floor, (t) => true, (t) => true},
+        //        { (t) => true, (t) => t == X_TileType.Roof, (t) => t == X_TileType.Roof},
+        //        { (t) => true, (t) => t == X_TileType.Roof, (t) => true },
+        //};
+        ////var tTli = X_Data.match(padded, tli);
+
+        //Func<X_TileType, bool>[,] tlo = new Func<X_TileType, bool>[,]
+        //{
+        //        { (t) => true, (t) => true, (t) => true},
+        //        { (t) => true, (t) => t == X_TileType.Roof, (t) => t == X_TileType.Roof},
+        //        { (t) => true, (t) => t == X_TileType.Roof, (t) => t == X_TileType.Wall },
+        //};
+        ////var tTlo = X_Data.match(padded, tlo);
+        ////output(tTl, "./logs/data.csv", pattern[0].Length, pattern.Length);
+
+        //Func<X_TileType, bool>[,] tri = new Func<X_TileType, bool>[,]
+        //{
+        //        { (t) => true, (t) => true, (t) => t == X_TileType.Floor },
+        //        { (t) => t == X_TileType.Roof, (t) => t == X_TileType.Roof, (t) => true },
+        //        { (t) => true, (t) => t == X_TileType.Roof, (t) => true },
+        //};
+        ////var tTri = X_Data.match(padded, tri);
+        ////output(tTr, "./logs/data.csv", pattern[0].Length, pattern.Length);
+
+        //Func<X_TileType, bool>[,] tro = new Func<X_TileType, bool>[,]
+        //{
+        //        { (t) => true, (t) => true, (t) => true },
+        //        { (t) => t == X_TileType.Roof, (t) => t == X_TileType.Roof, (t) => true },
+        //        { (t) => t == X_TileType.Wall, (t) => t == X_TileType.Roof, (t) => true },
+        //};
+        ////var tTro = X_Data.match(padded, tro);
+
+        //Func<X_TileType, bool>[,] bl = new Func<X_TileType, bool>[,]
+        //{
+        //        { (t) => true, (t) => t == X_TileType.Roof, (t) => true },
+        //        { (t) => true, (t) => t == X_TileType.Roof, (t) => t == X_TileType.Roof},
+        //        { (t) => true, (t) => true, (t) => true },
+        //};
+        ////var tBl = X_Data.match(padded, bl);
+        ////output(tBl, "./logs/data.csv", pattern[0].Length, pattern.Length);
+
+        //Func<X_TileType, bool>[,] br = new Func<X_TileType, bool>[,]
+        //{
+        //        { (t) => true, (t) => t == X_TileType.Roof, (t) => true },
+        //        { (t) => t == X_TileType.Roof, (t) => t == X_TileType.Roof, (t) => true },
+        //        { (t) => true, (t) => true, (t) => true },
+        //};
+
+        //private static List<Color[]> floor;
+        //private static List<Color[]> roofStraightVertical;
+        //private static List<Color[]> roofStraightHorizontal;
+        //private static List<Color[]> roofCornerOutsideBr;
+        //private static List<Color[]> roofCornerOutsideBl;
+        //private static List<Color[]> roofCornerOutsideTr;
+        //private static List<Color[]> roofCornerOutsideTl;
+        //private static List<Color[]> roofCornerInsideBr;
+        //private static List<Color[]> roofCornerInsideBl;
+        //private static List<Color[]> roofCornerInsideTr;
+        //private static List<Color[]> roofCornerInsideTl;
+        //private static List<Color[]> roofCover;
+        //private static List<Color[]> wall;
+
+        //private static Color[] flipX(Color[] tile, int size)
+        //{
+        //    Color[] n = new Color[tile.Length];
+        //    for(int h=0; h<size; ++h)
+        //    {
+        //        for (int w = 0; w < size; ++w)
+        //        {
+        //            n[h * size + w] = tile[h * size + (size-1-w)];
+        //        }
+        //    }
+
+        //    return n;
+        //}
+
+        //private static Color[] flipY(Color[] tile, int size)
+        //{
+        //    Color[] n = new Color[tile.Length];
+        //    for (int h = 0; h < size; ++h)
+        //    {
+        //        for (int w = 0; w < size; ++w)
+        //        {
+        //            n[h * size + w] = tile[(size-1-h) * size + w];
+        //        }
+        //    }
+
+        //    return n;
+        //}
+
+        //private static Color[] flipXY(Color[] tile, int size)
+        //{
+        //    Color[] n = new Color[tile.Length];
+        //    for (int h = 0; h < size; ++h)
+        //    {
+        //        for (int w = 0; w < size; ++w)
+        //        {
+        //            n[h * size + w] = tile[(size-1-h) * size + (size-1-w)];
+        //        }
+        //    }
+
+        //    return n;
+        //}
+
+        private static X_TileType map(string tileType)
         {
-            Color[] n = new Color[tile.Length];
-            for(int h=0; h<data.size; ++h)
-            {
-                for (int w = 0; w < data.size; ++w)
-                {
-                    n[h * data.size + w] = tile[h * data.size + (data.size-1-w)];
-                }
-            }
-
-            return n;
+            if (tileType.ToLower().Contains("floor")) return X_TileType.Floor;
+            if (tileType.ToLower().Contains("wall")) return X_TileType.Wall;
+            if (tileType.ToLower().Contains("roof")) return X_TileType.Roof;
+            if (tileType.ToLower().Contains("out")) return X_TileType.Outside;
+            return X_TileType.DontCare;
         }
 
-        private static Color[] flipY(Color[] tile, Data data)
+        private static X_DoorTextureLayer mapTexture(string textureType)
         {
-            Color[] n = new Color[tile.Length];
-            for (int h = 0; h < data.size; ++h)
-            {
-                for (int w = 0; w < data.size; ++w)
-                {
-                    n[h * data.size + w] = tile[(data.size-1-h) * data.size + w];
-                }
-            }
-
-            return n;
+            if (textureType.ToLower().Contains("floor")) return X_DoorTextureLayer.Floor;
+            if (textureType.ToLower().Contains("wall") || textureType.ToLower().Contains("roof")) return X_DoorTextureLayer.Wall;
+            return X_DoorTextureLayer.Door;
         }
 
-        private static Color[] flipXY(Color[] tile, Data data)
+        private static X_TileType[,][] map(string[,][] mask)
         {
-            Color[] n = new Color[tile.Length];
-            for (int h = 0; h < data.size; ++h)
+            X_TileType[,][] res = new X_TileType[3, 3][];
+            for (int i = 0; i < 3; ++i)
             {
-                for (int w = 0; w < data.size; ++w)
+                for (int j = 0; j < 3; ++j)
                 {
-                    n[h * data.size + w] = tile[w * data.size + h];
+                    res[i, j] = new X_TileType[mask[i, j].Length];
+                    for(int k=0; k< mask[i, j].Length; ++k)
+                    {
+                        res[i, j][k] = map(mask[i, j][k]); 
+                    }
                 }
             }
-
-            return n;
-        }
-
-        private static bool match(X_TileType[,] seg, X_TileType[] pattern)
-        {
-
-            return true;
+            return res;
         }
 
         public static void Load(string resourceFolder, Data data, GraphicsDevice graphicsDevice)
@@ -116,6 +267,30 @@ namespace YGR
             using (FileStream fileStream = new FileStream(resourceFolder + data.textureName, FileMode.Open))
                 texture = Texture2D.FromStream(graphicsDevice, fileStream);
 
+            tileSize = data.size;
+
+            tiles = new Dictionary<string, List<Color[]>>();
+            masks = new Dictionary<string, X_TileType[,][]>();
+            textures = new Dictionary<string, X_DoorTextureLayer>();
+            foreach (var t in data.tiles)
+            {
+                tiles.Add(t.Key, new List<Color[]>());
+                foreach(var e in t.Value.coordinates)
+                {
+                    Color[] temp = new Color[data.size * data.size];
+                    texture.GetData<Color>(0, new Rectangle(e.x * data.size, e.y * data.size, data.size, data.size), temp, 0, data.size * data.size);
+                    tiles[t.Key].Add(temp);
+                }
+
+                masks.Add(t.Key, map(t.Value.mask));
+
+                textures.Add(t.Key, mapTexture(t.Key));
+                //foreach (var e in t.Value)
+                //{
+
+                //}
+            }
+        }/*
             roofStraight = new List<Color[]>();
             foreach (var e in data.roofStraight)
             {
@@ -124,12 +299,20 @@ namespace YGR
                 roofStraight.Add(temp);
             }
 
-            roofCorner = new List<Color[]>();
-            foreach (var e in data.roofCorner)
+            roofCornerOutside = new List<Color[]>();
+            foreach (var e in data.roofCornerOutside)
             {
                 Color[] temp = new Color[data.size * data.size];
                 texture.GetData<Color>(0, new Rectangle(e.x * data.size, e.y * data.size, data.size, data.size), temp, 0, data.size * data.size);
-                roofCorner.Add(temp);
+                roofCornerOutside.Add(temp);
+            }
+
+            roofCornerInside = new List<Color[]>();
+            foreach (var e in data.roofCornerInside)
+            {
+                Color[] temp = new Color[data.size * data.size];
+                texture.GetData<Color>(0, new Rectangle(e.x * data.size, e.y * data.size, data.size, data.size), temp, 0, data.size * data.size);
+                roofCornerInside.Add(temp);
             }
 
             floor = new List<Color[]>();
@@ -155,102 +338,333 @@ namespace YGR
                 texture.GetData<Color>(0, new Rectangle(e.x * data.size, e.y * data.size, data.size, data.size), temp, 0, data.size * data.size);
                 wall.Add(temp);
             }
+        }*/
+
+        private static bool evalTile(X_TileType p, X_TileType[] candidates)
+        {
+            bool match = false;
+            foreach(var c in candidates)
+            {
+                if (c == X_TileType.DontCare) return true;
+                match = match || c == p;
+            }
+            return match;
         }
 
-        public static void Resolve(int[][] pattern, out Texture2D roofTexture, out Texture2D floorTexture, out Texture2D wallTexture)
+        private static List<Tuple<int, int>> match(X_TileType[][] pattern, X_TileType[,][] tile)
         {
-            Texture2D roofTexture;
-            Texture2D floorTexture;
-            Texture2D wallTexture;
-            X_TileType[][] padded = new X_TileType[pattern.Length+2][];
-            for(int i=0; i<pattern.Length+2; ++i)
+            List<Tuple<int, int>> res = new List<Tuple<int, int>>();
+            for (int y = 1; y < pattern.Length - 1; ++y)
             {
-                padded[i] = new X_TileType[pattern.Length + 2];
-                if(i==0 || i == pattern.Length + 1)
+                for (int x = 1; x < pattern[0].Length-1; ++x)
                 {
-                    for (int j = 0; j < pattern.Length+2; ++j)
+                    for (int j = -1; j <= 1; ++j)
                     {
-                        padded[i][j + 1] = X_TileType.Outside;
+                        for (int i = -1; i <= 1; ++i)
+                        {
+                            if(!evalTile(pattern[y + j][x + i], tile[j+1,i+1])) goto no_match;
+                        }
+                    }
+                    res.Add(new Tuple<int, int>(x-1, y-1));
+                no_match: continue;
+                }
+            }
+            return res;
+        }
+
+        //private static List<Tuple<int, int>> match(X_TileType[][] pattern, Func<X_TileType, bool> tile)
+        //{
+        //    List<Tuple<int, int>> res = new List<Tuple<int, int>>();
+        //    for (int x = 0; x < pattern[0].Length; ++x)
+        //    {
+        //        for (int y = 0; y < pattern.Length; ++y)
+        //        {
+        //            if (tile(pattern[y][x])) res.Add(new Tuple<int, int>(x-1, y-1));
+        //        }
+        //    }
+        //    return res;
+        //}
+
+        private static void output(List<Tuple<int, int>> coords, string fileName, int width, int height)
+        {
+            int[,] p = new int[height, width];
+            foreach (var c in coords) p[c.Item2, c.Item1] = 1;
+
+            string s = "";
+            for (int x = 0; x < p.GetLength(0); ++x)
+            {
+                for (int y = 0; y < p.GetLength(1); ++y)
+                {
+                    s += "\t" + p[x,y];
+                }
+                s += "\n";
+            }
+
+            File.WriteAllText(fileName, s);
+        }
+
+        private static void output(X_TileType[][] pattern, string name)
+        {
+            string s = "";
+            for (int x = 0; x < pattern.GetLength(0); ++x)
+            {
+                s += string.Join("\t", pattern[x]);
+                s += "\n";
+            }
+
+            File.WriteAllText(name, s);
+        }
+
+        public static void Resolve(GraphicsDevice graphicsDevice, int[][] pattern, out Dictionary<X_DoorTextureLayer, Texture2D> texture)
+        {
+            //Texture2D roofTexture;
+            //Texture2D floorTexture;
+            //Texture2D wallTexture;
+            X_TileType[][] padded = new X_TileType[pattern.Length + 2][];
+            for (int i = 0; i < pattern.Length + 2; ++i)
+            {
+                padded[i] = new X_TileType[pattern[0].Length + 2];
+                if (i == 0 || i == padded.Length - 1)
+                {
+                    for (int j = 0; j < padded[0].Length; ++j)
+                    {
+                        padded[i][j] = X_TileType.Outside;
                     }
                 }
                 else
                 {
                     padded[i][0] = X_TileType.Outside;
-                    padded[i][pattern.Length + 1] = X_TileType.Outside;
-                    for (int j = 0; j < pattern.Length; ++j)
-                    {
-                        padded[i][j + 1] = (X_TileType)pattern[i][j];
-                    }
+                    padded[i][pattern[0].Length + 1] = X_TileType.Outside;
+                }
+            }
+            for (int i = 0; i < pattern.Length; ++i)
+            {
+                for (int j = 0; j < pattern[0].Length; ++j)
+                {
+                    padded[i + 1][j + 1] = (X_TileType)pattern[i][j];
                 }
             }
 
-            X_TileType[,] down = new X_TileType[,]
+            texture = new Dictionary<X_DoorTextureLayer, Texture2D>();
+            foreach (var e in textures)
             {
-                { X_TileType.DontCare, X_TileType.Wall, X_TileType.DontCare },
-                { X_TileType.DontCare, X_TileType.Wall, X_TileType.DontCare },
-                { X_TileType.DontCare, X_TileType.DontCare, X_TileType.DontCare },
-            };
+                if(!texture.ContainsKey(e.Value))
+                    texture.Add(e.Value, new Texture2D(graphicsDevice, tileSize * pattern[0].Length, tileSize * pattern.Length));
+            }
 
-            X_TileType[,] level = new X_TileType[,]
-            {
-                { X_TileType.DontCare, X_TileType.DontCare, X_TileType.DontCare },
-                { X_TileType.Wall, X_TileType.Wall, X_TileType.DontCare },
-                { X_TileType.DontCare, X_TileType.DontCare, X_TileType.DontCare },
-            };
+            //floorTexture = new Texture2D(graphicsDevice, tileSize * pattern[0].Length, tileSize * pattern.Length);
+            //wallTexture = new Texture2D(graphicsDevice, tileSize * pattern[0].Length, tileSize * pattern.Length);
+            //doorTexture = new Texture2D(graphicsDevice, tileSize * pattern[0].Length, tileSize * pattern.Length);
 
-            X_TileType[,] tl = new X_TileType[,]
-            {
-                { X_TileType.DontCare, X_TileType.Wall, X_TileType.Wall},
-                { X_TileType.DontCare, X_TileType.Wall, X_TileType.DontCare },
-                { X_TileType.DontCare, X_TileType.DontCare, X_TileType.DontCare },
-            };
+            //var tFloor = X_Data.match(padded, (t) => t == X_TileType.Floor);
 
-            X_TileType[,] tr = new X_TileType[,]
-            {
-                { X_TileType.Wall, X_TileType.Wall, X_TileType.DontCare },
-                { X_TileType.DontCare, X_TileType.Wall, X_TileType.DontCare },
-                { X_TileType.DontCare, X_TileType.DontCare, X_TileType.DontCare },
-            };
+            ////output(tFloor, "./logs/data.csv", pattern[0].Length, pattern.Length);
+            //var tWall = X_Data.match(padded, (t) => t == X_TileType.Wall);
+            ////output(tWall, "./logs/data.csv", pattern[0].Length, pattern.Length);
+            //var tDoor = X_Data.match(padded, (t) => t == X_TileType.Floor || t == X_TileType.Wall);
+            ////output(tDoor, "./logs/data.csv", pattern[0].Length, pattern.Length);
 
-            X_TileType[,] bl = new X_TileType[,]
+            Color[] trans = Enumerable.Repeat<Color>(Color.Transparent, tileSize * tileSize * pattern[0].Length * pattern.Length).ToArray();
+            foreach(var tex in texture)
             {
-                { X_TileType.DontCare, X_TileType.Wall, X_TileType.DontCare },
-                { X_TileType.DontCare, X_TileType.Wall, X_TileType.Wall},
-                { X_TileType.DontCare, X_TileType.DontCare, X_TileType.DontCare },
-            };
+                tex.Value.SetData<Color>(trans);
+            }
 
-            X_TileType[,] br = new X_TileType[,]
+            int len = tileSize * tileSize;
+            foreach (var m in masks)
             {
-                { X_TileType.DontCare, X_TileType.DontCare, X_TileType.DontCare },
-                { X_TileType.Wall, X_TileType.Wall, X_TileType.DontCare },
-                { X_TileType.DontCare, X_TileType.DontCare, X_TileType.DontCare },
-            };
+                var res = match(padded, m.Value);
+                foreach (var t in res)
+                {
+                    Rectangle rect = new Rectangle(t.Item1 * tileSize, t.Item2 * tileSize, tileSize, tileSize);
+                    texture[mapTexture(m.Key)].SetData(0, rect, getRandomTile(tiles[m.Key]), 0, len);
+                }
+            }
         }
 
-        public static Color[] GetFloor()
+        private static Color[] getRandomTile(List<Color[]> colors)
         {
-            return floor.ElementAt(random.Next(0, floor.Count()));
+            return colors.ElementAt(random.Next(0, colors.Count()));
         }
 
-        public static Color[] GetRoofStraight()
-        {
-            return roofStraight.ElementAt(random.Next(0, roofStraight.Count()));
-        }
 
-        public static Color[] GetRoofCorner()
-        {
-            return roofCorner.ElementAt(random.Next(0, roofCorner.Count()));
-        }
+        //Func<X_TileType, bool>[,] tli = new Func<X_TileType, bool>[,]
+        //{
+        //    { (t) => t == X_TileType.Floor, (t) => true, (t) => true},
+        //    { (t) => true, (t) => t == X_TileType.Roof, (t) => t == X_TileType.Roof},
+        //    { (t) => true, (t) => t == X_TileType.Roof, (t) => true },
+        //};
+        //var tTli = X_Data.match(padded, tli);
 
-        public static Color[] GetRoofCover()
-        {
-            return roofCover.ElementAt(random.Next(0, roofCover.Count()));
-        }
+        //Func<X_TileType, bool>[,] tlo = new Func<X_TileType, bool>[,]
+        //{
+        //    { (t) => true, (t) => true, (t) => true},
+        //    { (t) => true, (t) => t == X_TileType.Roof, (t) => t == X_TileType.Roof},
+        //    { (t) => true, (t) => t == X_TileType.Roof, (t) => t == X_TileType.Wall },
+        //};
+        //var tTlo = X_Data.match(padded, tlo);
+        ////output(tTl, "./logs/data.csv", pattern[0].Length, pattern.Length);
 
-        public static Color[] GetWall()
-        {
-            return wall.ElementAt(random.Next(0, wall.Count()));
-        }
+        //Func<X_TileType, bool>[,] tri = new Func<X_TileType, bool>[,]
+        //{
+        //    { (t) => true, (t) => true, (t) => t == X_TileType.Floor },
+        //    { (t) => t == X_TileType.Roof, (t) => t == X_TileType.Roof, (t) => true },
+        //    { (t) => true, (t) => t == X_TileType.Roof, (t) => true },
+        //};
+        //var tTri = X_Data.match(padded, tri);
+        ////output(tTr, "./logs/data.csv", pattern[0].Length, pattern.Length);
+
+        //Func<X_TileType, bool>[,] tro = new Func<X_TileType, bool>[,]
+        //{
+        //    { (t) => true, (t) => true, (t) => true },
+        //    { (t) => t == X_TileType.Roof, (t) => t == X_TileType.Roof, (t) => true },
+        //    { (t) => t == X_TileType.Wall, (t) => t == X_TileType.Roof, (t) => true },
+        //};
+        //var tTro = X_Data.match(padded, tro);
+
+        //Func<X_TileType, bool>[,] bl = new Func<X_TileType, bool>[,]
+        //{
+        //    { (t) => true, (t) => t == X_TileType.Roof, (t) => true },
+        //    { (t) => true, (t) => t == X_TileType.Roof, (t) => t == X_TileType.Roof},
+        //    { (t) => true, (t) => true, (t) => true },
+        //};
+        //var tBl = X_Data.match(padded, bl);
+        ////output(tBl, "./logs/data.csv", pattern[0].Length, pattern.Length);
+
+        //Func<X_TileType, bool>[,] br = new Func<X_TileType, bool>[,]
+        //{
+        //    { (t) => true, (t) => t == X_TileType.Roof, (t) => true },
+        //    { (t) => t == X_TileType.Roof, (t) => t == X_TileType.Roof, (t) => true },
+        //    { (t) => true, (t) => true, (t) => true },
+        //};
+        //var tBr = X_Data.match(padded, br);
+        ////output(tBr, "./logs/data.csv", pattern[0].Length, pattern.Length);
+
+        //var tFloor = X_Data.match(padded, (t) => t == X_TileType.Floor);
+        ////output(tFloor, "./logs/data.csv", pattern[0].Length, pattern.Length);
+        //var tWall = X_Data.match(padded, (t) => t == X_TileType.Wall);
+        ////output(tWall, "./logs/data.csv", pattern[0].Length, pattern.Length);
+        //var tDoor = X_Data.match(padded, (t) => t == X_TileType.Floor || t == X_TileType.Wall);
+        ////output(tDoor, "./logs/data.csv", pattern[0].Length, pattern.Length);
+
+        //floorTexture = new Texture2D(graphicsDevice, tileSize *pattern[0].Length, tileSize * pattern.Length);
+        //wallTexture = new Texture2D(graphicsDevice, tileSize * pattern[0].Length, tileSize * pattern.Length);
+        //doorTexture = new Texture2D(graphicsDevice, tileSize * pattern[0].Length, tileSize * pattern.Length);
+
+        //int len = tileSize * tileSize;
+        //foreach (var t in tFloor)
+        //{
+        //    Rectangle rect = new Rectangle(t.Item1 * tileSize, t.Item2 * tileSize, tileSize, tileSize);
+        //    floorTexture.SetData(0, rect, GetFloor(), 0, len);
+        //}
+
+        //foreach (var t in tWall)
+        //{
+        //    Rectangle rect = new Rectangle(t.Item1 * tileSize, t.Item2 * tileSize, tileSize, tileSize);
+        //    wallTexture.SetData(0, rect, GetWall(), 0, len);
+        //}
+
+        //foreach (var t in tLevelB)
+        //{
+        //    Rectangle rect = new Rectangle(t.Item1 * tileSize, t.Item2 * tileSize, tileSize, tileSize);
+        //    wallTexture.SetData(0, rect, GetRoofStraight(), 0, len);
+        //}
+
+        //foreach (var t in tLevelT)
+        //{
+        //    Rectangle rect = new Rectangle(t.Item1 * tileSize, t.Item2 * tileSize, tileSize, tileSize);
+        //    wallTexture.SetData(0, rect, GetRoofStraight(), 0, len);
+        //}
+
+        //foreach (var t in tDownL)
+        //{
+        //    Rectangle rect = new Rectangle(t.Item1 * tileSize, t.Item2 * tileSize, tileSize, tileSize);
+        //    wallTexture.SetData(0, rect, GetRoofStraight(), 0, len);
+        //}
+
+        //foreach (var t in tDownR)
+        //{
+        //    Rectangle rect = new Rectangle(t.Item1 * tileSize, t.Item2 * tileSize, tileSize, tileSize);
+        //    wallTexture.SetData(0, rect, GetRoofStraight(), 0, len);
+        //}
+
+        //foreach (var t in tTli)
+        //{
+        //    Rectangle rect = new Rectangle(t.Item1 * tileSize, t.Item2 * tileSize, tileSize, tileSize);
+        //    wallTexture.SetData(0, rect, GetRoofCornerInside(), 0, len);
+        //}
+
+        //foreach (var t in tTlo)
+        //{
+        //    Rectangle rect = new Rectangle(t.Item1 * tileSize, t.Item2 * tileSize, tileSize, tileSize);
+        //    wallTexture.SetData(0, rect, GetRoofCornerOutside(), 0, len);
+        //}
+
+        //foreach (var t in tTro)
+        //{
+        //    Rectangle rect = new Rectangle(t.Item1 * tileSize, t.Item2 * tileSize, tileSize, tileSize);
+        //    wallTexture.SetData(0, rect, GetRoofCornerOutside(), 0, len);
+        //}
+
+        //foreach (var t in tTri)
+        //{
+        //    Rectangle rect = new Rectangle(t.Item1 * tileSize, t.Item2 * tileSize, tileSize, tileSize);
+        //    wallTexture.SetData(0, rect, GetRoofCornerInside(), 0, len);
+        //}
+
+        //foreach (var t in tBl)
+        //{
+        //    Rectangle rect = new Rectangle(t.Item1 * tileSize, t.Item2 * tileSize, tileSize, tileSize);
+        //    wallTexture.SetData(0, rect, GetRoofCover(), 0, len);
+        //}
+
+        //foreach (var t in tBr)
+        //{
+        //    Rectangle rect = new Rectangle(t.Item1 * tileSize, t.Item2 * tileSize, tileSize, tileSize);
+        //    wallTexture.SetData(0, rect, GetRoofCornerOutside(), 0, len);
+        //}
+
+        //foreach (var t in tDoor)
+        //{
+        //    Rectangle rect = new Rectangle(t.Item1 * tileSize, t.Item2 * tileSize, tileSize, tileSize);
+        //    doorTexture.SetData(0, rect, GetRoofCover(), 0, len);
+        //}
+        //}
+
+        //private static Color[] GetRandomTile(string name)
+        //{
+        //    return new Color[0]; // floor.ElementAt(random.Next(0, floor.Count()));
+        //}
+
+        //private static Color[] GetFloor()
+        //{
+        //    return new Color[0]; // floor.ElementAt(random.Next(0, floor.Count()));
+        //}
+
+        //private static Color[] GetRoofStraight()
+        //{
+        //    return new Color[0]; // roofStraight.ElementAt(random.Next(0, roofStraight.Count()));
+        //}
+
+        //private static Color[] GetRoofCornerOutside()
+        //{
+        //    return new Color[0]; //roofCornerOutside.ElementAt(random.Next(0, roofCornerOutside.Count()));
+        //}
+
+        //private static Color[] GetRoofCornerInside()
+        //{
+        //    return new Color[0]; //roofCornerInside.ElementAt(random.Next(0, roofCornerInside.Count()));
+        //}
+
+        //private static Color[] GetRoofCover()
+        //{
+        //    return new Color[0]; //roofCover.ElementAt(random.Next(0, roofCover.Count()));
+        //}
+
+        //private static Color[] GetWall()
+        //{
+        //    return new Color[0]; //wall.ElementAt(random.Next(0, wall.Count()));
+        //}
     }
 
     public class Y_Door : IWalkable
@@ -274,7 +688,7 @@ namespace YGR
 
         private X_DoorDirection _direction;
         private Texture2D _floor;
-        private Texture2D _roof;
+        private Texture2D _wall;
         private Texture2D _door;
         const int _numTilesDoorWidth = 5;
 
@@ -348,7 +762,6 @@ namespace YGR
             X_Data.Data data;
             using (StreamReader stream = new StreamReader(ResourceFolder + "data.json"))
             {
-
                 string json = stream.ReadToEnd();
                 dynamic array = JsonConvert.DeserializeObject(json);
                 data = JsonConvert.DeserializeObject<X_Data.Data>(array.ToString());
@@ -380,8 +793,21 @@ namespace YGR
                 //}
             }
 
-            
+            //var m = data.GetType().GetMembers();
+            //var m1 = m.Last();
+            //var x = m1.MemberType;
+            //var y = m1.MemberType;
+            //var z = m1.Name;
+            //var w = m1.ToString();
+            //var t = m1.GetNestedType(typeof(List<Textel>));
 
+            X_Data.Load(ResourceFolder, data, graphicsDevice);
+
+            Dictionary<X_DoorTextureLayer, Texture2D> textures;
+            X_Data.Resolve(graphicsDevice, Collision.GetCollisionTemplate(), out textures);
+            _wall = textures[X_DoorTextureLayer.Wall];
+            _floor = textures[X_DoorTextureLayer.Floor];
+            _door = textures[X_DoorTextureLayer.Door];
 
             //int len = roof.Width * roof.Height;
             ///* 1 */
@@ -406,7 +832,7 @@ namespace YGR
             //_floor = new Texture2D(graphicsDevice, width * pattern[0].Length, height * pattern.Length);
             //_roof = new Texture2D(graphicsDevice, width * pattern[0].Length, height * pattern.Length);
             //_door = new Texture2D(graphicsDevice, width * pattern[0].Length, height * pattern.Length);
-            //Scale = (float)tileHeight / height;
+            Scale = (float)tileHeight / data.size;
             //output(pattern, "./logs/pattern2.csv");
             //Color[] transparent = Enumerable.Repeat<Color>(Color.Transparent, height * width).ToArray();
             //for (int x = 0; x < pattern[0].Length; ++x)
@@ -961,7 +1387,7 @@ namespace YGR
 
             if (_state != X_DoorState.Closed && _state != X_DoorState.LockedClosed)
             {
-                if(_direction == X_DoorDirection.Vertical)
+                if (_direction == X_DoorDirection.Vertical)
                 {
                     spriteBatch.Draw(
                         _floor, Rect.Location.ToVector2(),
@@ -982,7 +1408,7 @@ namespace YGR
             }
             else
             {
-                if(_direction == X_DoorDirection.Horizontal)
+                if (_direction == X_DoorDirection.Horizontal)
                 {
                     spriteBatch.Draw(
                         _floor, Rect.Location.ToVector2(),
@@ -1009,10 +1435,24 @@ namespace YGR
                     new Rectangle(0, 0, _floor.Width, _floor.Height),
                     Color.White, 0, Vector2.Zero, Scale, SpriteEffects.None, 0);
             }
-            spriteBatch.Draw(
-                _roof, Rect.Location.ToVector2(),
-                new Rectangle(0, 0, _roof.Width, _roof.Height),
-                Color.White, 0, Vector2.Zero, Scale, SpriteEffects.None, 0);
+            //spriteBatch.Draw(
+            //    _wall, Rect.Location.ToVector2(),
+            //    new Rectangle(0, 0, _wall.Width, _wall.Height),
+            //    Color.White, 0, Vector2.Zero, Scale, SpriteEffects.None, 0);
+
+
+            //spriteBatch.Draw(
+            //    _floor, Rect.Location.ToVector2(),
+            //    new Rectangle(0, 0, _floor.Width, _floor.Height),
+            //    Color.White, 0, Vector2.Zero, Scale, SpriteEffects.None, 0);
+            //spriteBatch.Draw(
+            //    _wall, Rect.Location.ToVector2(),
+            //    new Rectangle(0, 0, _wall.Width, _wall.Height),
+            //    Color.White, 0, Vector2.Zero, Scale, SpriteEffects.None, 0);
+            //spriteBatch.Draw(
+            //    _door, Rect.Location.ToVector2(),
+            //    new Rectangle(0, 0, _door.Width, _door.Height),
+            //    Color.White, 0, Vector2.Zero, Scale, SpriteEffects.None, 0);
         }
 
         public void MoveTo(Point position)

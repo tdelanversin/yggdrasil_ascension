@@ -129,7 +129,7 @@ namespace YGR
                 }
             }
 
-            OutsideColor = ((Y_CMRoom)(Rooms.Values.First())).RegionColor;
+            //OutsideColor = ((Y_CMRoom)(Rooms.Values.First())).RegionColor;
             Victims = new List<IVictim>();
         }
 

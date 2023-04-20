@@ -131,7 +131,7 @@ namespace YGR
         private int[][] cleanUpCollisionTemplate(int[][] collision)
         {
             int[][] pattern = collision.Clone() as int[][];
-            output(pattern, "./logs/pattern.csv");
+            //output(pattern, "./logs/pattern.csv");
             for (int i = 0; i < pattern.Length; i++)
             {
                 for (int j = 0; j < pattern[0].Length; ++j)
@@ -248,7 +248,7 @@ namespace YGR
                 }
             }
 
-            output(_collisionTemplate, "logs/blub.csv");
+            //output(_collisionTemplate, "logs/blub.csv");
             floor.RemoveAll(x => x.Count() == 0);
             return floor;
         }
