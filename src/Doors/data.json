@@ -224,6 +224,110 @@
                 [[""],["Roof"],[""]]
             ]
         },
+        "roofEndH1": {
+            "coordinates" : [
+                {
+                    "x": 5,
+                    "y": 4 
+                }
+            ],
+            "mask" : [
+                [[""],[""],[""]],
+                [["Out"],["Roof"],["Roof"]],
+                [["Floor"],["Wall"],["Wall"]]
+            ]
+        },
+        "roofEndH2": {
+            "coordinates" : [
+                {
+                    "x": 4,
+                    "y": 4 
+                }
+            ],
+            "mask" : [
+                [["Floor"],["Floor"],["Floor"]],
+                [["Out"],["Roof"],["Roof"]],
+                [[""],[""],[""]]
+            ]
+        },
+        "roofEndH3": {
+            "coordinates" : [
+                {
+                    "x": 7,
+                    "y": 4 
+                }
+            ],
+            "mask" : [
+                [["Floor"],["Floor"],["Floor"]],
+                [["Roof"],["Roof"],["Out"]],
+                [[""],[""],[""]]
+            ]
+        },
+        "roofEndH4": {
+            "coordinates" : [
+                {
+                    "x": 6,
+                    "y": 4 
+                }
+            ],
+            "mask" : [
+                [[""],[""],[""]],
+                [["Roof"],["Roof"],["Out"]],
+                [["Wall"],["Wall"],["Floor"]]
+            ]
+        },
+        "roofEndV1": {
+            "coordinates" : [
+                {
+                    "x": 6,
+                    "y": 4 
+                }
+            ],
+            "mask" : [
+                [[""],["Roof"],["Floor"]],
+                [[""],["Roof"],["Floor"]],
+                [[""],["Out"],["Floor"]]
+            ]
+        },
+        "roofEndV2": {
+            "coordinates" : [
+                {
+                    "x": 5,
+                    "y": 4 
+                }
+            ],
+            "mask" : [
+                [["Floor"],["Roof"],[""]],
+                [["Floor"],["Roof"],[""]],
+                [["Floor"],["Out"],[""]]
+            ]
+        },
+        "roofEndV3": {
+            "coordinates" : [
+                {
+                    "x": 7,
+                    "y": 4 
+                }
+            ],
+            "mask" : [
+                [[""],["Out"],["Floor"]],
+                [[""],["Roof"],["Floor"]],
+                [[""],["Roof"],["Floor"]]
+            ]
+        },
+        "roofEndV4": {
+            "coordinates" : [
+                {
+                    "x": 4,
+                    "y": 4 
+                }
+            ],
+            "mask" : [
+                [["Floor"],["Out"], [""]],
+                [["Floor"],["Roof"],[""]],
+                [["Floor"],["Roof"],[""]]
+            ]
+        },
         "doorCover": {
             "coordinates" : [
                 {
