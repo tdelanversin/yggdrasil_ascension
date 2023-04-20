@@ -62,7 +62,7 @@ namespace YGR
             ((Y_Door)Rooms["door-center-to-bottom"]).Connect(X_ConnectorSide.Top, Rooms["center"], X_ConnectorSide.Bottom, Rooms["bottom"]);
             ((Y_Door)Rooms["door-middle-to-top"]).Connect(X_ConnectorSide.Bottom, Rooms["middle"], X_ConnectorSide.Top, Rooms["top"]);
 
-            // finalize: split collision models
+            //finalize: split collision models
             foreach (var room in Rooms)
             {
                 if (room.Value.WhatAreYou() == X_LevelElements.Door)

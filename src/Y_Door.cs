@@ -237,8 +237,8 @@ namespace YGR
 
         private static X_DoorTextureLayer mapTexture(string textureType)
         {
-            if (textureType.ToLower().Contains("floor")) return X_DoorTextureLayer.Floor;
-            if (textureType.ToLower().Contains("wall") || textureType.ToLower().Contains("roof")) return X_DoorTextureLayer.Wall;
+            if (textureType.ToLower().Contains("wall") || textureType.ToLower().Contains("floor")) return X_DoorTextureLayer.Floor;
+            if (textureType.ToLower().Contains("roof")) return X_DoorTextureLayer.Wall;
             return X_DoorTextureLayer.Door;
         }
 
@@ -691,12 +691,13 @@ namespace YGR
         private Texture2D _wall;
         private Texture2D _door;
         const int _numTilesDoorWidth = 5;
+        private int _halfHeight;
 
         private int _currentDoorOpenOffset = 0;
         private float _doorOpeningTime = 2000.0f;
         private float _animationTime = 0.0f;
         int _tileSize;
-
+        int _tileOffset;
         //private Y_Door _door;
 
 
@@ -720,6 +721,7 @@ namespace YGR
             collision = getDoorPoints(collision, tileWidth, tileHeight);
 
             _direction = direction;
+            _tileOffset = tileOffset;
             
             Collision = new X_CollisionModel_Room(collision, tileWidth, tileHeight);
 
@@ -881,8 +883,8 @@ namespace YGR
             //    }
             //}
 
-            //TextureTileSize = size;
-            //_tileSize = (int)(TextureTileSize * Scale);
+            TextureTileSize = data.size;
+            _tileSize = (int)(TextureTileSize * Scale);
             _state = X_DoorState.Closed;
         }
 
@@ -1048,6 +1050,7 @@ namespace YGR
             }
 
             int half1 = (int)Math.Floor((float)width / 2.0f) + 2;
+            _halfHeight = half1;
 
             for (int x = 1; x < half1; ++x)
             {
@@ -1384,7 +1387,6 @@ namespace YGR
 
         public void Draw(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)
         {
-
             if (_state != X_DoorState.Closed && _state != X_DoorState.LockedClosed)
             {
                 if (_direction == X_DoorDirection.Vertical)
@@ -1430,29 +1432,46 @@ namespace YGR
             {
                 Vector2 pos = Rect.Location.ToVector2();
                 pos.Y += _currentDoorOpenOffset;
-                spriteBatch.Draw(
-                    _door, pos,
-                    new Rectangle(0, 0, _floor.Width, _floor.Height),
-                    Color.White, 0, Vector2.Zero, Scale, SpriteEffects.None, 0);
+                if(_tileOffset == 0)
+                {
+                    //spriteBatch.Draw(
+                    //    _door, pos,
+                    //    new Rectangle(0, 0, _floor.Width, _floor.Height),
+                    //    Color.White, 0, Vector2.Zero, Scale, SpriteEffects.None, 0);
+                }
+                else
+                {
+                    if(_direction == X_DoorDirection.Vertical)
+                    {
+                        if (_tileOffset < 0)
+                        {
+                            spriteBatch.Draw(
+                                _door, pos,
+                                new Rectangle(0, 0, _floor.Width - _tileOffset*_tileSize, (_halfHeight - 1) * _tileSize - _currentDoorOpenOffset),
+                                Color.White, 0, Vector2.Zero, Scale, SpriteEffects.None, 0);
+
+                            pos.Y += (_halfHeight - _numTilesDoorWidth - 1) * _tileSize;
+                            pos.X += _floor.Width - (_numTilesDoorWidth - 1) * _tileSize;
+                            spriteBatch.Draw(
+                                _door, pos,
+                                new Rectangle(_floor.Width - (_numTilesDoorWidth-1)*_tileSize, (_halfHeight - 1 - _numTilesDoorWidth) * _tileSize, _numTilesDoorWidth*_tileSize, _floor.Height),
+                                Color.White, 0, Vector2.Zero, Scale, SpriteEffects.None, 0);
+                        }
+                        else
+                        {
+                            pos.Y += (_halfHeight - 2) * _tileSize;
+                            spriteBatch.Draw(
+                                _door, pos,
+                                new Rectangle(0, (_halfHeight - 2) * _tileSize, _numTilesDoorWidth * _tileSize, _floor.Height - (_halfHeight - 2) * _tileSize),
+                                Color.White, 0, Vector2.Zero, Scale, SpriteEffects.None, 0);
+                        }
+                    }
+                }
             }
-            //spriteBatch.Draw(
-            //    _wall, Rect.Location.ToVector2(),
-            //    new Rectangle(0, 0, _wall.Width, _wall.Height),
-            //    Color.White, 0, Vector2.Zero, Scale, SpriteEffects.None, 0);
-
-
-            //spriteBatch.Draw(
-            //    _floor, Rect.Location.ToVector2(),
-            //    new Rectangle(0, 0, _floor.Width, _floor.Height),
-            //    Color.White, 0, Vector2.Zero, Scale, SpriteEffects.None, 0);
-            //spriteBatch.Draw(
-            //    _wall, Rect.Location.ToVector2(),
-            //    new Rectangle(0, 0, _wall.Width, _wall.Height),
-            //    Color.White, 0, Vector2.Zero, Scale, SpriteEffects.None, 0);
-            //spriteBatch.Draw(
-            //    _door, Rect.Location.ToVector2(),
-            //    new Rectangle(0, 0, _door.Width, _door.Height),
-            //    Color.White, 0, Vector2.Zero, Scale, SpriteEffects.None, 0);
+            spriteBatch.Draw(
+                _wall, Rect.Location.ToVector2(),
+                new Rectangle(0, 0, _wall.Width, _wall.Height),
+                Color.White, 0, Vector2.Zero, Scale, SpriteEffects.None, 0);
         }
 
         public void MoveTo(Point position)

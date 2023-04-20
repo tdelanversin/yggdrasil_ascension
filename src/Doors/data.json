@@ -39,9 +39,9 @@
                 }
             ],
             "mask" : [
-                [[""],[""],[""]],
-                [[""],["Roof"],["Floor"]],
-                [[""],["Roof","Out"],["Floor", "Wall"]]
+                [[""],["Roof"],[""]],
+                [[""],["Roof"],["Floor","Wall"]],
+                [[""],["Roof"],[""]]
             ]
         },
         "roofStraightVerticalR": {
@@ -60,9 +60,9 @@
                 }
             ],
             "mask" : [
-                [[""],[""],[""]],
+                [[""],["Roof"],[""]],
                 [["Floor","Wall"],["Roof"],[""]],
-                [["Floor","Roof"],["Roof","Out"],[""]]
+                [[""],["Roof"],[""]]
             ]
         },
         "roofStraightHorizontalB": {
@@ -81,8 +81,8 @@
                 }
             ],
             "mask" : [
-                [[""],["Floor"],["Floor","Roof"]],
-                [[""],["Roof"],["Roof"]],
+                [[""],["Floor"],[""]],
+                [["Roof"],["Roof"],["Roof"]],
                 [[""],[""],[""]]
             ]
         },
@@ -103,8 +103,8 @@
             ],
             "mask" : [
                 [[""],[""],[""]],
-                [[""],["Roof"],["Roof"]],
-                [[""],["Wall"],["Wall"]]
+                [["Roof"],["Roof"],["Roof"]],
+                [[""],["Wall"],[""]]
             ]
         },
         "wall": {
