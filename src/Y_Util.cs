@@ -4,6 +4,7 @@ using Microsoft.Xna.Framework.Graphics;
 using System.Runtime.CompilerServices;
 using System.IO;
 using System.Runtime.InteropServices;
+using Microsoft.VisualBasic;
 
 /*
  * Useful static methods
@@ -85,6 +86,22 @@ namespace YGR
             var srcPath = Path.Join(Util.GetSrcDirectory(), resourceFolder);
 
             return srcPath;
+        }
+
+        public static string CreateGenericIdentifier()
+        {
+            var time = DateAndTime.Now;
+            var random = new Random();
+
+            return time.Year.ToString() +
+                    time.Month.ToString().PadLeft(2, '0') +
+                    time.Day.ToString().PadLeft(2, '0') +
+                    time.Hour.ToString().PadLeft(2, '0') +
+                    time.Minute.ToString().PadLeft(2, '0') +
+                    time.Second.ToString().PadLeft(2, '0') +
+                    time.Millisecond.ToString() +
+                    "_" +
+                    random.Next().ToString();
         }
     }
 }

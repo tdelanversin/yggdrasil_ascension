@@ -306,20 +306,7 @@ namespace YGR
                 identifier += string.Join("", shadeTemplate.Select(x => x ? "1" : "0"));
 
                 var srcPath = Util.GetAbsResourceFolderPath(room.ResourceFolder);
-
-                var time = DateAndTime.Now;
-                var random = new Random();
-
-                fileName += 
-                    time.Year.ToString() +
-                    time.Month.ToString().PadLeft(2, '0') +
-                    time.Day.ToString().PadLeft(2, '0') +
-                    time.Hour.ToString().PadLeft(2, '0') +
-                    time.Minute.ToString().PadLeft(2, '0') +
-                    time.Second.ToString().PadLeft(2, '0') +
-                    time.Millisecond.ToString() +
-                    "_" +
-                    random.Next().ToString();
+                fileName += Util.CreateGenericIdentifier();
 
                 // write to all available directories: current runtime directory and source code directory
                 File.WriteAllText(room.ResourceFolder + fileName, identifier);
@@ -330,11 +317,6 @@ namespace YGR
         //private static bool[] loadShadeFromFile()
         //{
 
-        //}
-
-        //public static bool[] LoadShadeTemplate(IWalkable room)
-        //{
-        //    string[] shadeData = File.ReadAllLines(room.ResourceFolder + "shade");
         //}
 
         private static void output(bool[,] pattern, string name)

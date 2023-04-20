@@ -104,6 +104,9 @@ namespace YGR
 
         private bool LineOfSight(IVictim target)
         {
+            if (Room == null) return false;
+            if (target == null) return false;
+
             Point origin = Rect.Center;
             Vector2 targetDirection = target.Rect.Center.ToVector2() - Rect.Center.ToVector2();
             targetDirection = Vector2.Normalize(targetDirection);

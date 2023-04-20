@@ -5,6 +5,7 @@ using System;
 using System.Linq;
 using System.IO;
 using Assimp.Unmanaged;
+using Newtonsoft.Json;
 
 namespace YGR
 {
@@ -19,7 +20,8 @@ namespace YGR
         Roof=2,
         Wall,
         Floor,
-        Outside
+        Outside,
+        DontCare
     }
 
     public enum X_DoorState
@@ -32,8 +34,228 @@ namespace YGR
         LockedOpen
     }
 
+    internal struct Textel
+    {
+        public int x;
+        public int y;
+    }
+
+    internal class X_Data
+    {
+        public class Data
+        {
+            public string textureName;
+            public int size;
+            public List<Textel> floor;
+            public List<Textel> roofStraight;
+            public List<Textel> roofCorner;
+            public List<Textel> roofCover;
+            public List<Textel> wall;
+        }
+
+        private static Random random;
+        private static List<Color[]> floor;
+        private static List<Color[]> roofStraight;
+        private static List<Color[]> roofCorner;
+        private static List<Color[]> roofCover;
+        private static List<Color[]> wall;
+
+        private static Color[] flipX(Color[] tile, Data data)
+        {
+            Color[] n = new Color[tile.Length];
+            for(int h=0; h<data.size; ++h)
+            {
+                for (int w = 0; w < data.size; ++w)
+                {
+                    n[h * data.size + w] = tile[h * data.size + (data.size-1-w)];
+                }
+            }
+
+            return n;
+        }
+
+        private static Color[] flipY(Color[] tile, Data data)
+        {
+            Color[] n = new Color[tile.Length];
+            for (int h = 0; h < data.size; ++h)
+            {
+                for (int w = 0; w < data.size; ++w)
+                {
+                    n[h * data.size + w] = tile[(data.size-1-h) * data.size + w];
+                }
+            }
+
+            return n;
+        }
+
+        private static Color[] flipXY(Color[] tile, Data data)
+        {
+            Color[] n = new Color[tile.Length];
+            for (int h = 0; h < data.size; ++h)
+            {
+                for (int w = 0; w < data.size; ++w)
+                {
+                    n[h * data.size + w] = tile[w * data.size + h];
+                }
+            }
+
+            return n;
+        }
+
+        private static bool match(X_TileType[,] seg, X_TileType[] pattern)
+        {
+
+            return true;
+        }
+
+        public static void Load(string resourceFolder, Data data, GraphicsDevice graphicsDevice)
+        {
+            random = new Random();
+
+            Texture2D texture;
+            using (FileStream fileStream = new FileStream(resourceFolder + data.textureName, FileMode.Open))
+                texture = Texture2D.FromStream(graphicsDevice, fileStream);
+
+            roofStraight = new List<Color[]>();
+            foreach (var e in data.roofStraight)
+            {
+                Color[] temp = new Color[data.size * data.size];
+                texture.GetData<Color>(0, new Rectangle(e.x * data.size, e.y * data.size, data.size, data.size), temp, 0, data.size * data.size);
+                roofStraight.Add(temp);
+            }
+
+            roofCorner = new List<Color[]>();
+            foreach (var e in data.roofCorner)
+            {
+                Color[] temp = new Color[data.size * data.size];
+                texture.GetData<Color>(0, new Rectangle(e.x * data.size, e.y * data.size, data.size, data.size), temp, 0, data.size * data.size);
+                roofCorner.Add(temp);
+            }
+
+            floor = new List<Color[]>();
+            foreach (var e in data.floor)
+            {
+                Color[] temp = new Color[data.size * data.size];
+                texture.GetData<Color>(0, new Rectangle(e.x * data.size, e.y * data.size, data.size, data.size), temp, 0, data.size * data.size);
+                floor.Add(temp);
+            }
+
+            roofCover = new List<Color[]>();
+            foreach (var e in data.roofCover)
+            {
+                Color[] temp = new Color[data.size * data.size];
+                texture.GetData<Color>(0, new Rectangle(e.x * data.size, e.y * data.size, data.size, data.size), temp, 0, data.size * data.size);
+                roofCover.Add(temp);
+            }
+
+            wall = new List<Color[]>();
+            foreach (var e in data.wall)
+            {
+                Color[] temp = new Color[data.size * data.size];
+                texture.GetData<Color>(0, new Rectangle(e.x * data.size, e.y * data.size, data.size, data.size), temp, 0, data.size * data.size);
+                wall.Add(temp);
+            }
+        }
+
+        public static void Resolve(int[][] pattern, out Texture2D roofTexture, out Texture2D floorTexture, out Texture2D wallTexture)
+        {
+            Texture2D roofTexture;
+            Texture2D floorTexture;
+            Texture2D wallTexture;
+            X_TileType[][] padded = new X_TileType[pattern.Length+2][];
+            for(int i=0; i<pattern.Length+2; ++i)
+            {
+                padded[i] = new X_TileType[pattern.Length + 2];
+                if(i==0 || i == pattern.Length + 1)
+                {
+                    for (int j = 0; j < pattern.Length+2; ++j)
+                    {
+                        padded[i][j + 1] = X_TileType.Outside;
+                    }
+                }
+                else
+                {
+                    padded[i][0] = X_TileType.Outside;
+                    padded[i][pattern.Length + 1] = X_TileType.Outside;
+                    for (int j = 0; j < pattern.Length; ++j)
+                    {
+                        padded[i][j + 1] = (X_TileType)pattern[i][j];
+                    }
+                }
+            }
+
+            X_TileType[,] down = new X_TileType[,]
+            {
+                { X_TileType.DontCare, X_TileType.Wall, X_TileType.DontCare },
+                { X_TileType.DontCare, X_TileType.Wall, X_TileType.DontCare },
+                { X_TileType.DontCare, X_TileType.DontCare, X_TileType.DontCare },
+            };
+
+            X_TileType[,] level = new X_TileType[,]
+            {
+                { X_TileType.DontCare, X_TileType.DontCare, X_TileType.DontCare },
+                { X_TileType.Wall, X_TileType.Wall, X_TileType.DontCare },
+                { X_TileType.DontCare, X_TileType.DontCare, X_TileType.DontCare },
+            };
+
+            X_TileType[,] tl = new X_TileType[,]
+            {
+                { X_TileType.DontCare, X_TileType.Wall, X_TileType.Wall},
+                { X_TileType.DontCare, X_TileType.Wall, X_TileType.DontCare },
+                { X_TileType.DontCare, X_TileType.DontCare, X_TileType.DontCare },
+            };
+
+            X_TileType[,] tr = new X_TileType[,]
+            {
+                { X_TileType.Wall, X_TileType.Wall, X_TileType.DontCare },
+                { X_TileType.DontCare, X_TileType.Wall, X_TileType.DontCare },
+                { X_TileType.DontCare, X_TileType.DontCare, X_TileType.DontCare },
+            };
+
+            X_TileType[,] bl = new X_TileType[,]
+            {
+                { X_TileType.DontCare, X_TileType.Wall, X_TileType.DontCare },
+                { X_TileType.DontCare, X_TileType.Wall, X_TileType.Wall},
+                { X_TileType.DontCare, X_TileType.DontCare, X_TileType.DontCare },
+            };
+
+            X_TileType[,] br = new X_TileType[,]
+            {
+                { X_TileType.DontCare, X_TileType.DontCare, X_TileType.DontCare },
+                { X_TileType.Wall, X_TileType.Wall, X_TileType.DontCare },
+                { X_TileType.DontCare, X_TileType.DontCare, X_TileType.DontCare },
+            };
+        }
+
+        public static Color[] GetFloor()
+        {
+            return floor.ElementAt(random.Next(0, floor.Count()));
+        }
+
+        public static Color[] GetRoofStraight()
+        {
+            return roofStraight.ElementAt(random.Next(0, roofStraight.Count()));
+        }
+
+        public static Color[] GetRoofCorner()
+        {
+            return roofCorner.ElementAt(random.Next(0, roofCorner.Count()));
+        }
+
+        public static Color[] GetRoofCover()
+        {
+            return roofCover.ElementAt(random.Next(0, roofCover.Count()));
+        }
+
+        public static Color[] GetWall()
+        {
+            return wall.ElementAt(random.Next(0, wall.Count()));
+        }
+    }
+
     public class Y_Door : IWalkable
     {
+
         public float Scale { get; private set; }
         public Rectangle Rect { get; set; }
         public string Name { get; }
@@ -73,7 +295,8 @@ namespace YGR
             int tileWidth, 
             int tileHeight, 
             int tileOffset,
-            GraphicsDevice graphicsDevice
+            GraphicsDevice graphicsDevice,
+            string resourceFolder = "./Doors/"
             )
         {
             int[][] collision = createDoorTemplate(numTilesLength, tileOffset);
@@ -92,119 +315,160 @@ namespace YGR
 
             _doorCollisionRectangles = new Dictionary<X_DoorState, List<Rectangle>>();
 
-            ResourceFolder = "";
+            ResourceFolder = Util.PathOsNormalization(resourceFolder);
 
-            Texture2D roof;
-            Texture2D floor;
-            Texture2D wall;
+            //Texture2D roof;
+            //Texture2D floor;
+            //Texture2D wall;
 
-            using (FileStream fileStream = new FileStream("./Doors/roof.png", FileMode.Open))
-                roof = Texture2D.FromStream(graphicsDevice, fileStream);
-            using (FileStream fileStream = new FileStream("./Doors/floor.png", FileMode.Open))
-                floor = Texture2D.FromStream(graphicsDevice, fileStream);
-            using (FileStream fileStream = new FileStream("./Doors/wall.png", FileMode.Open))
-                wall = Texture2D.FromStream(graphicsDevice, fileStream);
+            //using (FileStream fileStream = new FileStream("./Doors/roof.png", FileMode.Open))
+            //    roof = Texture2D.FromStream(graphicsDevice, fileStream);
+            //using (FileStream fileStream = new FileStream("./Doors/floor.png", FileMode.Open))
+            //    floor = Texture2D.FromStream(graphicsDevice, fileStream);
+            //using (FileStream fileStream = new FileStream("./Doors/wall.png", FileMode.Open))
+            //    wall = Texture2D.FromStream(graphicsDevice, fileStream);
 
-            TextureTileSize = wall.Width;
+            //TextureTileSize = wall.Width;
 
-            Color[] roofA;
-            Color[] floorA;
-            Color[] wallA;
+            //Color[] roofA;
+            //Color[] floorA;
+            //Color[] wallA;
 
             Dictionary<X_TileType, Color[]> textels = new Dictionary<X_TileType, Color[]>();
 
-            int len = roof.Width * roof.Height;
-            /* 1 */
-            roofA = new Color[len];
-            roof.GetData<Color>(roofA);
-            textels.Add(X_TileType.Roof, roofA);
-
-            /* 2 */
-            wallA = new Color[len];
-            wall.GetData<Color>(wallA);
-            textels.Add(X_TileType.Wall, wallA);
-
-            /* 3 */
-            floorA = new Color[len];
-            floor.GetData<Color>(floorA);
-            textels.Add(X_TileType.Floor, floorA);
-
-            int width = floor.Width;
-            int height = floor.Height;
-            var pattern = Collision.GetCollisionTemplate();
-            //createOutsideRects(pattern, tileWidth);
-            _floor = new Texture2D(graphicsDevice, width * pattern[0].Length, height * pattern.Length);
-            _roof = new Texture2D(graphicsDevice, width * pattern[0].Length, height * pattern.Length);
-            _door = new Texture2D(graphicsDevice, width * pattern[0].Length, height * pattern.Length);
-            Scale = (float)tileHeight / height;
-
-            Color[] transparent = Enumerable.Repeat<Color>(Color.Transparent, height * width).ToArray();
-            for (int x = 0; x < pattern[0].Length; ++x)
+            //List<string> layers;
+            //Texture2D tiles;
+            //string textureName;
+            //int size;
+            //List<Textel> roofStraight;
+            //List<Textel> roofCorner;
+            //List<Textel> roofCover;
+            //List<Textel> wall;
+            //List<Textel> floor;
+            X_Data.Data data;
+            using (StreamReader stream = new StreamReader(ResourceFolder + "data.json"))
             {
-                for (int y = 0; y < pattern.Length; ++y)
-                {
-                    var index = pattern[y][x];
-                    Color[] floorElem;
-                    Color[] roofElem;
-                    Color[] doorElem;
-                    if ((X_TileType)index != X_TileType.Outside)
-                    {
-                        if((X_TileType)index == X_TileType.Roof)
-                            roofElem = textels[(X_TileType)index];
-                        else
-                            roofElem = transparent;
-                        if ((X_TileType)index == X_TileType.Floor || (X_TileType)index == X_TileType.Wall)
-                            floorElem = textels[(X_TileType)index];
-                        else
-                            floorElem = transparent;
-                    }
-                    else
-                    {
-                        floorElem = transparent;
-                        roofElem = transparent;
-                    }
-                    if ((X_TileType)index != X_TileType.Outside && (X_TileType)index != X_TileType.Roof)
-                    {
-                        if (x < 1 || y < 1 || x > pattern[0].Length - 2)
-                            doorElem = Enumerable.Repeat<Color>(Color.Transparent, height * width).ToArray();
-                        else if(y > pattern.Length-2)
-                            doorElem = transparent;
-                        else
-                            doorElem = textels[X_TileType.Roof];
-                    }
-                    else
-                    {
-                        doorElem = Enumerable.Repeat<Color>(Color.Transparent, height * width).ToArray();
-                    }
-                    Rectangle rect = new Rectangle(x * width, y * height, width, height);
 
-                    //var elem = Enumerable.Repeat<Color>(Color.Transparent, height * width).ToArray();
-                    _floor.SetData(0, rect, floorElem, 0, floorElem.Length);
-                    _door.SetData(0, rect, doorElem, 0, doorElem.Length);
-                    _roof.SetData(0, rect, roofElem, 0, roofElem.Length);
-                }
+                string json = stream.ReadToEnd();
+                dynamic array = JsonConvert.DeserializeObject(json);
+                data = JsonConvert.DeserializeObject<X_Data.Data>(array.ToString());
+                //var textureName = JsonConvert.DeserializeObject<string>(array.textureName.ToString());
+                //var size = JsonConvert.DeserializeObject<int>(array.textureName);
+                //var floor = JsonConvert.DeserializeObject<List<Textel>>(array.floor);
+                //var roofStraight = JsonConvert.DeserializeObject<List<Textel>>(array.roofStraight);
+                //var roofCorner = JsonConvert.DeserializeObject<List<Textel>>(array.roofCorner);
+                //var roofCover = JsonConvert.DeserializeObject<List<Textel>>(array.roofCover);
+                //var wall = JsonConvert.DeserializeObject<List<Textel>>(array.wall);
+
+                //IList<Door> doors = JsonConvert.DeserializeObject<List<Door>>(array.entities.Door.ToString());
+                //layers = JsonConvert.DeserializeObject<List<string>>(array.layers.ToString());
+
+                //foreach (var door in doors)
+                //{
+                //    int x = (int)((float)door.x / door.width * Collision.TileWidth) + Rect.X;
+                //    int y = (int)((float)door.y / door.height * Collision.TileHeight) + Rect.Y;
+                //    var side = determineSide(x, y);
+                //    IList<X_ConnectorPoint> list;
+                //    if (!Doors.TryGetValue(side, out list))
+                //    {
+                //        if (side == X_ConnectorSide.Top || side == X_ConnectorSide.Bottom)
+                //            Doors.Add(side, new List<X_ConnectorPoint> { new X_ConnectorPoint(side, new Point(x, y)) });
+                //        else
+                //            Doors.Add(side, new List<X_ConnectorPoint> { new X_ConnectorPoint(side, new Point(x, y)) });
+                //    }
+                //    else list.Add(new X_ConnectorPoint(side, new Point(door.x, door.y)));
+                //}
             }
 
-            _tileSize = (int)(TextureTileSize * Scale);
+            
+
+
+            //int len = roof.Width * roof.Height;
+            ///* 1 */
+            //roofA = new Color[len];
+            //roof.GetData<Color>(roofA);
+            //textels.Add(X_TileType.Roof, roofA);
+
+            ///* 2 */
+            //wallA = new Color[len];
+            //wall.GetData<Color>(wallA);
+            //textels.Add(X_TileType.Wall, wallA);
+
+            ///* 3 */
+            //floorA = new Color[len];
+            //floor.GetData<Color>(floorA);
+            //textels.Add(X_TileType.Floor, floorA);
+
+            //int width = floor.Width;
+            //int height = floor.Height;
+            //var pattern = Collision.GetCollisionTemplate();
+            ////createOutsideRects(pattern, tileWidth);
+            //_floor = new Texture2D(graphicsDevice, width * pattern[0].Length, height * pattern.Length);
+            //_roof = new Texture2D(graphicsDevice, width * pattern[0].Length, height * pattern.Length);
+            //_door = new Texture2D(graphicsDevice, width * pattern[0].Length, height * pattern.Length);
+            //Scale = (float)tileHeight / height;
+            //output(pattern, "./logs/pattern2.csv");
+            //Color[] transparent = Enumerable.Repeat<Color>(Color.Transparent, height * width).ToArray();
+            //for (int x = 0; x < pattern[0].Length; ++x)
+            //{
+            //    for (int y = 0; y < pattern.Length; ++y)
+            //    {
+            //        var index = pattern[y][x];
+            //        Color[] floorElem;
+            //        Color[] roofElem;
+            //        Color[] doorElem;
+            //        if ((X_TileType)index != X_TileType.Outside)
+            //        {
+            //            if((X_TileType)index == X_TileType.Roof)
+            //                roofElem = textels[(X_TileType)index];
+            //            else
+            //                roofElem = transparent;
+            //            if ((X_TileType)index == X_TileType.Floor || (X_TileType)index == X_TileType.Wall)
+            //                floorElem = textels[(X_TileType)index];
+            //            else
+            //                floorElem = transparent;
+            //        }
+            //        else
+            //        {
+            //            floorElem = transparent;
+            //            roofElem = transparent;
+            //        }
+            //        if ((X_TileType)index != X_TileType.Outside && (X_TileType)index != X_TileType.Roof)
+            //        {
+            //            if (x < 1 || y < 1 || x > pattern[0].Length - 2)
+            //                doorElem = Enumerable.Repeat<Color>(Color.Transparent, height * width).ToArray();
+            //            else if(y > pattern.Length-2)
+            //                doorElem = transparent;
+            //            else
+            //                doorElem = textels[X_TileType.Roof];
+            //        }
+            //        else
+            //        {
+            //            doorElem = Enumerable.Repeat<Color>(Color.Transparent, height * width).ToArray();
+            //        }
+            //        Rectangle rect = new Rectangle(x * width, y * height, width, height);
+
+            //        //var elem = Enumerable.Repeat<Color>(Color.Transparent, height * width).ToArray();
+            //        _floor.SetData(0, rect, floorElem, 0, floorElem.Length);
+            //        _door.SetData(0, rect, doorElem, 0, doorElem.Length);
+            //        _roof.SetData(0, rect, roofElem, 0, roofElem.Length);
+            //    }
+            //}
+
+            //TextureTileSize = size;
+            //_tileSize = (int)(TextureTileSize * Scale);
             _state = X_DoorState.Closed;
         }
 
         private void output(int[][] pattern, string name)
         {
             string s = "";
-            using (StreamReader reader = new StreamReader(name))
+            for (int x = 0; x < pattern.GetLength(0); ++x)
             {
-                s = reader.ReadToEnd();
+                s += string.Join("\t", pattern[x]) + "\n";
             }
-            s += "\n\n";
-            using (StreamWriter writer = new StreamWriter(name))
-            {
-                for (int x = 0; x < pattern.GetLength(0); ++x)
-                {
-                    s += string.Join("\t", pattern[x]) + "\n";
-                }
-                writer.WriteLine(s);
-            }
+
+            File.WriteAllText(name, s);
         }
 
         public ref Texture2D GetFloor()
@@ -604,7 +868,8 @@ namespace YGR
                 state.Value.AddRange(Collision.GetCollisionRectangles());
             }
 
-            Collision.UpdateCollisionRectangles(_doorCollisionRectangles[X_DoorState.Closed]);
+            if(_doorCollisionRectangles.ContainsKey(X_DoorState.Closed))
+                Collision.UpdateCollisionRectangles(_doorCollisionRectangles[X_DoorState.Closed]);
         }
 
         public bool LockDoor()
@@ -634,14 +899,16 @@ namespace YGR
                     if (!doorAnimation(dt, true))
                     {
                         _state = X_DoorState.Open;
-                        Collision.UpdateCollisionRectangles(_doorCollisionRectangles[X_DoorState.Open]);
+                        if(_doorCollisionRectangles.ContainsKey(X_DoorState.Open))
+                            Collision.UpdateCollisionRectangles(_doorCollisionRectangles[X_DoorState.Open]);
                     }
                     break;
                 case X_DoorState.Open:
                     if (keyPressed)
                     {
                         _state = X_DoorState.Closing;
-                        Collision.UpdateCollisionRectangles(_doorCollisionRectangles[X_DoorState.Closed]);
+                        if (_doorCollisionRectangles.ContainsKey(X_DoorState.Closed))
+                            Collision.UpdateCollisionRectangles(_doorCollisionRectangles[X_DoorState.Closed]);
                     }
                     break;
                 case X_DoorState.Closing:

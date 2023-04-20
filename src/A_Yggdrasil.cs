@@ -43,7 +43,10 @@ namespace YGR
             Util.Initialize(this);
             Menu.Initialize(this);
 
+#if DEBUG
+#else
             Settings.ToggleFullscreen();
+#endif
 
             var res_x = _graphics.PreferredBackBufferWidth;
             var res_y = _graphics.PreferredBackBufferHeight;
@@ -51,7 +54,7 @@ namespace YGR
             Camera.Bounds = _graphics.GraphicsDevice.Viewport.Bounds;
 
             // Set the camera mode, e.g. 'Follow' to follow players, 'Manual' for keyboard controlled
-            Camera.Mode = CameraMode.Room;
+            Camera.Mode = CameraMode.Follow;
 
             Factory_Debug.Initialize(Content);
             Manager_Projectile.Initialize(Content);
@@ -104,7 +107,7 @@ namespace YGR
               for a smooth transition.
             */
 
-            _level = new Y_Level("level_0", 32, "Levels/Level_1/simplified", GraphicsDevice);
+            _level = new Y_Level("level_0", 32, "Levels/Level_2/simplified", GraphicsDevice);
 
             _player = new List<IVictim>{
                 new Ninja(
@@ -197,7 +200,7 @@ namespace YGR
                 );
             }
 
-            Camera.focusOnRoom(_player.ElementAt(0).Room);
+            //Camera.focusOnRoom(_player.ElementAt(0).Room);
 
             // Pass players to camera so it can follow their positions
             Camera.Players = _player;

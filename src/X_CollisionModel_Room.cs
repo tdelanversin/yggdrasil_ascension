@@ -67,6 +67,8 @@ namespace YGR
                 if (col[index].Contains(p)) break;
             }
 
+            if (index >= col.Count()) return new Dictionary<X_DoorState, List<Rectangle>>();
+
             var old = col[index];
             Rectangle rectTop = new Rectangle(
                 old.X, old.Y,
@@ -99,6 +101,8 @@ namespace YGR
             {
                 if (col[index].Contains(p)) break;
             }
+
+            if (index >= col.Count()) return new Dictionary<X_DoorState, List<Rectangle>>();
 
             var old = col[index];
             Rectangle rectLeft = new Rectangle(

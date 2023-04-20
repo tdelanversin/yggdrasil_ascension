@@ -46,7 +46,11 @@ namespace YGR
         )
         {
             ResourceFolder = Util.PathOsNormalization(resourceFolder);
-            string[] lines = File.ReadAllLines(ResourceFolder + "Collisions.csv");
+            var files = Directory.GetFiles(ResourceFolder);
+            string dataFileName = Path.GetFileName(files.Where(x => Path.GetFileName(x).Contains("data") && Path.GetFileName(x).EndsWith(".json")).First());
+
+            string collisionsFileName = Path.GetFileName(files.Where(x => Path.GetFileName(x).Contains("Collision") && Path.GetFileName(x).EndsWith(".csv")).First());
+            string[] lines = File.ReadAllLines(ResourceFolder + collisionsFileName);
             int[][] collisions = new int[lines.Length][];
             int counter = 0;
             foreach (var line in lines)
@@ -62,11 +66,14 @@ namespace YGR
 
             Doors = new Dictionary<X_ConnectorSide, IList<X_ConnectorPoint>>();
             DoorRooms = new Dictionary<X_ConnectorSide, IList<IWalkable>>();
-            using (StreamReader stream = new StreamReader(ResourceFolder + "data.json"))
+
+            List<string> layers;
+            using (StreamReader stream = new StreamReader(ResourceFolder + dataFileName))
             {
                 string json = stream.ReadToEnd();
                 dynamic array = JsonConvert.DeserializeObject(json);
                 IList<Door> doors = JsonConvert.DeserializeObject<List<Door>>(array.entities.Door.ToString());
+                layers = JsonConvert.DeserializeObject<List<string>>(array.layers.ToString());
 
                 foreach(var door in doors)
                 {
@@ -76,7 +83,7 @@ namespace YGR
                     IList<X_ConnectorPoint> list;
                     if(!Doors.TryGetValue(side, out list)){
                         if(side == X_ConnectorSide.Top || side == X_ConnectorSide.Bottom)
-                            Doors.Add(side, new List<X_ConnectorPoint> { new X_ConnectorPoint(side, new Point(x, y-tileHeight)) });
+                            Doors.Add(side, new List<X_ConnectorPoint> { new X_ConnectorPoint(side, new Point(x, y)) });
                         else
                             Doors.Add(side, new List<X_ConnectorPoint> { new X_ConnectorPoint(side, new Point(x, y)) });
                     }
@@ -85,10 +92,36 @@ namespace YGR
             }
 
             Name = name;
+            Color[] target = null;
+            for (int i=0; i<layers.Count; ++i)
+            {
+                using (FileStream fileStream = new FileStream(ResourceFolder + layers[i], FileMode.Open))
+                {
+                    if(i==0){
+                        _floor = Texture2D.FromStream(graphicsDevice, fileStream);
+                        target = new Color[_floor.Width * _floor.Height];
+                        _floor.GetData<Color>(target);
+                    }
+                    else
+                    {
+                        var t = Texture2D.FromStream(graphicsDevice, fileStream);
+                        Color[] source = new Color[_floor.Width * _floor.Height];
+                        Texture2D.FromStream(graphicsDevice, fileStream).GetData<Color>(source);
 
-            using(FileStream fileStream = new FileStream(ResourceFolder + "_composite.png", FileMode.Open)){
-                _floor = Texture2D.FromStream(graphicsDevice, fileStream);
+                        for(int h=0; h<_floor.Height; ++h)
+                        {
+                            for (int w = 0; w < _floor.Width; ++w)
+                            {
+                                var c = source[h * _floor.Width + w];
+                                if(c.A != 0)
+                                    target[h * _floor.Width + w] = source[h * _floor.Width + w];
+                            }
+                        }
+                    }
+                }
             }
+            _floor.SetData<Color>(target);
+
             //using (FileStream fileStream = new FileStream(ResourceFolder + "Custom_grounds.png", FileMode.Open))
             //{
             //    _window = Texture2D.FromStream(graphicsDevice, fileStream);

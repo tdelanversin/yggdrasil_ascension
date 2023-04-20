@@ -132,7 +132,11 @@ namespace YGR
             SelectableItems = new List<MenuItem> {
                 new MenuItem("Play", NewGame),
                 new MenuItem("Restart", NewGame, isActive: false),
+#if DEBUG
+                new SettingsItem("Fullscreen: ", false, toggleFunc: Settings.ToggleFullscreen),
+#else
                 new SettingsItem("Fullscreen: ", true, toggleFunc: Settings.ToggleFullscreen),
+#endif
                 new SettingsItem("Lighting: ", Settings.Lighting, toggleFunc: Settings.ToggleLighting),
                 new SettingsItem("Outlines: ", Settings.Outlines, toggleFunc: Settings.ToggleOutlines),
                 new MenuItem(os_exit_string, Util.Quit),
