@@ -264,17 +264,29 @@ namespace YGR
         protected virtual void DrawGhost(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)
         {
             spriteBatch.Draw(
-                _spriteGhost,
-                new Rectangle(_rect.X, _rect.Y, _rect.Width, _rect.Height),
-                new Rectangle(0, 0, 180, 180), Color.White);
+                texture: _spriteGhost,
+                position: _rect.Location.ToVector2(),
+                sourceRectangle: new Rectangle(0, 0, 160, 160),
+                color: Color.White,
+                rotation: 0,
+                origin: Vector2.Zero,
+                scale: (float)Rect.Width / 160,
+                effects: SpriteEffects.None,
+                layerDepth: 0);
         }
 
         protected virtual void DrawPlayer(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)
         {
             spriteBatch.Draw(
-                _spritePlayer, _rect.Location.ToVector2(),
-                new Rectangle(_animationIndex * _spriteDimensions.Width, 0, _spriteDimensions.Width, _spriteDimensions.Height),
-                Color.White, 0, Vector2.Zero, Scale, SpriteEffects.None, 0);
+                texture: _spritePlayer,
+                position: _rect.Location.ToVector2(),
+                sourceRectangle: new Rectangle(_animationIndex * _spriteDimensions.Width, 0, _spriteDimensions.Width, _spriteDimensions.Height),
+                color: Color.White,
+                rotation: 0,
+                origin: Vector2.Zero,
+                scale: Scale,
+                effects: SpriteEffects.None,
+                layerDepth: 0);
         }
 
         protected virtual void DrawOverheadString(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)
