@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 
 /*
@@ -57,9 +58,9 @@ namespace YGR
             return currentKeyState.IsKeyDown(key);
         }
 
-        public static bool IsButtonDown(int gamePadIndex, Buttons button)
+        public static bool IsButtonDown(PlayerIndex gamePadIndex, Buttons button)
         {
-            return currentGamePadState[gamePadIndex].IsButtonDown(button);
+            return currentGamePadState[(int)gamePadIndex].IsButtonDown(button);
         }
 
         public static bool IsKeyTriggered(Keys key)
@@ -67,9 +68,9 @@ namespace YGR
             return currentKeyState.IsKeyDown(key) && !previousKeyState.IsKeyDown(key);
         }
 
-        public static bool IsButtonTriggered(int gamePadIndex, Buttons button)
+        public static bool IsButtonTriggered(PlayerIndex gamePadIndex, Buttons button)
         {
-            return currentGamePadState[gamePadIndex].IsButtonDown(button) && !previousGamePadState[gamePadIndex].IsButtonDown(button);
+            return currentGamePadState[(int)gamePadIndex].IsButtonDown(button) && !previousGamePadState[(int)gamePadIndex].IsButtonDown(button);
         }
 
         public static bool HasMouseMoved()
@@ -90,6 +91,21 @@ namespace YGR
         public static bool IsMiddleMouseClick()
         {
             return currentMouseState.MiddleButton == ButtonState.Pressed && previousMouseState.MiddleButton != ButtonState.Pressed;
+        }
+
+        public static bool HasGamePadStateChanged(PlayerIndex gamePadIndex)
+        {
+            return currentGamePadState[(int)gamePadIndex] != previousGamePadState[(int)gamePadIndex];
+        }
+
+        public static bool HasMouseStateChanged()
+        {
+            return currentMouseState != previousMouseState;
+        }
+
+        public static bool HasKeyboardStateChanged()
+        {
+            return currentKeyState != previousKeyState;
         }
     }
 }
