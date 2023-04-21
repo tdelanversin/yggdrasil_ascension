@@ -83,7 +83,7 @@ namespace YGR
             Level = level;
             LifePoints = 10;
             HitInLastLoop = false;
-            Level.Victims.Add(this);
+            //Level.Victims.Add(this);
 
             // Set a default timer value.
             timer = 0;

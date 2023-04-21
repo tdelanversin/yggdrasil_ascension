@@ -15,45 +15,85 @@ namespace YGR
 {
     public class X_Light
     {
-        public Vector3 Position { get; }
         public Color Color { get; }
         public float ShadowP { get; }
         public float Scale { get; }
-        public Rectangle IlluminationRect { get; }
 
-        public X_Light(Vector3 position, Rectangle illuminationRect, Color color, float shadowP, float scale)
+        private Rectangle _illuminationRect;
+        private Rectangle _scaledIlluminationRect;
+        private Vector3 _position;
+        private Vector3 _scaledPosition;
+
+        public X_Light(Vector3 position, Rectangle illuminationRect, float scale)
         {
-            Position = position/scale; // new Vector3(position.Y, position.X, position.Z);
-            Color = color;
-            ShadowP = shadowP;
+            _position = position/scale; // new Vector3(position.Y, position.X, position.Z);
+            _scaledPosition = position;
             Scale = scale;
-            IlluminationRect = illuminationRect;
+            _illuminationRect = new Rectangle(
+                (int)(illuminationRect.X/scale), 
+                (int)(illuminationRect.Y/scale), 
+                (int)(illuminationRect.Width/scale), 
+                (int)(illuminationRect.Height/scale));
+
+            _scaledIlluminationRect = illuminationRect;
+        }
+
+        public Vector3 GetScaledPosition()
+        {
+            return _scaledPosition;
+        }
+
+        public Vector3 GetUnscaledPosition()
+        {
+            return _position;
+        }
+
+        public ref Rectangle GetScaledIlluminationRect()
+        {
+            return ref _scaledIlluminationRect;
+        }
+
+        public ref Rectangle GetUnscaledIlluminationRect()
+        {
+            return ref _illuminationRect;
         }
 
         public void DrawOutline(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)
         {
-            int xpos = (int)(Position.X * Scale);
-            int ypos = (int)(Position.Y * Scale - Position.Z*Scale);
+            int xpos = (int)(_scaledPosition.X);
+            int ypos = (int)(_scaledPosition.Y - _scaledPosition.Z);
+            int zpos = (int)(_scaledPosition.Z);
             Factory_Debug.DrawPoint(xpos, ypos, 10, Color.Yellow, spriteBatch);
-            Factory_Debug.DrawLine(xpos, ypos, (int)(Position.Z * Scale), (float)Math.PI/2, 5, Color.Yellow, spriteBatch);
+            Factory_Debug.DrawLine(xpos, ypos, zpos, (float)Math.PI/2, 5, Color.Yellow, spriteBatch);
             Factory_Debug.DrawRectangle(
-                (int)(IlluminationRect.X),
-                (int)(IlluminationRect.Y),
-                (int)(IlluminationRect.Width),
-                (int)(IlluminationRect.Height), 5, Color.Orange, spriteBatch);
+                (int)(_scaledIlluminationRect.X),
+                (int)(_scaledIlluminationRect.Y),
+                (int)(_scaledIlluminationRect.Width),
+                (int)(_scaledIlluminationRect.Height), 5, Color.Orange, spriteBatch);
         }
 
         public string GetIdentifier(IWalkable room)
         {
             Rectangle rect = room.Rect;
-            float px = Position.X - rect.X;
-            float py = Position.Y - rect.Y;
-            int ipx = IlluminationRect.X - rect.X;
-            int ipy = IlluminationRect.Y - rect.Y;
-            int ipw = IlluminationRect.Width;
-            int iph = IlluminationRect.Height;
+            float px = _scaledPosition.X - rect.X;
+            float py = _scaledPosition.Y - rect.Y;
+            int ipx = _scaledIlluminationRect.X - rect.X;
+            int ipy = _scaledIlluminationRect.Y - rect.Y;
+            int ipw = _scaledIlluminationRect.Width;
+            int iph = _scaledIlluminationRect.Height;
             float scale = room.Scale;
             return "PX" + px + "PY" + py + "IRX" + ipx + "IRY" + ipy + "IRW" + ipw + "IRH" + iph + "S" + scale;
+        }
+
+        public void MoveBy(Point dp)
+        {
+            var dp3 = new Vector3(dp.X, dp.Y, 0);
+            var dp3s = dp3 / Scale;
+            var dp2s = new Point((int)(dp.X / Scale), (int)(dp.Y / Scale));
+            _position += dp3s;
+            _scaledPosition += dp3;
+            _illuminationRect.Offset(dp2s);
+            _scaledIlluminationRect.Offset(dp);
         }
     }
     public class X_Cube
@@ -162,6 +202,8 @@ namespace YGR
 
     public static class Manager_Light
     {
+        public static List<X_Cube> IlluminationModel { get; private set; }
+
         public static float Dot(Vector3 lhs, Vector3 rhs)
         {
             return lhs.X * rhs.X + lhs.Y * rhs.Y + lhs.Z * rhs.Z;
@@ -176,28 +218,32 @@ namespace YGR
                 );
         }
 
-        public static void Illuminate(
+        public static bool[] Illuminate(
             List<X_Light> lights,
-            IWalkable room,
-            List<X_Cube> cubes
+            IWalkable room
         )
         {
-            Texture2D texture = room.GetFloor();
-            Color[] data = new Color[texture.Width * texture.Height];
-            texture.GetData<Color>(data);
-            bool[] lighted = Enumerable.Repeat<bool>(false, data.Length).ToArray();
+            if(IlluminationModel == null)
+            {
+                Logger.Error("Trying to illuminate a room without illumination model");
+            }
 
-            Vector3 offset = new Vector3(room.Rect.Location.X / room.Scale, room.Rect.Location.Y / room.Scale, 0);
-
-            bool[] shadowMap = Enumerable.Repeat<bool>(true, data.Length).ToArray();
-            Vector3[] coords = Enumerable.Repeat<Vector3>(Vector3.Zero, data.Length).ToArray();
-            int[] textureMap = Enumerable.Repeat<int>(-1, data.Length).ToArray();
-            X_TileType[] tileType = Enumerable.Repeat<X_TileType>(X_TileType.Floor, data.Length).ToArray();
             var template = room.Collision.GetCollisionTemplate();
             var tileSize = room.TextureTileSize;
 
-            int shadowSpotSize = 1;
+            int width = template[0].Length * room.TextureTileSize;
+            int length = width * template.Length * room.TextureTileSize;
+            bool[] lighted = Enumerable.Repeat<bool>(false, length).ToArray();
 
+            Vector3 offset = new Vector3(room.Rect.Location.X / room.Scale, room.Rect.Location.Y / room.Scale, 0);
+
+            bool[] shadowMap = Enumerable.Repeat<bool>(true, length).ToArray();
+            Vector3[] coords = Enumerable.Repeat<Vector3>(Vector3.Zero, length).ToArray();
+            int[] textureMap = Enumerable.Repeat<int>(-1, length).ToArray();
+            X_TileType[] tileType = Enumerable.Repeat<X_TileType>(X_TileType.Floor, length).ToArray();
+
+            int shadowSpotSize = 1;
+            float tto = 0.001f;
             Parallel.For(0, template.Length, h =>
             //for (int h=0; h < template.Length; ++h)
             {
@@ -207,26 +253,71 @@ namespace YGR
                     int fromY = h * tileSize + shadowSpotSize / 2;
                     int toX = fromX + tileSize - shadowSpotSize / 2;
                     int toY = fromY + tileSize - shadowSpotSize / 2;
+
+                    // pretest if any part of the tile is not visible. If any edge is not visible from the light
+                    // we need to calculate shadows for it
+                    List<Vector3> pts = new List<Vector3>();
+                    if (template[h][w] == (int)X_TileType.Floor || template[h][w] == (int)X_TileType.Roof)
+                    {
+                        pts.Add(new Vector3(fromX + tto, fromY + tto - tileSize, -tileSize - 0.001f) + offset);
+                        pts.Add(new Vector3(fromX - tto + tileSize, fromY + tto - tileSize, -tileSize - 0.001f) + offset);
+                        pts.Add(new Vector3(fromX + tto, fromY - tto - tileSize + tileSize, -tileSize - 0.001f) + offset);
+                        pts.Add(new Vector3(fromX - tto + tileSize, fromY - tto - tileSize + tileSize, -tileSize - 0.001f) + offset);
+                    }
+                    else if (template[h][w] == (int)X_TileType.Wall)
+                    {
+                        pts.Add(new Vector3(fromX + tto, fromY + tto + 0.001f, -(0)) + offset);
+                        pts.Add(new Vector3(fromX - tto + tileSize, fromY + tto + 0.001f, -(0)) + offset);
+                        pts.Add(new Vector3(fromX + tto, fromY - tto + tileSize + 0.001f, -(tileSize)) + offset);
+                        pts.Add(new Vector3(fromX - tto + tileSize - tto, fromY + 0.001f, -(tileSize)) + offset);
+                    }
+                    foreach (var light in lights)
+                    {
+                        Vector3 orig = light.GetUnscaledPosition();
+                        foreach (var p in pts)
+                        {
+                            if (light.GetUnscaledIlluminationRect().Contains(new Point((int)p.X, (int)p.Y)))
+                            {
+                                foreach (var cube in IlluminationModel)
+                                {
+                                    if (cube.RayIntersect(orig, p - orig))
+                                    {
+                                        goto add_tile;
+                                    }
+                                }
+                            }
+                        }
+                    }
+
                     for (int x = fromX; x < toX; x += shadowSpotSize)
                     {
                         for (int y = fromY; y < toY; y += shadowSpotSize)
                         {
-                            tileType[y * texture.Width + x] = (X_TileType)template[h][w];
+                            lighted[y * width + x] = true;
+                        }
+                    }
+
+                    continue;
+
+                    add_tile:
+                    for (int x = fromX; x < toX; x += shadowSpotSize)
+                    {
+                        for (int y = fromY; y < toY; y += shadowSpotSize)
+                        {
+                            tileType[y * width + x] = (X_TileType)template[h][w];
                             if (template[h][w] == (int)X_TileType.Floor || template[h][w] == (int)X_TileType.Roof)
                             {
-                                coords[y * texture.Width + x] = new Vector3(x, y - room.TextureTileSize, -room.TextureTileSize - 0.001f) + offset;
-                                textureMap[y * texture.Width + x] = (y) * texture.Width + x;
-                                //tileType[y * texture.Width + x] = (X_TileType)template[h][w];
+                                coords[y * width + x] = new Vector3(x, y - tileSize, -tileSize - 0.001f) + offset;
+                                textureMap[y * width + x] = (y) * width + x;
                             }
                             else if (template[h][w] == (int)X_TileType.Wall)
                             {
-                                coords[y * texture.Width + x] = new Vector3(x, fromY + 0.001f, -(y - fromY)) + offset;
-                                textureMap[y * texture.Width + x] = (y) * texture.Width + x;
-                                //tileType[y * texture.Width + x] = (X_TileType)template[h][w];
+                                coords[y * width + x] = new Vector3(x, fromY + 0.001f, -(y - fromY)) + offset;
+                                textureMap[y * width + x] = (y) * width + x;
                             }
                             if (template[h][w] == (int)X_TileType.Roof || template[h][w] == (int)X_TileType.Outside)
                             {
-                                shadowMap[y * texture.Width + x] = false;
+                                shadowMap[y * width + x] = false;
                             }
                         }
                     }
@@ -235,12 +326,12 @@ namespace YGR
 
             foreach (var light in lights)
             {
-                Vector3 orig = light.Position;
+                Vector3 orig = light.GetUnscaledPosition();
                 float scale = room.Scale;
-                Parallel.For(0, data.Length, i =>
+                Parallel.For(0, length, i =>
                 //for (int i = 0; i < data.Length; ++i)
                 {
-                    if (!light.IlluminationRect.Contains(new Point((int)((coords[i].X) * scale), (int)((coords[i].Y) * scale)))) 
+                    if (!light.GetUnscaledIlluminationRect().Contains(new Point((int)coords[i].X, (int)coords[i].Y)))
                         return;
 
                     int hit2 = textureMap[i];
@@ -253,7 +344,7 @@ namespace YGR
 
                     //var tt = tileType[hit2];
                     bool intersected = false;
-                    foreach (var cube in cubes)
+                    foreach (var cube in IlluminationModel)
                     {
                         if (cube.RayIntersect(orig, coords[i] - orig))
                         {
@@ -268,22 +359,8 @@ namespace YGR
                 });
             }
 
-            for (int i = 0; i < lighted.Length; ++i)
-            {
-                if (!lighted[i] && shadowMap[i] )
-                {
-                    var col = data[i];
-                    Color nCol = Color.White;
-                    nCol.R = (byte)((1 - 0.4f) * col.R + 0.4f * Color.Black.R);
-                    nCol.G = (byte)((1 - 0.4f) * col.G + 0.4f * Color.Black.G);
-                    nCol.B = (byte)((1 - 0.4f) * col.B + 0.4f * Color.Black.B);
-                    data[i] = nCol;
-                }
-            }
-
-            saveShadeToFile(lighted, room, lights);
-
-            texture.SetData<Color>(data);
+            return lighted;
+            //saveShadeToFile(lighted, room, lights);
         }
 
         private static void saveShadeToFile(bool[] shadeTemplate, IWalkable room, List<X_Light> lights)
@@ -295,7 +372,7 @@ namespace YGR
                 identifier += "V2\n";
                 foreach (var light in lights)
                 {
-                    if (light.IlluminationRect.Intersects(room.Rect))
+                    if (light.GetScaledIlluminationRect().Intersects(room.Rect))
                     {
                         identifier += light.GetIdentifier(room) + "|";
                     }
@@ -343,7 +420,7 @@ namespace YGR
             File.WriteAllText(name, s);
         }
 
-        public static List<X_Cube> Elevate(Y_Level level)
+        public static void Initialize(Y_Level level)
         {
             List<X_Cube> cubes = new List<X_Cube>();
 
@@ -386,8 +463,9 @@ namespace YGR
                 }
             }
 
+            IlluminationModel = cubes;
             //toWavefrontObj(cubes, "./logs/cubes.obj");
-            return cubes;
+            //return cubes;
         }
 
         private static void toWavefrontObj(List<X_Cube> cubes, string name)

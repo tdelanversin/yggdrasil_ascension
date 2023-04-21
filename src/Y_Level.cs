@@ -21,8 +21,6 @@ namespace YGR
 
         private string _name;
 
-        private List<X_Light> _lights;
-
         public Y_Level(
             string name,
             int tileSize,
@@ -54,8 +52,6 @@ namespace YGR
                 { "door-middle-to-top", new Y_Door(X_DoorDirection.Vertical, connectorWidth, TileWidth, TileHeight, 3, graphicsDevice, "./Doors", "data.json") },
             };
 
-            //Rooms["center"].MoveTo(new Point(-(4*tileSize), 0));
-
             ((Y_Door)Rooms["door-center-to-middle"]).Connect(X_ConnectorSide.Bottom, Rooms["center"], X_ConnectorSide.Top, Rooms["middle"]);
             ((Y_Door)Rooms["door-center-to-left"]).Connect(X_ConnectorSide.Right, Rooms["center"], X_ConnectorSide.Left, Rooms["left"]);
             ((Y_Door)Rooms["door-center-to-right"]).Connect(X_ConnectorSide.Left, Rooms["center"], X_ConnectorSide.Right, Rooms["right"]);
@@ -71,21 +67,26 @@ namespace YGR
                 }
             }
 
-            float scale = (float)TileWidth / 16.0f;
-            _lights = new List<X_Light>();
-            foreach (var room in Rooms.Values)
-            {
-                if (room.WhatAreYou() == X_LevelElements.Door) continue;
-                _lights.Add(
-                    new X_Light(
-                        //new Vector3((int)(3.5 * tileSize), (int)(4 * tileSize), 1 * tileSize),
-                        new Vector3(room.Rect.X + tileSize, room.Rect.Y + tileSize, 5 * tileSize),
-                        getLightRect(room, 2),
-                        Color.Black,
-                        0.5f,
-                        scale
-                ));
-            }
+            Manager_Light.Initialize(this);
+
+            //float scale = (float)TileWidth / 32.0f;
+
+            //_lights = new List<X_Light>();
+            //foreach (var room in Rooms.Values)
+            //{
+            //    if (room.WhatAreYou() == X_LevelElements.Door) continue;
+            //    var rect = getLightRect(room, 2);
+            //    //rect.Offset(0, -20 * tileSize);
+            //    _lights.Add(
+            //        new X_Light(
+            //            //new Vector3((int)(3.5 * tileSize), (int)(4 * tileSize), 1 * tileSize),
+            //            new Vector3(room.Rect.X + -5*tileSize, room.Rect.Y + 5*tileSize, 5 * tileSize),
+            //            rect,
+            //            scale
+            //    ));
+            //}
+
+            //Rooms["center"].MoveTo(new Point(0, -(20 * tileSize)));
 
             //var r = Rooms["center"];
             //_lights.Add(
@@ -122,26 +123,25 @@ namespace YGR
 
             if (Settings.Lighting)
             {
-                var model = Manager_Light.Elevate(this);
                 foreach (var room in Rooms.Values)
                 {
-                    Manager_Light.Illuminate(_lights, room, model);
+                    room.Illuminate();
                 }
             }
 
+
             //OutsideColor = ((Y_CMRoom)(Rooms.Values.First())).RegionColor;
-            Victims = new List<IVictim>();
         }
 
-        private Rectangle getLightRect(IWalkable room, int offsetWidth)
-        {
-            return new Rectangle(
-                room.Rect.X - offsetWidth * TileWidth,
-                room.Rect.Y - offsetWidth * TileHeight,
-                room.Rect.Width + 2 * offsetWidth * TileWidth,
-                room.Rect.Height + 2 * offsetWidth * TileHeight
-            );
-        }
+        //private Rectangle getLightRect(IWalkable room, int offsetWidth)
+        //{
+        //    return new Rectangle(
+        //        room.Rect.X - offsetWidth * TileWidth,
+        //        room.Rect.Y - offsetWidth * TileHeight,
+        //        room.Rect.Width + 2 * offsetWidth * TileWidth,
+        //        room.Rect.Height + 2 * offsetWidth * TileHeight
+        //    );
+        //}
 
         public IWalkable GetRoom(IGameElement elem, IWalkable currentRoom)
         {
@@ -176,10 +176,10 @@ namespace YGR
             {
                 room.Value.DrawOutline(gameTime, globalOffset, spriteBatch);
             }
-            foreach (var light in _lights)
-            {
-                light.DrawOutline(gameTime, globalOffset, spriteBatch);
-            }
+            //foreach (var light in _lights)
+            //{
+            //    light.DrawOutline(gameTime, globalOffset, spriteBatch);
+            //}
         }
 
         public void Draw(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)

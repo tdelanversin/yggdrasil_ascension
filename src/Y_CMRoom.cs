@@ -1,4 +1,6 @@
-﻿using Microsoft.Xna.Framework;
+﻿using Assimp;
+using LDtk;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using Newtonsoft.Json;
@@ -36,6 +38,8 @@ namespace YGR
 
         private Texture2D _floor;
         private Texture2D _window;
+        private bool[] _shade;
+        private List<X_Light> _lights;
 
         public Y_CMRoom(
             string name,
@@ -176,6 +180,30 @@ namespace YGR
             //_floor.SetData<Color>(newData);
 
             Scale = (float)tileHeight * collisions.Length / _floor.Height;
+            _shade = null;
+            _lights = new List<X_Light>() { new X_Light(new Vector3(Rect.X + -5 * TextureTileSize, Rect.Y + 5 * TextureTileSize, 5 * TextureTileSize), Rect, Scale) };
+        }
+
+        public void Illuminate()
+        {
+            _shade = Manager_Light.Illuminate(_lights, this);
+
+            Color[] data = new Color[_floor.Width * _floor.Height];
+            _floor.GetData<Color>(data);
+
+            for (int i = 0; i < _shade.Length; ++i)
+            {
+                if (!_shade[i])
+                {
+                    var col = data[i];
+                    Color nCol = Color.White;
+                    nCol.R = (byte)((1 - 0.4f) * col.R + 0.4f * Color.Black.R);
+                    nCol.G = (byte)((1 - 0.4f) * col.G + 0.4f * Color.Black.G);
+                    nCol.B = (byte)((1 - 0.4f) * col.B + 0.4f * Color.Black.B);
+                    data[i] = nCol;
+                }
+            }
+            _floor.SetData<Color>(data);
         }
 
         public ref Texture2D GetFloor()

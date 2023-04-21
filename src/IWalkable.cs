@@ -20,5 +20,6 @@ namespace YGR
         public ref Texture2D GetFloor();
         public int TextureTileSize { get; }
         public string ResourceFolder { get; }
+        public void Illuminate();
     }
 }

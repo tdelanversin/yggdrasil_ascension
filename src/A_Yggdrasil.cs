@@ -205,10 +205,10 @@ namespace YGR
             // Pass players to camera so it can follow their positions
             Camera.Players = _player;
 
-            for (int i = 0; i < 6; i++)
-            {
-                Manager_Enemies.AddEnemy_SimpleEnemy(new Vector2(1050 + i * 200, 350), _level, _player);
-            }
+            //for (int i = 0; i < 6; i++)
+            //{
+            //    Manager_Enemies.AddEnemy_SimpleEnemy(new Vector2(1050 + i * 200, 350), _level, _player);
+            //}
 
             // Once everything is in place, inform Update() of the new desired state
             DesiredState = GameState.InGame;
