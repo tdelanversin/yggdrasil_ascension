@@ -47,11 +47,11 @@ namespace YGR
                 { "left", new Y_CMRoom("r3-L", TileWidth, TileHeight, resourceFolder + "Room_3", graphicsDevice) },
                 { "right", new Y_CMRoom("r3-R", TileWidth, TileHeight, resourceFolder + "Room_4", graphicsDevice) },
                 { "bottom", new Y_CMRoom("r3-B", TileWidth, TileHeight, resourceFolder + "Room_5", graphicsDevice) },
-                { "door-center-to-middle", new Y_Door(X_DoorDirection.Vertical, connectorWidth, TileWidth, TileHeight, -7, graphicsDevice) },
-                { "door-center-to-left", new Y_Door(X_DoorDirection.Horizontal, connectorWidth, TileWidth, TileHeight, 1, graphicsDevice) },
-                { "door-center-to-right", new Y_Door(X_DoorDirection.Horizontal, connectorWidth, TileWidth, TileHeight, -3, graphicsDevice) },
-                { "door-center-to-bottom", new Y_Door(X_DoorDirection.Vertical, connectorWidth, TileWidth, TileHeight, 0, graphicsDevice) },
-                { "door-middle-to-top", new Y_Door(X_DoorDirection.Vertical, connectorWidth, TileWidth, TileHeight, 3, graphicsDevice) },
+                { "door-center-to-middle", new Y_Door(X_DoorDirection.Vertical, connectorWidth, TileWidth, TileHeight, -7, graphicsDevice, "./Doors", "data.json") },
+                { "door-center-to-left", new Y_Door(X_DoorDirection.Horizontal, connectorWidth, TileWidth, TileHeight, 1, graphicsDevice, "./Doors", "data.json") },
+                { "door-center-to-right", new Y_Door(X_DoorDirection.Horizontal, connectorWidth, TileWidth, TileHeight, -3, graphicsDevice, "./Doors", "data.json") },
+                { "door-center-to-bottom", new Y_Door(X_DoorDirection.Vertical, connectorWidth, TileWidth, TileHeight, 0, graphicsDevice, "./Doors", "data.json") },
+                { "door-middle-to-top", new Y_Door(X_DoorDirection.Vertical, connectorWidth, TileWidth, TileHeight, 3, graphicsDevice, "./Doors", "data.json") },
             };
 
             //Rooms["center"].MoveTo(new Point(-(4*tileSize), 0));

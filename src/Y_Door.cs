@@ -9,6 +9,7 @@ using Newtonsoft.Json;
 using System.Reflection.Emit;
 using Nvidia.TextureTools;
 using System.Reflection;
+using CppNet;
 
 namespace YGR
 {
@@ -41,10 +42,11 @@ namespace YGR
     {
         Floor,
         Wall,
-        Door
+        Door,
+        Mechanism
     }
 
-    internal class X_Data
+    internal class X_AutoTiler
     {
 
         internal struct Textel
@@ -59,27 +61,24 @@ namespace YGR
             public List<Textel> coordinates;
         }
 
-        public class Data
+        internal class Data
         {
             public string textureName;
             public int size;
             public Dictionary<string, TileData> tiles;
         }
 
-        private static Random random;
-        private static int tileSize;
-        private static Dictionary<string, List<Color[]>> tiles;
-        private static Dictionary<string, X_TileType[,][]> masks;
-        private static Dictionary<string, X_DoorTextureLayer> textures;
-
-        private static X_TileType map(string tileType)
+        internal class TileInfo
         {
-            if (tileType.ToLower().Contains("floor")) return X_TileType.Floor;
-            if (tileType.ToLower().Contains("wall")) return X_TileType.Wall;
-            if (tileType.ToLower().Contains("roof")) return X_TileType.Roof;
-            if (tileType.ToLower().Contains("out")) return X_TileType.Outside;
-            return X_TileType.DontCare;
+            public int tileSize;
+            public Dictionary<string, List<Color[]>> tiles;
+            public Dictionary<string, List<Texture2D>> tilesTexture;
+            public Dictionary<string, X_TileType[,][]> masks;
         }
+
+        private static Random random;
+
+        private static Dictionary<string, TileInfo> tileInfo;
 
         private static X_DoorTextureLayer mapTexture(string textureType)
         {
@@ -88,7 +87,7 @@ namespace YGR
             return X_DoorTextureLayer.Door;
         }
 
-        private static X_TileType[,][] map(string[,][] mask)
+        private static X_TileType[,][] map(string[,][] mask, Func<string, X_TileType> mapJsonName)
         {
             X_TileType[,][] res = new X_TileType[3, 3][];
             for (int i = 0; i < 3; ++i)
@@ -98,43 +97,60 @@ namespace YGR
                     res[i, j] = new X_TileType[mask[i, j].Length];
                     for(int k=0; k< mask[i, j].Length; ++k)
                     {
-                        res[i, j][k] = map(mask[i, j][k]); 
+                        res[i, j][k] = mapJsonName(mask[i, j][k]); 
                     }
                 }
             }
             return res;
         }
 
-        public static void Load(string resourceFolder, Data data, GraphicsDevice graphicsDevice)
+        public static void Initialize(string resourceFolder, string jsonFileName, GraphicsDevice graphicsDevice, Func<string, X_TileType> mapJsonName)
         {
+            X_AutoTiler.Data data;
+            using (StreamReader stream = new StreamReader(resourceFolder + jsonFileName))
+            {
+                string json = stream.ReadToEnd();
+                dynamic array = JsonConvert.DeserializeObject(json);
+                data = JsonConvert.DeserializeObject<X_AutoTiler.Data>(array.ToString());
+            }
+
             random = new Random();
 
             Texture2D texture;
             using (FileStream fileStream = new FileStream(resourceFolder + data.textureName, FileMode.Open))
                 texture = Texture2D.FromStream(graphicsDevice, fileStream);
 
-            tileSize = data.size;
+            if (tileInfo == null) tileInfo = new Dictionary<string, TileInfo>();
 
-            tiles = new Dictionary<string, List<Color[]>>();
-            masks = new Dictionary<string, X_TileType[,][]>();
-            textures = new Dictionary<string, X_DoorTextureLayer>();
+            string staticKey = resourceFolder + jsonFileName;
+            if (tileInfo.ContainsKey(staticKey)) return;
+
+            TileInfo info = new TileInfo();
+            tileInfo.Add(resourceFolder + jsonFileName, info);
+
+            info.tileSize = data.size;
+
+            info.tiles = new Dictionary<string, List<Color[]>>();
+            info.tilesTexture = new Dictionary<string, List<Texture2D>>();
+
+            info.masks = new Dictionary<string, X_TileType[,][]>();
+            //textures = new Dictionary<string, X_DoorTextureLayer>();
             foreach (var t in data.tiles)
             {
-                tiles.Add(t.Key, new List<Color[]>());
-                foreach(var e in t.Value.coordinates)
+                info.tiles.Add(t.Key, new List<Color[]>());
+                info.tilesTexture.Add(t.Key, new List<Texture2D>());
+                foreach (var e in t.Value.coordinates)
                 {
                     Color[] temp = new Color[data.size * data.size];
                     texture.GetData<Color>(0, new Rectangle(e.x * data.size, e.y * data.size, data.size, data.size), temp, 0, data.size * data.size);
-                    tiles[t.Key].Add(temp);
+                    info.tiles[t.Key].Add(temp);
+
+                    Texture2D ttemp = new Texture2D(graphicsDevice, data.size, data.size);
+                    ttemp.SetData<Color>(temp);
+                    info.tilesTexture[t.Key].Add(ttemp);
                 }
 
-                masks.Add(t.Key, map(t.Value.mask));
-
-                textures.Add(t.Key, mapTexture(t.Key));
-                //foreach (var e in t.Value)
-                //{
-
-                //}
+                info.masks.Add(t.Key, map(t.Value.mask, mapJsonName));
             }
         }
 
@@ -200,7 +216,12 @@ namespace YGR
             File.WriteAllText(name, s);
         }
 
-        public static void Resolve(GraphicsDevice graphicsDevice, int[][] pattern, out Dictionary<X_DoorTextureLayer, Texture2D> texture)
+        public static void Resolve(
+            string resourceFolder, string jsonFileName,
+            GraphicsDevice graphicsDevice, 
+            int[][] pattern, 
+            out Dictionary<X_DoorTextureLayer, List<Tuple<Point, Texture2D>>> texture, 
+            out Dictionary<X_DoorTextureLayer, List<Tuple<Point, Color[]>>> color)
         {
             X_TileType[][] padded = new X_TileType[pattern.Length + 2][];
             for (int i = 0; i < pattern.Length + 2; ++i)
@@ -227,34 +248,63 @@ namespace YGR
                 }
             }
 
-            texture = new Dictionary<X_DoorTextureLayer, Texture2D>();
-            foreach (var e in textures)
-            {
-                if(!texture.ContainsKey(e.Value))
-                    texture.Add(e.Value, new Texture2D(graphicsDevice, tileSize * pattern[0].Length, tileSize * pattern.Length));
-            }
+            //texture = new Dictionary<X_DoorTextureLayer, Texture2D>();
+            texture = new Dictionary<X_DoorTextureLayer, List<Tuple<Point, Texture2D>>>();
+            color = new Dictionary<X_DoorTextureLayer, List<Tuple<Point, Color[]>>>();
+            //foreach (var e in textures)
+            //{
+            //    if(!texture.ContainsKey(e.Value))
+            //        texture.Add(e.Value, new Texture2D(graphicsDevice, tileSize * pattern[0].Length, tileSize * pattern.Length));
+            //}
 
-            Color[] trans = Enumerable.Repeat<Color>(Color.Transparent, tileSize * tileSize * pattern[0].Length * pattern.Length).ToArray();
-            foreach(var tex in texture)
-            {
-                tex.Value.SetData<Color>(trans);
-            }
+            //Color[] trans = Enumerable.Repeat<Color>(Color.Transparent, tileSize * tileSize * pattern[0].Length * pattern.Length).ToArray();
+            //foreach(var tex in texture)
+            //{
+            //    tex.Value.SetData<Color>(trans);
+            //}
 
-            int len = tileSize * tileSize;
-            foreach (var m in masks)
+            string staticKey = resourceFolder + jsonFileName;
+            if (!tileInfo.ContainsKey(staticKey)) Logger.Error("No tile info for the resource " + staticKey);
+
+            TileInfo info = tileInfo[staticKey];
+
+            int len = info.tileSize * info.tileSize;
+            foreach (var m in info.masks)
             {
                 var res = match(padded, m.Value);
                 foreach (var t in res)
                 {
-                    Rectangle rect = new Rectangle(t.Item1 * tileSize, t.Item2 * tileSize, tileSize, tileSize);
-                    texture[mapTexture(m.Key)].SetData(0, rect, getRandomTile(tiles[m.Key]), 0, len);
+                    Rectangle rect = new Rectangle(t.Item1 * info.tileSize, t.Item2 * info.tileSize, info.tileSize, info.tileSize);
+                    List<Tuple<Point, Texture2D>> list;
+                    var key = mapTexture(m.Key);
+                    int ind = getRandomTile(info.tiles[m.Key]);
+                    if (texture.TryGetValue(key, out list))
+                    {
+                        list.Add(new Tuple<Point, Texture2D>(new Point(t.Item1, t.Item2), info.tilesTexture[m.Key][ind]));
+                    }
+                    else
+                    {
+                        list = new List<Tuple<Point, Texture2D>>() { new Tuple<Point, Texture2D>(new Point(t.Item1, t.Item2), info.tilesTexture[m.Key][ind]) };
+                        texture.Add(key, list);
+                    }
+
+                    List<Tuple<Point, Color[]>> list2;
+                    if (color.TryGetValue(key, out list2))
+                    {
+                        list2.Add(new Tuple<Point, Color[]>(new Point(t.Item1, t.Item2), info.tiles[m.Key][ind]));
+                    }
+                    else
+                    {
+                        list2 = new List<Tuple<Point, Color[]>>() { new Tuple<Point, Color[]>(new Point(t.Item1, t.Item2), info.tiles[m.Key][ind]) };
+                        color.Add(key, list2);
+                    }
                 }
             }
         }
 
-        private static Color[] getRandomTile(List<Color[]> colors)
+        private static int getRandomTile(List<Color[]> colors)
         {
-            return colors.ElementAt(random.Next(0, colors.Count()));
+            return random.Next(0, colors.Count());
         }
     }
 
@@ -302,51 +352,63 @@ namespace YGR
             int tileHeight, 
             int tileOffset,
             GraphicsDevice graphicsDevice,
-            string resourceFolder = "./Doors/"
+            string resourceFolder,
+            string tileJsonFile
             )
         {
             int[][] collision = createDoorTemplate(numTilesLength, tileOffset);
-
             collision = flipToPosition(collision, direction, tileOffset);
-
             collision = getDoorPoints(collision, tileWidth, tileHeight);
 
             _direction = direction;
             _tileOffset = tileOffset;
-            
             Collision = new X_CollisionModel_Room(collision, tileWidth, tileHeight);
-
             Rect = new Rectangle(0, 0, tileWidth * collision[0].Length, tileHeight * collision.Length);
-
             Scale = 1.0f;
-
             _doorCollisionRectangles = new Dictionary<X_DoorState, List<Rectangle>>();
-
             ResourceFolder = Util.PathOsNormalization(resourceFolder);
 
-            Dictionary<X_TileType, Color[]> textels = new Dictionary<X_TileType, Color[]>();
+            X_AutoTiler.Initialize(ResourceFolder, "data.json", graphicsDevice, Y_Door.MapJsonName);
+            Dictionary<X_DoorTextureLayer, List<Tuple<Point, Texture2D>>> tileTextures;
+            Dictionary<X_DoorTextureLayer, List<Tuple<Point, Color[]>>> tileColors;
+            X_AutoTiler.Resolve(ResourceFolder, tileJsonFile, graphicsDevice, Collision.GetCollisionTemplate(), out tileTextures, out tileColors);
 
-            X_Data.Data data;
-            using (StreamReader stream = new StreamReader(ResourceFolder + "data.json"))
-            {
-                string json = stream.ReadToEnd();
-                dynamic array = JsonConvert.DeserializeObject(json);
-                data = JsonConvert.DeserializeObject<X_Data.Data>(array.ToString());
-            }
-
-            X_Data.Load(ResourceFolder, data, graphicsDevice);
-
-            Dictionary<X_DoorTextureLayer, Texture2D> textures;
-            X_Data.Resolve(graphicsDevice, Collision.GetCollisionTemplate(), out textures);
-            _wall = textures[X_DoorTextureLayer.Wall];
-            _floor = textures[X_DoorTextureLayer.Floor];
-            _door = textures[X_DoorTextureLayer.Door];
-
-            Scale = (float)tileHeight / data.size;
-
-            TextureTileSize = data.size;
+            Scale = (float)tileHeight / tileTextures.First().Value.First().Item2.Height;
+            TextureTileSize = tileTextures.First().Value.First().Item2.Height;
             _tileSize = (int)(TextureTileSize * Scale);
             _state = X_DoorState.Closed;
+
+            int width = Collision.GetCollisionTemplate()[0].Length;
+            int height = Collision.GetCollisionTemplate().Length;
+            Color[] trans = Enumerable.Repeat<Color>(Color.Transparent, _tileSize * _tileSize * width * height).ToArray();
+            _wall = new Texture2D(graphicsDevice, _tileSize * width, _tileSize * height); //textures[X_DoorTextureLayer.Wall];
+            _floor = new Texture2D(graphicsDevice, _tileSize * width, _tileSize * height); // textures[X_DoorTextureLayer.Floor];
+            _door = new Texture2D(graphicsDevice, _tileSize * width, _tileSize * height); // textures[X_DoorTextureLayer.Door];
+
+            _wall.SetData<Color>(trans);
+            _floor.SetData<Color>(trans);
+            _door.SetData<Color>(trans);
+
+            foreach(var tile in tileColors)
+            {
+                foreach (var t in tile.Value)
+                {
+                    Rectangle rect = new Rectangle(t.Item1.X * _tileSize, t.Item1.Y * _tileSize, _tileSize, _tileSize);
+
+                    if (tile.Key == X_DoorTextureLayer.Wall) _wall.SetData<Color>(0, rect, t.Item2, 0, _tileSize * _tileSize);
+                    else if (tile.Key == X_DoorTextureLayer.Floor) _floor.SetData<Color>(0, rect, t.Item2, 0, _tileSize * _tileSize);
+                    else if (tile.Key == X_DoorTextureLayer.Door) _door.SetData<Color>(0, rect, t.Item2, 0, _tileSize * _tileSize);
+                }
+            }
+        }
+
+        public static X_TileType MapJsonName(string tileType)
+        {
+            if (tileType.ToLower().Contains("floor")) return X_TileType.Floor;
+            if (tileType.ToLower().Contains("wall")) return X_TileType.Wall;
+            if (tileType.ToLower().Contains("roof")) return X_TileType.Roof;
+            if (tileType.ToLower().Contains("out")) return X_TileType.Outside;
+            return X_TileType.DontCare;
         }
 
         private void output(int[][] pattern, string name)
