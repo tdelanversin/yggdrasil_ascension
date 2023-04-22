@@ -49,7 +49,7 @@ namespace YGR
             Manager_Projectile.Initialize(Content);
             Manager_Enemies.Initialize(Content);
             Manager_Players.Initialize();
-
+            Manager_Particles.Initialize();
             base.Initialize();
         }
 
@@ -57,11 +57,10 @@ namespace YGR
         {
             Fonts.LoadContent(Content);
             Menu.LoadContent(Content);
-            Partic.GetParticles(new Vector2(200,200), Content);
             Manager_Sound.LoadContent(Content);
             Manager_Players.LoadContent(Content);
             _spriteBatch = new SpriteBatch(GraphicsDevice);
-
+            Manager_Particles.LoadContent(Content);
             // Uncomment to play intro sound in a loop
             //MediaPlayer.Play(Manager_Sound.AddSong_Intro());
             MediaPlayer.IsRepeating = true;
@@ -70,9 +69,9 @@ namespace YGR
 
         protected override void UnloadContent()
         {
-            Partic.Dispose();
+            Manager_Particles.Dispose();
         }
-            internal void StartNewGame()
+        internal void StartNewGame()
         {
             /*
             # PLAN
@@ -182,7 +181,6 @@ namespace YGR
                     Menu.Update();
                     break;
             }
-            Partic.Update(gameTime);
             base.Update(gameTime);
         }
 
@@ -235,7 +233,6 @@ namespace YGR
                     _spriteBatch.End();
                     break;
             }
-            Partic.Draw(gameTime, _spriteBatch);
             base.Draw(gameTime);
         }
     }

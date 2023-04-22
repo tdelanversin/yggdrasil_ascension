@@ -13,20 +13,28 @@ using MonoGame.Extended.Particles.Profiles;
 using MonoGame.Extended.TextureAtlases;
 using Microsoft.Xna.Framework.Content;
 using Vector2=Microsoft.Xna.Framework.Vector2;
+using System.Reflection.Metadata;
 
 namespace YGR
 {
-    public static class Partic
+    public static class Manager_Particles
     {
         private static ParticleEffect _particleEffect;
         private static Texture2D _particleTexture;
-
-
-        internal static void GetParticles( Vector2 pos, ContentManager content)
+        public static List<ParticleEffect> _particleEffects { get;  private set; }
+        public static void Initialize()
         {
-            _particleTexture = content.Load<Texture2D>("dust_particle");// new Texture2D(graphicsDevice, 1, 1);
-            //_particleTexture.SetData(new[] { Microsoft.Xna.Framework.Color.White });
+            _particleEffects = new List<ParticleEffect>();
+            _particleEffect = new ParticleEffect();
+        }
 
+        public static void LoadContent(ContentManager contentManager)
+        {
+            _particleTexture = contentManager.Load<Texture2D>("dust_particle");// new Texture2D(graphicsDevice, 1, 1);
+
+        }
+        public static void GenParticleEffect( Vector2 pos)
+        {
             TextureRegion2D textureRegion = new TextureRegion2D(_particleTexture);
             _particleEffect = new ParticleEffect(autoTrigger: false)
             {
@@ -49,6 +57,11 @@ namespace YGR
                             {
                                 Interpolators =
                                 {
+                                    //new OpacityInterpolator
+                                    //{
+                                    //    StartValue =1f, 
+                                    //    EndValue = -2f
+                                    //}
                                     //new ColorInterpolator
                                     //{
                                     //    StartValue = new HslColor(0.33f, 0.5f, 0.5f),
@@ -69,6 +82,8 @@ namespace YGR
                     }
                 }
             };
+            _particleEffects.Add(_particleEffect);
+            //Logger.Error(_particleEffects.Count.ToString());
         }
 
         public static void Dispose()
@@ -78,28 +93,20 @@ namespace YGR
         }
         public static void Update(GameTime gameTime)
         {
-            _particleEffect.Update((float)gameTime.ElapsedGameTime.TotalSeconds);
-            
+            foreach (var pE in _particleEffects)
+            {
+                pE.Update((float)gameTime.ElapsedGameTime.TotalSeconds);
+
+            }
 
         }
 
         public static void Draw(GameTime gameTime, SpriteBatch spriteBatch)
         {
-            //graphicsDevice.Clear(Microsoft.Xna.Framework.Color.Black);
-
-            spriteBatch.Begin(blendState: BlendState.AlphaBlend);
-            spriteBatch.Draw(_particleEffect);
-            spriteBatch.End();
-
-        }
-        public static void Draw(GameTime gameTime, GraphicsDevice graphicsDevice, SpriteBatch spriteBatch)
-        {
-            //graphicsDevice.Clear(Microsoft.Xna.Framework.Color.Black);
-
-            spriteBatch.Begin(blendState: BlendState.AlphaBlend);
-            spriteBatch.Draw(_particleEffect);
-            spriteBatch.End();
-
+            foreach (var pE in _particleEffects)
+            {
+                spriteBatch.Draw(pE);
+            }
         }
     }
 

@@ -1,8 +1,11 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using MonoGame.Extended;
+using MonoGame.Extended.Particles;
 using System;
 using System.Collections.Generic;
+using System.Reflection.Metadata;
 
 namespace YGR
 {
@@ -47,6 +50,7 @@ namespace YGR
         protected Vector2 _deceleration;
         protected Vector2 _maxVelocity;
         protected Vector2 _position;
+        protected ParticleEffect pE;
 
         protected enum InputType
         {
@@ -106,6 +110,10 @@ namespace YGR
             Scale = (float)Rect.Width / (float)_spriteDimensions.Width;
             Level.Victims.Add(this);
             Room = Level.GetRoom(this, Room);
+
+            //Walking particles
+            Manager_Particles.GenParticleEffect(_rect.Location.ToVector2());
+            pE=Manager_Particles._particleEffects[0];
         }
 
         public X_LevelElements WhatAreYou()
@@ -167,6 +175,7 @@ namespace YGR
         /* Handle Keyboard & Mouse movement, aiming and shooting */
         public void HandleMouseKeyboardInput(GameTime gameTime, ref Vector2 input)
         {
+
             if (_controlLayout > 0)
             {
                 if (_controlLayout == ControlLayout.KeyboardWASD)
@@ -183,7 +192,6 @@ namespace YGR
                     if (Input.IsKeyDown(Keybinds.P2Down)) input.Y += 1;
                     if (Input.IsKeyDown(Keybinds.P2Up)) input.Y -= 1;
                 }
-                //ParticleManager.AddParticle(new (Rect.Location.ToVector2()+new Vector2(15,15), new ()));
                 MouseState mouse = Mouse.GetState();
                 Vector2 playerCenter = Rect.Center.ToVector2();
                 if (Input.HasMouseMoved() && !_isAiming) // Skip if controller is already aiming
@@ -253,14 +261,14 @@ namespace YGR
 
         public virtual void Update(GameTime gameTime)
         {
+            Manager_Particles.Update(gameTime);
             Vector2 input = Vector2.Zero;
             HandleGamepadInput(gameTime, ref input);
             HandleMouseKeyboardInput(gameTime, ref input);
             UpdateVelocity(input, gameTime);
             UpdateCollision(gameTime);
             _gun.Update(gameTime);
-            //ParticleManager.Update(gameTime);
-             
+
         }
 
         // Render ghosty 👻
@@ -312,20 +320,28 @@ namespace YGR
                     Color.White, (float)angle, new Vector2(_spriteAimIndicator.Width / 2, 0), 0.1f, SpriteEffects.None, 0);
             }
         }
-
+        //protected virtual void DrawParticles(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)
+        //{
+        //    spriteBatch.Draw(
+        //        pE, _rect.Location.ToVector2(),
+        //        null,
+        //        null);
+        //}
+    
         public virtual void Draw(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)
         {
+
             if (IsAlive())
             {
                 DrawPlayer(gameTime, globalOffset, spriteBatch);
                 DrawOverheadString(gameTime, globalOffset, spriteBatch);
-                //ParticleManager.Draw(spriteBatch);
             }
             else
             {
                 DrawGhost(gameTime, globalOffset, spriteBatch);
             }
-            
+            Manager_Particles.Draw(gameTime, spriteBatch);
+            //DrawParticles(gameTime, globalOffset, spriteBatch);
             DrawAimIndicator(gameTime, globalOffset, spriteBatch);
         }
 
@@ -554,6 +570,7 @@ namespace YGR
 
         override protected void DrawPlayer(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)
         {
+
             spriteBatch.Draw(
                     _spritePlayer,
                     new Rectangle(
