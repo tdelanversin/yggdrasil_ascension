@@ -13,6 +13,7 @@ namespace YGR
         static GameWindow Window;
         public static bool Lighting;
         public static bool Outlines;
+        public static bool DrawFPS;
 
         public static void Initialize(A_Yggdrasil game)
         {
@@ -21,6 +22,7 @@ namespace YGR
             Window = game.Window;
 
             // Defaults
+            DrawFPS = true; // Always on for now, shouldn't really bother anyone
 #if DEBUG
             Lighting = false;
             Outlines = true;
@@ -40,6 +42,12 @@ namespace YGR
         {
             Outlines = !Outlines;
             return Outlines;
+        }
+
+        internal static bool ToggleDrawFPS()
+        {
+            DrawFPS = !DrawFPS;
+            return DrawFPS;
         }
 
         public static bool ToggleFullscreen()

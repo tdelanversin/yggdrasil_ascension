@@ -21,6 +21,7 @@ namespace YGR
 
         public GraphicsDeviceManager _graphics;
         public SpriteBatch _spriteBatch;
+        private FrameCounter _frameCounter = new FrameCounter();
 
         Y_Level _level;
         public GameState State;
@@ -143,7 +144,6 @@ namespace YGR
                     // Nothing for now
                 }
             }
-            
             // Only switch actual state during Update(), otherwise you can mess up the Draw call
             State = DesiredState;
 
@@ -224,6 +224,13 @@ namespace YGR
                     _spriteBatch.End();
                     break;
             }
+
+            _frameCounter.Update((float)gameTime.ElapsedGameTime.TotalSeconds);
+            string fps = string.Format("FPS: {0:0}", _frameCounter.AverageFramesPerSecond);
+            var fpsColor = Color.BlanchedAlmond;
+            _spriteBatch.Begin(SpriteSortMode.Immediate, null, null, null, null, null, null);
+            _spriteBatch.DrawString(Fonts.Normal, fps, new Vector2(1, 1), fpsColor);
+            _spriteBatch.End();
             base.Draw(gameTime);
         }
     }
