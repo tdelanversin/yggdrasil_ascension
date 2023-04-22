@@ -3,6 +3,7 @@ using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace YGR
 {
@@ -12,33 +13,26 @@ namespace YGR
         Room,       // Focus on a room
         Manual      // Control pos and zoom with keybinds
     }
-    public class Y_Camera
+    public static class Camera
     {
-        public float Zoom { get; set; }
-        public Vector2 Position { get; set; }
-        public Rectangle Bounds { get; protected set; }
-        public Rectangle VisibleArea { get; protected set; }
-        public Matrix Transform { get; protected set; }
-        public CameraMode Mode { get; set; }
-        public Y_Room Room { get; protected set; }
-        public IList<IVictim> Players { get; set; }
+        public static float Zoom { get; set; } = 1f;
+        public static Vector2 Position { get; set; }
+        public static Rectangle Bounds { get; set; }
+        public static Rectangle VisibleArea { get; set; }
+        public static Matrix Transform { get; set; }
+        public static CameraMode Mode { get; set; }
+        public static IWalkable Room; // Room to focus on
+        public static IList<IVictim> Players { get; set; } // Players to focus
 
         // Zoom levels for...              { Follow, Room, Manual }
-        private readonly float[] minZoom = { 0.60f, 0.25f, 0.05f };
-        private readonly float[] maxZoom = { 1.25f, 1.75f, 16.0f };
+        private static readonly float[] minZoom = { 0.60f, 0.25f, 0.05f };
+        private static readonly float[] maxZoom = { 1.25f, 1.75f, 16.0f };
         private const float zoomSpeed = 0.1f;
         private const float panSpeed = 1024;
 
-        private float currentMouseWheelValue, previousMouseWheelValue;
+        private static float currentMouseWheelValue, previousMouseWheelValue;
 
-        public Y_Camera(Viewport viewport, Vector2 position)
-        {
-            Bounds = viewport.Bounds;
-            Zoom = 1f;
-            Position = position;
-        }
-
-        private void UpdateVisibleArea()
+        private static void UpdateVisibleArea()
         {
             var inverseViewMatrix = Matrix.Invert(Transform);
 
@@ -56,7 +50,7 @@ namespace YGR
             VisibleArea = new Rectangle((int)min.X, (int)min.Y, (int)(max.X - min.X), (int)(max.Y - min.Y));
         }
 
-        private void UpdateMatrix()
+        private static void UpdateMatrix()
         {
             Transform = Matrix.CreateTranslation(new Vector3(-Position.X, -Position.Y, 0)) *
                     Matrix.CreateScale(Zoom) *
@@ -64,27 +58,27 @@ namespace YGR
             UpdateVisibleArea();
         }
 
-        public void MoveCamera(Vector2 movePosition)
+        public static void MoveCamera(Vector2 movePosition)
         {
             Vector2 newPosition = Position + movePosition;
             Position = newPosition;
         }
 
-        public void UpdateZoom(float zoom)
+        public static void UpdateZoom(float zoom)
         {
             // Clamp to the min/max zoom level allowed in the current mode
             Zoom = Math.Clamp(zoom, minZoom[(int)Mode], maxZoom[(int)Mode]);
         }
 
-        private void keyboardMove(float deltaTime)
+        private static void keyboardMove(float deltaTime)
         {
             Vector2 cameraMovement = Vector2.Zero;
             float moveSpeed = deltaTime * panSpeed / (float)Math.Sqrt(Zoom);
 
-            if (Keyboard.IsPressed(Keybinds.CameraMoveLeft)) cameraMovement.X = -moveSpeed;
-            if (Keyboard.IsPressed(Keybinds.CameraMoveRight)) cameraMovement.X = moveSpeed;
-            if (Keyboard.IsPressed(Keybinds.CameraMoveUp)) cameraMovement.Y = -moveSpeed;
-            if (Keyboard.IsPressed(Keybinds.CameraMoveDown)) cameraMovement.Y = moveSpeed;
+            if (Input.IsKeyDown(Keybinds.CameraMoveLeft)) cameraMovement.X = -moveSpeed;
+            if (Input.IsKeyDown(Keybinds.CameraMoveRight)) cameraMovement.X = moveSpeed;
+            if (Input.IsKeyDown(Keybinds.CameraMoveUp)) cameraMovement.Y = -moveSpeed;
+            if (Input.IsKeyDown(Keybinds.CameraMoveDown)) cameraMovement.Y = moveSpeed;
             MoveCamera(cameraMovement);
 
             previousMouseWheelValue = currentMouseWheelValue;
@@ -99,9 +93,16 @@ namespace YGR
             }
         }
 
-        private void centerOnPlayers()
+        private static void centerOnPlayers()
         {
             if (Players == null || Players.Count < 1) return;
+
+            var playersAlive = ((List<IVictim>)Players).FindAll(x => x.WhatAreYou() == X_LevelElements.Victim).ToList();
+
+            if (playersAlive.Count == 0)
+            {
+                return;
+            }
 
             var left = Players[0].Rect.X;
             var right = Players[0].Rect.X;
@@ -109,8 +110,9 @@ namespace YGR
             var bot = Players[0].Rect.Y;
 
             Vector2 playerMeanPos = Vector2.Zero;
-            foreach (var player in Players)
+            foreach (var player in playersAlive)
             {
+                if (player.WhatAreYou() == X_LevelElements.Ghost) continue;
                 playerMeanPos += player.Rect.Location.ToVector2();
                 left = Math.Min(player.Rect.X, left);
                 right = Math.Max(player.Rect.X, right);
@@ -119,7 +121,7 @@ namespace YGR
             }
 
             // Update camera position
-            playerMeanPos /= Players.Count;
+            playerMeanPos /= playersAlive.Count;
             Position = playerMeanPos;
             // Console.WriteLine(playerMeanPos);
 
@@ -128,7 +130,19 @@ namespace YGR
             UpdateZoom(.75f / stretch);
         }
 
-        public void UpdateCamera(Viewport bounds, float deltaTime)
+        private static void focusOnRoom()
+        {
+            if (Room == null)
+            {
+                Logger.Error("CameraMode set to Room but Room is not defined.");
+                return;
+            }
+            Position = new Vector2(Room.Rect.X + Room.Rect.Width / 2, Room.Rect.Y + Room.Rect.Height / 2);
+            var stretch = Math.Max((float)Room.Rect.Width / Bounds.Width, (float)Room.Rect.Height / Bounds.Height);
+            UpdateZoom(.95f / stretch);
+        }
+
+        public static void UpdateCamera(Viewport bounds, float deltaTime)
         {
             Bounds = bounds.Bounds;
             UpdateMatrix();
@@ -144,18 +158,15 @@ namespace YGR
                     break;
 
                 case CameraMode.Room:
-                    // All good here, we only update once when setting the room
+                    focusOnRoom();
                     break;
             }
         }
 
-        public void focusOnRoom(Y_Room room)
+        public static void focusOnRoom(IWalkable room)
         {
             Room = room;
             Mode = CameraMode.Room;
-            Position = new Vector2(Room.Position.X + Room.Width / 2, Room.Position.Y + Room.Height / 2);
-            var stretch = Math.Max((float)Room.Width / Bounds.Width, (float)Room.Height / Bounds.Height);
-            UpdateZoom(.95f / stretch);
         }
     }
 }

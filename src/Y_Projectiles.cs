@@ -5,52 +5,70 @@ using System.Collections.Generic;
 
 namespace YGR
 {
-    public class Y_StarterProjectile: IProjectile
+    public class Y_StarterProjectile : IProjectile
     {
+        public float Scale { get; private set; }
         public bool DeleteNext { get; set; }
         public string Name { get; set; }
         public double TimeCreated { get; set; }
-        public Vector2 Position { get; private set; }
         public X_CollisionModel_Projectile Collision { get; }
         public Vector2 Velocity { get; set; }
+        public Y_Level Level { get; set; }
         public IWalkable Room { get; set; }
-        public Rectangle Rect { get; set; }
+        public Rectangle Rect { get { return _rect; } set { _rect = value; } }
         public IGameElement WhoFiredMe { get; }
 
+        private Vector2 _position;
         private Texture2D _sprite;
         public Rectangle _window;
         private int _animationIndex;
         private Vector2 _direction;
         private bool _isEnemy;
         X_ConnectorSide _lastSide;
+        Rectangle _rect;
 
         public Y_StarterProjectile(
             Vector2 position,
             Vector2 direction,
             double timeCreated,
-            IWalkable room,
+            Y_Level level,
             IGameElement who
-        ) {
+        )
+        {
             _sprite = Manager_Projectile.projectile_textures["smaller_projectile"];
             _window = new Rectangle(0, 0, 32, 32);
             _animationIndex = 0;
-            Position = position;
+            _position = position;
             _direction = direction;
             Velocity = Vector2.One * direction;
             TimeCreated = timeCreated;
             _isEnemy = false;
             Name = "StarterProjectile";
-            Room = room;
+            Level = level;
             DeleteNext = false;
             Collision = new X_CollisionModel_Projectile(0.5f, 1.0f);
 
-            Rect = new Rectangle((int)position.X - _window.Width/2, (int)position.Y - _window.Height/2, _window.Width, _window.Height);
-
-            Room.Projectiles.Add(this);
             WhoFiredMe = who;
+            if (WhoFiredMe is IVictim)
+            { // Add 50% of the players momentum to the bullet. Adds 50% more fun to the game.
+                Velocity += ((IVictim)WhoFiredMe).Velocity * .5f;
+                /* 
+                TODO: Clamp the velocity and make sure the bullets don't go
+                backwards if the player is going backwards super fast (looking
+                at you, Ninja...)
+                */
+            }
+            Room = Level.GetRoom(this, Room);
+            Scale = 0.25f * Room.Scale;
+            _rect = new Rectangle(
+                (int)position.X - (int)((float)_window.Width / 2.0f * Scale),
+                (int)position.Y - (int)((float)_window.Height / 2.0f * Scale),
+                (int)(_window.Width * Scale),
+                (int)(_window.Height * Scale));
         }
 
-        public void Update(GameTime gameTime) {
+        public void Update(GameTime gameTime)
+        {
             int timeStepMS = (int)gameTime.ElapsedGameTime.TotalMilliseconds;
 
             /* ##########################################################################
@@ -59,67 +77,47 @@ namespace YGR
             IList<Vector2> contactNormal;
             IList<Point> contactPoint;
             IList<IGameElement> who;
-            if (Collision.Intersect(this, timeStepMS, out contactPoint, out contactNormal, out who))
+            Vector2 newVelocity = Velocity;
+            if (Collision.Intersect(this, timeStepMS, out newVelocity, out contactPoint, out contactNormal, out who))
             {
-                Logger.Info("Collided with something");
-                foreach(var obj in who)
+                //Logger.Debug("Collided with something");
+                foreach (var obj in who)
                 {
-                    if(obj.WhatAreYou() == X_LevelElements.Victim)
+                    //Logger.Info(obj.WhatAreYou().ToString());
+                    if (obj.WhatAreYou() == WhoFiredMe.WhatAreYou()) continue;
+
+                    if (obj.WhatAreYou() == X_LevelElements.Victim)
                     {
+                        ((IVictim)obj).LifePoints = ((IVictim)obj).LifePoints - 1;
                         ((IVictim)obj).HitInLastLoop = true;
                     }
+                    else if (obj.WhatAreYou() == X_LevelElements.Enemy)
+                    {
+                        //Logger.Info("### " + WhoFiredMe.WhatAreYou().ToString() + " hit an " + obj.WhatAreYou().ToString() + " with id " + ((Y_SimpleEnemy)obj).Identifier + " | lifepoints: " + ((IEnemy)obj).LifePoints.ToString());
+                        ((IEnemy)obj).LifePoints = ((IEnemy)obj).LifePoints - 1;
+                        //Logger.Info("#2# " + WhoFiredMe.WhatAreYou().ToString() + " hit an " + obj.WhatAreYou().ToString() + " | lifepoints: " + ((IEnemy)obj).LifePoints.ToString());
+                        ((IEnemy)obj).HitInLastLoop = true;
+                    }
+
+                    Velocity = newVelocity;
                 }
+
+                //Rectangle rect = me.Rect;
+                //rect.Location += (me.Velocity * timeStepMS).ToPoint();
+                //me.Rect = rect;
             }
             /* ########################################################################## */
 
+            _position += newVelocity * timeStepMS;
+            _rect.Location = _position.ToPoint();
             _animationIndex = (int)(5 - (gameTime.TotalGameTime.TotalMilliseconds - TimeCreated) / 300);
-
-            var whatAreYou = Room.WhatAreYou();
-            if (whatAreYou == X_LevelElements.Connector)
-            {
-                var connector = (Y_Connector)Room;
-                // check if we are still inside the room
-                if (!connector.IsInside(Position))
-                {
-                    // if not, assign the room according to the last side we were on
-                    /*
-                     * TODO: this is sensitive to movement speed!!!
-                     */
-                    var oldRoom = Room.Name;
-                    Room = connector.GetRoom(_lastSide);
-                    Logger.Info("Projectile moves from room [" + oldRoom + "] to room [" + Room.Name + "]");
-                }
-                else
-                {
-                    // if we are still inside the connector, check which pad and if necessary switch
-                    connector.IsOnPad(Position, ref _lastSide);
-                }
-            }
-            else if (whatAreYou == X_LevelElements.Room)
-            {
-                // check if we are inside one of the connector pads
-                // if we are => switch the room
-                var room = (Y_Room)Room;
-                foreach (var conn in room.Connectors)
-                {
-                    if (conn.IsOnPad(Position, ref _lastSide))
-                    {
-                        if (conn.IsInside(Position))
-                        {
-                            var oldRoom = Room.Name;
-                            Room = conn;
-                            Logger.Info("Projectile move from room [" + oldRoom + "] to room [" + Room.Name + "]");
-                        }
-                        break;
-                    }
-                }
-            }
         }
 
-        public void Draw(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch) {
+        public void Draw(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)
+        {
             var destinationRectangle = new Rectangle(
-                Rect.X - (int)globalOffset.X,
-                Rect.Y - (int)globalOffset.Y,
+                _rect.X - (int)globalOffset.X,
+                _rect.Y - (int)globalOffset.Y,
                 _window.Width,
                 _window.Height
             );
@@ -129,13 +127,12 @@ namespace YGR
                 _window.Width,
                 _window.Height
             );
-            Logger.Debug("Drawing projectile at " + destinationRectangle.ToString() + " with source " + sourceRectangle.ToString());
+            //Logger.Debug("Drawing projectile at " + destinationRectangle.ToString() + " with source " + sourceRectangle.ToString());
+
             spriteBatch.Draw(
-                _sprite,
-                destinationRectangle,
+                _sprite, destinationRectangle.Location.ToVector2(),
                 sourceRectangle,
-                Color.White
-            );
+                Color.White, 0, Vector2.Zero, Scale, SpriteEffects.None, 0);
         }
 
         /// <summary>
@@ -146,7 +143,7 @@ namespace YGR
         /// <param name="spriteBatch">Mogogame SpriteBatch</param>
         void IGameElement.DrawOutline(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)
         {
-            Factory_Debug.DrawRectangle(Rect.X, Rect.Y, _window.Width, _window.Height, 3, Color.BlueViolet, spriteBatch);
+            Factory_Debug.DrawRectangle(Rect.X, Rect.Y, Rect.Width, Rect.Height, 1, Color.BlueViolet, spriteBatch);
             Collision.DrawOutline(gameTime, globalOffset, spriteBatch);
         }
 
@@ -156,52 +153,72 @@ namespace YGR
         }
     }
 
-    public class Y_ShotGunProjectile: IProjectile
+    public class Y_ShotGunProjectile : IProjectile
     {
+        public float Scale { get; private set; }
         public bool DeleteNext { get; set; }
         public string Name { get; set; }
         public double TimeCreated { get; set; }
-        public Vector2 Position { get; private set; }
         public X_CollisionModel_Projectile Collision { get; }
         public Vector2 Velocity { get; set; }
+        public Y_Level Level { get; set; }
         public IWalkable Room { get; set; }
-        public Rectangle Rect { get; set; }
+        //public Rectangle Rect { get; set; }
+        public Rectangle Rect { get { return _rect; } set { _rect = value; } }
         public IGameElement WhoFiredMe { get; }
 
+        private Vector2 _position;
         private Texture2D _sprite;
         public Rectangle _window;
         private int _animationIndex;
         private Vector2 _direction;
         private bool _isEnemy;
         X_ConnectorSide _lastSide;
+        Rectangle _rect;
 
         public Y_ShotGunProjectile(
             Vector2 position,
             Vector2 direction,
             double timeCreated,
-            IWalkable room,
+            Y_Level level,
             IGameElement who
-        ) {
+        )
+        {
             _sprite = Manager_Projectile.projectile_textures["smaller_projectile"];
             _window = new Rectangle(0, 0, 32, 32);
             _animationIndex = 0;
-            Position = position;
+            _position = position;
             _direction = direction;
             Velocity = 0.7f * direction;
             TimeCreated = timeCreated;
             _isEnemy = false;
             Name = "StarterProjectile";
-            Room = room;
+            Level = level;
             DeleteNext = false;
             Collision = new X_CollisionModel_Projectile(0.1f, 1.0f);
 
-            Rect = new Rectangle((int)position.X - _window.Width / 2, (int)position.Y - _window.Height / 2, _window.Width, _window.Height);
-            Room.Projectiles.Add(this);
             WhoFiredMe = who;
+            if (WhoFiredMe is IVictim)
+            { // Add 50% of the players momentum to the bullet. Adds 50% more fun to the game.
+                Velocity += ((IVictim)WhoFiredMe).Velocity * .5f;
+                /* 
+                TODO: Clamp the velocity and make sure the bullets don't go
+                backwards if the player is going backwards super fast (looking
+                at you, Ninja...)
+                */
+            }
+            Room = Level.GetRoom(this, Room);
+            Scale = 0.15f * Room.Scale;
 
+            _rect = new Rectangle(
+                (int)position.X - (int)((float)_window.Width / 2.0f * Scale),
+                (int)position.Y - (int)((float)_window.Height / 2.0f * Scale),
+                (int)(_window.Width * Scale),
+                (int)(_window.Height * Scale));
         }
 
-        public void Update(GameTime gameTime) {
+        public void Update(GameTime gameTime)
+        {
 
             /* ##########################################################################
              * Collision with everything handling (takes care of location update as well)
@@ -209,76 +226,39 @@ namespace YGR
             IList<Vector2> contactNormal;
             IList<Point> contactPoint;
             IList<IGameElement> who;
+            Vector2 newVelocity = Velocity;
             int timeStepMS = (int)gameTime.ElapsedGameTime.TotalMilliseconds;
-            if (Collision.Intersect(this, timeStepMS, out contactPoint, out contactNormal, out who))
+            if (Collision.Intersect(this, timeStepMS, out newVelocity, out contactPoint, out contactNormal, out who))
             {
-                Logger.Info("Collided with something");
+                //Logger.Debug("Collided with something");
                 foreach (var obj in who)
                 {
+                    if (obj.WhatAreYou() == WhoFiredMe.WhatAreYou()) continue;
+
                     if (obj.WhatAreYou() == X_LevelElements.Victim)
                     {
+                        ((IVictim)obj).LifePoints = ((IVictim)obj).LifePoints - 1;
                         ((IVictim)obj).HitInLastLoop = true;
                     }
-                }
-            }
-
-            // ========== Old way: ==========
-            //Position = _room.Clamp(_window, Position, _direction * (float)(_speed * gameTime.ElapsedGameTime.TotalMilliseconds), ref who, ref where );
-            //if(who != null)
-            //{
-            //    DeleteNext = true;
-            //}
-
-            /* ########################################################################## */
-
-            _animationIndex = (int)(5 - (gameTime.TotalGameTime.TotalMilliseconds - TimeCreated) / 300);
-
-            var whatAreYou = Room.WhatAreYou();
-            if (whatAreYou == X_LevelElements.Connector)
-            {
-                var connector = (Y_Connector)Room;
-                // check if we are still inside the room
-                if (!connector.IsInside(Position))
-                {
-                    // if not, assign the room according to the last side we were on
-                    /*
-                     * TODO: this is sensitive to movement speed!!!
-                     */
-                    var oldRoom = Room.Name;
-                    Room = connector.GetRoom(_lastSide);
-                    Logger.Info("Projectile moves from room [" + oldRoom + "] to room [" + Room.Name + "]");
-                }
-                else
-                {
-                    // if we are still inside the connector, check which pad and if necessary switch
-                    connector.IsOnPad(Position, ref _lastSide);
-                }
-            }
-            else if (whatAreYou == X_LevelElements.Room)
-            {
-                // check if we are inside one of the connector pads
-                // if we are => switch the room
-                var room = (Y_Room)Room;
-                foreach (var conn in room.Connectors)
-                {
-                    if (conn.IsOnPad(Position, ref _lastSide))
+                    else if (obj.WhatAreYou() == X_LevelElements.Enemy)
                     {
-                        if (conn.IsInside(Position))
-                        {
-                            var oldRoom = Room.Name;
-                            Room = conn;
-                            Logger.Info("Projectile move from room [" + oldRoom + "] to room [" + Room.Name + "]");
-                        }
-                        break;
+                        ((IEnemy)obj).LifePoints = ((IEnemy)obj).LifePoints - 1;
+                        ((IEnemy)obj).HitInLastLoop = true;
                     }
                 }
+
+                Velocity = newVelocity;
             }
+            _position += newVelocity * timeStepMS;
+            _rect.Location = _position.ToPoint();
+            _animationIndex = (int)(5 - (gameTime.TotalGameTime.TotalMilliseconds - TimeCreated) / 300);
         }
 
-        public void Draw(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch) {
+        public void Draw(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)
+        {
             var destinationRectangle = new Rectangle(
-                Rect.X - (int)globalOffset.X,
-                Rect.Y - (int)globalOffset.Y,
+                _rect.X - (int)globalOffset.X,
+                _rect.Y - (int)globalOffset.Y,
                 _window.Width,
                 _window.Height
             );
@@ -288,13 +268,13 @@ namespace YGR
                 _window.Width,
                 _window.Height
             );
-            Logger.Debug("Drawing projectile at " + destinationRectangle.ToString() + " with source " + sourceRectangle.ToString());
+
+            //Logger.Debug("Drawing projectile at " + destinationRectangle.ToString() + " with source " + sourceRectangle.ToString());
+
             spriteBatch.Draw(
-                _sprite,
-                destinationRectangle,
+                _sprite, destinationRectangle.Location.ToVector2(),
                 sourceRectangle,
-                Color.White
-            );
+                Color.White, 0, Vector2.Zero, Scale, SpriteEffects.None, 0);
         }
 
         /// <summary>
@@ -305,7 +285,7 @@ namespace YGR
         /// <param name="spriteBatch">Mogogame SpriteBatch</param>
         void IGameElement.DrawOutline(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)
         {
-            Factory_Debug.DrawRectangle(Rect.X, Rect.Y, Rect.Width, Rect.Height, 3, Color.BlueViolet, spriteBatch);
+            Factory_Debug.DrawRectangle(Rect.X, Rect.Y, Rect.Width, Rect.Height, 1, Color.BlueViolet, spriteBatch);
         }
 
         public X_LevelElements WhatAreYou()

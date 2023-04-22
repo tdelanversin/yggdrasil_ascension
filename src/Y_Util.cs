@@ -1,3 +1,5 @@
+using System;
+using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
@@ -9,27 +11,41 @@ namespace YGR
 {
     public static class Util
     {
-        public const int RES_X = 1280;
-        public const int RES_Y = 720;
+        static Game Game;
+        static GraphicsDeviceManager Gdm;
+        static GameWindow Window;
+        static Random random;
 
-        public static void ToggleFullscreen(GraphicsDeviceManager gdm, GameWindow window)
+        internal static void Initialize(A_Yggdrasil game)
         {
-            // TODO: hidpi scaling
-            if (gdm.IsFullScreen)
-            {
-                gdm.PreferredBackBufferWidth = RES_X;
-                gdm.PreferredBackBufferHeight = RES_Y;
-                gdm.IsFullScreen = false;
-                Logger.Info("Turning fullscreen OFF. Resolution: " + RES_X.ToString() + "x" + RES_Y.ToString());
-            }
-            else
-            {
-                gdm.PreferredBackBufferWidth = GraphicsAdapter.DefaultAdapter.CurrentDisplayMode.Width;
-                gdm.PreferredBackBufferHeight = GraphicsAdapter.DefaultAdapter.CurrentDisplayMode.Height;
-                gdm.IsFullScreen = true;
-                Logger.Info("Turning fullscreen ON. Resolution: " + gdm.PreferredBackBufferWidth.ToString() + "x" + gdm.PreferredBackBufferHeight.ToString());
-            }
-            gdm.ApplyChanges();
+            Game = game;
+            Gdm = game._graphics;
+            Window = game.Window;
+            random = new Random();
         }
+
+        public static void Quit()
+        {
+            Game.Exit();
+        }
+
+        public static int ProperMod(int i, int m)
+        {
+            return (i % m + m) % m;
+        }
+
+        public static IShooter getRandomGun()
+        {
+            List<Type> gunTypes = new List<Type> {
+                typeof(Y_StarterGun),
+                typeof(Y_WideGun),
+                typeof(Y_FunkyGun),
+                typeof(Y_ShotGun),
+            };
+            return (IShooter)Activator.CreateInstance(
+                gunTypes[random.Next(gunTypes.Count)]
+            );
+        }
+
     }
 }

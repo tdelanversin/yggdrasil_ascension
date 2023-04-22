@@ -7,9 +7,11 @@
     public enum X_LevelElements
     {
         Room = 0,
-        Connector,
+        Door,
         Victim,
+        Enemy,
+        Ghost,
         Projectile,
-        CollisionTester
+        Level
     }
 }

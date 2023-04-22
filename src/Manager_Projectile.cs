@@ -1,7 +1,10 @@
+using Assimp;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
+using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 
 namespace YGR
 {
@@ -27,17 +30,26 @@ namespace YGR
             _initialized = true;
         }
 
-        private static void check()
+        public static ReadOnlyCollection<IProjectile> GetProjectiles()
         {
-            if (!_initialized) Logger.Error("Factory_Projectiles not initialized: call Factory_Projectiles.Initialize(ContentManager) somewhere!");
+            return _projectiles.AsReadOnly();
         }
 
-        public static void AddProjectile(IProjectile projectile)
+        private static void check()
+        {
+            if (!_initialized) Logger.Error("Manager_Projectile not initialized: call Manager_Projectile.Initialize(ContentManager) somewhere!");
+        }
+
+        public static void AddProjectile_StarterProjectile(Vector2 startPosition, Vector2 direction, double timeCreated, Y_Level level, IGameElement who)
         {
             check();
-            _projectiles.Add(projectile);
+            _projectiles.Add(new Y_StarterProjectile(startPosition, direction, timeCreated, level, who));
+        }
 
-            Logger.Debug("Added projectile " + projectile.Name);
+        public static void AddProjectile_ShotGunProjectile(Vector2 startPosition, Vector2 direction, double timeCreated, Y_Level level, IGameElement who)
+        {
+            check();
+            _projectiles.Add(new Y_ShotGunProjectile(startPosition, direction, timeCreated, level, who));
         }
 
         public static void Update(GameTime gameTime)

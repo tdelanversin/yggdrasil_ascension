@@ -2,6 +2,7 @@
 using Microsoft.Xna.Framework.Graphics;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace YGR
 {
@@ -19,7 +20,7 @@ namespace YGR
             _records = new List<Manager_Collision.Record>();
         }
 
-        public bool Intersect(IVictim me, int timeStepMS, out IList<Point> contactPoint, out IList<Vector2> contactNormal, out IList<IGameElement> who)
+        public bool Intersect(IVictim me, int timeStepMS, out Vector2 newVelocity, out IList<Point> contactPoint, out IList<Vector2> contactNormal, out IList<IGameElement> who)
         {
             who = new List<IGameElement>();
             contactPoint = new List<Point>();
@@ -29,47 +30,33 @@ namespace YGR
             Point point;
             Vector2 normal;
             Rectangle myRect = me.Rect;
-            Vector2 myVelocity = me.Velocity;
-            Rectangle otherRect;
-            Vector2 otherVelocity;
-            //foreach (var victim in me.Room.Victims)
-            //{
-            //    if (victim == me) continue;
-
-            //    otherRect = victim.Rect;
-            //    otherVelocity = victim.Velocity;
-            //    result = Manager_Collision.MovingRectVsMovingRect(
-            //        ref myRect, ref myVelocity, Mass,
-            //        ref otherRect, ref otherVelocity, victim.Collision.Mass,
-            //        Cr, timeStepMS, out point, out normal);
-            //    if (result)
-            //    {
-            //        who.Add(victim);
-            //        contactPoint.Add(point);
-            //        contactNormal.Add(normal);
-            //        me.Velocity = myVelocity;
-            //        victim.Velocity = otherVelocity;
-            //        Logger.Info("impacted with someone at " + point.ToString());
-
-            //        _records.Add(new Manager_Collision.Record(
-            //            (DateTime.Now - Manager_Collision.StartTime).TotalMilliseconds,
-            //            point, Vector2.Zero, 0));
-            //    }
-            //}
-
-            if (me.Room.Collision.Intersect(ref myRect, ref myVelocity, timeStepMS, out point, out normal))
+            newVelocity = me.Velocity;
+            // check the room
+            IWalkable room = me.Level.GetRoom(me, me.Room);
+            if(room != null)
             {
-                result = true;
-                who.Add(me.Room);
-                contactPoint.Add(point);
-                contactNormal.Add(normal);
-                me.Velocity = myVelocity;
-                Logger.Info("impacted at " + point.ToString() + " with room " + me.Room.Name);
-            }
+                if (room.Collision.Intersect(ref myRect, ref newVelocity, timeStepMS, out point, out normal))
+                {
+                    result = true;
+                    who.Add(room);
+                    contactPoint.Add(point);
+                    contactNormal.Add(normal);
+                    //Logger.Debug("impacted at " + point.ToString() + " with room " + room.Name);
+                }
 
-            Rectangle rect = me.Rect;
-            rect.Location += (me.Velocity * timeStepMS).ToPoint();
-            me.Rect = rect;
+                // check the connected connectors, just to be sure
+                foreach (var door in room.DoorRooms)
+                {
+                    if (door.Value.First().Collision.Intersect(ref myRect, ref newVelocity, timeStepMS, out point, out normal))
+                    {
+                        result = true;
+                        who.Add(room);
+                        contactPoint.Add(point);
+                        contactNormal.Add(normal);
+                        //Logger.Debug("impacted at " + point.ToString() + " with room " + room.Name);
+                    }
+                }
+            }
 
             return result;
         }

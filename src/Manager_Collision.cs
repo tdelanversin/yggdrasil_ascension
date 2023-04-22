@@ -149,7 +149,7 @@ namespace YGR
             int timeStepMS,
             Rectangle[] staticRects,
             bool[] staticRectsHit,
-            out List<Record> collided
+            ref List<Record> collided
         )
         {
             if (!(staticRects.Length == 0 || (staticRects.Length == staticRects.Length)))
@@ -157,7 +157,8 @@ namespace YGR
 
             Point contactPoint;
             Vector2 contactNormal;
-            collided = new List<Record>();
+            if(collided == null)
+                collided = new List<Record>();
 
             float uHit;
             for (int i = 0; i < staticRects.Length; ++i)
@@ -205,12 +206,13 @@ namespace YGR
             int timeStepMS,
             Rectangle[] staticRects,
             bool[] staticRectsHit,
-            out List<Record> collided
+            ref List<Record> collided
         )
         {
             Point contactPoint;
             Vector2 contactNormal;
-            collided = new List<Record>();
+            if(collided == null)
+                collided = new List<Record>();
             for (int i = 0; i < staticRects.Length; ++i)
             {
                 bool result = FastRectVsRect(ref myRect, velocity, timeStepMS, ref staticRects[i], out contactPoint, out contactNormal);
