@@ -19,6 +19,18 @@
 /processorParam:Quality=Best
 /build:545958__cloud-10__gun-cocking-sound.mp3
 
+#begin background.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:background.png
+
 #begin big_dust_cloud.png
 /importer:TextureImporter
 /processor:TextureProcessor
@@ -30,6 +42,30 @@
 /processorParam:MakeSquare=False
 /processorParam:TextureFormat=Color
 /build:big_dust_cloud.png
+
+#begin charaset.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:charaset.png
+
+#begin dust_particle.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:dust_particle.png
 
 #begin example_intro_song.mp3
 /importer:Mp3Importer
@@ -107,11 +143,11 @@
 /processorParam:GenerateMipmaps=False
 /processorParam:PremultiplyAlpha=True
 /processorParam:ResizeToPowerOfTwo=False
-/processorParam:MakeSquare=True
+/processorParam:MakeSquare=False
 /processorParam:TextureFormat=Color
-/build:projectile.png
+/build:heart_green.png
 
-#begin projectile.png
+#begin heart_red.png
 /importer:TextureImporter
 /processor:TextureProcessor
 /processorParam:ColorKeyColor=255,0,255,255
@@ -133,7 +169,19 @@
 /processorParam:ResizeToPowerOfTwo=False
 /processorParam:MakeSquare=False
 /processorParam:TextureFormat=Color
-/build:rat_player.png
+/build:heart_yellow.png
+
+#begin projectile.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:projectile.png
 
 #begin rat_player.png
 /importer:TextureImporter
@@ -146,18 +194,6 @@
 /processorParam:MakeSquare=False
 /processorParam:TextureFormat=Color
 /build:rat_player.png
-
-#begin rat_player.png
-/importer:TextureImporter
-/processor:TextureProcessor
-/processorParam:ColorKeyColor=255,0,255,255
-/processorParam:ColorKeyEnabled=True
-/processorParam:GenerateMipmaps=False
-/processorParam:PremultiplyAlpha=True
-/processorParam:ResizeToPowerOfTwo=False
-/processorParam:MakeSquare=False
-/processorParam:TextureFormat=Color
-/build:room_0.png
 
 #begin room_0.png
 /importer:TextureImporter
@@ -195,7 +231,13 @@
 /processorParam:TextureFormat=Color
 /build:room_2.png
 
-#begin room_2.png
+#begin shotgun.wav
+/importer:WavImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:shotgun.wav
+
+#begin small_dust_cloud.png
 /importer:TextureImporter
 /processor:TextureProcessor
 /processorParam:ColorKeyColor=255,0,255,255
@@ -205,7 +247,7 @@
 /processorParam:ResizeToPowerOfTwo=False
 /processorParam:MakeSquare=False
 /processorParam:TextureFormat=Color
-/build:room_2.png
+/build:small_dust_cloud.png
 
 #begin smaller_projectile.png
 /importer:TextureImporter
@@ -291,18 +333,6 @@
 /processorParam:TextureFormat=Color
 /build:stroke_5px.png
 
-#begin stroke_5px.png
-/importer:TextureImporter
-/processor:TextureProcessor
-/processorParam:ColorKeyColor=255,0,255,255
-/processorParam:ColorKeyEnabled=True
-/processorParam:GenerateMipmaps=False
-/processorParam:PremultiplyAlpha=True
-/processorParam:ResizeToPowerOfTwo=False
-/processorParam:MakeSquare=False
-/processorParam:TextureFormat=Color
-/build:stroke_5px.png
-
 #begin stroke_6px.png
 /importer:TextureImporter
 /processor:TextureProcessor
@@ -314,30 +344,6 @@
 /processorParam:MakeSquare=False
 /processorParam:TextureFormat=Color
 /build:stroke_6px.png
-
-#begin stroke_6px.png
-/importer:TextureImporter
-/processor:TextureProcessor
-/processorParam:ColorKeyColor=255,0,255,255
-/processorParam:ColorKeyEnabled=True
-/processorParam:GenerateMipmaps=False
-/processorParam:PremultiplyAlpha=True
-/processorParam:ResizeToPowerOfTwo=False
-/processorParam:MakeSquare=False
-/processorParam:TextureFormat=Color
-/build:stroke_7px.png
-
-#begin stroke_8px.png
-/importer:TextureImporter
-/processor:TextureProcessor
-/processorParam:ColorKeyColor=255,0,255,255
-/processorParam:ColorKeyEnabled=True
-/processorParam:GenerateMipmaps=False
-/processorParam:PremultiplyAlpha=True
-/processorParam:ResizeToPowerOfTwo=False
-/processorParam:MakeSquare=False
-/processorParam:TextureFormat=Color
-/build:stroke_7px.png
 
 #begin stroke_7px.png
 /importer:TextureImporter
@@ -351,18 +357,6 @@
 /processorParam:TextureFormat=Color
 /build:stroke_7px.png
 
-#begin target_indicator_blue.png
-/importer:TextureImporter
-/processor:TextureProcessor
-/processorParam:ColorKeyColor=255,0,255,255
-/processorParam:ColorKeyEnabled=True
-/processorParam:GenerateMipmaps=False
-/processorParam:PremultiplyAlpha=True
-/processorParam:ResizeToPowerOfTwo=False
-/processorParam:MakeSquare=False
-/processorParam:TextureFormat=Color
-/build:stroke_8px.png
-
 #begin stroke_8px.png
 /importer:TextureImporter
 /processor:TextureProcessor
@@ -374,6 +368,42 @@
 /processorParam:MakeSquare=False
 /processorParam:TextureFormat=Color
 /build:stroke_8px.png
+
+#begin stroke_9px.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:stroke_9px.png
+
+#begin target_indicator_blue.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:target_indicator_blue.png
+
+#begin target_indicator_green.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:target_indicator_green.png
 
 #begin target_indicator_red.png
 /importer:TextureImporter
@@ -387,7 +417,7 @@
 /processorParam:TextureFormat=Color
 /build:target_indicator_red.png
 
-#begin stroke_9px.png
+#begin target_indicator_yellow.png
 /importer:TextureImporter
 /processor:TextureProcessor
 /processorParam:ColorKeyColor=255,0,255,255
@@ -397,7 +427,7 @@
 /processorParam:ResizeToPowerOfTwo=False
 /processorParam:MakeSquare=False
 /processorParam:TextureFormat=Color
-/build:stroke_9px.png
+/build:target_indicator_yellow.png
 
 #begin tester_30.png
 /importer:TextureImporter
@@ -447,7 +477,7 @@
 /processorParam:TextureFormat=Color
 /build:tester.png
 
-#begin tester.png
+#begin title_image.png
 /importer:TextureImporter
 /processor:TextureProcessor
 /processorParam:ColorKeyColor=255,0,255,255
@@ -457,7 +487,7 @@
 /processorParam:ResizeToPowerOfTwo=False
 /processorParam:MakeSquare=False
 /processorParam:TextureFormat=Color
-/build:tester.png
+/build:title_image.png
 
 #begin v_connector.png
 /importer:TextureImporter
@@ -469,5 +499,5 @@
 /processorParam:ResizeToPowerOfTwo=False
 /processorParam:MakeSquare=False
 /processorParam:TextureFormat=Color
-/build:title_image.png
+/build:v_connector.png
 

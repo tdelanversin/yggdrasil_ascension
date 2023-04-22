@@ -183,6 +183,7 @@ namespace YGR
                     if (Input.IsKeyDown(Keybinds.P2Down)) input.Y += 1;
                     if (Input.IsKeyDown(Keybinds.P2Up)) input.Y -= 1;
                 }
+                //ParticleManager.AddParticle(new (Rect.Location.ToVector2()+new Vector2(15,15), new ()));
                 MouseState mouse = Mouse.GetState();
                 Vector2 playerCenter = Rect.Center.ToVector2();
                 if (Input.HasMouseMoved() && !_isAiming) // Skip if controller is already aiming
@@ -258,6 +259,8 @@ namespace YGR
             UpdateVelocity(input, gameTime);
             UpdateCollision(gameTime);
             _gun.Update(gameTime);
+            //ParticleManager.Update(gameTime);
+             
         }
 
         // Render ghosty 👻
@@ -316,12 +319,13 @@ namespace YGR
             {
                 DrawPlayer(gameTime, globalOffset, spriteBatch);
                 DrawOverheadString(gameTime, globalOffset, spriteBatch);
+                //ParticleManager.Draw(spriteBatch);
             }
             else
             {
                 DrawGhost(gameTime, globalOffset, spriteBatch);
             }
-
+            
             DrawAimIndicator(gameTime, globalOffset, spriteBatch);
         }
 

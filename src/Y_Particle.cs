@@ -38,8 +38,9 @@ namespace YGR
         public void Update(GameTime gt)
         {
 
-            _lifespanLeft -= (float)gt.ElapsedGameTime.TotalSeconds ;
-            if (_lifespanLeft <= 0f ) {
+            _lifespanLeft -= (float)gt.ElapsedGameTime.TotalSeconds;
+            if (_lifespanLeft <= 0f)
+            {
                 isFinished = true;
                 return;
             }
@@ -52,7 +53,7 @@ namespace YGR
 
         public void Draw(SpriteBatch spriteBatch)
         {
-            spriteBatch.Draw(Y_ParticleData.texture, _position, null,_color* _opacity, 0f, Vector2.Zero, Vector2.One, SpriteEffects.None, 1f);
+            spriteBatch.Draw(Y_ParticleData.texture, _position, null, _color * _opacity, 0f, Vector2.Zero, Vector2.One, SpriteEffects.None, 1f);
         }
     }
 }

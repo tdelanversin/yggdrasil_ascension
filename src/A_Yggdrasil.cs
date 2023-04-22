@@ -57,17 +57,22 @@ namespace YGR
         {
             Fonts.LoadContent(Content);
             Menu.LoadContent(Content);
+            Partic.GetParticles(new Vector2(200,200), Content);
             Manager_Sound.LoadContent(Content);
             Manager_Players.LoadContent(Content);
             _spriteBatch = new SpriteBatch(GraphicsDevice);
 
             // Uncomment to play intro sound in a loop
-            MediaPlayer.Play(Manager_Sound.AddSong_Intro());
+            //MediaPlayer.Play(Manager_Sound.AddSong_Intro());
             MediaPlayer.IsRepeating = true;
             MediaPlayer.MediaStateChanged += MediaPlayer_MediaStateChanged;
         }
 
-        internal void StartNewGame()
+        protected override void UnloadContent()
+        {
+            Partic.Dispose();
+        }
+            internal void StartNewGame()
         {
             /*
             # PLAN
@@ -149,7 +154,7 @@ namespace YGR
                     // Nothing for now
                 }
             }
-
+            
             // Only switch actual state during Update(), otherwise you can mess up the Draw call
             State = DesiredState;
 
@@ -177,7 +182,7 @@ namespace YGR
                     Menu.Update();
                     break;
             }
-
+            Partic.Update(gameTime);
             base.Update(gameTime);
         }
 
@@ -230,7 +235,7 @@ namespace YGR
                     _spriteBatch.End();
                     break;
             }
-
+            Partic.Draw(gameTime, _spriteBatch);
             base.Draw(gameTime);
         }
     }
