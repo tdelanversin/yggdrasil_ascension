@@ -220,52 +220,54 @@ namespace YGR
                 //if (!Doors.TryGetValue(side, out list))
                 //{
                 //    Doors.Add(side, new List<X_ConnectorPoint> { new X_ConnectorPoint(side, new Point(x, y)) });
+                float sf = 1.5f;
+                int b = -2;
                 if (door.Key == X_ConnectorSide.Top)
                 {
                     var p = Doors[X_ConnectorSide.Top].First().Point;
                     var roi = new Rectangle(
-                        (int)((Math.Round(p.X - ((Y_Door.NumTilesDoorWidth - 2) / 2.0f * TextureTileSize)) / TextureTileSize) * TextureTileSize),
-                        (int)((Math.Round(p.Y + 1.5 * TextureTileSize) / TextureTileSize) * TextureTileSize),
-                        (Y_Door.NumTilesDoorWidth - 2)*TextureTileSize, X_DoorMask.RoiDepth * TextureTileSize);
+                        (int)((Math.Round(p.X - ((Y_Door.NumTilesDoorWidth - b) / 2.0f * TextureTileSize)) / TextureTileSize) * TextureTileSize),
+                        (int)((Math.Round(p.Y + sf * TextureTileSize) / TextureTileSize) * TextureTileSize),
+                        (Y_Door.NumTilesDoorWidth - b)*TextureTileSize, X_DoorMask.RoiDepth * TextureTileSize);
 
                     _doorMasks.Add(door.Key, new List<X_DoorMask> {
-                            new X_DoorMask(roi, new Rectangle(0, 0, Rect.Width, Rect.Height/2), Rect, TextureTileSize)
+                            new X_DoorMask(roi, roi/*new Rectangle(0, 0, Rect.Width, Rect.Height/2)*/, Rect, TextureTileSize)
                         });
                 }
                 else if (door.Key == X_ConnectorSide.Left)
                 {
                     var p = Doors[X_ConnectorSide.Left].First().Point;
                     var roi = new Rectangle(
-                        (int)((Math.Round(p.X + 1.5 * TextureTileSize) / TextureTileSize) * TextureTileSize),
-                        (int)((Math.Round(p.Y - ((Y_Door.NumTilesDoorWidth - 2) / 2.0f * TextureTileSize)) / TextureTileSize) * TextureTileSize),
-                        X_DoorMask.RoiDepth * TextureTileSize, (Y_Door.NumTilesDoorWidth - 2) * TextureTileSize);
+                        (int)((Math.Round(p.X + sf * TextureTileSize) / TextureTileSize) * TextureTileSize),
+                        (int)((Math.Round(p.Y - ((Y_Door.NumTilesDoorWidth - b) / 2.0f * TextureTileSize)) / TextureTileSize) * TextureTileSize),
+                        X_DoorMask.RoiDepth * TextureTileSize, (Y_Door.NumTilesDoorWidth - b) * TextureTileSize);
 
                     _doorMasks.Add(door.Key, new List<X_DoorMask> {
-                            new X_DoorMask(roi, new Rectangle(0, 0, Rect.Width/2, Rect.Height), Rect, TextureTileSize)
+                            new X_DoorMask(roi, roi /*new Rectangle(0, 0, Rect.Width/2, Rect.Height)*/, Rect, TextureTileSize)
                         });
                 }
                 else if (door.Key == X_ConnectorSide.Right)
                 {
                     var p = Doors[X_ConnectorSide.Right].First().Point;
                     var roi = new Rectangle(
-                        (int)((Math.Round(p.X - (1.5 + Y_Door.NumTilesDoorWidth - 2) * TextureTileSize) / TextureTileSize) * TextureTileSize),
-                        (int)((Math.Round(p.Y - ((Y_Door.NumTilesDoorWidth - 2) / 2.0f * TextureTileSize)) / TextureTileSize) * TextureTileSize),
-                        X_DoorMask.RoiDepth * TextureTileSize, (Y_Door.NumTilesDoorWidth - 2) * TextureTileSize);
+                        (int)((Math.Round(p.X - (sf + X_DoorMask.RoiDepth) * TextureTileSize) / TextureTileSize) * TextureTileSize),
+                        (int)((Math.Round(p.Y - ((Y_Door.NumTilesDoorWidth - b) / 2.0f * TextureTileSize)) / TextureTileSize) * TextureTileSize),
+                        X_DoorMask.RoiDepth * TextureTileSize, (Y_Door.NumTilesDoorWidth - b) * TextureTileSize);
 
                     _doorMasks.Add(door.Key, new List<X_DoorMask> {
-                            new X_DoorMask(roi, new Rectangle(Rect.Width/2, 0, Rect.Width/2, Rect.Height), Rect, TextureTileSize)
+                            new X_DoorMask(roi, roi /*new Rectangle(Rect.Width/2, 0, Rect.Width/2, Rect.Height)*/, Rect, TextureTileSize)
                         });
                 }
                 else // if (door.Key == X_ConnectorSide.Bottom)
                 {
                     var p = Doors[X_ConnectorSide.Bottom].First().Point;
                     var roi = new Rectangle(
-                        (int)((Math.Round(p.X - ((Y_Door.NumTilesDoorWidth - 2) / 2.0f * TextureTileSize)) / TextureTileSize) * TextureTileSize),
-                        (int)((Math.Round(p.Y - (1.5 + Y_Door.NumTilesDoorWidth - 2) * TextureTileSize) / TextureTileSize) * TextureTileSize),
-                        (Y_Door.NumTilesDoorWidth - 2) * TextureTileSize, X_DoorMask.RoiDepth * TextureTileSize);
+                        (int)((Math.Round(p.X - ((Y_Door.NumTilesDoorWidth - b) / 2.0f * TextureTileSize)) / TextureTileSize) * TextureTileSize),
+                        (int)((Math.Round(p.Y - (sf + X_DoorMask.RoiDepth) * TextureTileSize) / TextureTileSize) * TextureTileSize),
+                        (Y_Door.NumTilesDoorWidth - b) * TextureTileSize, X_DoorMask.RoiDepth * TextureTileSize);
 
                     _doorMasks.Add(X_ConnectorSide.Bottom, new List<X_DoorMask> {
-                            new X_DoorMask(roi, new Rectangle(0, Rect.Height/2, Rect.Width, Rect.Height / 2), Rect, TextureTileSize)
+                            new X_DoorMask(roi, roi/*new Rectangle(0, Rect.Height/2, Rect.Width, Rect.Height / 2)*/, Rect, TextureTileSize)
                         });
                 }
                     //if (side == X_ConnectorSide.Top || side == X_ConnectorSide.Bottom)
@@ -283,9 +285,9 @@ namespace YGR
             //{
                 Lights = new List<X_Light>() {
                 new X_Light(
-                    new Vector3(Rect.X + -2*TextureTileSize,
-                    Rect.Y - 30*TextureTileSize,
-                    20 * TextureTileSize),
+                    new Vector3(Rect.X + -5*TextureTileSize,
+                    Rect.Y - 10*TextureTileSize,
+                    10 * TextureTileSize),
                     Rect, Scale)
                 };
         //}
@@ -319,24 +321,30 @@ namespace YGR
 
                 Vector3 offset = new Vector3(Rect.Location.X / Scale, Rect.Location.Y / Scale, 0);
 
-                _illuminatedOpened = Manager_Light.Illuminate(Lights, Collision.GetCollisionTemplate(), TextureTileSize, offset, true);//, Manager_Light.Caster.Shadow);
                 _illuminatedClosed = Manager_Light.Illuminate(Lights, Collision.GetCollisionTemplate(), TextureTileSize, offset, false);//, Manager_Light.Caster.Shadow);
 
+                var lights = new List<X_Light>();
+                lights.AddRange(Lights);
                 foreach (var d in DoorRooms)
                 {
                     var door = (Y_Door)d.Value.First(); //DoorRooms[mask.Key].First();
                     var room = door.GetOtherDoor(this);
-                    var template = _doorMasks[room.Item1].First().GetTemplate();
+                    //var template = _doorMasks[room.Item1].First().GetTemplate();
                     //output(template, "./logs/illumination.csv";
-                    var illumination = Manager_Light.Illuminate(room.Item2.Lights, template, TextureTileSize, offset, true);//, Manager_Light.Caster.Light);
+                    lights.AddRange(room.Item2.Lights);
+                    //_illuminatedOpened = Manager_Light.Illuminate(room.Item2.Lights, Collision.GetCollisionTemplate(), TextureTileSize, offset, true);//, Manager_Light.Caster.Shadow);
+
+                    //var illumination = Manager_Light.Illuminate(room.Item2.Lights, template, TextureTileSize, offset, true);//, Manager_Light.Caster.Light);
 
                     //for (int i = 0; i < illumination.Length; ++i)
                     //{
                     //    if (illumination[i])
                     //        _illuminatedOpened[i] = illumination[i]; // _illuminatedClosed[i] || illumination[i]; // _illuminatedOpened[i] || illumination[i];
                     //}
-                    _illuminatedOpened = illumination;
+                    //_illuminatedOpened = illumination;
                 }
+
+                _illuminatedOpened = Manager_Light.Illuminate(lights, Collision.GetCollisionTemplate(), TextureTileSize, offset, true);//, Manager_Light.Caster.Shadow);
 
                 _floorData = new Color[_floor.Width * _floor.Height];
                 _floor.GetData<Color>(_floorData);
@@ -344,12 +352,12 @@ namespace YGR
 
             var rooms = DoorRooms.Select(x => (Y_Door)x.Value.First()).ToArray();
             var keys = DoorRooms.Select(x => x.Key).ToArray();
-            var masks = _doorMasks.Select(x => x.Value.First()).ToArray();
+            //var masks = _doorMasks.Select(x => x.Value.First()).ToArray();
 
             Color[] data = new Color[_floor.Width * _floor.Height];
             for (int i = 0; i < _illuminatedClosed.Length; ++i)
             {
-                bool illuminated = _illuminatedClosed[i]; ; // not illuminated => must be illuminated by at least one
+                bool illuminated = _illuminatedClosed[i];
                 if (!illuminated)
                 {
                     for (int r = 0; r < rooms.Length; ++r)
@@ -357,10 +365,10 @@ namespace YGR
                         if (rooms[r].DoorIsOpen())
                         {
                             // illuminated = true at x = 368, y = 48
-                            //int ti = 384 * Rect.Width + 48;
-                            //if (i == ti)
-                            //    Logger.Info("lol");
-                            var check = masks[r].Check(i);
+                            int ti = 112 * Rect.Width + 640;
+                            if (i == ti)
+                                Logger.Info("lol");
+                            var check = _doorMasks[keys[r]].First().Check(i);
                             illuminated = illuminated || (check && _illuminatedOpened[i]);
                         }
                     }

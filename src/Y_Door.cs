@@ -697,8 +697,8 @@ namespace YGR
             // the following flip of connectorPoint2 and connectorPoint1 is NOT a bug
             DoorRooms.Add(connectorPoint2.ConnectorSide, new List<IWalkable> { room1 });
             DoorRooms.Add(connectorPoint1.ConnectorSide, new List<IWalkable> { room2 });
-            room1.DoorRooms.Add(connectorPoint2.ConnectorSide, new List<IWalkable> { this });
-            room2.DoorRooms.Add(connectorPoint1.ConnectorSide, new List<IWalkable> { this });
+            room1.DoorRooms.Add(connectorPoint1.ConnectorSide, new List<IWalkable> { this });
+            room2.DoorRooms.Add(connectorPoint2.ConnectorSide, new List<IWalkable> { this });
 
             return this;
         }
