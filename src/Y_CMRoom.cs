@@ -9,8 +9,10 @@ using Newtonsoft.Json;
 using SharpFont;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using static YGR.Y_CMRoom;
 
 namespace YGR
@@ -32,19 +34,20 @@ namespace YGR
         internal class X_DoorMask
         {
             static public int RoiDepth { get { return 4; } }
+            static public int RoiWidth { get { return Y_Door.NumTilesDoorWidth * 2 + 1; } }
 
             int X, Y, ReachX, ReachY;
             Rectangle Room;
             Rectangle RegionOfInterest;
             int TileSize;
 
-            public X_DoorMask(Rectangle regionOfInterest, Rectangle maskArea, Rectangle room, int tileSize)
+            public X_DoorMask(Rectangle roi, Rectangle room, int tileSize)
             {
-                RegionOfInterest = regionOfInterest;
-                X = maskArea.X; 
-                Y = maskArea.Y; 
-                ReachX = maskArea.Width + X; 
-                ReachY = maskArea.Height+ Y; 
+                RegionOfInterest = roi;
+                X = roi.X; 
+                Y = roi.Y; 
+                ReachX = roi.Width + X; 
+                ReachY = roi.Height+ Y; 
                 Room = room;
                 TileSize = tileSize;
             }
@@ -226,12 +229,12 @@ namespace YGR
                 {
                     var p = Doors[X_ConnectorSide.Top].First().Point;
                     var roi = new Rectangle(
-                        (int)((Math.Round(p.X - ((Y_Door.NumTilesDoorWidth - b) / 2.0f * TextureTileSize)) / TextureTileSize) * TextureTileSize),
+                        (int)((Math.Round(p.X - (X_DoorMask.RoiWidth / 2.0f * TextureTileSize)) / TextureTileSize) * TextureTileSize),
                         (int)((Math.Round(p.Y + sf * TextureTileSize) / TextureTileSize) * TextureTileSize),
-                        (Y_Door.NumTilesDoorWidth - b)*TextureTileSize, X_DoorMask.RoiDepth * TextureTileSize);
+                        X_DoorMask.RoiWidth * TextureTileSize, X_DoorMask.RoiDepth * TextureTileSize);
 
                     _doorMasks.Add(door.Key, new List<X_DoorMask> {
-                            new X_DoorMask(roi, roi/*new Rectangle(0, 0, Rect.Width, Rect.Height/2)*/, Rect, TextureTileSize)
+                            new X_DoorMask(roi, Rect, TextureTileSize)
                         });
                 }
                 else if (door.Key == X_ConnectorSide.Left)
@@ -239,11 +242,11 @@ namespace YGR
                     var p = Doors[X_ConnectorSide.Left].First().Point;
                     var roi = new Rectangle(
                         (int)((Math.Round(p.X + sf * TextureTileSize) / TextureTileSize) * TextureTileSize),
-                        (int)((Math.Round(p.Y - ((Y_Door.NumTilesDoorWidth - b) / 2.0f * TextureTileSize)) / TextureTileSize) * TextureTileSize),
-                        X_DoorMask.RoiDepth * TextureTileSize, (Y_Door.NumTilesDoorWidth - b) * TextureTileSize);
+                        (int)((Math.Round(p.Y - (X_DoorMask.RoiWidth / 2.0f * TextureTileSize)) / TextureTileSize) * TextureTileSize),
+                        X_DoorMask.RoiDepth * TextureTileSize, X_DoorMask.RoiWidth * TextureTileSize);
 
                     _doorMasks.Add(door.Key, new List<X_DoorMask> {
-                            new X_DoorMask(roi, roi /*new Rectangle(0, 0, Rect.Width/2, Rect.Height)*/, Rect, TextureTileSize)
+                            new X_DoorMask(roi, Rect, TextureTileSize)
                         });
                 }
                 else if (door.Key == X_ConnectorSide.Right)
@@ -251,23 +254,23 @@ namespace YGR
                     var p = Doors[X_ConnectorSide.Right].First().Point;
                     var roi = new Rectangle(
                         (int)((Math.Round(p.X - (sf + X_DoorMask.RoiDepth) * TextureTileSize) / TextureTileSize) * TextureTileSize),
-                        (int)((Math.Round(p.Y - ((Y_Door.NumTilesDoorWidth - b) / 2.0f * TextureTileSize)) / TextureTileSize) * TextureTileSize),
-                        X_DoorMask.RoiDepth * TextureTileSize, (Y_Door.NumTilesDoorWidth - b) * TextureTileSize);
+                        (int)((Math.Round(p.Y - (X_DoorMask.RoiWidth / 2.0f * TextureTileSize)) / TextureTileSize) * TextureTileSize),
+                        X_DoorMask.RoiDepth * TextureTileSize, X_DoorMask.RoiWidth * TextureTileSize);
 
                     _doorMasks.Add(door.Key, new List<X_DoorMask> {
-                            new X_DoorMask(roi, roi /*new Rectangle(Rect.Width/2, 0, Rect.Width/2, Rect.Height)*/, Rect, TextureTileSize)
+                            new X_DoorMask(roi, Rect, TextureTileSize)
                         });
                 }
                 else // if (door.Key == X_ConnectorSide.Bottom)
                 {
                     var p = Doors[X_ConnectorSide.Bottom].First().Point;
                     var roi = new Rectangle(
-                        (int)((Math.Round(p.X - ((Y_Door.NumTilesDoorWidth - b) / 2.0f * TextureTileSize)) / TextureTileSize) * TextureTileSize),
+                        (int)((Math.Round(p.X - (X_DoorMask.RoiWidth / 2.0f * TextureTileSize)) / TextureTileSize) * TextureTileSize),
                         (int)((Math.Round(p.Y - (sf + X_DoorMask.RoiDepth) * TextureTileSize) / TextureTileSize) * TextureTileSize),
-                        (Y_Door.NumTilesDoorWidth - b) * TextureTileSize, X_DoorMask.RoiDepth * TextureTileSize);
+                        X_DoorMask.RoiWidth * TextureTileSize, X_DoorMask.RoiDepth * TextureTileSize);
 
                     _doorMasks.Add(X_ConnectorSide.Bottom, new List<X_DoorMask> {
-                            new X_DoorMask(roi, roi/*new Rectangle(0, Rect.Height/2, Rect.Width, Rect.Height / 2)*/, Rect, TextureTileSize)
+                            new X_DoorMask(roi, Rect, TextureTileSize)
                         });
                 }
                     //if (side == X_ConnectorSide.Top || side == X_ConnectorSide.Bottom)
@@ -310,7 +313,9 @@ namespace YGR
 
         public void Illuminate()
         {
-            if(_floorData == null)
+            if (!Settings.Lighting) return;
+
+            if (_floorData == null)
             {
                 //var template = collisionTemplate; // room.Collision.GetCollisionTemplate();
                                                   //var tileSize = room.TextureTileSize;
@@ -320,31 +325,58 @@ namespace YGR
                 //bool[] lighted = Enumerable.Repeat<bool>(false, length).ToArray();
 
                 Vector3 offset = new Vector3(Rect.Location.X / Scale, Rect.Location.Y / Scale, 0);
+                Stopwatch watch = new Stopwatch();
+                watch.Start();
+                _illuminatedClosed = Manager_Light.LoadShadeFromFile(false, this, Lights);
+                if (_illuminatedClosed == null)
+                {
+                    Logger.Info(" ...Recalculated closed illumination... ");
+                    _illuminatedClosed = Manager_Light.Illuminate(Lights, Collision.GetCollisionTemplate(), TextureTileSize, offset, false);
+                    Manager_Light.RemoveAllShadeFiles(this, false);
+                    Manager_Light.SaveShadeToFile(_illuminatedClosed, false, this, Lights);
+                }
+                watch.Stop();
+                Logger.Info("Load closed illumination: " + watch.ElapsedMilliseconds.ToString());
+                watch.Reset();
+                watch.Start();
+                _illuminatedOpened = Manager_Light.LoadShadeFromFile(true, this, Lights);
+                if (_illuminatedOpened == null)
+                {
+                    Logger.Info(" ...Recalculated opened illumination... ");
+                    _illuminatedOpened = Manager_Light.Illuminate(Lights, Collision.GetCollisionTemplate(), TextureTileSize, offset, true);
+                    Manager_Light.RemoveAllShadeFiles(this, true);
+                    Manager_Light.SaveShadeToFile(_illuminatedOpened, true, this, Lights);
+                }
+                watch.Stop();
+                Logger.Info("Load opened illumination: " + watch.ElapsedMilliseconds.ToString());
 
-                _illuminatedClosed = Manager_Light.Illuminate(Lights, Collision.GetCollisionTemplate(), TextureTileSize, offset, false);//, Manager_Light.Caster.Shadow);
-
-                var lights = new List<X_Light>();
-                lights.AddRange(Lights);
+                watch.Reset();
+                watch.Start();
+                //var lights = new List<X_Light>();
+                //lights.AddRange(Lights);
                 foreach (var d in DoorRooms)
                 {
                     var door = (Y_Door)d.Value.First(); //DoorRooms[mask.Key].First();
                     var room = door.GetOtherDoor(this);
-                    //var template = _doorMasks[room.Item1].First().GetTemplate();
-                    //output(template, "./logs/illumination.csv";
-                    lights.AddRange(room.Item2.Lights);
+                    var template = _doorMasks[room.Item1].First().GetTemplate();
+                    //output(template, "./logs/illumination.csv");
+                    //lights.AddRange(room.Item2.Lights);
                     //_illuminatedOpened = Manager_Light.Illuminate(room.Item2.Lights, Collision.GetCollisionTemplate(), TextureTileSize, offset, true);//, Manager_Light.Caster.Shadow);
 
-                    //var illumination = Manager_Light.Illuminate(room.Item2.Lights, template, TextureTileSize, offset, true);//, Manager_Light.Caster.Light);
+                    var illumination = Manager_Light.Illuminate(room.Item2.Lights, template /*Collision.GetCollisionTemplate()*/, TextureTileSize, offset, true);//, Manager_Light.Caster.Light);
 
+                    Parallel.For(0, illumination.Length, i =>
                     //for (int i = 0; i < illumination.Length; ++i)
-                    //{
-                    //    if (illumination[i])
-                    //        _illuminatedOpened[i] = illumination[i]; // _illuminatedClosed[i] || illumination[i]; // _illuminatedOpened[i] || illumination[i];
-                    //}
+                    {
+                        if (illumination[i] && _doorMasks[room.Item1].First().Check(i))
+                            _illuminatedOpened[i] = illumination[i]; // _illuminatedClosed[i] || illumination[i]; // _illuminatedOpened[i] || illumination[i];
+                    });
                     //_illuminatedOpened = illumination;
                 }
+                watch.Stop();
+                Logger.Info("Calculate corridors illumination: " + watch.ElapsedMilliseconds.ToString());
 
-                _illuminatedOpened = Manager_Light.Illuminate(lights, Collision.GetCollisionTemplate(), TextureTileSize, offset, true);//, Manager_Light.Caster.Shadow);
+                //_illuminatedOpened = Manager_Light.Illuminate(lights, Collision.GetCollisionTemplate(), TextureTileSize, offset, true);//, Manager_Light.Caster.Shadow);
 
                 _floorData = new Color[_floor.Width * _floor.Height];
                 _floor.GetData<Color>(_floorData);
@@ -357,6 +389,7 @@ namespace YGR
             Color[] data = new Color[_floor.Width * _floor.Height];
             for (int i = 0; i < _illuminatedClosed.Length; ++i)
             {
+                //bool illuminated = _illuminatedOpened[i];
                 bool illuminated = _illuminatedClosed[i];
                 if (!illuminated)
                 {

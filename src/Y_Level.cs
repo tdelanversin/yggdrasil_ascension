@@ -121,13 +121,13 @@ namespace YGR
             //            scale
             //    ));
 
-            if (Settings.Lighting)
+            //if (Settings.Lighting)
+            //{
+            foreach (var room in Rooms.Values)
             {
-                foreach (var room in Rooms.Values)
-                {
-                    room.Illuminate();
-                }
+                room.Illuminate();
             }
+            //}
 
 
             //OutsideColor = ((Y_CMRoom)(Rooms.Values.First())).RegionColor;

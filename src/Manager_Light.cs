@@ -211,6 +211,8 @@ namespace YGR
         public static List<X_Cube> IlluminationModelOpened { get; private set; }
         public static List<X_Cube> IlluminationModelClosed { get; private set; }
 
+        public static string ShadeVersion { get { return "V3"; } }
+
         public static float Dot(Vector3 lhs, Vector3 rhs)
         {
             return lhs.X * rhs.X + lhs.Y * rhs.Y + lhs.Z * rhs.Z;
@@ -268,7 +270,7 @@ namespace YGR
             {
                 for (int w = 0; w < template[0].Length; ++w)
                 {
-                    if (template[h][w] == (int)X_TileType.DontCare) return;
+                    if (template[h][w] == (int)X_TileType.DontCare) continue;
 
                     int fromX = w * tileSize + shadowSpotSize / 2;
                     int fromY = h * tileSize + shadowSpotSize / 2;
@@ -409,27 +411,37 @@ namespace YGR
             //saveShadeToFile(lighted, room, lights);
         }
 
-        private static void saveShadeToFile(bool[] shadeTemplate, IWalkable room, List<X_Light> lights)
+        private static string combineIdentifiers(List<X_Light> lights, IWalkable room)
+        {
+            string identifier = "";
+            foreach (var light in lights)
+            {
+                if (light.GetScaledIlluminationRect().Intersects(room.Rect))
+                {
+                    identifier += light.GetIdentifier(room) + "|";
+                }
+            }
+            if (identifier.EndsWith("|"))
+                identifier = identifier.Substring(0, identifier.Length - 1);
+
+            return identifier;
+        }
+
+        public static void SaveShadeToFile(bool[] shadeTemplate, bool open, IWalkable room, List<X_Light> lights)
         {
             if (room.ResourceFolder != "")
             {
-                string fileName = "shade_";
+                string fileName = "shade_" + (open ? "opened_" : "closed_");
                 string identifier = DateTime.Now.ToLongDateString() + " - " + DateTime.Now.ToLongTimeString() + "\n";
-                identifier += "V2\n";
-                foreach (var light in lights)
-                {
-                    if (light.GetScaledIlluminationRect().Intersects(room.Rect))
-                    {
-                        identifier += light.GetIdentifier(room) + "|";
-                    }
-                }
-                if(identifier.EndsWith("|"))
-                    identifier = identifier.Substring(0, identifier.Length - 1);
+                identifier += Manager_Light.ShadeVersion + "\n";
+
+                identifier += combineIdentifiers(lights, room);
                 identifier += "\n";
                 identifier += string.Join("", shadeTemplate.Select(x => x ? "1" : "0"));
 
                 var srcPath = Util.GetAbsResourceFolderPath(room.ResourceFolder);
                 fileName += Util.CreateGenericIdentifier();
+                fileName += ".shade";
 
                 // write to all available directories: current runtime directory and source code directory
                 File.WriteAllText(room.ResourceFolder + fileName, identifier);
@@ -437,10 +449,37 @@ namespace YGR
             }
         }
 
-        //private static bool[] loadShadeFromFile()
-        //{
+        public static bool[] LoadShadeFromFile(bool open, IWalkable room, List<X_Light> lights)
+        {
+            string fileName = "shade_" + (open ? "opened_" : "closed_");
+            var files = Directory.GetFiles(room.ResourceFolder);
+            string dataFileName = Path.GetFileName(files
+                .Where(x => Path.GetFileName(x).Contains(fileName) && Path.GetFileName(x).EndsWith(".shade"))
+                .FirstOrDefault());
 
-        //}
+            if (dataFileName == null) return null;
+
+            var contents = File.ReadAllLines(room.ResourceFolder + dataFileName);
+            var vCorr = contents[1] == Manager_Light.ShadeVersion;
+            if (!vCorr) return null;
+
+            var iCorr = contents[2] == combineIdentifiers(lights, room);
+            if (!iCorr) return null;
+
+            return contents[3].Select(c => c == '1').ToArray();
+        }
+
+        public static void RemoveAllShadeFiles(IWalkable room, bool open)
+        {
+            string fileName = "shade_" + (open ? "opened_" : "closed_");
+            var files = Directory.GetFiles(room.ResourceFolder);
+            var sFiles = files.Where(x => Path.GetFileName(x).Contains(fileName) && Path.GetFileName(x).EndsWith(".shade")).ToArray();
+            foreach(var f in sFiles)
+            {
+                string dataFileName = Path.GetFileName(f);
+                File.Delete(dataFileName);
+            }
+        }
 
         private static void output(bool[,] pattern, string name)
         {
