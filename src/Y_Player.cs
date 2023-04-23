@@ -112,8 +112,8 @@ namespace YGR
             Room = Level.GetRoom(this, Room);
 
             //Walking particles
-            Manager_Particles.GenParticleEffect(_rect.Location.ToVector2());
-            pE=Manager_Particles._particleEffects[0];
+            Manager_Particles.GenParticleEffect();
+            //pE=Manager_Particles._particleEffects[0];
         }
 
         public X_LevelElements WhatAreYou()
@@ -320,14 +320,17 @@ namespace YGR
                     Color.White, (float)angle, new Vector2(_spriteAimIndicator.Width / 2, 0), 0.1f, SpriteEffects.None, 0);
             }
         }
-        //protected virtual void DrawParticles(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)
-        //{
-        //    spriteBatch.Draw(
-        //        pE, _rect.Location.ToVector2(),
-        //        null,
-        //        null);
-        //}
-    
+        protected virtual void DrawParticles(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)
+        {
+            foreach (var pE in Manager_Particles._particleEffects)
+            {
+                pE.Trigger(new Vector2(_rect.Location.X, _rect.Location.Y + _rect.Height));
+               
+            }
+            Manager_Particles.Draw(gameTime, spriteBatch);
+        }
+
+
         public virtual void Draw(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)
         {
 
@@ -340,8 +343,7 @@ namespace YGR
             {
                 DrawGhost(gameTime, globalOffset, spriteBatch);
             }
-            Manager_Particles.Draw(gameTime, spriteBatch);
-            //DrawParticles(gameTime, globalOffset, spriteBatch);
+            DrawParticles(gameTime, globalOffset, spriteBatch);
             DrawAimIndicator(gameTime, globalOffset, spriteBatch);
         }
 

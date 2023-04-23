@@ -14,6 +14,7 @@ using MonoGame.Extended.TextureAtlases;
 using Microsoft.Xna.Framework.Content;
 using Vector2=Microsoft.Xna.Framework.Vector2;
 using System.Reflection.Metadata;
+using MonoGame.Extended.Sprites;
 
 namespace YGR
 {
@@ -33,15 +34,15 @@ namespace YGR
             _particleTexture = contentManager.Load<Texture2D>("dust_particle");// new Texture2D(graphicsDevice, 1, 1);
 
         }
-        public static void GenParticleEffect( Vector2 pos)
+        public static void GenParticleEffect( )
         {
             TextureRegion2D textureRegion = new TextureRegion2D(_particleTexture);
-            _particleEffect = new ParticleEffect(autoTrigger: false)
+            _particleEffect = new ParticleEffect(autoTrigger: true)
             {
-                Position = pos,//new Vector2(400, 240),
+                //Position = pos,//new Vector2(400, 240),
                 Emitters = new List<ParticleEmitter>
                 {
-                    new ParticleEmitter(textureRegion, 500, TimeSpan.FromSeconds(1),
+                    new ParticleEmitter(textureRegion, 500, TimeSpan.FromSeconds(0.7),
                         Profile.Point())
                     {
                         Parameters = new ParticleReleaseParameters
@@ -105,6 +106,7 @@ namespace YGR
         {
             foreach (var pE in _particleEffects)
             {
+                //spriteBatch.Draw(pE., pos, Microsoft.Xna.Framework.Color.White );
                 spriteBatch.Draw(pE);
             }
         }
