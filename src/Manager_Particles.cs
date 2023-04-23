@@ -31,7 +31,7 @@ namespace YGR
 
         public static void LoadContent(ContentManager contentManager)
         {
-            _particleTexture = contentManager.Load<Texture2D>("dust_particle");// new Texture2D(graphicsDevice, 1, 1);
+            _particleTexture = contentManager.Load<Texture2D>("dust_particle");
 
         }
         public static void GenParticleEffect( )
@@ -77,14 +77,13 @@ namespace YGR
                                 VelocityThreshold = 80f
                             },
                             //new RotationModifier {RotationRate = -2.1f},
-                            new RectangleContainerModifier {Width = 800, Height = 480},
-                            new LinearGravityModifier {Direction = -Microsoft.Xna.Framework.Vector2.UnitY, Strength = 30f},
+                            //new RectangleContainerModifier {Width = 800, Height = 480},
+                            //new LinearGravityModifier {Direction = -Microsoft.Xna.Framework.Vector2.UnitY, Strength = 3f},
                         }
                     }
                 }
             };
             _particleEffects.Add(_particleEffect);
-            //Logger.Error(_particleEffects.Count.ToString());
         }
 
         public static void Dispose()
@@ -106,7 +105,6 @@ namespace YGR
         {
             foreach (var pE in _particleEffects)
             {
-                //spriteBatch.Draw(pE., pos, Microsoft.Xna.Framework.Color.White );
                 spriteBatch.Draw(pE);
             }
         }

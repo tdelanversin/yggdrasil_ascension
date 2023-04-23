@@ -113,7 +113,7 @@ namespace YGR
 
             //Walking particles
             Manager_Particles.GenParticleEffect();
-            //pE=Manager_Particles._particleEffects[0];
+            
         }
 
         public X_LevelElements WhatAreYou()
@@ -180,6 +180,8 @@ namespace YGR
             {
                 if (_controlLayout == ControlLayout.KeyboardWASD)
                 {
+
+                    
                     if (Input.IsKeyDown(Keybinds.P1Right)) input.X += 1;
                     if (Input.IsKeyDown(Keybinds.P1Left)) input.X -= 1;
                     if (Input.IsKeyDown(Keybinds.P1Down)) input.Y += 1;
@@ -223,6 +225,8 @@ namespace YGR
              * ########################################################################## */
             if (input != Vector2.Zero)
             {
+                Manager_Particles._particleEffects[0].Trigger(new Vector2(_rect.Location.X + _rect.Width / 2, _rect.Location.Y + _rect.Height));
+
                 if (input.LengthSquared() > 1)
                 {
                     input.Normalize();
@@ -322,11 +326,7 @@ namespace YGR
         }
         protected virtual void DrawParticles(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)
         {
-            foreach (var pE in Manager_Particles._particleEffects)
-            {
-                pE.Trigger(new Vector2(_rect.Location.X, _rect.Location.Y + _rect.Height));
-               
-            }
+            
             Manager_Particles.Draw(gameTime, spriteBatch);
         }
 
