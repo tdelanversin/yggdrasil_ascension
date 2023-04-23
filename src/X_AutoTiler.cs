@@ -5,8 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace YGR
 {
@@ -25,6 +23,39 @@ namespace YGR
             public List<Textel> coordinates;
         }
 
+        public class X_AutoTileTexture
+        {
+            private Point _location;
+            private Texture2D _texture;
+
+            public X_AutoTileTexture(Point location, Texture2D texture)
+            {
+                _location = location;
+                _texture = texture;
+            }
+
+            public ref Point Location() => ref _location;
+
+            public ref Texture2D Texture() => ref _texture;
+            public void Texture(Texture2D texture) => _texture = texture;
+        }
+
+        public class X_AutoTileColor
+        {
+            private Point _location;
+            private Color[] _color;
+
+            public X_AutoTileColor(Point location, Color[] color)
+            {
+                _location = location;
+                _color = color;
+            }
+
+            public ref Point Location() => ref _location;
+
+            public ref Color[] Color() => ref _color;
+        }
+
         internal class Data
         {
             public string textureName;
@@ -36,7 +67,6 @@ namespace YGR
         {
             public int tileSize;
             public Dictionary<string, List<Color[]>> tiles;
-            public Dictionary<string, List<Texture2D>> tilesTexture;
             public Dictionary<string, X_TileType[,][]> masks;
         }
 
@@ -88,23 +118,23 @@ namespace YGR
             info.tileSize = data.size;
 
             info.tiles = new Dictionary<string, List<Color[]>>();
-            info.tilesTexture = new Dictionary<string, List<Texture2D>>();
+            //info.tilesTexture = new Dictionary<string, List<Texture2D>>();
 
             info.masks = new Dictionary<string, X_TileType[,][]>();
             //textures = new Dictionary<string, X_DoorTextureLayer>();
             foreach (var t in data.tiles)
             {
                 info.tiles.Add(t.Key, new List<Color[]>());
-                info.tilesTexture.Add(t.Key, new List<Texture2D>());
+                //info.tilesTexture.Add(t.Key, new List<Texture2D>());
                 foreach (var e in t.Value.coordinates)
                 {
                     Color[] temp = new Color[data.size * data.size];
                     texture.GetData<Color>(0, new Rectangle(e.x * data.size, e.y * data.size, data.size, data.size), temp, 0, data.size * data.size);
                     info.tiles[t.Key].Add(temp);
 
-                    Texture2D ttemp = new Texture2D(graphicsDevice, data.size, data.size);
-                    ttemp.SetData<Color>(temp);
-                    info.tilesTexture[t.Key].Add(ttemp);
+                    //Texture2D ttemp = new Texture2D(graphicsDevice, data.size, data.size);
+                    //ttemp.SetData<Color>(temp);
+                    //info.tilesTexture[t.Key].Add(ttemp);
                 }
 
                 info.masks.Add(t.Key, map(t.Value.mask, mapJsonName));
@@ -178,8 +208,8 @@ namespace YGR
             GraphicsDevice graphicsDevice,
             int[][] pattern,
             Func<string, Types> MapTexture,
-            out Dictionary<Types, List<Tuple<Point, Texture2D>>> texture,
-            out Dictionary<Types, List<Tuple<Point, Color[]>>> color)
+            out Dictionary<Types, List<X_AutoTileTexture>> texture,
+            out Dictionary<Types, List<X_AutoTileColor>> color)
         {
             X_TileType[][] padded = new X_TileType[pattern.Length + 2][];
             for (int i = 0; i < pattern.Length + 2; ++i)
@@ -206,8 +236,8 @@ namespace YGR
                 }
             }
 
-            texture = new Dictionary<Types, List<Tuple<Point, Texture2D>>>();
-            color = new Dictionary<Types, List<Tuple<Point, Color[]>>>();
+            texture = new Dictionary<Types, List<X_AutoTileTexture>>();
+            color = new Dictionary<Types, List<X_AutoTileColor>>();
 
             string staticKey = resourceFolder + jsonFileName;
             if (!tileInfo.ContainsKey(staticKey)) Logger.Error("No tile info for the resource " + staticKey);
@@ -221,28 +251,33 @@ namespace YGR
                 foreach (var t in res)
                 {
                     Rectangle rect = new Rectangle(t.Item1 * info.tileSize, t.Item2 * info.tileSize, info.tileSize, info.tileSize);
-                    List<Tuple<Point, Texture2D>> list;
-                    var key = MapTexture(m.Key);
                     int ind = getRandomTile(info.tiles[m.Key]);
-                    if (texture.TryGetValue(key, out list))
-                    {
-                        list.Add(new Tuple<Point, Texture2D>(new Point(t.Item1, t.Item2), info.tilesTexture[m.Key][ind]));
-                    }
-                    else
-                    {
-                        list = new List<Tuple<Point, Texture2D>>() { new Tuple<Point, Texture2D>(new Point(t.Item1, t.Item2), info.tilesTexture[m.Key][ind]) };
-                        texture.Add(key, list);
-                    }
 
-                    List<Tuple<Point, Color[]>> list2;
+                    var key = MapTexture(m.Key);
+                    X_AutoTileColor nc = new X_AutoTileColor(new Point(t.Item1, t.Item2), info.tiles[m.Key][ind].Clone() as Color[]);
+                    List<X_AutoTileColor> list2;
                     if (color.TryGetValue(key, out list2))
                     {
-                        list2.Add(new Tuple<Point, Color[]>(new Point(t.Item1, t.Item2), info.tiles[m.Key][ind]));
+                        list2.Add(nc);
                     }
                     else
                     {
-                        list2 = new List<Tuple<Point, Color[]>>() { new Tuple<Point, Color[]>(new Point(t.Item1, t.Item2), info.tiles[m.Key][ind]) };
+                        list2 = new List<X_AutoTileColor>() { nc };
                         color.Add(key, list2);
+                    }
+
+                    var tex = new Texture2D(graphicsDevice, info.tileSize, info.tileSize);
+                    tex.SetData<Color>(nc.Color());
+                    X_AutoTileTexture np = new X_AutoTileTexture(new Point(t.Item1, t.Item2), tex);
+                    List<X_AutoTileTexture> list;
+                    if (texture.TryGetValue(key, out list))
+                    {
+                        list.Add(np);
+                    }
+                    else
+                    {
+                        list = new List<X_AutoTileTexture>() { np };
+                        texture.Add(key, list);
                     }
                 }
             }

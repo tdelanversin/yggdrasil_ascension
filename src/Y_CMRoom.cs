@@ -1,13 +1,17 @@
 ﻿using Assimp;
+using Assimp.Unmanaged;
 using LDtk;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using Newtonsoft.Json;
+using SharpFont;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using static YGR.Y_CMRoom;
 
 namespace YGR
 {
@@ -25,21 +29,102 @@ namespace YGR
 
     public class Y_CMRoom : IWalkable
     {
+        internal class X_DoorMask
+        {
+            static public int RoiDepth { get { return 4; } }
+
+            int X, Y, ReachX, ReachY;
+            Rectangle Room;
+            Rectangle RegionOfInterest;
+            int TileSize;
+
+            public X_DoorMask(Rectangle regionOfInterest, Rectangle maskArea, Rectangle room, int tileSize)
+            {
+                RegionOfInterest = regionOfInterest;
+                X = maskArea.X; 
+                Y = maskArea.Y; 
+                ReachX = maskArea.Width + X; 
+                ReachY = maskArea.Height+ Y; 
+                Room = room;
+                TileSize = tileSize;
+            }
+
+            public bool Check(int i)
+            {
+                int x = i % Room.Width;
+                int y = (i - x) / Room.Width;
+                return x >= X && x < ReachX && y >= Y && y < ReachY;
+            }
+
+            public void DrawOutline(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)
+            {
+                Factory_Debug.DrawRectangle(X+(int)globalOffset.X, Y+(int)globalOffset.Y, ReachX - X, ReachY - Y, 1, Color.BlueViolet, spriteBatch);
+                Factory_Debug.DrawRectangle(
+                    RegionOfInterest.X, 
+                    RegionOfInterest.Y, 
+                    RegionOfInterest.Width, 
+                    RegionOfInterest.Height, 
+                    3, Color.Aquamarine, spriteBatch);
+            }
+
+            public void MoveBy(Point p)
+            {
+                RegionOfInterest.Offset(p);
+                Room.Offset(p);
+            }
+
+            public int[][] GetTemplate()
+            {
+                int[][] template = new int[Room.Height/TileSize][];
+                for(int i=0; i<template.Length; ++i)
+                {
+                    template[i] = Enumerable.Repeat<int>((int)X_TileType.DontCare, Room.Width / TileSize).ToArray();
+                }
+
+                for(int y=0; y<template.Length; ++y)
+                {
+                    for(int x=0; x < template[0].Length; ++x)
+                    {
+                        var p = new Point((int)((1.5 + x) * TileSize) + Room.Location.X, (int)((1.5 + y) * TileSize) + Room.Location.Y);
+                        if (RegionOfInterest.Contains(p))
+                        {
+                            template[y][x] = (int)X_TileType.Floor;
+                        }
+                    }
+                }
+                //output(template, "./logs/illumination.csv");
+                return template;
+            }
+
+            private void output(int[][] pattern, string name)
+            {
+                string s = "";
+                for (int x = 0; x < pattern.GetLength(0); ++x)
+                {
+                    s += string.Join("\t", pattern[x]) + "\n";
+                }
+
+                File.WriteAllText(name, s);
+            }
+        }
+
         public float Scale { get; private set; }
         public string Name { get; set; }
         public X_CollisionModel_Room Collision { get; }
         public X_RoomGraph Graph { get; set; }
         public Rectangle Rect { get; set; }
         public Dictionary<X_ConnectorSide, IList<X_ConnectorPoint>> Doors { get; set; }
+        private Dictionary<X_ConnectorSide, IList<X_DoorMask>> _doorMasks;
         public Dictionary<X_ConnectorSide, IList<IWalkable>> DoorRooms { get; set; }
         public int TextureTileSize { get; }
         public string ResourceFolder { get; }
         public Color RegionColor { get; }
+        public List<X_Light> Lights;
 
         private Texture2D _floor;
-        private Texture2D _window;
-        private bool[] _shade;
-        private List<X_Light> _lights;
+        private Color[] _floorData;
+        private bool[] _illuminatedOpened;
+        private bool[] _illuminatedClosed;
 
         public Y_CMRoom(
             string name,
@@ -70,6 +155,7 @@ namespace YGR
 
             Doors = new Dictionary<X_ConnectorSide, IList<X_ConnectorPoint>>();
             DoorRooms = new Dictionary<X_ConnectorSide, IList<IWalkable>>();
+            _doorMasks = new Dictionary<X_ConnectorSide, IList<X_DoorMask>>();
 
             List<string> layers;
             using (StreamReader stream = new StreamReader(ResourceFolder + dataFileName))
@@ -79,19 +165,16 @@ namespace YGR
                 IList<Door> doors = JsonConvert.DeserializeObject<List<Door>>(array.entities.Door.ToString());
                 layers = JsonConvert.DeserializeObject<List<string>>(array.layers.ToString());
 
-                foreach(var door in doors)
+                foreach (var door in doors)
                 {
                     int x = (int)((float)door.x / door.width * Collision.TileWidth) + Rect.X;
                     int y = (int)((float)door.y / door.height * Collision.TileHeight) + Rect.Y;
                     var side = determineSide(x, y);
                     IList<X_ConnectorPoint> list;
-                    if(!Doors.TryGetValue(side, out list)){
-                        if(side == X_ConnectorSide.Top || side == X_ConnectorSide.Bottom)
-                            Doors.Add(side, new List<X_ConnectorPoint> { new X_ConnectorPoint(side, new Point(x, y)) });
-                        else
-                            Doors.Add(side, new List<X_ConnectorPoint> { new X_ConnectorPoint(side, new Point(x, y)) });
+                    if (!Doors.TryGetValue(side, out list))
+                    {
+                        Doors.Add(side, new List<X_ConnectorPoint> { new X_ConnectorPoint(side, new Point(x, y)) });
                     }
-                    else list.Add(new X_ConnectorPoint(side, new Point(door.x, door.y)));
                 }
             }
 
@@ -126,89 +209,178 @@ namespace YGR
             }
             _floor.SetData<Color>(target);
 
-            //using (FileStream fileStream = new FileStream(ResourceFolder + "Custom_grounds.png", FileMode.Open))
-            //{
-            //    _window = Texture2D.FromStream(graphicsDevice, fileStream);
-            //}
-
             TextureTileSize = _floor.Height / collisions.Length;
 
-            //int len = _window.Width * _window.Height;
-            //Color[] groundData = new Color[len];
-            //_window.GetData<Color>(groundData);
-            //Color[] floorData = new Color[len];
-            //_floor.GetData<Color>(floorData);
-            //Color[] newData = new Color[len];
+            foreach (var door in Doors)
+            {
+                //int x = (int)((float)door.x / door.width * Collision.TileWidth) + Rect.X;
+                //int y = (int)((float)door.y / door.height * Collision.TileHeight) + Rect.Y;
+                //var side = determineSide(x, y);
+                //IList<X_ConnectorPoint> list;
+                //if (!Doors.TryGetValue(side, out list))
+                //{
+                //    Doors.Add(side, new List<X_ConnectorPoint> { new X_ConnectorPoint(side, new Point(x, y)) });
+                if (door.Key == X_ConnectorSide.Top)
+                {
+                    var p = Doors[X_ConnectorSide.Top].First().Point;
+                    var roi = new Rectangle(
+                        (int)((Math.Round(p.X - ((Y_Door.NumTilesDoorWidth - 2) / 2.0f * TextureTileSize)) / TextureTileSize) * TextureTileSize),
+                        (int)((Math.Round(p.Y + 1.5 * TextureTileSize) / TextureTileSize) * TextureTileSize),
+                        (Y_Door.NumTilesDoorWidth - 2)*TextureTileSize, X_DoorMask.RoiDepth * TextureTileSize);
 
-            //int minh = int.MaxValue;
-            //int minw = int.MaxValue;
-            //int maxh = int.MinValue;
-            //int maxw = int.MinValue;
-            //for (int h = 0; h < _window.Height; ++h)
-            //{
-            //    for (int w = 0; w < _window.Width; ++w)
-            //    {
-            //        if(groundData[h*_window.Width +w].A == 0)
-            //        {
-            //            if (minh > h) minh = h;
-            //            if (maxh < h) maxh = h;
-            //            if (minw > w) minw = w;
-            //            if (maxw < w) maxw = w;
-            //        }
+                    _doorMasks.Add(door.Key, new List<X_DoorMask> {
+                            new X_DoorMask(roi, new Rectangle(0, 0, Rect.Width, Rect.Height/2), Rect, TextureTileSize)
+                        });
+                }
+                else if (door.Key == X_ConnectorSide.Left)
+                {
+                    var p = Doors[X_ConnectorSide.Left].First().Point;
+                    var roi = new Rectangle(
+                        (int)((Math.Round(p.X + 1.5 * TextureTileSize) / TextureTileSize) * TextureTileSize),
+                        (int)((Math.Round(p.Y - ((Y_Door.NumTilesDoorWidth - 2) / 2.0f * TextureTileSize)) / TextureTileSize) * TextureTileSize),
+                        X_DoorMask.RoiDepth * TextureTileSize, (Y_Door.NumTilesDoorWidth - 2) * TextureTileSize);
+
+                    _doorMasks.Add(door.Key, new List<X_DoorMask> {
+                            new X_DoorMask(roi, new Rectangle(0, 0, Rect.Width/2, Rect.Height), Rect, TextureTileSize)
+                        });
+                }
+                else if (door.Key == X_ConnectorSide.Right)
+                {
+                    var p = Doors[X_ConnectorSide.Right].First().Point;
+                    var roi = new Rectangle(
+                        (int)((Math.Round(p.X - (1.5 + Y_Door.NumTilesDoorWidth - 2) * TextureTileSize) / TextureTileSize) * TextureTileSize),
+                        (int)((Math.Round(p.Y - ((Y_Door.NumTilesDoorWidth - 2) / 2.0f * TextureTileSize)) / TextureTileSize) * TextureTileSize),
+                        X_DoorMask.RoiDepth * TextureTileSize, (Y_Door.NumTilesDoorWidth - 2) * TextureTileSize);
+
+                    _doorMasks.Add(door.Key, new List<X_DoorMask> {
+                            new X_DoorMask(roi, new Rectangle(Rect.Width/2, 0, Rect.Width/2, Rect.Height), Rect, TextureTileSize)
+                        });
+                }
+                else // if (door.Key == X_ConnectorSide.Bottom)
+                {
+                    var p = Doors[X_ConnectorSide.Bottom].First().Point;
+                    var roi = new Rectangle(
+                        (int)((Math.Round(p.X - ((Y_Door.NumTilesDoorWidth - 2) / 2.0f * TextureTileSize)) / TextureTileSize) * TextureTileSize),
+                        (int)((Math.Round(p.Y - (1.5 + Y_Door.NumTilesDoorWidth - 2) * TextureTileSize) / TextureTileSize) * TextureTileSize),
+                        (Y_Door.NumTilesDoorWidth - 2) * TextureTileSize, X_DoorMask.RoiDepth * TextureTileSize);
+
+                    _doorMasks.Add(X_ConnectorSide.Bottom, new List<X_DoorMask> {
+                            new X_DoorMask(roi, new Rectangle(0, Rect.Height/2, Rect.Width, Rect.Height / 2), Rect, TextureTileSize)
+                        });
+                }
+                    //if (side == X_ConnectorSide.Top || side == X_ConnectorSide.Bottom)
+                    //    Doors.Add(side, new List<X_ConnectorPoint> { new X_ConnectorPoint(side, new Point(x, y)) });
+                    //else
+                    //    Doors.Add(side, new List<X_ConnectorPoint> { new X_ConnectorPoint(side, new Point(x, y)) });
             //    }
-            //}
-
-            //minh = minh + TextureTileSize / 2;
-            //minw = minw + TextureTileSize / 2;
-            //maxh = maxh - TextureTileSize / 2;
-            //maxw = maxw - TextureTileSize / 2;
-
-            //RegionColor = floorData[minh * _window.Width + minw];
-
-            //for (int h = 0; h < _window.Height; ++h)
-            //{
-            //    for (int w = 0; w < _window.Width; ++w)
-            //    {
-            //        if (h >= minh && w >= minw && h < maxh && w < maxw)
-            //        {
-            //            newData[h * _window.Width + w] = floorData[h * _window.Width + w];
-            //        }
-            //        else newData[h * _window.Width + w] = RegionColor;
-            //    }
-            //}
-
-            //_floor.SetData<Color>(newData);
+            //else list.Add(new X_ConnectorPoint(side, new Point(door.x, door.y)));
+            }
 
             Scale = (float)tileHeight * collisions.Length / _floor.Height;
-            _shade = null;
-            _lights = new List<X_Light>() { new X_Light(new Vector3(Rect.X + -5 * TextureTileSize, Rect.Y + 5 * TextureTileSize, 5 * TextureTileSize), Rect, Scale) };
+            _illuminatedOpened = null;
+            _illuminatedClosed = null;
+            //if (Name == "r0")
+            //{
+                Lights = new List<X_Light>() {
+                new X_Light(
+                    new Vector3(Rect.X + -2*TextureTileSize,
+                    Rect.Y - 30*TextureTileSize,
+                    20 * TextureTileSize),
+                    Rect, Scale)
+                };
+        //}
+        //    else
+        //    {
+        //        Lights = new List<X_Light>();
+        //    }
+}
+        private void output(int[][] pattern, string name)
+        {
+            string s = "";
+            for (int x = 0; x < pattern.GetLength(0); ++x)
+            {
+                s += string.Join("\t", pattern[x]) + "\n";
+            }
+
+            File.WriteAllText(name, s);
         }
+
 
         public void Illuminate()
         {
-            _shade = Manager_Light.Illuminate(_lights, this);
+            if(_floorData == null)
+            {
+                //var template = collisionTemplate; // room.Collision.GetCollisionTemplate();
+                                                  //var tileSize = room.TextureTileSize;
+
+                //int width = template[0].Length * tileSize;
+                //int length = width * template.Length * TextureTileSize;
+                //bool[] lighted = Enumerable.Repeat<bool>(false, length).ToArray();
+
+                Vector3 offset = new Vector3(Rect.Location.X / Scale, Rect.Location.Y / Scale, 0);
+
+                _illuminatedOpened = Manager_Light.Illuminate(Lights, Collision.GetCollisionTemplate(), TextureTileSize, offset, true);//, Manager_Light.Caster.Shadow);
+                _illuminatedClosed = Manager_Light.Illuminate(Lights, Collision.GetCollisionTemplate(), TextureTileSize, offset, false);//, Manager_Light.Caster.Shadow);
+
+                foreach (var d in DoorRooms)
+                {
+                    var door = (Y_Door)d.Value.First(); //DoorRooms[mask.Key].First();
+                    var room = door.GetOtherDoor(this);
+                    var template = _doorMasks[room.Item1].First().GetTemplate();
+                    //output(template, "./logs/illumination.csv";
+                    var illumination = Manager_Light.Illuminate(room.Item2.Lights, template, TextureTileSize, offset, true);//, Manager_Light.Caster.Light);
+
+                    //for (int i = 0; i < illumination.Length; ++i)
+                    //{
+                    //    if (illumination[i])
+                    //        _illuminatedOpened[i] = illumination[i]; // _illuminatedClosed[i] || illumination[i]; // _illuminatedOpened[i] || illumination[i];
+                    //}
+                    _illuminatedOpened = illumination;
+                }
+
+                _floorData = new Color[_floor.Width * _floor.Height];
+                _floor.GetData<Color>(_floorData);
+            }
+
+            var rooms = DoorRooms.Select(x => (Y_Door)x.Value.First()).ToArray();
+            var keys = DoorRooms.Select(x => x.Key).ToArray();
+            var masks = _doorMasks.Select(x => x.Value.First()).ToArray();
 
             Color[] data = new Color[_floor.Width * _floor.Height];
-            _floor.GetData<Color>(data);
-
-            for (int i = 0; i < _shade.Length; ++i)
+            for (int i = 0; i < _illuminatedClosed.Length; ++i)
             {
-                if (!_shade[i])
+                bool illuminated = _illuminatedClosed[i]; ; // not illuminated => must be illuminated by at least one
+                if (!illuminated)
                 {
-                    var col = data[i];
+                    for (int r = 0; r < rooms.Length; ++r)
+                    {
+                        if (rooms[r].DoorIsOpen())
+                        {
+                            // illuminated = true at x = 368, y = 48
+                            //int ti = 384 * Rect.Width + 48;
+                            //if (i == ti)
+                            //    Logger.Info("lol");
+                            var check = masks[r].Check(i);
+                            illuminated = illuminated || (check && _illuminatedOpened[i]);
+                        }
+                    }
+                }
+
+                if (!illuminated)
+                {
+                    var col = _floorData[i];
                     Color nCol = Color.White;
                     nCol.R = (byte)((1 - 0.4f) * col.R + 0.4f * Color.Black.R);
                     nCol.G = (byte)((1 - 0.4f) * col.G + 0.4f * Color.Black.G);
                     nCol.B = (byte)((1 - 0.4f) * col.B + 0.4f * Color.Black.B);
                     data[i] = nCol;
                 }
+                else
+                {
+                    data[i] = _floorData[i];
+                }
             }
             _floor.SetData<Color>(data);
-        }
-
-        public ref Texture2D GetFloor()
-        {
-            return ref _floor;
         }
 
         public X_ConnectorPoint GetConnectorPoint(X_ConnectorSide side, string name = "")
@@ -335,6 +507,16 @@ namespace YGR
                 }
             }
             
+            foreach(var light in Lights)
+            {
+                light.MoveBy(p);
+            }
+
+            foreach(var door in _doorMasks)
+            {
+                door.Value.First().MoveBy(p);
+            }
+
             // needs to be done this way because properties return by value and not by ref
             Rect = new Rectangle(position.X, position.Y, Rect.Width, Rect.Height);
         }
@@ -363,6 +545,15 @@ namespace YGR
         {
             Collision.DrawOutline(gameTime, globalOffset, spriteBatch);
             Factory_Debug.DrawRectangle(Rect.X, Rect.Y, Rect.Width, Rect.Height, 3, Color.Blue, spriteBatch);
+            foreach(var light in Lights)
+            {
+                light.DrawOutline(gameTime, globalOffset, spriteBatch);
+            }
+
+            foreach (var door in _doorMasks)
+            {
+                door.Value.First().DrawOutline(gameTime, Rect.Location.ToVector2(), spriteBatch);
+            }
         }
 
         /// <summary>

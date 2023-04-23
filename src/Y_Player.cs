@@ -104,7 +104,6 @@ namespace YGR
             );
 
             Scale = (float)Rect.Width / (float)_spriteDimensions.Width;
-            Level.Victims.Add(this);
             Room = Level.GetRoom(this, Room);
         }
 

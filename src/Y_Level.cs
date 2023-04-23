@@ -41,22 +41,22 @@ namespace YGR
             {
                 { "center", new Y_CMRoom("r2", TileWidth, TileHeight, resourceFolder + "Room_0", graphicsDevice) },
                 { "middle", new Y_CMRoom("r0", TileWidth, TileHeight, resourceFolder + "Room_1", graphicsDevice) },
-                { "top", new Y_CMRoom("r1", TileWidth, TileHeight, resourceFolder + "Room_2", graphicsDevice) },
-                { "left", new Y_CMRoom("r3-L", TileWidth, TileHeight, resourceFolder + "Room_3", graphicsDevice) },
-                { "right", new Y_CMRoom("r3-R", TileWidth, TileHeight, resourceFolder + "Room_4", graphicsDevice) },
-                { "bottom", new Y_CMRoom("r3-B", TileWidth, TileHeight, resourceFolder + "Room_5", graphicsDevice) },
-                { "door-center-to-middle", new Y_Door(X_DoorDirection.Vertical, connectorWidth, TileWidth, TileHeight, -7, graphicsDevice, "./Doors", "data.json") },
-                { "door-center-to-left", new Y_Door(X_DoorDirection.Horizontal, connectorWidth, TileWidth, TileHeight, 1, graphicsDevice, "./Doors", "data.json") },
-                { "door-center-to-right", new Y_Door(X_DoorDirection.Horizontal, connectorWidth, TileWidth, TileHeight, -3, graphicsDevice, "./Doors", "data.json") },
-                { "door-center-to-bottom", new Y_Door(X_DoorDirection.Vertical, connectorWidth, TileWidth, TileHeight, 0, graphicsDevice, "./Doors", "data.json") },
-                { "door-middle-to-top", new Y_Door(X_DoorDirection.Vertical, connectorWidth, TileWidth, TileHeight, 3, graphicsDevice, "./Doors", "data.json") },
+                //{ "top", new Y_CMRoom("r1", TileWidth, TileHeight, resourceFolder + "Room_2", graphicsDevice) },
+                //{ "left", new Y_CMRoom("r3-L", TileWidth, TileHeight, resourceFolder + "Room_3", graphicsDevice) },
+                //{ "right", new Y_CMRoom("r3-R", TileWidth, TileHeight, resourceFolder + "Room_4", graphicsDevice) },
+                //{ "bottom", new Y_CMRoom("r3-B", TileWidth, TileHeight, resourceFolder + "Room_5", graphicsDevice) },
+                { "door-center-to-middle", new Y_Door(X_DoorDirection.Vertical, connectorWidth, TileWidth, TileHeight, 7, graphicsDevice, "./Doors", "data.json") },
+                //{ "door-center-to-left", new Y_Door(X_DoorDirection.Horizontal, connectorWidth, TileWidth, TileHeight, 1, graphicsDevice, "./Doors", "data.json") },
+                //{ "door-center-to-right", new Y_Door(X_DoorDirection.Horizontal, connectorWidth, TileWidth, TileHeight, -3, graphicsDevice, "./Doors", "data.json") },
+                //{ "door-center-to-bottom", new Y_Door(X_DoorDirection.Vertical, connectorWidth, TileWidth, TileHeight, 0, graphicsDevice, "./Doors", "data.json") },
+                //{ "door-middle-to-top", new Y_Door(X_DoorDirection.Vertical, connectorWidth, TileWidth, TileHeight, 3, graphicsDevice, "./Doors", "data.json") },
             };
 
             ((Y_Door)Rooms["door-center-to-middle"]).Connect(X_ConnectorSide.Bottom, Rooms["center"], X_ConnectorSide.Top, Rooms["middle"]);
-            ((Y_Door)Rooms["door-center-to-left"]).Connect(X_ConnectorSide.Right, Rooms["center"], X_ConnectorSide.Left, Rooms["left"]);
-            ((Y_Door)Rooms["door-center-to-right"]).Connect(X_ConnectorSide.Left, Rooms["center"], X_ConnectorSide.Right, Rooms["right"]);
-            ((Y_Door)Rooms["door-center-to-bottom"]).Connect(X_ConnectorSide.Top, Rooms["center"], X_ConnectorSide.Bottom, Rooms["bottom"]);
-            ((Y_Door)Rooms["door-middle-to-top"]).Connect(X_ConnectorSide.Bottom, Rooms["middle"], X_ConnectorSide.Top, Rooms["top"]);
+            //((Y_Door)Rooms["door-center-to-left"]).Connect(X_ConnectorSide.Right, Rooms["center"], X_ConnectorSide.Left, Rooms["left"]);
+            //((Y_Door)Rooms["door-center-to-right"]).Connect(X_ConnectorSide.Left, Rooms["center"], X_ConnectorSide.Right, Rooms["right"]);
+            //((Y_Door)Rooms["door-center-to-bottom"]).Connect(X_ConnectorSide.Top, Rooms["center"], X_ConnectorSide.Bottom, Rooms["bottom"]);
+            //((Y_Door)Rooms["door-middle-to-top"]).Connect(X_ConnectorSide.Bottom, Rooms["middle"], X_ConnectorSide.Top, Rooms["top"]);
 
             //finalize: split collision models
             foreach (var room in Rooms)
