@@ -113,7 +113,7 @@ namespace YGR
 
             //Walking particles
             Manager_Particles.GenParticleEffect();
-            
+
         }
 
         public X_LevelElements WhatAreYou()
@@ -181,7 +181,7 @@ namespace YGR
                 if (_controlLayout == ControlLayout.KeyboardWASD)
                 {
 
-                    
+
                     if (Input.IsKeyDown(Keybinds.P1Right)) input.X += 1;
                     if (Input.IsKeyDown(Keybinds.P1Left)) input.X -= 1;
                     if (Input.IsKeyDown(Keybinds.P1Down)) input.Y += 1;
@@ -326,7 +326,7 @@ namespace YGR
         }
         protected virtual void DrawParticles(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)
         {
-            
+
             Manager_Particles.Draw(gameTime, spriteBatch);
         }
 
@@ -336,15 +336,15 @@ namespace YGR
 
             if (IsAlive())
             {
+                DrawParticles(gameTime, globalOffset, spriteBatch);
                 DrawPlayer(gameTime, globalOffset, spriteBatch);
+                DrawAimIndicator(gameTime, globalOffset, spriteBatch);
                 DrawOverheadString(gameTime, globalOffset, spriteBatch);
             }
             else
             {
                 DrawGhost(gameTime, globalOffset, spriteBatch);
             }
-            DrawParticles(gameTime, globalOffset, spriteBatch);
-            DrawAimIndicator(gameTime, globalOffset, spriteBatch);
         }
 
         /// <summary>
