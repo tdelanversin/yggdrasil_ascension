@@ -12,6 +12,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using static YGR.Y_CMRoom;
 
@@ -137,6 +138,10 @@ namespace YGR
             GraphicsDevice graphicsDevice
         )
         {
+            var watch2 = new Stopwatch();
+            watch2.Start();
+            var watch = new Stopwatch();
+            watch.Start();
             ResourceFolder = Util.PathOsNormalization(resourceFolder);
             var files = Directory.GetFiles(ResourceFolder);
             string dataFileName = Path.GetFileName(files.Where(x => Path.GetFileName(x).Contains("data") && Path.GetFileName(x).EndsWith(".json")).First());
@@ -150,7 +155,10 @@ namespace YGR
                 collisions[counter] = line.Split(',').Where(i => i != "").Select(int.Parse).ToArray();
                 counter++;
             }
-
+            watch.Stop();
+           //Logger.Info(" ..... loaded collision model: " + watch.ElapsedMilliseconds.ToString());
+            watch.Reset();
+            watch.Start();
             collisions = paddOutline(collisions);
             Collision = new X_CollisionModel_Room(collisions, tileWidth, tileHeight);
             Graph = new X_RoomGraph(this, collisions, tileWidth, tileHeight);
@@ -180,7 +188,10 @@ namespace YGR
                     }
                 }
             }
-
+            watch.Stop();
+           //Logger.Info(" ..... loaded level json data: " + watch.ElapsedMilliseconds.ToString());
+            watch.Reset();
+            watch.Start();
             Name = name;
             Color[] target = null;
             for (int i=0; i<layers.Count; ++i)
@@ -211,7 +222,10 @@ namespace YGR
                 }
             }
             _floor.SetData<Color>(target);
-
+            watch.Stop();
+           //Logger.Info(" ..... created level floor texture: " + watch.ElapsedMilliseconds.ToString());
+            watch.Reset();
+            watch.Start();
             TextureTileSize = _floor.Height / collisions.Length;
 
             foreach (var door in Doors)
@@ -293,12 +307,17 @@ namespace YGR
                     10 * TextureTileSize),
                     Rect, Scale)
                 };
-        //}
-        //    else
-        //    {
-        //        Lights = new List<X_Light>();
-        //    }
-}
+            //}
+            //    else
+            //    {
+            //        Lights = new List<X_Light>();
+            //    }
+            watch.Stop();
+           //Logger.Info(" ..... initialized doors and light: " + watch.ElapsedMilliseconds.ToString());
+            watch.Reset();
+            watch2.Stop();
+           //Logger.Info("Time to initialize level " + Name + ": " + watch2.ElapsedMilliseconds.ToString());
+        }
         private void output(int[][] pattern, string name)
         {
             string s = "";
@@ -315,6 +334,7 @@ namespace YGR
         {
             if (!Settings.Lighting) return;
 
+            Stopwatch watch = new Stopwatch();
             if (_floorData == null)
             {
                 //var template = collisionTemplate; // room.Collision.GetCollisionTemplate();
@@ -325,30 +345,29 @@ namespace YGR
                 //bool[] lighted = Enumerable.Repeat<bool>(false, length).ToArray();
 
                 Vector3 offset = new Vector3(Rect.Location.X / Scale, Rect.Location.Y / Scale, 0);
-                Stopwatch watch = new Stopwatch();
                 watch.Start();
                 _illuminatedClosed = Manager_Light.LoadShadeFromFile(false, this, Lights);
                 if (_illuminatedClosed == null)
                 {
-                    Logger.Info(" ...Recalculated closed illumination... ");
+                   //Logger.Info(" ...Recalculated closed illumination... ");
                     _illuminatedClosed = Manager_Light.Illuminate(Lights, Collision.GetCollisionTemplate(), TextureTileSize, offset, false);
                     Manager_Light.RemoveAllShadeFiles(this, false);
                     Manager_Light.SaveShadeToFile(_illuminatedClosed, false, this, Lights);
                 }
                 watch.Stop();
-                Logger.Info("Load closed illumination: " + watch.ElapsedMilliseconds.ToString());
+               //Logger.Info("Load closed illumination: " + watch.ElapsedMilliseconds.ToString());
                 watch.Reset();
                 watch.Start();
                 _illuminatedOpened = Manager_Light.LoadShadeFromFile(true, this, Lights);
                 if (_illuminatedOpened == null)
                 {
-                    Logger.Info(" ...Recalculated opened illumination... ");
+                   //Logger.Info(" ...Recalculated opened illumination... ");
                     _illuminatedOpened = Manager_Light.Illuminate(Lights, Collision.GetCollisionTemplate(), TextureTileSize, offset, true);
                     Manager_Light.RemoveAllShadeFiles(this, true);
                     Manager_Light.SaveShadeToFile(_illuminatedOpened, true, this, Lights);
                 }
                 watch.Stop();
-                Logger.Info("Load opened illumination: " + watch.ElapsedMilliseconds.ToString());
+               //Logger.Info("---Load opened illumination: " + watch.ElapsedMilliseconds.ToString());
 
                 watch.Reset();
                 watch.Start();
@@ -374,7 +393,7 @@ namespace YGR
                     //_illuminatedOpened = illumination;
                 }
                 watch.Stop();
-                Logger.Info("Calculate corridors illumination: " + watch.ElapsedMilliseconds.ToString());
+               //Logger.Info("---Calculate corridors illumination: " + watch.ElapsedMilliseconds.ToString());
 
                 //_illuminatedOpened = Manager_Light.Illuminate(lights, Collision.GetCollisionTemplate(), TextureTileSize, offset, true);//, Manager_Light.Caster.Shadow);
 
@@ -387,7 +406,10 @@ namespace YGR
             //var masks = _doorMasks.Select(x => x.Value.First()).ToArray();
 
             Color[] data = new Color[_floor.Width * _floor.Height];
-            for (int i = 0; i < _illuminatedClosed.Length; ++i)
+            watch.Reset();
+            watch.Start();
+            Parallel.For(0, _illuminatedClosed.Length, i =>
+            //for (int i = 0; i < _illuminatedClosed.Length; ++i)
             {
                 //bool illuminated = _illuminatedOpened[i];
                 bool illuminated = _illuminatedClosed[i];
@@ -398,9 +420,9 @@ namespace YGR
                         if (rooms[r].DoorIsOpen())
                         {
                             // illuminated = true at x = 368, y = 48
-                            int ti = 112 * Rect.Width + 640;
-                            if (i == ti)
-                                Logger.Info("lol");
+                            //int ti = 112 * Rect.Width + 640;
+                            //if (i == ti)
+                               //Logger.Info("lol");
                             var check = _doorMasks[keys[r]].First().Check(i);
                             illuminated = illuminated || (check && _illuminatedOpened[i]);
                         }
@@ -420,7 +442,10 @@ namespace YGR
                 {
                     data[i] = _floorData[i];
                 }
-            }
+            });
+            watch.Stop();
+           //Logger.Info("---Applied illumination: " + watch.ElapsedMilliseconds.ToString());
+
             _floor.SetData<Color>(data);
         }
 

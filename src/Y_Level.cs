@@ -4,6 +4,7 @@ using Microsoft.Xna.Framework.Graphics;
 using SharpFont.Cache;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -37,6 +38,10 @@ namespace YGR
             Scale = 1.0f;
 
             int connectorWidth = 17;
+            var watch2 = new Stopwatch();
+            var watch = new Stopwatch();
+            watch.Start();
+            watch2.Start();
             Rooms = new Dictionary<string, IWalkable>
             {
                 { "center", new Y_CMRoom("r2", TileWidth, TileHeight, resourceFolder + "Room_0", graphicsDevice) },
@@ -44,19 +49,39 @@ namespace YGR
                 { "top", new Y_CMRoom("r1", TileWidth, TileHeight, resourceFolder + "Room_2", graphicsDevice) },
                 { "left", new Y_CMRoom("r3-L", TileWidth, TileHeight, resourceFolder + "Room_3", graphicsDevice) },
                 { "right", new Y_CMRoom("r3-R", TileWidth, TileHeight, resourceFolder + "Room_4", graphicsDevice) },
-                { "bottom", new Y_CMRoom("r3-B", TileWidth, TileHeight, resourceFolder + "Room_5", graphicsDevice) },
+                { "bottom1", new Y_CMRoom("r3-B1", TileWidth, TileHeight, resourceFolder + "Room_5", graphicsDevice) },
+                { "bottom2", new Y_CMRoom("r3-B2", TileWidth, TileHeight, resourceFolder + "Room_5", graphicsDevice) },
+                { "bottom3", new Y_CMRoom("r3-B3", TileWidth, TileHeight, resourceFolder + "Room_5", graphicsDevice) },
+                { "bottom4", new Y_CMRoom("r3-B4", TileWidth, TileHeight, resourceFolder + "Room_5", graphicsDevice) },
+                { "bottom5", new Y_CMRoom("r3-B5", TileWidth, TileHeight, resourceFolder + "Room_5", graphicsDevice) },
+                { "bottom6", new Y_CMRoom("r3-B6", TileWidth, TileHeight, resourceFolder + "Room_5", graphicsDevice) },
                 { "door-center-to-middle", new Y_Door(X_DoorDirection.Vertical, connectorWidth, TileWidth, TileHeight, 7, graphicsDevice, "./Doors", "data.json") },
                 { "door-center-to-left", new Y_Door(X_DoorDirection.Horizontal, connectorWidth, TileWidth, TileHeight, 1, graphicsDevice, "./Doors", "data.json") },
                 { "door-center-to-right", new Y_Door(X_DoorDirection.Horizontal, connectorWidth, TileWidth, TileHeight, -3, graphicsDevice, "./Doors", "data.json") },
-                { "door-center-to-bottom", new Y_Door(X_DoorDirection.Vertical, connectorWidth, TileWidth, TileHeight, 0, graphicsDevice, "./Doors", "data.json") },
-                { "door-middle-to-top", new Y_Door(X_DoorDirection.Vertical, connectorWidth, TileWidth, TileHeight, 3, graphicsDevice, "./Doors", "data.json") },
+                { "door-center-to-bottom1", new Y_Door(X_DoorDirection.Vertical, connectorWidth, TileWidth, TileHeight, 0, graphicsDevice, "./Doors", "data.json") },
+                { "door-middle-to-top", new Y_Door(X_DoorDirection.Vertical, connectorWidth, TileWidth, TileHeight, 0, graphicsDevice, "./Doors", "data.json") },
+                { "door-center-to-bottom2", new Y_Door(X_DoorDirection.Vertical, connectorWidth, TileWidth, TileHeight, 3, graphicsDevice, "./Doors", "data.json") },
+                { "door-center-to-bottom3", new Y_Door(X_DoorDirection.Vertical, connectorWidth, TileWidth, TileHeight, 3, graphicsDevice, "./Doors", "data.json") },
+                { "door-center-to-bottom4", new Y_Door(X_DoorDirection.Vertical, connectorWidth, TileWidth, TileHeight, 3, graphicsDevice, "./Doors", "data.json") },
+                { "door-center-to-bottom5", new Y_Door(X_DoorDirection.Vertical, connectorWidth, TileWidth, TileHeight, 3, graphicsDevice, "./Doors", "data.json") },
+                { "door-center-to-bottom6", new Y_Door(X_DoorDirection.Vertical, connectorWidth, TileWidth, TileHeight, 3, graphicsDevice, "./Doors", "data.json") },
             };
+
+           //Logger.Info("-----Initialized all levels: " + watch.ElapsedMilliseconds.ToString());
 
             ((Y_Door)Rooms["door-center-to-middle"]).Connect(X_ConnectorSide.Bottom, Rooms["center"], X_ConnectorSide.Top, Rooms["middle"]);
             ((Y_Door)Rooms["door-center-to-left"]).Connect(X_ConnectorSide.Right, Rooms["center"], X_ConnectorSide.Left, Rooms["left"]);
             ((Y_Door)Rooms["door-center-to-right"]).Connect(X_ConnectorSide.Left, Rooms["center"], X_ConnectorSide.Right, Rooms["right"]);
-            ((Y_Door)Rooms["door-center-to-bottom"]).Connect(X_ConnectorSide.Top, Rooms["center"], X_ConnectorSide.Bottom, Rooms["bottom"]);
+            ((Y_Door)Rooms["door-center-to-bottom1"]).Connect(X_ConnectorSide.Top, Rooms["center"], X_ConnectorSide.Bottom, Rooms["bottom1"]);
             ((Y_Door)Rooms["door-middle-to-top"]).Connect(X_ConnectorSide.Bottom, Rooms["middle"], X_ConnectorSide.Top, Rooms["top"]);
+
+            ((Y_Door)Rooms["door-center-to-bottom2"]).Connect(X_ConnectorSide.Bottom, Rooms["top"], X_ConnectorSide.Top, Rooms["bottom2"]);
+            ((Y_Door)Rooms["door-center-to-bottom3"]).Connect(X_ConnectorSide.Bottom, Rooms["bottom2"], X_ConnectorSide.Top, Rooms["bottom3"]);
+            ((Y_Door)Rooms["door-center-to-bottom4"]).Connect(X_ConnectorSide.Bottom, Rooms["bottom3"], X_ConnectorSide.Top, Rooms["bottom4"]);
+            ((Y_Door)Rooms["door-center-to-bottom5"]).Connect(X_ConnectorSide.Bottom, Rooms["bottom4"], X_ConnectorSide.Top, Rooms["bottom5"]);
+            ((Y_Door)Rooms["door-center-to-bottom6"]).Connect(X_ConnectorSide.Bottom, Rooms["bottom5"], X_ConnectorSide.Top, Rooms["bottom6"]);
+
+           //Logger.Info("------Connected all levels: " + watch.ElapsedMilliseconds.ToString());
 
             //finalize: split collision models
             foreach (var room in Rooms)
@@ -66,8 +91,10 @@ namespace YGR
                     ((Y_Door)room.Value).SplitConnectedCollisionModels();
                 }
             }
+           //Logger.Info("------Split collision models: " + watch.ElapsedMilliseconds.ToString());
 
-            Manager_Light.Initialize(this);
+            Manager_Light.CreateModel(this);
+           //Logger.Info("------Initialized light manager: " + watch.ElapsedMilliseconds.ToString());
 
             //float scale = (float)TileWidth / 32.0f;
 
@@ -128,7 +155,9 @@ namespace YGR
                 room.Illuminate();
             }
             //}
-
+            watch2.Stop();
+           //Logger.Info("-------Initialized level: " + watch2.ElapsedMilliseconds.ToString());
+            watch2.Reset();
 
             //OutsideColor = ((Y_CMRoom)(Rooms.Values.First())).RegionColor;
         }

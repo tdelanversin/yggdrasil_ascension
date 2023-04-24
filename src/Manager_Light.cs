@@ -5,6 +5,7 @@ using Microsoft.Xna.Framework.Graphics;
 using SharpDX.D3DCompiler;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -211,6 +212,8 @@ namespace YGR
         public static List<X_Cube> IlluminationModelOpened { get; private set; }
         public static List<X_Cube> IlluminationModelClosed { get; private set; }
 
+        public static Dictionary<string, bool[]> LoadedIlluminationTemplates { get; private set; }
+
         public static string ShadeVersion { get { return "V3"; } }
 
         public static float Dot(Vector3 lhs, Vector3 rhs)
@@ -227,6 +230,11 @@ namespace YGR
                 );
         }
 
+        public static void Initialize()
+        {
+            LoadedIlluminationTemplates = new Dictionary<string, bool[]>();
+        }
+
         public static bool[] Illuminate(
             List<X_Light> lights,
             //IWalkable room,
@@ -237,6 +245,8 @@ namespace YGR
             Caster casterType = Caster.Shadow
         )
         {
+            var watch = new Stopwatch();
+            watch.Start();
             if((open && IlluminationModelOpened == null) || (!open && IlluminationModelClosed == null))
             {
                 Logger.Error("Trying to illuminate a room without illumination model for the " + (open? "opened" : "closed") + " state of the level!");
@@ -406,7 +416,8 @@ namespace YGR
             //        lighted[i] = !lighted[i];
             //    }
             //}
-
+            watch.Stop();
+           Logger.Info("@@@@@@@@@@@@@@@@@@@ calculate illumination: " + watch.ElapsedMilliseconds.ToString());
             return lighted;
             //saveShadeToFile(lighted, room, lights);
         }
@@ -439,13 +450,17 @@ namespace YGR
                 identifier += "\n";
                 identifier += string.Join("", shadeTemplate.Select(x => x ? "1" : "0"));
 
-                var srcPath = Util.GetAbsResourceFolderPath(room.ResourceFolder);
                 fileName += Util.CreateGenericIdentifier();
                 fileName += ".shade";
 
                 // write to all available directories: current runtime directory and source code directory
                 File.WriteAllText(room.ResourceFolder + fileName, identifier);
-                File.WriteAllText(srcPath + fileName, identifier);
+                if (Debugger.IsAttached)
+                {
+                    var srcPath = Util.GetAbsResourceFolderPath(room.ResourceFolder);
+                    File.WriteAllText(srcPath + fileName, identifier);
+                }
+                LoadedIlluminationTemplates.Add(room.ResourceFolder + fileName, shadeTemplate);
             }
         }
 
@@ -459,6 +474,9 @@ namespace YGR
 
             if (dataFileName == null) return null;
 
+            if (LoadedIlluminationTemplates.ContainsKey(room.ResourceFolder + fileName))
+                return LoadedIlluminationTemplates[room.ResourceFolder + fileName];
+
             var contents = File.ReadAllLines(room.ResourceFolder + dataFileName);
             var vCorr = contents[1] == Manager_Light.ShadeVersion;
             if (!vCorr) return null;
@@ -466,7 +484,9 @@ namespace YGR
             var iCorr = contents[2] == combineIdentifiers(lights, room);
             if (!iCorr) return null;
 
-            return contents[3].Select(c => c == '1').ToArray();
+            LoadedIlluminationTemplates.Add(room.ResourceFolder + fileName, contents[3].Select(c => c == '1').ToArray());
+
+            return LoadedIlluminationTemplates[room.ResourceFolder + fileName];
         }
 
         public static void RemoveAllShadeFiles(IWalkable room, bool open)
@@ -477,7 +497,8 @@ namespace YGR
             foreach(var f in sFiles)
             {
                 string dataFileName = Path.GetFileName(f);
-                File.Delete(dataFileName);
+                string dataRessourceFolder = Util.GetAbsResourceFolderPath(room.ResourceFolder);
+                File.Delete(dataRessourceFolder + dataFileName);
             }
         }
 
@@ -505,7 +526,7 @@ namespace YGR
             File.WriteAllText(name, s);
         }
 
-        public static void Initialize(Y_Level level)
+        public static void CreateModel(Y_Level level)
         {
             Func<Y_Level, bool, List<X_Cube>> elevate = (level, open) => {
                 List<X_Cube> cubes = new List<X_Cube>();
