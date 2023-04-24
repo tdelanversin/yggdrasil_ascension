@@ -12,7 +12,8 @@ namespace YGR
     public enum X_DoorDirection
     {
         Horizontal = 0,
-        Vertical
+        Vertical,
+        Corner
     }
 
     public enum X_TileType
@@ -94,13 +95,14 @@ namespace YGR
             string tileJsonFile
             )
         {
+            _direction = direction;
+            _tileOffset = tileOffset;
+
             int[][] collision = createDoorTemplate(numTilesLength, tileOffset);
             collision = flipToPosition(collision, direction, tileOffset);
             collision = getDoorPoints(collision, tileWidth, tileHeight);
             _illuminated = null;
 
-            _direction = direction;
-            _tileOffset = tileOffset;
             Collision = new X_CollisionModel_Room(collision, tileWidth, tileHeight);
 
             Rect = new Rectangle(0, 0, tileWidth * collision[0].Length, tileHeight * collision.Length);
@@ -110,7 +112,6 @@ namespace YGR
 
             var watch = new Stopwatch();
             watch.Start();
-            X_AutoTiler.Initialize(ResourceFolder, "data.json", graphicsDevice, Y_Door.MapJsonName);
             watch.Stop();
            //Logger.Info("Initialized auto tiler: " + watch.ElapsedMilliseconds.ToString());
             watch.Reset();
@@ -461,7 +462,7 @@ namespace YGR
                     }
                 }
             }
-            else
+            else if(direction == X_DoorDirection.Horizontal)
             {
                 if(tileOffset < 0)
                 {
@@ -503,80 +504,194 @@ namespace YGR
                     }
                 }
             }
+            else
+            {
+                if (tileOffset < 0)
+                {
+                    newCol = new int[collision.Length][];
+                    for (int x = 0; x < newCol.Length; ++x)
+                    {
+                        newCol[x] = new int[collision[0].Length];
+                    }
+                    for (int x = 0; x < newCol.Length; ++x)
+                    {
+                        for (int y = 0; y < newCol[0].Length; ++y)
+                        {
+                            var val = collision[x][y];
+                            newCol[newCol.Length - 1 - x][y] = val;
+                        }
+                    }
+                }
+                else
+                {
+                    newCol = collision;
+                }
+                //output(newCol, "./logs/pattern.csv");
+            }
 
             return newCol;
         }
 
         private int[][] createDoorTemplate(int numTilesLength, int tileOffset)
         {
-            int width = numTilesLength;
-            int doorWidth = NumTilesDoorWidth;
-            int height = doorWidth + Math.Abs(tileOffset);
-
-            int[][] collision = new int[width][];
-            for (int x = 0; x < width; ++x)
+            if(_direction != X_DoorDirection.Corner)
             {
-                collision[x] = new int[height];
-                for (int y = 0; y < height; ++y)
+                int width = numTilesLength;
+                int doorWidth = NumTilesDoorWidth;
+                int height = doorWidth + Math.Abs(tileOffset);
+
+                int[][] collision = new int[width][];
+                for (int x = 0; x < width; ++x)
                 {
-                    collision[x][y] = 0;
+                    collision[x] = new int[height];
+                    for (int y = 0; y < height; ++y)
+                    {
+                        collision[x][y] = 0;
+                    }
                 }
+
+                int half1 = (int)Math.Floor((float)width / 2.0f) + 2;
+                _halfHeight = half1;
+
+                for (int x = 1; x < half1; ++x)
+                {
+                    collision[x][0] = 1;
+                }
+
+                for (int y = doorWidth; y < collision[0].Length; ++y)
+                {
+                    collision[0][y] = -1;
+                    collision[1][y] = -1;
+                }
+                for (int x = 1; x < half1 - doorWidth; ++x)
+                {
+                    collision[x][doorWidth - 1] = 1;
+                    for (int y = doorWidth; y < collision[0].Length; ++y) collision[x][y] = -1;
+                }
+
+                for (int x = half1 - doorWidth; x < width - 1; ++x)
+                {
+                    collision[x][height - 1] = 1;
+                }
+
+                for (int x = half1; x < width - 1; ++x)
+                {
+                    collision[x][Math.Abs(tileOffset)] = 1;
+                    for (int y = 0; y <= Math.Abs(tileOffset) - 1; ++y) collision[x][y] = -1;
+                }
+                for (int y = 0; y <= Math.Abs(tileOffset) - 1; ++y)
+                {
+                    collision[width - 1][y] = -1;
+                    collision[width - 2][y] = -1;
+                }
+
+                for (int y = 0; y < Math.Abs(tileOffset); ++y)
+                {
+                    collision[half1 - 1][y + 1] = 1;
+                    collision[half1 - doorWidth][height - y - 2] = 1;
+                }
+                for (int y = 0; y < collision[0].Length; ++y)
+                {
+                    if (collision[1][y] != 0) collision[0][y] = -1;
+                    if (collision[width - 2][y] != 0) collision[width - 1][y] = -1;
+                }
+                //for (int y = 0; y < collision[0].Length; ++y)
+                //{
+                //    collision[0][y] = -1;
+                //    collision[width - 1][y] = -1;
+                //}
+
+                collision[width - 2][height - 1 - doorWidth / 2] = 2;
+                collision[1][doorWidth / 2] = 3;
+
+                return collision;
             }
-
-            int half1 = (int)Math.Floor((float)width / 2.0f) + 2;
-            _halfHeight = half1;
-
-            for (int x = 1; x < half1; ++x)
+            else
             {
-                collision[x][0] = 1;
-            }
+                int width = Math.Abs(numTilesLength);
+                int height = Math.Abs(tileOffset);
 
-            for (int y = doorWidth; y < collision[0].Length; ++y)
-            {
-                collision[0][y] = -1;
-                collision[1][y] = -1;
-            }
-            for (int x = 1; x < half1 - doorWidth; ++x)
-            {
-                collision[x][doorWidth - 1] = 1;
-                for(int y=doorWidth; y < collision[0].Length; ++y) collision[x][y] = -1;
-            }
+                int[][] collision = new int[height][];
 
-            for (int x = half1-doorWidth; x < width-1; ++x)
-            {
-                collision[x][height - 1] = 1;
-            }
+                for (int x = 0; x < height; ++x)
+                {
+                    collision[x] = new int[width];
+                    for (int y = 0; y < width; ++y)
+                    {
+                        collision[x][y] = 0;
+                    }
+                }
 
-            for (int x = half1; x<width-1; ++x)
-            {
-                collision[x][Math.Abs(tileOffset)] = 1;
-                for (int y = 0; y <= Math.Abs(tileOffset)-1; ++y) collision[x][y] = -1;
-            }
-            for (int y = 0; y <= Math.Abs(tileOffset) - 1; ++y) {
-                collision[width - 1][y] = -1;
-                collision[width - 2][y] = -1;
-            } 
+                for(int i=1; i < width-1; ++i)
+                {
+                    collision[height - 1][i] = 1;
+                }
 
-            for (int y = 0; y < Math.Abs(tileOffset); ++y)
-            {
-                collision[half1 - 1][y + 1] = 1;
-                collision[half1 - doorWidth][height - y - 2] = 1;
-            }
-            for (int y = 0; y < collision[0].Length; ++y)
-            {
-                if (collision[1][y] != 0) collision[0][y] = -1;
-                if (collision[width - 2][y] != 0) collision[width - 1][y] = -1;
-            }
-            //for (int y = 0; y < collision[0].Length; ++y)
-            //{
-            //    collision[0][y] = -1;
-            //    collision[width - 1][y] = -1;
-            //}
+                int openingOffset = width - NumTilesDoorWidth;
+                if(numTilesLength < 0)
+                {
+                    for (int i = NumTilesDoorWidth-1; i < width-1; ++i)
+                    {
+                        collision[height - NumTilesDoorWidth][i] = 1;
+                    }
+                    for (int i = 1; i < height; ++i)
+                    {
+                        collision[i][0] = 1;
+                    }
+                    for (int i = 1; i < height-NumTilesDoorWidth; ++i)
+                    {
+                        collision[i][NumTilesDoorWidth-1] = 1;
+                    }
+                    for (int i = 0; i < height - NumTilesDoorWidth; ++i)
+                    {
+                        for (int j = NumTilesDoorWidth; j < width; ++j)
+                        {
+                            collision[i][j] = -1;
+                        }
+                    }
+                    // vertical part on the left => horizontal entry on the right
+                    collision[height - NumTilesDoorWidth/2 - 1][width-2] = 5;
+                    collision[1][NumTilesDoorWidth / 2] = (tileOffset > 0 ? 3 : 2);
+                    collision[0][0] = -1;
+                    collision[0][NumTilesDoorWidth-1] = -1;
+                    collision[height-1][width-1] = -1;
+                    collision[height - NumTilesDoorWidth][width-1] = -1;
+                }
+                else
+                {
+                    for (int i = 1; i < width- NumTilesDoorWidth; ++i)
+                    {
+                        collision[height - NumTilesDoorWidth][i] = 1;
+                    }
 
-            collision[width-2][height-1-doorWidth/2] = 2;
-            collision[1][doorWidth/2] = 3;
+                    for (int i = 1; i < height; ++i)
+                    {
+                        collision[i][width-1] = 1;
+                    }
+                    for (int i = 1; i < height - NumTilesDoorWidth+1; ++i)
+                    {
+                        collision[i][width - NumTilesDoorWidth] = 1;
+                    }
+                    for (int i = 0; i < height - NumTilesDoorWidth; ++i)
+                    {
+                        for(int j=0; j<width- NumTilesDoorWidth; ++j)
+                        {
+                            collision[i][j] = -1;
+                        }
+                    }
+                    // vertical part on the right => horizontal entry on the left
+                    collision[height - NumTilesDoorWidth / 2 - 1][1] = 4;
+                    collision[1][width - 1 - NumTilesDoorWidth / 2] = (tileOffset > 0 ? 3 : 2);
+                    collision[0][width - 1] = -1;
+                    collision[0][width - NumTilesDoorWidth] = -1;
+                    collision[height-1][0] = -1;
+                    collision[height - NumTilesDoorWidth][0] = -1;
+                }
 
-            return collision;
+                output(collision, "./logs/pattern.csv");
+
+                return collision;
+            }
         }
 
         public bool DoorIsOpen()

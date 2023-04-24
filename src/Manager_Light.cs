@@ -4,11 +4,14 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using SharpDX.D3DCompiler;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Security.Authentication;
+using System.Threading;
 using System.Threading.Tasks;
 
 
@@ -230,9 +233,19 @@ namespace YGR
                 );
         }
 
-        public static void Initialize()
+        public static void Initialize(string resourceFolder)
         {
             LoadedIlluminationTemplates = new Dictionary<string, bool[]>();
+
+            //var files = Directory.GetDirectories(resourceFolder);
+            //foreach(var f in files)
+            //{
+            //    var roomName = f.Split(Path.DirectorySeparatorChar).Last();
+            //    //var name = Path.GetDirectoryName(f);
+            //}
+            ////string dataFileName = Path.GetFileName(files
+            ////    .Where(x => Path.GetFileName(x).Contains(fileName) && Path.GetFileName(x).EndsWith(".shade"))
+            ////    .FirstOrDefault());
         }
 
         public static bool[] Illuminate(
@@ -247,7 +260,8 @@ namespace YGR
         {
             var watch = new Stopwatch();
             watch.Start();
-            if((open && IlluminationModelOpened == null) || (!open && IlluminationModelClosed == null))
+            Logger.Info("---- 0 ----: " + watch.ElapsedMilliseconds.ToString());
+            if ((open && IlluminationModelOpened == null) || (!open && IlluminationModelClosed == null))
             {
                 Logger.Error("Trying to illuminate a room without illumination model for the " + (open? "opened" : "closed") + " state of the level!");
             }
@@ -268,13 +282,16 @@ namespace YGR
 
             Vector3 offset = unscaledOffset; // new Vector3(room.Rect.Location.X / room.Scale, room.Rect.Location.Y / room.Scale, 0);
 
-            bool[] shadowMap = Enumerable.Repeat<bool>(true, length).ToArray();
-            Vector3[] coords = Enumerable.Repeat<Vector3>(Vector3.Zero, length).ToArray();
-            int[] textureMap = Enumerable.Repeat<int>(-1, length).ToArray();
-            X_TileType[] tileType = Enumerable.Repeat<X_TileType>(X_TileType.Floor, length).ToArray();
+            //bool[] shadowMap = Enumerable.Repeat<bool>(true, length).ToArray();
+            Tuple<int, Vector3>[] coords = new Tuple<int, Vector3>[length]; // Enumerable.Repeat<Vector3>(Vector3.Zero, length).ToArray();
+            //List<int> textureMap = new List<int>();// Enumerable.Repeat<int>(-1, length).ToArray();
+            //X_TileType[] tileType = Enumerable.Repeat<X_TileType>(X_TileType.Floor, length).ToArray();
 
             int shadowSpotSize = 1;
             float tto = 0.001f;
+            int shadowSize = (tileSize + shadowSpotSize / 2) * (tileSize + shadowSpotSize / 2);
+            int baseIndex = 0;
+            Logger.Info("---- 1 ----: " + watch.ElapsedMilliseconds.ToString());
             Parallel.For(0, template.Length, h =>
             //for (int h=0; h < template.Length; ++h)
             {
@@ -286,6 +303,12 @@ namespace YGR
                     int fromY = h * tileSize + shadowSpotSize / 2;
                     int toX = fromX + tileSize - shadowSpotSize / 2;
                     int toY = fromY + tileSize - shadowSpotSize / 2;
+
+                    if (template[h][w] == (int)X_TileType.Roof || template[h][w] == (int)X_TileType.Outside)
+                    {
+                        continue;
+                        //shadowMap[y * width + x] = false;
+                    }
 
                     // pretest if any part of the tile is not visible. If any edge is not visible from the light
                     // we need to calculate shadows for it
@@ -334,90 +357,65 @@ namespace YGR
                     }
                     continue;
 
-                    add_tile:
+                add_tile:
+                    int end = Interlocked.Add(ref baseIndex, shadowSize);
+                    int index = end - shadowSize;
                     for (int x = fromX; x < toX; x += shadowSpotSize)
                     {
                         for (int y = fromY; y < toY; y += shadowSpotSize)
                         {
-                            tileType[y * width + x] = (X_TileType)template[h][w];
+                            //if (template[h][w] == (int)X_TileType.Roof || template[h][w] == (int)X_TileType.Outside)
+                            //{
+                            //    continue;
+                            //    //shadowMap[y * width + x] = false;
+                            //}
+                            //tileType[y * width + x] = (X_TileType)template[h][w];
                             if (template[h][w] == (int)X_TileType.Floor || template[h][w] == (int)X_TileType.Roof)
                             {
-                                coords[y * width + x] = new Vector3(x, y - tileSize, -tileSize - 0.001f) + offset;
-                                textureMap[y * width + x] = (y) * width + x;
+                                coords[index] = new Tuple<int, Vector3>((y) * width + x, new Vector3(x, y - tileSize, -tileSize - 0.001f) + offset);
+                                index++;
+                                //coords[y * width + x] = new Vector3(x, y - tileSize, -tileSize - 0.001f) + offset;
+                                //textureMap[y * width + x] = (y) * width + x;
                             }
                             else if (template[h][w] == (int)X_TileType.Wall)
                             {
-                                coords[y * width + x] = new Vector3(x, fromY + 0.001f, -(y - fromY)) + offset;
-                                textureMap[y * width + x] = (y) * width + x;
-                            }
-                            if (template[h][w] == (int)X_TileType.Roof || template[h][w] == (int)X_TileType.Outside)
-                            {
-                                shadowMap[y * width + x] = false;
+                                coords[index] = new Tuple<int, Vector3>((y) * width + x, new Vector3(x, fromY + 0.001f, -(y - fromY)) + offset);
+                                index++;
+                                //coords[y * width + x] = new Vector3(x, fromY + 0.001f, -(y - fromY)) + offset;
+                                //textureMap[y * width + x] = (y) * width + x;
                             }
                         }
                     }
                 }
             });
-
+            Logger.Info("---- 2 ----: " + watch.ElapsedMilliseconds.ToString() + " count: " + baseIndex.ToString() + " all: " + length);
             foreach (var lightSource in lights)
             {
                 Vector3 orig = lightSource.GetUnscaledPosition();
                 //float scale = room.Scale;
-                Parallel.For(0, length, i =>
-                //for (int i = 0; i < data.Length; ++i)
+                Parallel.For(0, baseIndex, i =>
+                //for (int i = 0; i < baseIndex; ++i)
+                //Parallel.ForEach(coords, bag =>
                 {
-                    //if (!light.GetUnscaledIlluminationRect().Contains(new Point((int)coords[i].X, (int)coords[i].Y)))
-                    //    return;
-
-                    int hit2 = textureMap[i];
-                    if (hit2 < 0) return;
-
-                    if (lighted[hit2] == light) return;
-
-                    var sm = shadowMap[hit2];
-                    if (!sm)
-                    {
-                        lighted[hit2] = light;
-                        return;
-                    }
-
-                    //var tt = tileType[hit2];
                     bool intersected = false;
+                    var p = coords[i];
+                    if (lighted[p.Item1] == light) return;
                     foreach (var cube in model)
                     {
-                        if (cube.RayIntersect(orig, coords[i] - orig))
+                        if (cube.RayIntersect(orig, p.Item2 - orig))
                         {
                             intersected = true;
                             break;
                         }
                     }
 
-                    //if (casterType == Caster.Shadow)
-                    //{
-                        if (!intersected)
-                        {
-                        lighted[hit2] = light;
+                    if (!intersected)
+                    {
+                        lighted[p.Item1] = light;
                     }
-                    //}
-                    //else
-                    //{
-                    //    if (intersected)
-                    //    {
-                    //        lighted[hit2] = !sign;
-                    //    }
-                    //}
                 });
             }
-
-            //if (casterType == Caster.Light)
-            //{
-            //    for (int i = 0; i < lighted.Length; ++i)
-            //    {
-            //        lighted[i] = !lighted[i];
-            //    }
-            //}
-            watch.Stop();
-           Logger.Info("@@@@@@@@@@@@@@@@@@@ calculate illumination: " + watch.ElapsedMilliseconds.ToString());
+            Logger.Info("@@@@@@@@@@@@@@@@@@@ calculate illumination: " + watch.ElapsedMilliseconds.ToString());
             return lighted;
             //saveShadeToFile(lighted, room, lights);
         }
@@ -455,11 +453,11 @@ namespace YGR
 
                 // write to all available directories: current runtime directory and source code directory
                 File.WriteAllText(room.ResourceFolder + fileName, identifier);
-                if (Debugger.IsAttached)
-                {
-                    var srcPath = Util.GetAbsResourceFolderPath(room.ResourceFolder);
-                    File.WriteAllText(srcPath + fileName, identifier);
-                }
+                //if (Debugger.IsAttached)
+                //{
+                //    var srcPath = Util.GetAbsResourceFolderPath(room.ResourceFolder);
+                //    File.WriteAllText(srcPath + fileName, identifier);
+                //}
                 LoadedIlluminationTemplates.Add(room.ResourceFolder + fileName, shadeTemplate);
             }
         }
@@ -567,15 +565,15 @@ namespace YGR
                         float w = (rect.Width + shift) / scale;
                         float e = elev + 1;
                         Vector3[] vertices = new Vector3[] {
-                    new Vector3(x, y, -e),
-                    new Vector3(x, y+h, -e),
-                    new Vector3(x+w, y+h, -e),
-                    new Vector3(x+w, y, -e),
-                    new Vector3(x, y, shift),
-                    new Vector3(x, y+h, shift),
-                    new Vector3(x+w, y+h, shift),
-                    new Vector3(x+w, y, shift)
-                };
+                            new Vector3(x, y, -e),
+                            new Vector3(x, y+h, -e),
+                            new Vector3(x+w, y+h, -e),
+                            new Vector3(x+w, y, -e),
+                            new Vector3(x, y, shift),
+                            new Vector3(x, y+h, shift),
+                            new Vector3(x+w, y+h, shift),
+                            new Vector3(x+w, y, shift)
+                        };
 
                         cubes.Add(new X_Cube(vertices, indicesRoof, false));
                     }

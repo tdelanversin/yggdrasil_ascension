@@ -1,0 +1,91 @@
+{
+	"identifier": "Mini_0",
+	"uniqueIdentifer": "928100c0-c640-11ed-b38b-d9fad8fdcc3e",
+	"x": 0,
+	"y": -1024,
+	"width": 224,
+	"height": 224,
+	"bgColor": "#696A79",
+	"neighbourLevels": [],
+	"customFields" : {},
+	"layers": [
+		"Floor.png",
+		"Obstacles.png",
+		"Walls.png"
+	],
+	"entities": {
+		"SideDoor": [
+			{
+				"id": "SideDoor",
+				"iid": "4498e430-c640-11ed-b38b-a168d892a357",
+				"layer": "Entities",
+				"x": 0,
+				"y": 96,
+				"width": 32,
+				"height": 32,
+				"color": 1199753,
+				"customFields": {
+					"Point": null,
+					"Integer": 0
+				}
+			},
+			{
+				"id": "SideDoor",
+				"iid": "4557c760-c640-11ed-b38b-a3b9c4c5e9b3",
+				"layer": "Entities",
+				"x": 96,
+				"y": 0,
+				"width": 32,
+				"height": 32,
+				"color": 1199753,
+				"customFields": {
+					"Point": null,
+					"Integer": 0
+				}
+			},
+			{
+				"id": "SideDoor",
+				"iid": "7c11c280-c640-11ed-b38b-c3b00142bbbe",
+				"layer": "Entities",
+				"x": 96,
+				"y": 192,
+				"width": 32,
+				"height": 32,
+				"color": 1199753,
+				"customFields": {
+					"Point": null,
+					"Integer": 0
+				}
+			},
+			{
+				"id": "SideDoor",
+				"iid": "7cb1fa20-c640-11ed-b38b-118c01525af6",
+				"layer": "Entities",
+				"x": 192,
+				"y": 96,
+				"width": 32,
+				"height": 32,
+				"color": 1199753,
+				"customFields": {
+					"Point": null,
+					"Integer": 0
+				}
+			}
+		],
+		"Spawner": [
+			{
+				"id": "Spawner",
+				"iid": "4a1ffdd0-c640-11ed-b38b-43adc3c28aa9",
+				"layer": "Entities",
+				"x": 96,
+				"y": 96,
+				"width": 32,
+				"height": 32,
+				"color": 6539085,
+				"customFields": {
+					"Point": null
+				}
+			}
+		]
+	}
+}

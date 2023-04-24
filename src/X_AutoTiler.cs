@@ -93,6 +93,7 @@ namespace YGR
 
         public static void Initialize(string resourceFolder, string jsonFileName, GraphicsDevice graphicsDevice, Func<string, X_TileType> mapJsonName)
         {
+            resourceFolder = Util.PathOsNormalization(resourceFolder);
             X_AutoTiler.Data data;
             using (StreamReader stream = new StreamReader(resourceFolder + jsonFileName))
             {

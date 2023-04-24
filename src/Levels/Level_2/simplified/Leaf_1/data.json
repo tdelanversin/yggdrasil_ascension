@@ -1,0 +1,117 @@
+{
+	"identifier": "Leaf_1",
+	"uniqueIdentifer": "feb17750-c640-11ed-b38b-3966fa5b7693",
+	"x": 5664,
+	"y": -384,
+	"width": 1024,
+	"height": 1024,
+	"bgColor": "#696A79",
+	"neighbourLevels": [
+		{
+			"levelIid": "72ecac80-c640-11ed-b38b-b353c4e07edc",
+			"dir": "w"
+		},
+		{
+			"levelIid": "00880c10-c640-11ed-b38b-4f72206b11dc",
+			"dir": "e"
+		},
+		{
+			"levelIid": "044429b0-c640-11ed-b38b-7bb3d526a42b",
+			"dir": "s"
+		}
+	],
+	"customFields" : {},
+	"layers": [
+		"Floor.png",
+		"Obstacles.png",
+		"Walls.png"
+	],
+	"entities": {
+		"Door": [
+			{
+				"id": "Door",
+				"iid": "feb17752-c640-11ed-b38b-91a9f4744830",
+				"layer": "Entities",
+				"x": 16,
+				"y": 496,
+				"width": 32,
+				"height": 32,
+				"color": 12470831,
+				"customFields": {
+					"Point": null,
+					"Integer": 0
+				}
+			},
+			{
+				"id": "Door",
+				"iid": "feb17753-c640-11ed-b38b-1593d94d05bc",
+				"layer": "Entities",
+				"x": 496,
+				"y": 1008,
+				"width": 32,
+				"height": 32,
+				"color": 12470831,
+				"customFields": {
+					"Point": null,
+					"Integer": 0
+				}
+			},
+			{
+				"id": "Door",
+				"iid": "feb17754-c640-11ed-b38b-7b86b50394bf",
+				"layer": "Entities",
+				"x": 496,
+				"y": 16,
+				"width": 32,
+				"height": 32,
+				"color": 12470831,
+				"customFields": {
+					"Point": null,
+					"Integer": 0
+				}
+			},
+			{
+				"id": "Door",
+				"iid": "feb17755-c640-11ed-b38b-4fd30e077cbe",
+				"layer": "Entities",
+				"x": 1008,
+				"y": 496,
+				"width": 32,
+				"height": 32,
+				"color": 12470831,
+				"customFields": {
+					"Point": null,
+					"Integer": 0
+				}
+			}
+		],
+		"Spawner": [
+			{
+				"id": "Spawner",
+				"iid": "05cba220-c640-11ed-b38b-fb112cd50dd1",
+				"layer": "Entities",
+				"x": 320,
+				"y": 640,
+				"width": 32,
+				"height": 32,
+				"color": 6539085,
+				"customFields": {
+					"Point": null
+				}
+			},
+			{
+				"id": "Spawner",
+				"iid": "05fc2800-c640-11ed-b38b-c1aacb6a4570",
+				"layer": "Entities",
+				"x": 800,
+				"y": 800,
+				"width": 32,
+				"height": 32,
+				"color": 6539085,
+				"customFields": {
+					"Point": null
+				}
+			}
+		]
+	}
+}

@@ -1,0 +1,130 @@
+{
+	"identifier": "Start_0",
+	"uniqueIdentifer": "71c64a60-c640-11ed-b38b-f3cd4f0b1289",
+	"x": 32,
+	"y": -2720,
+	"width": 1344,
+	"height": 1024,
+	"bgColor": "#696A79",
+	"neighbourLevels": [],
+	"customFields" : {},
+	"layers": [
+		"Floor.png",
+		"Obstacles.png",
+		"Walls.png"
+	],
+	"entities": {
+		"Door": [
+			{
+				"id": "Door",
+				"iid": "71c64a62-c640-11ed-b38b-6f9785a9c0af",
+				"layer": "Entities",
+				"x": 16,
+				"y": 496,
+				"width": 32,
+				"height": 32,
+				"color": 12470831,
+				"customFields": {
+					"Point": null,
+					"Integer": 0
+				}
+			},
+			{
+				"id": "Door",
+				"iid": "71c64a63-c640-11ed-b38b-939725f89f74",
+				"layer": "Entities",
+				"x": 1328,
+				"y": 496,
+				"width": 32,
+				"height": 32,
+				"color": 12470831,
+				"customFields": {
+					"Point": null,
+					"Integer": 0
+				}
+			},
+			{
+				"id": "Door",
+				"iid": "71c64a64-c640-11ed-b38b-714da37d2a7e",
+				"layer": "Entities",
+				"x": 688,
+				"y": 1008,
+				"width": 32,
+				"height": 32,
+				"color": 12470831,
+				"customFields": {
+					"Point": null,
+					"Integer": 0
+				}
+			},
+			{
+				"id": "Door",
+				"iid": "71c64a65-c640-11ed-b38b-cdf7dde705de",
+				"layer": "Entities",
+				"x": 656,
+				"y": 16,
+				"width": 32,
+				"height": 32,
+				"color": 12470831,
+				"customFields": {
+					"Point": null,
+					"Integer": 0
+				}
+			}
+		],
+		"Player": [
+			{
+				"id": "Player",
+				"iid": "d4f3c700-c640-11ed-b38b-7db3e30b0374",
+				"layer": "Entities",
+				"x": 352,
+				"y": 480,
+				"width": 32,
+				"height": 32,
+				"color": 16711748,
+				"customFields": {
+					"Point": null
+				}
+			},
+			{
+				"id": "Player",
+				"iid": "d59bede0-c640-11ed-b38b-735d56c583e4",
+				"layer": "Entities",
+				"x": 608,
+				"y": 672,
+				"width": 32,
+				"height": 32,
+				"color": 16711748,
+				"customFields": {
+					"Point": null
+				}
+			},
+			{
+				"id": "Player",
+				"iid": "d67bc690-c640-11ed-b38b-0b259dfd7b9a",
+				"layer": "Entities",
+				"x": 832,
+				"y": 480,
+				"width": 32,
+				"height": 32,
+				"color": 16711748,
+				"customFields": {
+					"Point": null
+				}
+			},
+			{
+				"id": "Player",
+				"iid": "d73097a0-c640-11ed-b38b-59afa3c5b054",
+				"layer": "Entities",
+				"x": 608,
+				"y": 320,
+				"width": 32,
+				"height": 32,
+				"color": 16711748,
+				"customFields": {
+					"Point": null
+				}
+			}
+		]
+	}
+}

@@ -1,0 +1,134 @@
+{
+	"identifier": "Leaf_4",
+	"uniqueIdentifer": "044429b0-c640-11ed-b38b-7bb3d526a42b",
+	"x": 5664,
+	"y": 640,
+	"width": 1024,
+	"height": 1024,
+	"bgColor": "#696A79",
+	"neighbourLevels": [
+		{
+			"levelIid": "feb17750-c640-11ed-b38b-3966fa5b7693",
+			"dir": "n"
+		},
+		{
+			"levelIid": "0258d470-c640-11ed-b38b-c96a5353ef9d",
+			"dir": "w"
+		},
+		{
+			"levelIid": "10144d60-c640-11ed-b38b-853aa6736076",
+			"dir": "s"
+		},
+		{
+			"levelIid": "065d93d0-c640-11ed-b38b-6d2b692cb6f7",
+			"dir": "e"
+		}
+	],
+	"customFields" : {},
+	"layers": [
+		"Floor.png",
+		"Obstacles.png",
+		"Walls.png"
+	],
+	"entities": {
+		"Door": [
+			{
+				"id": "Door",
+				"iid": "044429b2-c640-11ed-b38b-25cee49edb61",
+				"layer": "Entities",
+				"x": 16,
+				"y": 496,
+				"width": 32,
+				"height": 32,
+				"color": 12470831,
+				"customFields": {
+					"Point": null,
+					"Integer": 0
+				}
+			},
+			{
+				"id": "Door",
+				"iid": "044429b3-c640-11ed-b38b-8d14aa96d5e7",
+				"layer": "Entities",
+				"x": 496,
+				"y": 1008,
+				"width": 32,
+				"height": 32,
+				"color": 12470831,
+				"customFields": {
+					"Point": null,
+					"Integer": 0
+				}
+			},
+			{
+				"id": "Door",
+				"iid": "044429b4-c640-11ed-b38b-892fa0b8c4ad",
+				"layer": "Entities",
+				"x": 496,
+				"y": 16,
+				"width": 32,
+				"height": 32,
+				"color": 12470831,
+				"customFields": {
+					"Point": null,
+					"Integer": 0
+				}
+			},
+			{
+				"id": "Door",
+				"iid": "044429b5-c640-11ed-b38b-5b6af6c2b965",
+				"layer": "Entities",
+				"x": 1008,
+				"y": 496,
+				"width": 32,
+				"height": 32,
+				"color": 12470831,
+				"customFields": {
+					"Point": null,
+					"Integer": 0
+				}
+			}
+		],
+		"Spawner": [
+			{
+				"id": "Spawner",
+				"iid": "08e5b360-c640-11ed-b38b-dd507416d3a5",
+				"layer": "Entities",
+				"x": 320,
+				"y": 800,
+				"width": 32,
+				"height": 32,
+				"color": 6539085,
+				"customFields": {
+					"Point": null
+				}
+			},
+			{
+				"id": "Spawner",
+				"iid": "0918aa40-c640-11ed-b38b-6b473f5149c5",
+				"layer": "Entities",
+				"x": 640,
+				"y": 768,
+				"width": 32,
+				"height": 32,
+				"color": 6539085,
+				"customFields": {
+					"Point": null
+				}
+			},
+			{
+				"id": "Spawner",
+				"iid": "094e3930-c640-11ed-b38b-6f5c56be5553",
+				"layer": "Entities",
+				"x": 416,
+				"y": 576,
+				"width": 32,
+				"height": 32,
+				"color": 6539085,
+				"customFields": {
+					"Point": null
+				}
+			}
+		]
+	}
+}

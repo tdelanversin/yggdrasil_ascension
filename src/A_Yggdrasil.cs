@@ -49,13 +49,16 @@ namespace YGR
             var res_y = _graphics.PreferredBackBufferHeight;
             Camera.Position = new Vector2(res_x / 2, res_y / 2);
             Camera.Bounds = _graphics.GraphicsDevice.Viewport.Bounds;
-            Camera.Mode = CameraMode.Follow; /* 'Follow' to follow players, 'Manual' for keyboard controlled */
+            Camera.Mode = CameraMode.Manual; // CameraMode.Follow; /* 'Follow' to follow players, 'Manual' for keyboard controlled */
 
             Factory_Debug.Initialize(Content);
             Manager_Projectile.Initialize(Content);
             Manager_Enemies.Initialize(Content);
             Manager_Players.Initialize();
-            Manager_Light.Initialize();
+            Manager_Light.Initialize("./Levels/Level_2/simplified");
+            X_AutoTiler.Initialize("./Doors/", "data.json", GraphicsDevice, Y_Door.MapJsonName);
+
+            _level = new Y_Level("level_0", 32, "./Levels/Level_2/simplified", "./Doors", GraphicsDevice);
 
             base.Initialize();
         }
@@ -105,7 +108,7 @@ namespace YGR
 
             var watch = new Stopwatch();
             watch.Start();
-            _level = new Y_Level("level_0", 32, "Levels/Level_2/simplified", GraphicsDevice);
+            _level.Create(GraphicsDevice); // = new Y_Level("level_0", 32, "Levels/Level_2/simplified", GraphicsDevice);
             watch.Stop();
            //Logger.Info("Created level: " + watch.ElapsedMilliseconds.ToString());
             watch.Reset();
