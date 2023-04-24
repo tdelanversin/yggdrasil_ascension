@@ -88,8 +88,13 @@ namespace YGR
                 {
                     continue;
                 }
-                float distance = Vector2.Distance(player.Rect.Center.ToVector2(), Rect.Center.ToVector2());
 
+                if (!LineOfSight(player))
+                {
+                    continue;
+                }
+
+                float distance = Vector2.Distance(player.Rect.Center.ToVector2(), Rect.Center.ToVector2());
                 inRange.Add(new Tuple<float, IVictim>(distance, player));
             }
 
@@ -99,7 +104,7 @@ namespace YGR
             inRange = inRange.OrderBy(t => t.Item1).ToList();
             Target = inRange.First().Item2;
 
-            return LineOfSight(Target);
+            return true;
         }
 
         private bool LineOfSight(IVictim target)
@@ -134,7 +139,7 @@ namespace YGR
             {
                 _color = _hitColor;
                 _hitFramesCounter++;
-                if(_hitFramesCounter > _hitFrames)
+                if (_hitFramesCounter > _hitFrames)
                 {
                     HitInLastLoop = false;
                     _hitFramesCounter = 0;
@@ -150,7 +155,7 @@ namespace YGR
             int timeStepMS = gameTime.ElapsedGameTime.Milliseconds;
             if (!canSee || Vector2.Distance(Target.Rect.Center.ToVector2(), Rect.Center.ToVector2()) > safetyDistance)
             {
-                if(Target != null)
+                if (Target != null)
                 {
                     FacingDirection = Target.Rect.Center.ToVector2() - Rect.Center.ToVector2();
                     FacingDirection = Vector2.Normalize(FacingDirection);
