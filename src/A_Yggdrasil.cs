@@ -209,6 +209,7 @@ namespace YGR
 
                     _level.Draw(gameTime, Vector2.Zero, _spriteBatch);
 
+                    Manager_Particles.Draw(gameTime, zero, _spriteBatch);
                     Manager_Projectile.Draw(gameTime, zero, _spriteBatch);
 
                     Manager_Enemies.Draw(gameTime, zero, _spriteBatch);

@@ -110,10 +110,6 @@ namespace YGR
             Scale = (float)Rect.Width / (float)_spriteDimensions.Width;
             Level.Victims.Add(this);
             Room = Level.GetRoom(this, Room);
-
-            //Walking particles
-            Manager_Particles.GenParticleEffect();
-
         }
 
         public X_LevelElements WhatAreYou()
@@ -324,19 +320,12 @@ namespace YGR
                     Color.White, (float)angle, new Vector2(_spriteAimIndicator.Width / 2, 0), 0.1f, SpriteEffects.None, 0);
             }
         }
-        protected virtual void DrawParticles(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)
-        {
-
-            Manager_Particles.Draw(gameTime, spriteBatch);
-        }
-
 
         public virtual void Draw(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)
         {
 
             if (IsAlive())
             {
-                DrawParticles(gameTime, globalOffset, spriteBatch);
                 DrawPlayer(gameTime, globalOffset, spriteBatch);
                 DrawAimIndicator(gameTime, globalOffset, spriteBatch);
                 DrawOverheadString(gameTime, globalOffset, spriteBatch);

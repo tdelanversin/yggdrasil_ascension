@@ -1,19 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Drawing;
 
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using MonoGame.Extended;
 using MonoGame.Extended.Particles;
 using MonoGame.Extended.Particles.Modifiers;
-using MonoGame.Extended.Particles.Modifiers.Containers;
-using MonoGame.Extended.Particles.Modifiers.Interpolators;
 using MonoGame.Extended.Particles.Profiles;
 using MonoGame.Extended.TextureAtlases;
 using Microsoft.Xna.Framework.Content;
 using Vector2=Microsoft.Xna.Framework.Vector2;
-using System.Reflection.Metadata;
 using MonoGame.Extended.Sprites;
 
 namespace YGR
@@ -32,7 +28,7 @@ namespace YGR
         public static void LoadContent(ContentManager contentManager)
         {
             _particleTexture = contentManager.Load<Texture2D>("dust_particle");
-
+            GenParticleEffect();
         }
         public static void GenParticleEffect( )
         {
@@ -96,12 +92,10 @@ namespace YGR
             foreach (var pE in _particleEffects)
             {
                 pE.Update((float)gameTime.ElapsedGameTime.TotalSeconds);
-
             }
-
         }
 
-        public static void Draw(GameTime gameTime, SpriteBatch spriteBatch)
+        public static void Draw(GameTime gameTime, Vector2 zero, SpriteBatch spriteBatch)
         {
             foreach (var pE in _particleEffects)
             {
@@ -109,5 +103,4 @@ namespace YGR
             }
         }
     }
-
 }
