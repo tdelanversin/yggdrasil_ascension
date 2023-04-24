@@ -49,7 +49,7 @@ namespace YGR
             Manager_Projectile.Initialize(Content);
             Manager_Enemies.Initialize(Content);
             Manager_Players.Initialize();
-
+            Manager_Particles.Initialize();
             base.Initialize();
         }
 
@@ -60,13 +60,17 @@ namespace YGR
             Manager_Sound.LoadContent(Content);
             Manager_Players.LoadContent(Content);
             _spriteBatch = new SpriteBatch(GraphicsDevice);
-
+            Manager_Particles.LoadContent(Content);
             // Uncomment to play intro sound in a loop
-            MediaPlayer.Play(Manager_Sound.AddSong_Intro());
+            //MediaPlayer.Play(Manager_Sound.AddSong_Intro());
             MediaPlayer.IsRepeating = true;
             MediaPlayer.MediaStateChanged += MediaPlayer_MediaStateChanged;
         }
 
+        protected override void UnloadContent()
+        {
+            Manager_Particles.Dispose();
+        }
         internal void StartNewGame()
         {
             /*
@@ -149,7 +153,7 @@ namespace YGR
                     // Nothing for now
                 }
             }
-
+            
             // Only switch actual state during Update(), otherwise you can mess up the Draw call
             State = DesiredState;
 
@@ -177,7 +181,6 @@ namespace YGR
                     Menu.Update();
                     break;
             }
-
             base.Update(gameTime);
         }
 
@@ -206,6 +209,7 @@ namespace YGR
 
                     _level.Draw(gameTime, Vector2.Zero, _spriteBatch);
 
+                    Manager_Particles.Draw(gameTime, zero, _spriteBatch);
                     Manager_Projectile.Draw(gameTime, zero, _spriteBatch);
 
                     Manager_Enemies.Draw(gameTime, zero, _spriteBatch);
@@ -230,7 +234,6 @@ namespace YGR
                     _spriteBatch.End();
                     break;
             }
-
             base.Draw(gameTime);
         }
     }

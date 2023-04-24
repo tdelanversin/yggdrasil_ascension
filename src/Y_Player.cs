@@ -1,8 +1,11 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using MonoGame.Extended;
+using MonoGame.Extended.Particles;
 using System;
 using System.Collections.Generic;
+using System.Reflection.Metadata;
 
 namespace YGR
 {
@@ -47,6 +50,7 @@ namespace YGR
         protected Vector2 _deceleration;
         protected Vector2 _maxVelocity;
         protected Vector2 _position;
+        protected ParticleEffect pE;
 
         protected enum InputType
         {
@@ -167,10 +171,13 @@ namespace YGR
         /* Handle Keyboard & Mouse movement, aiming and shooting */
         public void HandleMouseKeyboardInput(GameTime gameTime, ref Vector2 input)
         {
+
             if (_controlLayout > 0)
             {
                 if (_controlLayout == ControlLayout.KeyboardWASD)
                 {
+
+
                     if (Input.IsKeyDown(Keybinds.P1Right)) input.X += 1;
                     if (Input.IsKeyDown(Keybinds.P1Left)) input.X -= 1;
                     if (Input.IsKeyDown(Keybinds.P1Down)) input.Y += 1;
@@ -214,6 +221,8 @@ namespace YGR
              * ########################################################################## */
             if (input != Vector2.Zero)
             {
+                Manager_Particles._particleEffects[0].Trigger(new Vector2(_rect.Location.X + _rect.Width / 2, _rect.Location.Y + _rect.Height));
+
                 if (input.LengthSquared() > 1)
                 {
                     input.Normalize();
@@ -252,12 +261,14 @@ namespace YGR
 
         public virtual void Update(GameTime gameTime)
         {
+            Manager_Particles.Update(gameTime);
             Vector2 input = Vector2.Zero;
             HandleGamepadInput(gameTime, ref input);
             HandleMouseKeyboardInput(gameTime, ref input);
             UpdateVelocity(input, gameTime);
             UpdateCollision(gameTime);
             _gun.Update(gameTime);
+
         }
 
         // Render ghosty 👻
@@ -312,17 +323,17 @@ namespace YGR
 
         public virtual void Draw(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)
         {
+
             if (IsAlive())
             {
                 DrawPlayer(gameTime, globalOffset, spriteBatch);
+                DrawAimIndicator(gameTime, globalOffset, spriteBatch);
                 DrawOverheadString(gameTime, globalOffset, spriteBatch);
             }
             else
             {
                 DrawGhost(gameTime, globalOffset, spriteBatch);
             }
-
-            DrawAimIndicator(gameTime, globalOffset, spriteBatch);
         }
 
         /// <summary>
@@ -550,6 +561,7 @@ namespace YGR
 
         override protected void DrawPlayer(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)
         {
+
             spriteBatch.Draw(
                     _spritePlayer,
                     new Rectangle(
