@@ -15,6 +15,10 @@ namespace YGR
         private float safetyDistance { get; set; }
 
         public Vector2 Velocity { get; set; }
+        private Vector2 _acceleration;
+        private Vector2 _deceleration;
+        private Vector2 _maxVelocity;
+
         public Vector2 FacingDirection { get; set; }
         public Texture2D Sprite { get; set; }
         public Rectangle SpriteRect = new Rectangle(0, 0, 42, 60);
@@ -49,8 +53,11 @@ namespace YGR
             LifePoints = 3;
             HitInLastLoop = false;
 
-            Velocity = new Vector2(0, 0);
-            maxVelocity = 0.01f;
+            Velocity = Vector2.Zero;
+            _acceleration = Vector2.One * 0.002f;
+            _deceleration = Vector2.One * 0.002f;
+            _maxVelocity = Vector2.One * 0.2f;
+
             safetyDistance = 300f;
             FacingDirection = new Vector2(0, 0);
             Sprite = Manager_Enemies.enemy_textures["default_enemy"];
@@ -159,15 +166,18 @@ namespace YGR
                 {
                     FacingDirection = Target.Rect.Center.ToVector2() - Rect.Center.ToVector2();
                     FacingDirection = Vector2.Normalize(FacingDirection);
-                    Velocity = FacingDirection * maxVelocity * (float)timeStepMS;
                 }
                 else
                 {
                     Room = Level.GetRoom(this, Room);
-                    FacingDirection = Room.Rect.Center.ToVector2() - Rect.Center.ToVector2();
-                    FacingDirection = Vector2.Normalize(FacingDirection);
-                    Velocity = FacingDirection * maxVelocity * (float)timeStepMS;
+                    FacingDirection += new Vector2(Util.random.NextSingle() - 0.5f, Util.random.NextSingle() - 0.5f);
+                    if (FacingDirection.LengthSquared() > 1)
+                    {
+                        FacingDirection = Vector2.Normalize(FacingDirection);
+                    }
                 }
+                Velocity += FacingDirection * _acceleration * (float)timeStepMS;
+                Velocity = Vector2.Clamp(Velocity, -_maxVelocity, _maxVelocity);
 
                 IList<Vector2> contactNormals;
                 IList<Point> contactPoints;

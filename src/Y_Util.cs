@@ -18,7 +18,7 @@ namespace YGR
         static Game Game;
         static GraphicsDeviceManager Gdm;
         static GameWindow Window;
-        static Random random;
+        public static Random random;
 
 
         internal static void Initialize(A_Yggdrasil game)
