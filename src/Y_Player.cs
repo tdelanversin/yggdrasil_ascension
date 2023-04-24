@@ -318,14 +318,20 @@ namespace YGR
         // Render ghosty 👻
         protected virtual void DrawGhost(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)
         {
+            int width = _spriteGhost.Width / 4;
+            int height = _spriteGhost.Height;
+            // TODO: use the proper animation framework to pingpong through the frames
+            int totalMS = gameTime.TotalGameTime.Milliseconds / 200;
+            int step = totalMS % 6;
+            int animationIndex = 3 - Math.Abs(3 - step);
             spriteBatch.Draw(
                 texture: _spriteGhost,
                 position: _rect.Location.ToVector2(),
-                sourceRectangle: new Rectangle(0, 0, 160, 160),
+                sourceRectangle: new Rectangle(width * animationIndex, 0, width, height),
                 color: Color.White,
                 rotation: 0,
                 origin: Vector2.Zero,
-                scale: (float)Rect.Width / 160,
+                scale: (float)Rect.Width / width,
                 effects: SpriteEffects.None,
                 layerDepth: 0);
         }

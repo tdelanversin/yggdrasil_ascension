@@ -22,7 +22,7 @@ namespace YGR
         {
             SpriteNinja = contentManager.Load<Texture2D>("charaset");
             SpriteBasic = contentManager.Load<Texture2D>("tester_60");
-            SpriteGhost = contentManager.Load<Texture2D>("ghost");
+            SpriteGhost = contentManager.Load<Texture2D>("ghosty");
             SpriteAimIndicator = new List<Texture2D> {
                 contentManager.Load<Texture2D>("target_indicator_red"),
                 contentManager.Load<Texture2D>("target_indicator_blue"),
