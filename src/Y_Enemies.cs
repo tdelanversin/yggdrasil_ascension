@@ -57,7 +57,7 @@ namespace YGR
 
             Velocity = Vector2.Zero;
             _acceleration = Vector2.One * 0.002f;
-            _deceleration = Vector2.One * 0.002f;
+            _deceleration = Vector2.One * 0.02f;
             _maxVelocity = Vector2.One * 0.2f;
 
             safetyDistance = 300f;
@@ -89,7 +89,7 @@ namespace YGR
         }
 
 
-        private bool FindTargetAndVisibility()
+        protected bool FindTargetAndVisibility()
         {
             List<Tuple<float, IVictim>> inRange = new List<Tuple<float, IVictim>>();
             foreach (IVictim player in Players)
@@ -99,7 +99,7 @@ namespace YGR
                     continue;
                 }
 
-                if (!LineOfSight(player))
+                if (!LineOfSight(player.Rect.Center.ToVector2()))
                 {
                     continue;
                 }
@@ -117,15 +117,15 @@ namespace YGR
             return true;
         }
 
-        private bool LineOfSight(IVictim target)
+        protected bool LineOfSight(Vector2 target)
         {
             if (Room == null) return false;
             if (target == null) return false;
 
             Point origin = Rect.Center;
-            Vector2 targetDirection = target.Rect.Center.ToVector2() - Rect.Center.ToVector2();
+            Vector2 targetDirection = target - Rect.Center.ToVector2();
             targetDirection = Vector2.Normalize(targetDirection);
-            float targetDistance = Vector2.Distance(target.Rect.Center.ToVector2(), Rect.Center.ToVector2());
+            float targetDistance = Vector2.Distance(target, Rect.Center.ToVector2());
             foreach (Rectangle rects in Room.Collision.GetCollisionRectangles())
             {
                 Rectangle rect = rects;
@@ -141,7 +141,35 @@ namespace YGR
             return true;
         }
 
-        public void Update(GameTime gameTime)
+        public virtual void UpdateVelocity(Vector2 input, GameTime gameTime)
+        {
+            int timeStepMS = gameTime.ElapsedGameTime.Milliseconds;
+
+            /* ##########################################################################
+             * Speed and velocity handling based on control input
+             *  => must happen before collision handling <=
+             * ########################################################################## */
+            if (input != Vector2.Zero)
+            {
+                Manager_Particles._particleEffects[0].Trigger(new Vector2(_rect.Location.X + _rect.Width / 2, _rect.Location.Y + _rect.Height));
+
+                if (input.LengthSquared() > 1)
+                {
+                    input.Normalize();
+                }
+                Velocity += input * _acceleration * timeStepMS;
+            }
+            else
+            {
+                Velocity = new Vector2(
+                    Math.Sign(Velocity.X) * Math.Max(0.0f, Math.Abs(Velocity.X) - _deceleration.X * timeStepMS),
+                    Math.Sign(Velocity.Y) * Math.Max(0.0f, Math.Abs(Velocity.Y) - _deceleration.Y * timeStepMS));
+            }
+
+            Velocity = Vector2.Clamp(Velocity, -_maxVelocity, _maxVelocity);
+        }
+
+        public virtual void Update(GameTime gameTime)
         {
             Room = Level.GetRoom(this, Room);
 
@@ -161,6 +189,8 @@ namespace YGR
             }
 
             Gun.Update(gameTime);
+
+            Vector2 movement = Vector2.Zero;
             bool canSee = FindTargetAndVisibility();
             int timeStepMS = gameTime.ElapsedGameTime.Milliseconds;
             if (canSee && Vector2.Distance(Target.Rect.Center.ToVector2(), Rect.Center.ToVector2()) > safetyDistance)
@@ -168,7 +198,7 @@ namespace YGR
                 if (Target != null)
                 {
                     FacingDirection = Target.Rect.Center.ToVector2() - Rect.Center.ToVector2();
-                    FacingDirection = Vector2.Normalize(FacingDirection);
+                    movement = FacingDirection;
                 }
                 else
                 {
@@ -187,25 +217,29 @@ namespace YGR
             }
             else // No target in line of sight, just wander
             {
-                // Giga simple "wandering"
-                // FacingDirection += new Vector2(Util.Random.NextSingle() - 0.5f, Util.Random.NextSingle() - 0.5f);
-                // if (FacingDirection.LengthSquared() > 1)
-                // {
-                //     FacingDirection = Vector2.Normalize(FacingDirection);
-                // }
+                float steeringDiff = (Util.random.NextSingle() - 0.5f) / 4f;
 
-                SteeringDirection += (Util.random.NextSingle() - 0.5f) / 2f;
+                // Don't stupidly try walking into walls
+                int counter = 0;
+                do
+                {
+                    SteeringDirection += steeringDiff;
+                    steeringDiff *= 2;
+                    counter++;
+                    FacingDirection = new Vector2((float)Math.Cos(SteeringDirection), (float)Math.Sin(SteeringDirection));
+                } while (counter < 8 && !LineOfSight(Rect.Center.ToVector2() + FacingDirection * Rect.Height * 2));
+
+                movement = FacingDirection;
 
                 // Centered steering model wandering: Move a point on a circle around the entity, always face that point
-                FacingDirection = new Vector2((float)Math.Cos(SteeringDirection), (float)Math.Sin(SteeringDirection));
-
                 // Offset circle steering model wandering: Move a point on a circle in front of the entity, always face that point
                 // Vector2 steeringCenter = _position + Vector2.Normalize(FacingDirection) / 2;
                 // Vector2 steeringPoint = steeringCenter + new Vector2((float)Math.Cos(SteeringDirection), (float)Math.Sin(SteeringDirection)) / 2;
                 // FacingDirection = steeringPoint - _position;
             }
-            Velocity += FacingDirection * _acceleration * (float)timeStepMS;
-            Velocity = Vector2.Clamp(Velocity, -_maxVelocity, _maxVelocity);
+
+
+            UpdateVelocity(movement, gameTime);
 
             IList<Vector2> contactNormals;
             IList<Point> contactPoints;
