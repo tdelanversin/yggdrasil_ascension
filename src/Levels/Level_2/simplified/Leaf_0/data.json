@@ -8,11 +8,11 @@
 	"bgColor": "#696A79",
 	"neighbourLevels": [
 		{
-			"levelIid": "feb17750-c640-11ed-b38b-3966fa5b7693",
+			"levelIid": "0ab15950-c640-11ed-ba71-a3142d635e4c",
 			"dir": "e"
 		},
 		{
-			"levelIid": "0258d470-c640-11ed-b38b-c96a5353ef9d",
+			"levelIid": "0da9b1c0-c640-11ed-ba71-6b34774f7c84",
 			"dir": "s"
 		}
 	],
@@ -20,7 +20,7 @@
 	"layers": [
 		"Floor.png",
 		"Obstacles.png",
-		"Walls.png"
+		"Roof.png"
 	],
 	"entities": {
 		"Door": [
@@ -33,10 +33,7 @@
 				"width": 32,
 				"height": 32,
 				"color": 12470831,
-				"customFields": {
-					"Point": null,
-					"Integer": 0
-				}
+				"customFields" : {}
 			},
 			{
 				"id": "Door",
@@ -47,10 +44,7 @@
 				"width": 32,
 				"height": 32,
 				"color": 12470831,
-				"customFields": {
-					"Point": null,
-					"Integer": 0
-				}
+				"customFields" : {}
 			},
 			{
 				"id": "Door",
@@ -61,10 +55,7 @@
 				"width": 32,
 				"height": 32,
 				"color": 12470831,
-				"customFields": {
-					"Point": null,
-					"Integer": 0
-				}
+				"customFields" : {}
 			},
 			{
 				"id": "Door",
@@ -75,10 +66,7 @@
 				"width": 32,
 				"height": 32,
 				"color": 12470831,
-				"customFields": {
-					"Point": null,
-					"Integer": 0
-				}
+				"customFields" : {}
 			}
 		],
 		"Spawner": [
@@ -91,9 +79,7 @@
 				"width": 32,
 				"height": 32,
 				"color": 6539085,
-				"customFields": {
-					"Point": null
-				}
+				"customFields" : {}
 			},
 			{
 				"id": "Spawner",
@@ -104,9 +90,7 @@
 				"width": 32,
 				"height": 32,
 				"color": 6539085,
-				"customFields": {
-					"Point": null
-				}
+				"customFields" : {}
 			}
 		]
 	}

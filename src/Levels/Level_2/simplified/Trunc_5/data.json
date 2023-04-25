@@ -24,7 +24,7 @@
 	"layers": [
 		"Floor.png",
 		"Obstacles.png",
-		"Walls.png"
+		"Roof.png"
 	],
 	"entities": {
 		"Door": [
@@ -37,10 +37,7 @@
 				"width": 32,
 				"height": 32,
 				"color": 12470831,
-				"customFields": {
-					"Point": null,
-					"Integer": 0
-				}
+				"customFields" : {}
 			},
 			{
 				"id": "Door",
@@ -51,24 +48,18 @@
 				"width": 32,
 				"height": 32,
 				"color": 12470831,
-				"customFields": {
-					"Point": null,
-					"Integer": 0
-				}
+				"customFields" : {}
 			},
 			{
 				"id": "Door",
 				"iid": "5227f3e4-c640-11ed-9231-53be18e48730",
 				"layer": "Entities",
-				"x": 688,
+				"x": 656,
 				"y": 1008,
 				"width": 32,
 				"height": 32,
 				"color": 12470831,
-				"customFields": {
-					"Point": null,
-					"Integer": 0
-				}
+				"customFields" : {}
 			},
 			{
 				"id": "Door",
@@ -79,10 +70,7 @@
 				"width": 32,
 				"height": 32,
 				"color": 12470831,
-				"customFields": {
-					"Point": null,
-					"Integer": 0
-				}
+				"customFields" : {}
 			}
 		],
 		"SideDoor": [
@@ -95,10 +83,7 @@
 				"width": 32,
 				"height": 32,
 				"color": 1199753,
-				"customFields": {
-					"Point": null,
-					"Integer": 0
-				}
+				"customFields" : {}
 			},
 			{
 				"id": "SideDoor",
@@ -109,10 +94,7 @@
 				"width": 32,
 				"height": 32,
 				"color": 1199753,
-				"customFields": {
-					"Point": null,
-					"Integer": 0
-				}
+				"customFields" : {}
 			},
 			{
 				"id": "SideDoor",
@@ -123,10 +105,7 @@
 				"width": 32,
 				"height": 32,
 				"color": 1199753,
-				"customFields": {
-					"Point": null,
-					"Integer": 0
-				}
+				"customFields" : {}
 			}
 		],
 		"Spawner": [
@@ -139,9 +118,7 @@
 				"width": 32,
 				"height": 32,
 				"color": 6539085,
-				"customFields": {
-					"Point": null
-				}
+				"customFields" : {}
 			},
 			{
 				"id": "Spawner",
@@ -152,9 +129,7 @@
 				"width": 32,
 				"height": 32,
 				"color": 6539085,
-				"customFields": {
-					"Point": null
-				}
+				"customFields" : {}
 			},
 			{
 				"id": "Spawner",
@@ -165,9 +140,7 @@
 				"width": 32,
 				"height": 32,
 				"color": 6539085,
-				"customFields": {
-					"Point": null
-				}
+				"customFields" : {}
 			}
 		]
 	}

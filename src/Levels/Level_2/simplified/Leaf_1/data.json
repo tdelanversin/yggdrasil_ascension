@@ -1,6 +1,6 @@
 {
 	"identifier": "Leaf_1",
-	"uniqueIdentifer": "feb17750-c640-11ed-b38b-3966fa5b7693",
+	"uniqueIdentifer": "0ab15950-c640-11ed-ba71-a3142d635e4c",
 	"x": 5664,
 	"y": -384,
 	"width": 1024,
@@ -12,11 +12,11 @@
 			"dir": "w"
 		},
 		{
-			"levelIid": "00880c10-c640-11ed-b38b-4f72206b11dc",
+			"levelIid": "0c3ab870-c640-11ed-ba71-5583da241b4e",
 			"dir": "e"
 		},
 		{
-			"levelIid": "044429b0-c640-11ed-b38b-7bb3d526a42b",
+			"levelIid": "0f146550-c640-11ed-ba71-8bfe44a905a2",
 			"dir": "s"
 		}
 	],
@@ -24,93 +24,77 @@
 	"layers": [
 		"Floor.png",
 		"Obstacles.png",
-		"Walls.png"
+		"Roof.png"
 	],
 	"entities": {
 		"Door": [
 			{
 				"id": "Door",
-				"iid": "feb17752-c640-11ed-b38b-91a9f4744830",
+				"iid": "0ab15952-c640-11ed-ba71-951e6a18ee0a",
 				"layer": "Entities",
 				"x": 16,
 				"y": 496,
 				"width": 32,
 				"height": 32,
 				"color": 12470831,
-				"customFields": {
-					"Point": null,
-					"Integer": 0
-				}
+				"customFields" : {}
 			},
 			{
 				"id": "Door",
-				"iid": "feb17753-c640-11ed-b38b-1593d94d05bc",
+				"iid": "0ab15953-c640-11ed-ba71-af6326fc4674",
 				"layer": "Entities",
 				"x": 496,
 				"y": 1008,
 				"width": 32,
 				"height": 32,
 				"color": 12470831,
-				"customFields": {
-					"Point": null,
-					"Integer": 0
-				}
+				"customFields" : {}
 			},
 			{
 				"id": "Door",
-				"iid": "feb17754-c640-11ed-b38b-7b86b50394bf",
+				"iid": "0ab15954-c640-11ed-ba71-29e07bb74d1e",
 				"layer": "Entities",
 				"x": 496,
 				"y": 16,
 				"width": 32,
 				"height": 32,
 				"color": 12470831,
-				"customFields": {
-					"Point": null,
-					"Integer": 0
-				}
+				"customFields" : {}
 			},
 			{
 				"id": "Door",
-				"iid": "feb17755-c640-11ed-b38b-4fd30e077cbe",
+				"iid": "0ab15955-c640-11ed-ba71-cdfa55fcea6f",
 				"layer": "Entities",
 				"x": 1008,
 				"y": 496,
 				"width": 32,
 				"height": 32,
 				"color": 12470831,
-				"customFields": {
-					"Point": null,
-					"Integer": 0
-				}
+				"customFields" : {}
 			}
 		],
 		"Spawner": [
 			{
 				"id": "Spawner",
-				"iid": "05cba220-c640-11ed-b38b-fb112cd50dd1",
+				"iid": "0ab15956-c640-11ed-ba71-0f05159fb779",
 				"layer": "Entities",
-				"x": 320,
-				"y": 640,
+				"x": 448,
+				"y": 608,
 				"width": 32,
 				"height": 32,
 				"color": 6539085,
-				"customFields": {
-					"Point": null
-				}
+				"customFields" : {}
 			},
 			{
 				"id": "Spawner",
-				"iid": "05fc2800-c640-11ed-b38b-c1aacb6a4570",
+				"iid": "0ab15957-c640-11ed-ba71-e590d9d3b76a",
 				"layer": "Entities",
-				"x": 800,
+				"x": 672,
 				"y": 800,
 				"width": 32,
 				"height": 32,
 				"color": 6539085,
-				"customFields": {
-					"Point": null
-				}
+				"customFields" : {}
 			}
 		]
 	}

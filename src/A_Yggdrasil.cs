@@ -57,6 +57,7 @@ namespace YGR
             Manager_Players.Initialize();
             Manager_Light.Initialize("./Levels/Level_2/simplified");
             X_AutoTiler.Initialize("./Doors/", "data.json", GraphicsDevice, Y_Door.MapJsonName);
+            X_AutoTiler.Initialize("./Levels/", "data.json", GraphicsDevice, Y_CMRoom.MapJsonName);
 
             _level = new Y_Level("Level_2/simplified", 32, "./Levels/", "./Doors", GraphicsDevice);
 
@@ -106,37 +107,7 @@ namespace YGR
               for a smooth transition.
             */
 
-            var watch = new Stopwatch();
-            watch.Start();
-            _level.Create(GraphicsDevice); // = new Y_Level("level_0", 32, "Levels/Level_2/simplified", GraphicsDevice);
-            watch.Stop();
-           //Logger.Info("Created level: " + watch.ElapsedMilliseconds.ToString());
-            watch.Reset();
-
-            Manager_Players.ClearPlayers();
-
-            //Camera.focusOnRoom(_player.ElementAt(0).Room);
-
-            Manager_Players.AddPlayer_Ninja(PlayerIndex.One, new Vector2(200, 180), _level, ControlLayout.KeyboardWASD);
-            //Manager_Players.AddPlayer_SimplePlayer(PlayerIndex.Two, new Vector2(200, 360), _level, ControlLayout.KeyboardArrows);
-
-            //for (int i = 2; i < 4; i++)
-            //{
-            //    PlayerIndex playerIndex = (PlayerIndex)i;
-            //    if (GamePad.GetState(playerIndex).IsConnected)
-            //    {
-            //        Manager_Players.AddPlayer_SimplePlayer(playerIndex, position: new Vector2(200, 180 + i * 180), _level);
-            //    }
-            //}
-            
-            // Pass players to camera so it can follow their positions
-            Camera.Players = Manager_Players.Players;
-
-            //for (int i = 0; i < 6; i++)
-            //{
-            //    Manager_Enemies.AddEnemy_SimpleEnemy(new Vector2(1050 + i * 200, 350), _level, _player);
-            //}
-
+            _level.Create(GraphicsDevice);
 
             // Once everything is in place, inform Update() of the new desired state
             DesiredState = GameState.InGame;

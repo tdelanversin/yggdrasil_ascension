@@ -11,7 +11,7 @@
 	"layers": [
 		"Floor.png",
 		"Obstacles.png",
-		"Walls.png"
+		"Roof.png"
 	],
 	"entities": {
 		"Door": [
@@ -24,10 +24,7 @@
 				"width": 32,
 				"height": 32,
 				"color": 12470831,
-				"customFields": {
-					"Point": null,
-					"Integer": 0
-				}
+				"customFields" : {}
 			},
 			{
 				"id": "Door",
@@ -38,10 +35,7 @@
 				"width": 32,
 				"height": 32,
 				"color": 12470831,
-				"customFields": {
-					"Point": null,
-					"Integer": 0
-				}
+				"customFields" : {}
 			},
 			{
 				"id": "Door",
@@ -52,10 +46,7 @@
 				"width": 32,
 				"height": 32,
 				"color": 12470831,
-				"customFields": {
-					"Point": null,
-					"Integer": 0
-				}
+				"customFields" : {}
 			},
 			{
 				"id": "Door",
@@ -66,10 +57,7 @@
 				"width": 32,
 				"height": 32,
 				"color": 12470831,
-				"customFields": {
-					"Point": null,
-					"Integer": 0
-				}
+				"customFields" : {}
 			}
 		],
 		"Player": [
@@ -77,53 +65,67 @@
 				"id": "Player",
 				"iid": "d4f3c700-c640-11ed-b38b-7db3e30b0374",
 				"layer": "Entities",
-				"x": 352,
-				"y": 480,
+				"x": 192,
+				"y": 832,
 				"width": 32,
 				"height": 32,
 				"color": 16711748,
-				"customFields": {
-					"Point": null
-				}
-			},
-			{
-				"id": "Player",
-				"iid": "d59bede0-c640-11ed-b38b-735d56c583e4",
-				"layer": "Entities",
-				"x": 608,
-				"y": 672,
-				"width": 32,
-				"height": 32,
-				"color": 16711748,
-				"customFields": {
-					"Point": null
-				}
+				"customFields" : {}
 			},
 			{
 				"id": "Player",
 				"iid": "d67bc690-c640-11ed-b38b-0b259dfd7b9a",
 				"layer": "Entities",
-				"x": 832,
-				"y": 480,
+				"x": 1024,
+				"y": 832,
 				"width": 32,
 				"height": 32,
 				"color": 16711748,
-				"customFields": {
-					"Point": null
-				}
+				"customFields" : {}
 			},
 			{
 				"id": "Player",
 				"iid": "d73097a0-c640-11ed-b38b-59afa3c5b054",
 				"layer": "Entities",
 				"x": 608,
-				"y": 320,
+				"y": 832,
 				"width": 32,
 				"height": 32,
 				"color": 16711748,
-				"customFields": {
-					"Point": null
-				}
+				"customFields" : {}
+			},
+			{
+				"id": "Player",
+				"iid": "4de376f0-c640-11ed-ba71-4d740fc007f7",
+				"layer": "Entities",
+				"x": 160,
+				"y": 160,
+				"width": 32,
+				"height": 32,
+				"color": 16711748,
+				"customFields" : {}
+			},
+			{
+				"id": "Player",
+				"iid": "4edacf40-c640-11ed-ba71-93f6404ed255",
+				"layer": "Entities",
+				"x": 640,
+				"y": 160,
+				"width": 32,
+				"height": 32,
+				"color": 16711748,
+				"customFields" : {}
+			},
+			{
+				"id": "Player",
+				"iid": "5009b250-c640-11ed-ba71-bf7a4e9efe77",
+				"layer": "Entities",
+				"x": 1088,
+				"y": 160,
+				"width": 32,
+				"height": 32,
+				"color": 16711748,
+				"customFields" : {}
 			}
 		]
 	}

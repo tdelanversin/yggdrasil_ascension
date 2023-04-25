@@ -110,23 +110,12 @@ namespace YGR
             _doorCollisionRectangles = new Dictionary<X_DoorState, List<Rectangle>>();
             ResourceFolder = Util.PathOsNormalization(resourceFolder);
 
-            var watch = new Stopwatch();
-            watch.Start();
-            watch.Stop();
-           //Logger.Info("Initialized auto tiler: " + watch.ElapsedMilliseconds.ToString());
-            watch.Reset();
-            //Dictionary<X_DoorTextureLayer, List<Tuple<Point, Texture2D>>> tileTextures;
-
-            watch.Start();
             X_AutoTiler.Resolve<X_DoorTextureLayer>(
                 ResourceFolder, tileJsonFile, 
                 graphicsDevice, 
                 Collision.GetCollisionTemplate(), 
                 MapTexture,
                 out _tileTextures, out _tileColors);
-            watch.Stop();
-           //Logger.Info("Resolved auto tiler: " + watch.ElapsedMilliseconds.ToString());
-            watch.Reset();
 
             Scale = (float)tileHeight / _tileTextures.First().Value.First().Texture().Height;
             TextureTileSize = _tileTextures.First().Value.First().Texture().Height;
@@ -136,25 +125,6 @@ namespace YGR
             int width = Collision.GetCollisionTemplate()[0].Length;
             int height = Collision.GetCollisionTemplate().Length;
             Color[] trans = Enumerable.Repeat<Color>(Color.Transparent, _tileSize * _tileSize * width * height).ToArray();
-            //_wall = new Texture2D(graphicsDevice, _tileSize * width, _tileSize * height); //textures[X_DoorTextureLayer.Wall];
-            //_floor = new Texture2D(graphicsDevice, _tileSize * width, _tileSize * height); // textures[X_DoorTextureLayer.Floor];
-            //_door = new Texture2D(graphicsDevice, _tileSize * width, _tileSize * height); // textures[X_DoorTextureLayer.Door];
-
-            //_wall.SetData<Color>(trans);
-            //_floor.SetData<Color>(trans);
-            //_door.SetData<Color>(trans);
-
-            //foreach (var tile in _tileColors)
-            //{
-            //    foreach (var t in tile.Value)
-            //    {
-            //        Rectangle rect = new Rectangle(t.Location().X * _tileSize, t.Location().Y * _tileSize, _tileSize, _tileSize);
-
-            //        //if (tile.Key == X_DoorTextureLayer.Wall) _wall.SetData<Color>(0, rect, t.Item2, 0, _tileSize * _tileSize);
-            //        if (tile.Key == X_DoorTextureLayer.Floor) _floor.SetData<Color>(0, rect, t.Color(), 0, _tileSize * _tileSize);
-            //        //else if (tile.Key == X_DoorTextureLayer.Door) _door.SetData<Color>(0, rect, t.Item2, 0, _tileSize * _tileSize);
-            //    }
-            //}
         }
 
         public static X_ConnectorSide ParseFromSide(string side)
@@ -299,8 +269,6 @@ namespace YGR
         {
             if (!Settings.Lighting) return;
 
-            var watch = new Stopwatch();
-            watch.Start();
             var lights = new List<X_Light>();
             foreach (var room in DoorRooms)
             {
@@ -310,11 +278,7 @@ namespace YGR
 
             Vector3 offset = new Vector3(Rect.Location.X / Scale, Rect.Location.Y / Scale, 0);
             _illuminated = Manager_Light.Illuminate(lights, Collision.GetCollisionTemplate(), TextureTileSize, offset, true);
-            watch.Stop();
-           //Logger.Info("-Door: calculate illumination: " + watch.ElapsedMilliseconds.ToString());
-            watch.Reset();
-            watch.Start();
-            //_illuminated = Enumerable.Repeat<bool>(true, Rect.Width * Rect.Height).ToArray();
+
             Color[] red = Enumerable.Repeat<Color>(Color.Green, _tileSize * _tileSize).ToArray();
             foreach (var tile in _tileColors)
             {
@@ -323,94 +287,30 @@ namespace YGR
                 {
 
                     var location = tile.Value[t].Location();
-                    //var color = tile.Value[t].Color();
                     Rectangle rect = new Rectangle(location.X * _tileSize, location.Y * _tileSize, _tileSize, _tileSize);
 
-                    //if (location.X == 15 && location.Y == 3)
-                    //{
-                        var light = getRectFromArray(_illuminated, rect);
-                        for (int i = 0; i < tile.Value[t].Color().Length; ++i)
+                    var light = getRectFromArray(_illuminated, rect);
+                    for (int i = 0; i < tile.Value[t].Color().Length; ++i)
+                    {
+                        var col = tile.Value[t].Color()[i];
+                        if (!light[i])
                         {
-                            var col = tile.Value[t].Color()[i];
-                            if (!light[i])
-                            {
-                                Color nCol = Color.White;
-                                nCol.R = (byte)((1 - 0.4f) * col.R + 0.4f * Color.Black.R);
-                                nCol.G = (byte)((1 - 0.4f) * col.G + 0.4f * Color.Black.G);
-                                nCol.B = (byte)((1 - 0.4f) * col.B + 0.4f * Color.Black.B);
-                                tile.Value[t].Color()[i] = nCol;
-                            }
-                            //else
-                            //{
-                            //    tile.Value[t].Color()[i] = col;
-                            //}
+                            Color nCol = Color.White;
+                            nCol.R = (byte)((1 - 0.4f) * col.R + 0.4f * Color.Black.R);
+                            nCol.G = (byte)((1 - 0.4f) * col.G + 0.4f * Color.Black.G);
+                            nCol.B = (byte)((1 - 0.4f) * col.B + 0.4f * Color.Black.B);
+                            tile.Value[t].Color()[i] = nCol;
                         }
-                        //tile.Value[t].Color() = red;
-                    //}
+                    }
                 }
             }
 
-            watch.Stop();
-           //Logger.Info("-Door: apply illumination: " + watch.ElapsedMilliseconds.ToString());
-            watch.Reset();
-            watch.Start();
-
-            //Color[] data = new Color[_floor.Width * _floor.Height];
-            //_floor.GetData<Color>(data);
-
             var colors = _tileColors.Where(x => x.Key == X_DoorTextureLayer.Floor).Select(x => x.Value).First();
             var textures = _tileTextures.Where(x => x.Key == X_DoorTextureLayer.Floor).Select(x => x.Value).First();
-            //Parallel.For(0, colors.Count(), t =>
             for (int t = 0; t < colors.Count(); ++t)
             {
                 textures[t].Texture().SetData<Color>(colors[t].Color());
-            }; //);
-
-            watch.Stop();
-           //Logger.Info("-Door: paint illumination: " + watch.ElapsedMilliseconds.ToString());
-            watch.Reset();
-
-            //foreach (var tile in _tileTextures)
-            //{
-            //    for (int t=0; t<tile.Value.Count; ++t)
-            //    {
-            //        Rectangle rect = new Rectangle(0, 0, _tileSize, _tileSize);
-
-            //        //if (tile.Key == X_DoorTextureLayer.Wall) _wall.SetData<Color>(0, rect, t.Item2, 0, _tileSize * _tileSize);
-            //        if (tile.Key == X_DoorTextureLayer.Floor)
-            //            tile.Value[t].Texture().SetData<Color>(_tileColors[tile.Key][t].Color(), 0, _tileSize * _tileSize);
-            //        //else if (tile.Key == X_DoorTextureLayer.Door) _door.SetData<Color>(0, rect, t.Item2, 0, _tileSize * _tileSize);
-            //    }
-            //}
-
-            //foreach (var tile in _tileColors)
-            //{
-            //    foreach (var t in tile.Value)
-            //    {
-            //        Rectangle rect = new Rectangle(t.Location().X * _tileSize, t.Location().Y * _tileSize, _tileSize, _tileSize);
-
-            //        //if (tile.Key == X_DoorTextureLayer.Wall) _wall.SetData<Color>(0, rect, t.Item2, 0, _tileSize * _tileSize);
-            //        if (tile.Key == X_DoorTextureLayer.Floor)
-            //            _floor.SetData<Color>(0, rect, t.Color(), 0, _tileSize * _tileSize);
-            //        //else if (tile.Key == X_DoorTextureLayer.Door) _door.SetData<Color>(0, rect, t.Item2, 0, _tileSize * _tileSize);
-            //    }
-            //}
-
-            //for (int i = 0; i < _illuminated.Length; ++i)
-            //{
-            //    if (!_illuminated[i])
-            //    {
-            //        var col = data[i];
-            //        Color nCol = Color.White;
-            //        nCol.R = (byte)((1 - 0.4f) * col.R + 0.4f * Color.Black.R);
-            //        nCol.G = (byte)((1 - 0.4f) * col.G + 0.4f * Color.Black.G);
-            //        nCol.B = (byte)((1 - 0.4f) * col.B + 0.4f * Color.Black.B);
-            //        data[i] = nCol;
-            //    }
-            //}
-            //_floor.SetData<Color>(data);
-
-            //_shade = null;
+            };
         }
 
         private bool[] getRectFromArray(bool[] lighted, Rectangle rect)
@@ -426,34 +326,6 @@ namespace YGR
                 }
                 index += Rect.Width;
             }
-
-            //while (w < res.Length)
-            //{
-            //    for(int i=w+o; i<w+_tileSize; ++i)
-            //    {
-            //        res[i] = true;
-            //    }
-            //    o++;
-            //    w += _tileSize;
-            //}
-
-            output(res, _tileSize, "./logs/rect.csv");
-
-            //int index = rect.Location.Y * Rect.Width + rect.Location.X;
-            //int s = 0;
-            //int maxInd = index + _tileSize * Rect.Width;
-            //while (index < maxInd)
-            //{
-            //    for (int j = index; j < index + _tileSize; ++j)
-            //    {
-            //        if (j > index + s)
-            //            res[s] = false;
-            //        else
-            //            res[s] = true;
-            //    }
-            //    s++;
-            //    index += Rect.Width;
-            //}
 
             return res;
         }
@@ -498,11 +370,6 @@ namespace YGR
 
             File.WriteAllText(name, s);
         }
-
-        //public ref Texture2D GetFloor()
-        //{
-        //    return ref _floor;
-        //}
 
         private IList<Tuple<int, int>> findMatch(int[,] match, int[][] pattern, int ox, int oy)
         {
@@ -1008,29 +875,6 @@ namespace YGR
                 var deltaPC = Rect.Location - Doors[connectorSide1].First().Point;
                 MoveTo(roomConnectorPoint1.Point + deltaPC);
             }
-            //if (direction == X_DoorDirection.Horizontal) deltaPC = new Point(deltaPC.X-4, deltaPC.Y);
-            //else if (direction == X_DoorDirection.Vertical) deltaPC = new Point(deltaPC.X, deltaPC.Y-4);
-            //if (direction == X_DoorDirection.Horizontal)
-            //{
-            //    if(roomConnectorPoint1.ConnectorSide == X_ConnectorSide.Left)
-            //    {
-
-            //    }
-            //    else if (roomConnectorPoint1.ConnectorSide == X_ConnectorSide.Right)
-            //    {
-            //        var deltaPC = Rect.Location - Doors[X_ConnectorSide.Left].First().Point;
-            //        MoveTo(roomConnectorPoint1.Point + deltaPC);
-            //    }
-
-            //}
-            //else if(direction == X_DoorDirection.Vertical)
-            //{
-
-            //}
-            //else if(direction == X_DoorDirection.Corner)
-            //{
-
-            //}
 
             return this;
         }
@@ -1218,8 +1062,8 @@ namespace YGR
             movePosition.Y += _currentDoorOpenOffset;
             if (State == X_DoorState.Closed || State == X_DoorState.LockedClosed)
             {
-                draw(_tileTextures[X_DoorTextureLayer.Wall], position, spriteBatch, false);
-                draw(_tileTextures[X_DoorTextureLayer.Door], position, spriteBatch, false);
+                //draw(_tileTextures[X_DoorTextureLayer.Wall], position, spriteBatch, false);
+                //draw(_tileTextures[X_DoorTextureLayer.Door], position, spriteBatch, false);
             }
             else if(State == X_DoorState.Opening || State == X_DoorState.Closing)
             {
@@ -1236,11 +1080,6 @@ namespace YGR
                 draw(_tileTextures[X_DoorTextureLayer.Floor],position, spriteBatch, false);
                 draw(_tileTextures[X_DoorTextureLayer.Wall], position, spriteBatch, false);
             }
-
-            //spriteBatch.Draw(
-            //        _floor, Rect.Location.ToVector2(),
-            //        new Rectangle(0, 0, _floor.Width, _floor.Height),
-            //        Color.White, 0, Vector2.Zero, Scale, SpriteEffects.None, 0);
         }
 
         public void MoveTo(Point position)

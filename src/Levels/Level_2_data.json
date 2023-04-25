@@ -21,20 +21,21 @@
                 "X" : 0.0,
                 "Y" : -2.3,
                 "Connections" : [{
-                    "L" : ["B2"],
+                    "L" : ["R2"],
                     "T" : ["B8"],
-                    "R" : ["B5"]
+                    "R" : ["L5"]
                 }]
             },
             {
                 "Index" : 2,
                 "Optional" : false,
                 "Type" : "Trunc",
-                "X" : -1.5,
-                "Y" : -3.8,
+                "X" : -1.55,
+                "Y" : -3.0,
                 "Connections" : [{
                     "L" : ["R3"],
-                    "T" : ["B4"]
+                    "T" : ["B4"],
+                    "B" : ["T10"]
                 }]
             },
             {
@@ -42,7 +43,7 @@
                 "Optional" : false,
                 "Type" : "Leaf",
                 "X" : -3.8,
-                "Y" : -4.25,
+                "Y" : -2.8,
                 "Connections" : [{
                     "T" : ["L4"]
                 }]
@@ -51,8 +52,8 @@
                 "Index" : 4,
                 "Optional" : false,
                 "Type" : "Leaf",
-                "X" : -2.1,
-                "Y" : -5.3,
+                "X" : -1.9,
+                "Y" : -4.3,
                 "Connections" : [{
                     "R" : ["L8"]
                 }]
@@ -61,11 +62,12 @@
                 "Index" : 5,
                 "Optional" : false,
                 "Type" : "Trunc",
-                "X" : 1.5,
-                "Y" : -3.8,
+                "X" : 1.55,
+                "Y" : -3.0,
                 "Connections" : [{
                     "T" : ["B7"],
-                    "R" : ["L6"]
+                    "R" : ["L6"],
+                    "B" : ["T11"]
                 }]
             },
             {
@@ -73,7 +75,7 @@
                 "Optional" : false,
                 "Type" : "Leaf",
                 "X" : 3.8,
-                "Y" : -4.25,
+                "Y" : -2.8,
                 "Connections" : [{
                     "T" : ["R7"]
                 }]
@@ -82,8 +84,8 @@
                 "Index" : 7,
                 "Optional" : false,
                 "Type" : "Leaf",
-                "X" : 2.1,
-                "Y" : -5.3,
+                "X" : 1.9,
+                "Y" : -4.3,
                 "Connections" : [{
                     "L" : ["R8"]
                 }]
@@ -93,7 +95,7 @@
                 "Optional" : false,
                 "Type" : "Trunc",
                 "X" : 0.0,
-                "Y" : -4.5,
+                "Y" : -3.5,
                 "Connections" : [{
                     "T" : ["B9"]
                 }]
@@ -101,10 +103,30 @@
             {
                 "Index" : 9,
                 "Optional" : false,
-                "Type" : "Trunc",
+                "Type" : "Gold",
                 "X" : 0.0,
-                "Y" : -6.0,
+                "Y" : -4.8,
                 "Connections" : []
+            },
+            {
+                "Index" : 10,
+                "Optional" : false,
+                "Type" : "Leaf",
+                "X" : -2.3,
+                "Y" : -1.5,
+                "Connections" : [{
+                    "L" : ["", "B3"]
+                }]
+            },
+            {
+                "Index" : 11,
+                "Optional" : false,
+                "Type" : "Leaf",
+                "X" : 2.3,
+                "Y" : -1.5,
+                "Connections" : [{
+                    "R" : ["", "B6"]
+                }]
             }
         ]
     }

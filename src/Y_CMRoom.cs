@@ -30,6 +30,53 @@ namespace YGR
         public int color;
     }
 
+    public sealed class Spawner
+    {
+        public string id;
+        public string iid;
+        public string layer;
+        public int x;
+        public int y;
+        public int width;
+        public int height;
+        public int color;
+    }
+
+    public sealed class BossSpawner
+    {
+        public string id;
+        public string iid;
+        public string layer;
+        public int x;
+        public int y;
+        public int width;
+        public int height;
+        public int color;
+    }
+
+    public sealed class PlayerSpawner
+    {
+        public string id;
+        public string iid;
+        public string layer;
+        public int x;
+        public int y;
+        public int width;
+        public int height;
+        public int color;
+    }
+
+    public enum X_RoomState
+    {
+        Open = 1,
+        Opening,
+        Closing,
+        Closed,
+        LockedClosed,
+        LockedOpen,
+        Finished
+    }
+
     public class Y_CMRoom : IWalkable
     {
         internal class X_DoorMask
@@ -45,10 +92,10 @@ namespace YGR
             public X_DoorMask(Rectangle roi, Rectangle room, int tileSize)
             {
                 RegionOfInterest = roi;
-                X = roi.X; 
-                Y = roi.Y; 
-                ReachX = roi.Width + X; 
-                ReachY = roi.Height+ Y; 
+                X = roi.X;
+                Y = roi.Y;
+                ReachX = roi.Width + X;
+                ReachY = roi.Height + Y;
                 Room = room;
                 TileSize = tileSize;
             }
@@ -62,12 +109,12 @@ namespace YGR
 
             public void DrawOutline(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)
             {
-                Factory_Debug.DrawRectangle(X+(int)globalOffset.X, Y+(int)globalOffset.Y, ReachX - X, ReachY - Y, 1, Color.BlueViolet, spriteBatch);
+                Factory_Debug.DrawRectangle(X + (int)globalOffset.X, Y + (int)globalOffset.Y, ReachX - X, ReachY - Y, 1, Color.BlueViolet, spriteBatch);
                 Factory_Debug.DrawRectangle(
-                    RegionOfInterest.X, 
-                    RegionOfInterest.Y, 
-                    RegionOfInterest.Width, 
-                    RegionOfInterest.Height, 
+                    RegionOfInterest.X,
+                    RegionOfInterest.Y,
+                    RegionOfInterest.Width,
+                    RegionOfInterest.Height,
                     3, Color.Aquamarine, spriteBatch);
             }
 
@@ -79,15 +126,15 @@ namespace YGR
 
             public int[][] GetTemplate()
             {
-                int[][] template = new int[Room.Height/TileSize][];
-                for(int i=0; i<template.Length; ++i)
+                int[][] template = new int[Room.Height / TileSize][];
+                for (int i = 0; i < template.Length; ++i)
                 {
                     template[i] = Enumerable.Repeat<int>((int)X_TileType.DontCare, Room.Width / TileSize).ToArray();
                 }
 
-                for(int y=0; y<template.Length; ++y)
+                for (int y = 0; y < template.Length; ++y)
                 {
-                    for(int x=0; x < template[0].Length; ++x)
+                    for (int x = 0; x < template[0].Length; ++x)
                     {
                         var p = new Point((int)((1.5 + x) * TileSize) + Room.Location.X, (int)((1.5 + y) * TileSize) + Room.Location.Y);
                         if (RegionOfInterest.Contains(p))
@@ -124,11 +171,24 @@ namespace YGR
         public string ResourceFolder { get; }
         public Color RegionColor { get; }
         public List<X_Light> Lights;
+        public X_RoomState State { get; set; }
 
         private Texture2D _floor;
+        private Texture2D _roof;
         private Color[] _floorData;
         private bool[] _illuminatedOpened;
         private bool[] _illuminatedClosed;
+
+        private int _currentDoorOpenOffset = 0;
+        private float _doorOpeningTime = 2000.0f;
+        private float _animationTime = 0.0f;
+
+        Dictionary<X_DoorTextureLayer, List<X_AutoTiler.X_AutoTileTexture>> _tileTextures;
+        Dictionary<X_DoorTextureLayer, List<X_AutoTiler.X_AutoTileColor>> _tileColors;
+
+        List<Point> _spawner;
+        List<Point> _bossSpawner;
+        List<Point> _playerSpawner;
 
         public Y_CMRoom(
             string name,
@@ -137,11 +197,7 @@ namespace YGR
             string resourceFolder,
             GraphicsDevice graphicsDevice
         )
-        {
-            var watch2 = new Stopwatch();
-            watch2.Start();
-            var watch = new Stopwatch();
-            
+        {   
             ResourceFolder = Util.PathOsNormalization(resourceFolder);
             var files = Directory.GetFiles(ResourceFolder);
             string dataFileName = Path.GetFileName(files.Where(x => Path.GetFileName(x).Contains("data") && Path.GetFileName(x).EndsWith(".json")).First());
@@ -156,9 +212,6 @@ namespace YGR
                 counter++;
             }
             
-           //Logger.Info(" ..... loaded collision model: " + watch.ElapsedMilliseconds.ToString());
-            
-            
             collisions = paddOutline(collisions);
             Collision = new X_CollisionModel_Room(collisions, tileWidth, tileHeight);
             Graph = new X_RoomGraph(this, collisions, tileWidth, tileHeight);
@@ -167,6 +220,13 @@ namespace YGR
             Doors = new Dictionary<X_ConnectorSide, IList<X_ConnectorPoint>>();
             DoorRooms = new Dictionary<X_ConnectorSide, IList<IWalkable>>();
             _doorMasks = new Dictionary<X_ConnectorSide, IList<X_DoorMask>>();
+
+            X_AutoTiler.Resolve<X_DoorTextureLayer>(
+                Util.PathOsNormalization("./Levels/"), "data.json",
+                graphicsDevice,
+                Collision.GetCollisionTemplate(),
+                MapTexture,
+                out _tileTextures, out _tileColors);
 
             List<string> layers;
             using (StreamReader stream = new StreamReader(ResourceFolder + dataFileName))
@@ -190,14 +250,38 @@ namespace YGR
                         }
                     }
                 }
+                if(array.entities.Spawner != null)
+                {
+                    var spawner = JsonConvert.DeserializeObject<List<Spawner>>(array.entities.Spawner.ToString());
+                    _spawner = new List<Point>();
+                    foreach (var s in spawner)
+                    {
+                        _spawner.Add(new Point(s.x + Rect.X, s.y + Rect.Y));
+                    }
+                }
+                if (array.entities.BossSpawner != null)
+                {
+                    var bossSpawner = JsonConvert.DeserializeObject<List<BossSpawner>>(array.entities.BossSpawner.ToString());
+                    _bossSpawner = new List<Point>();
+                    foreach (var s in bossSpawner)
+                    {
+                        _bossSpawner.Add(new Point(s.x + Rect.X, s.y + Rect.Y));
+                    }
+                }
+                if (array.entities.Player != null)
+                {
+                    var playerSpawner = JsonConvert.DeserializeObject<List<PlayerSpawner>>(array.entities.Player.ToString());
+                    _playerSpawner = new List<Point>();
+                    foreach (var s in playerSpawner)
+                    {
+                        _playerSpawner.Add(new Point(s.x + Rect.X, s.y + Rect.Y));
+                    }
+                }
             }
-            
-           //Logger.Info(" ..... loaded level json data: " + watch.ElapsedMilliseconds.ToString());
-            
             
             Name = name;
             Color[] target = null;
-            for (int i=0; i<layers.Count; ++i)
+            for (int i=0; i<layers.Count-1; ++i)
             {
                 using (FileStream fileStream = new FileStream(ResourceFolder + layers[i], FileMode.Open))
                 {
@@ -225,21 +309,16 @@ namespace YGR
                 }
             }
             _floor.SetData<Color>(target);
-            
-           //Logger.Info(" ..... created level floor texture: " + watch.ElapsedMilliseconds.ToString());
-            
-            
+
+            using (FileStream fileStream = new FileStream(ResourceFolder + layers[layers.Count()-1], FileMode.Open))
+            {
+                _roof = Texture2D.FromStream(graphicsDevice, fileStream);
+            }
+
             TextureTileSize = _floor.Height / collisions.Length;
 
             foreach (var door in Doors)
             {
-                //int x = (int)((float)door.x / door.width * Collision.TileWidth) + Rect.X;
-                //int y = (int)((float)door.y / door.height * Collision.TileHeight) + Rect.Y;
-                //var side = determineSide(x, y);
-                //IList<X_ConnectorPoint> list;
-                //if (!Doors.TryGetValue(side, out list))
-                //{
-                //    Doors.Add(side, new List<X_ConnectorPoint> { new X_ConnectorPoint(side, new Point(x, y)) });
                 float sf = 1.5f;
                 int b = -2;
                 if (door.Key == X_ConnectorSide.Top)
@@ -290,36 +369,20 @@ namespace YGR
                             new X_DoorMask(roi, Rect, TextureTileSize)
                         });
                 }
-                    //if (side == X_ConnectorSide.Top || side == X_ConnectorSide.Bottom)
-                    //    Doors.Add(side, new List<X_ConnectorPoint> { new X_ConnectorPoint(side, new Point(x, y)) });
-                    //else
-                    //    Doors.Add(side, new List<X_ConnectorPoint> { new X_ConnectorPoint(side, new Point(x, y)) });
-            //    }
-            //else list.Add(new X_ConnectorPoint(side, new Point(door.x, door.y)));
             }
 
+            State = X_RoomState.Closed;
             Scale = (float)tileHeight * collisions.Length / _floor.Height;
             _illuminatedOpened = null;
             _illuminatedClosed = null;
-            //if (Name == "r0")
-            //{
-                Lights = new List<X_Light>() {
-                new X_Light(
-                    new Vector3(Rect.X + -5*TextureTileSize,
-                    Rect.Y - 10*TextureTileSize,
-                    10 * TextureTileSize),
-                    Rect, Scale)
-                };
-            //}
-            //    else
-            //    {
-            //        Lights = new List<X_Light>();
-            //    }
-            
-           //Logger.Info(" ..... initialized doors and light: " + watch.ElapsedMilliseconds.ToString());
-            
-            watch2.Stop();
-           //Logger.Info("Time to initialize level " + Name + ": " + watch2.ElapsedMilliseconds.ToString());
+
+            Lights = new List<X_Light>() {
+            new X_Light(
+                new Vector3(Rect.X + -5*TextureTileSize,
+                Rect.Y - 10*TextureTileSize,
+                10 * TextureTileSize),
+                Rect, Scale)
+            };
         }
         private void output(int[][] pattern, string name)
         {
@@ -332,6 +395,24 @@ namespace YGR
             File.WriteAllText(name, s);
         }
 
+        public static X_DoorTextureLayer MapTexture(string textureType)
+        {
+            if (textureType.ToLower().Contains("wall") || textureType.ToLower().Contains("floor")) return X_DoorTextureLayer.Floor;
+            if (textureType.ToLower().Contains("roof")) return X_DoorTextureLayer.Wall;
+            if (textureType.ToLower().Contains("mechanism1")) return X_DoorTextureLayer.Mechanism1;
+            if (textureType.ToLower().Contains("mechanism2")) return X_DoorTextureLayer.Mechanism2;
+            return X_DoorTextureLayer.Door;
+        }
+
+        public static X_TileType MapJsonName(string tileType)
+        {
+            if (tileType.ToLower().Contains("floor")) return X_TileType.Floor;
+            if (tileType.ToLower().Contains("wall")) return X_TileType.Wall;
+            if (tileType.ToLower().Contains("roof")) return X_TileType.Roof;
+            if (tileType.ToLower().Contains("out")) return X_TileType.Outside;
+            return X_TileType.DontCare;
+        }
+
         public void PreloadIlluminations()
         {
             _illuminatedClosed = Manager_Light.LoadShadeFromFile(false, this, Lights);
@@ -342,19 +423,8 @@ namespace YGR
         {
             if (!Settings.Lighting) return;
 
-            Stopwatch watch = new Stopwatch();
-            watch.Start();
             if (_floorData == null)
             {
-                //var template = collisionTemplate; // room.Collision.GetCollisionTemplate();
-                //var tileSize = room.TextureTileSize;
-
-                //int width = template[0].Length * tileSize;
-                //int length = width * template.Length * TextureTileSize;
-                //bool[] lighted = Enumerable.Repeat<bool>(false, length).ToArray();
-                
-                //LoadIlluminations();
-
                 Vector3 offset = new Vector3(Rect.Location.X / Scale, Rect.Location.Y / Scale, 0);
 
                 if (_illuminatedClosed == null)
@@ -365,8 +435,6 @@ namespace YGR
                     Manager_Light.SaveShadeToFile(_illuminatedClosed, false, this, Lights);
                 }
 
-                //Logger.Info("Load closed illumination: " + watch.ElapsedMilliseconds.ToString());
-
                 //if (_illuminatedOpened == null)
                 //{
                 //    //Logger.Info(" ...Recalculated opened illumination... ");
@@ -375,21 +443,12 @@ namespace YGR
                 //    Manager_Light.SaveShadeToFile(_illuminatedOpened, true, this, Lights);
                 //}
 
-                //Logger.Info("---Load opened illumination: " + watch.ElapsedMilliseconds.ToString());
-
-
-
-                //var lights = new List<X_Light>();
-                //lights.AddRange(Lights);
                 _illuminatedOpened = _illuminatedClosed.Clone() as bool[];
                 foreach (var d in DoorRooms)
                 {
                     var door = (Y_Door)d.Value.First(); //DoorRooms[mask.Key].First();
                     var room = door.GetOtherDoor(this);
                     var template = _doorMasks[room.Item1].First().GetTemplate();
-                    //output(template, "./logs/illumination.csv");
-                    //lights.AddRange(room.Item2.Lights);
-                    //_illuminatedOpened = Manager_Light.Illuminate(room.Item2.Lights, Collision.GetCollisionTemplate(), TextureTileSize, offset, true);//, Manager_Light.Caster.Shadow);
 
                     var illumination = Manager_Light.Illuminate(room.Item2.Lights, template /*Collision.GetCollisionTemplate()*/, TextureTileSize, offset, true);//, Manager_Light.Caster.Light);
 
@@ -397,23 +456,16 @@ namespace YGR
                     //for (int i = 0; i < illumination.Length; ++i)
                     {
                         if (illumination[i] && _doorMasks[room.Item1].First().Check(i))
-                            _illuminatedOpened[i] = illumination[i]; // _illuminatedClosed[i] || illumination[i]; // _illuminatedOpened[i] || illumination[i];
+                            _illuminatedOpened[i] = illumination[i];
                     });
                 }
-                
-                //Logger.Info("===== Calculate corridors illumination: " + watch.ElapsedMilliseconds.ToString());
-
-                //_illuminatedOpened = Manager_Light.Illuminate(lights, Collision.GetCollisionTemplate(), TextureTileSize, offset, true);//, Manager_Light.Caster.Shadow);
 
                 _floorData = new Color[_floor.Width * _floor.Height];
                 _floor.GetData<Color>(_floorData);
             }
 
-            Logger.Info("                                total illumination time: " + watch.ElapsedMilliseconds.ToString());
-            watch.Reset();
             var rooms = DoorRooms.Select(x => (Y_Door)x.Value.First()).ToArray();
             var keys = DoorRooms.Select(x => x.Key).ToArray();
-            //var masks = _doorMasks.Select(x => x.Value.First()).ToArray();
 
             Color[] data = new Color[_floor.Width * _floor.Height];
             
@@ -421,7 +473,6 @@ namespace YGR
             Parallel.For(0, _illuminatedClosed.Length, i =>
             //for (int i = 0; i < _illuminatedClosed.Length; ++i)
             {
-                //bool illuminated = _illuminatedOpened[i];
                 bool illuminated = _illuminatedClosed[i];
                 if (!illuminated)
                 {
@@ -429,10 +480,6 @@ namespace YGR
                     {
                         if (rooms[r].DoorIsOpen())
                         {
-                            // illuminated = true at x = 368, y = 48
-                            //int ti = 112 * Rect.Width + 640;
-                            //if (i == ti)
-                               //Logger.Info("lol");
                             var check = _doorMasks[keys[r]].First().Check(i);
                             illuminated = illuminated || (check && _illuminatedOpened[i]);
                         }
@@ -454,7 +501,6 @@ namespace YGR
                 }
             });
             _floor.SetData<Color>(data);
-            Logger.Info("                                total application time: " + watch.ElapsedMilliseconds.ToString());
         }
 
         public X_ConnectorPoint GetConnectorPoint(X_ConnectorSide side, string name = "")
@@ -593,11 +639,73 @@ namespace YGR
 
             // needs to be done this way because properties return by value and not by ref
             Rect = new Rectangle(position.X, position.Y, Rect.Width, Rect.Height);
+
+            if(_spawner != null)
+            {
+                for(int i=0; i<_spawner.Count; ++i)
+                {
+                    _spawner[i] += p;
+                }
+            }
+
+            if(_bossSpawner != null)
+            {
+                for (int i = 0; i < _bossSpawner.Count; ++i)
+                {
+                    _bossSpawner[i] += p;
+                }
+            }
+            
+            if(_playerSpawner != null)
+            {
+                for (int i = 0; i < _playerSpawner.Count; ++i)
+                {
+                    _playerSpawner[i] += p;
+                }
+            }
         }
 
         public X_ConnectorPoint GetConnectorPoint(X_ConnectorSide side)
         {
             return Doors[side].First();
+        }
+
+        private bool doorAnimation(float dt, bool opening)
+        {
+            _animationTime += dt;
+            if (_animationTime < _doorOpeningTime)
+            {
+                float percent = 1.0f / _doorOpeningTime * _animationTime;
+                if (opening)
+                    _currentDoorOpenOffset = (int)Math.Round(TextureTileSize * percent);
+                else
+                    _currentDoorOpenOffset = (int)Math.Round(TextureTileSize * (1.0f - percent));
+            }
+            if (_animationTime >= _doorOpeningTime)
+            {
+                if (opening)
+                    _currentDoorOpenOffset = TextureTileSize;
+                else
+                    _currentDoorOpenOffset = 0;
+                _animationTime = 0;
+                return false;
+            }
+            return true;
+        }
+
+        public List<Point> GetRegularSpawningPoints()
+        {
+            return _spawner;
+        }
+
+        public List<Point> GetBossSpawningPoints()
+        {
+            return _bossSpawner;
+        }
+
+        public List<Point> GetPlayerSpawningPoints()
+        {
+            return _playerSpawner;
         }
 
         /// <summary>
@@ -606,6 +714,37 @@ namespace YGR
         /// <param name="gameTime">Monogame GameTime</param>
         public void Update(GameTime gameTime)
         {
+            bool keyPressed = Input.IsKeyTriggered(Keybinds.ToggleConnectors);
+            float dt = gameTime.ElapsedGameTime.Milliseconds;
+            switch (State)
+            {
+                case X_RoomState.Closed:
+                    if (keyPressed)
+                    {
+                        State = X_RoomState.Opening;
+                    }
+                    break;
+                case X_RoomState.Opening:
+                    if (!doorAnimation(dt, true))
+                    {
+                        State = X_RoomState.Open;
+                        foreach (var room in DoorRooms.Values) room.First().Illuminate();
+                    }
+                    break;
+                case X_RoomState.Open:
+                    if (keyPressed)
+                    {
+                        State = X_RoomState.Closing;
+                    }
+                    break;
+                case X_RoomState.Closing:
+                    if (!doorAnimation(dt, false))
+                    {
+                        State = X_RoomState.Closed;
+                        foreach (var room in DoorRooms.Values) room.First().Illuminate();
+                    }
+                    break;
+            }
         }
 
         /// <summary>
@@ -635,6 +774,25 @@ namespace YGR
             }
         }
 
+        private void draw(
+            List<X_AutoTiler.X_AutoTileTexture> textures,
+            Vector2 position,
+            SpriteBatch spriteBatch,
+            bool partial)
+        {
+            foreach (var t in textures)
+            {
+                int height = t.Texture().Height;
+                int width = t.Texture().Width;
+                Vector2 pos = position + t.Location().ToVector2() * TextureTileSize;
+
+                spriteBatch.Draw(
+                    t.Texture(), pos,
+                    new Rectangle(0, 0, width, height),
+                    Color.White, 0, Vector2.Zero, Scale, SpriteEffects.None, 0);
+            }
+        }
+
         /// <summary>
         /// Regular Draw method for all drawable objects
         /// </summary>
@@ -643,10 +801,52 @@ namespace YGR
         /// <param name="spriteBatch">Active Monogame SpriteBatch</param>
         public void Draw(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)
         {
-            spriteBatch.Draw(
-                _floor, Rect.Location.ToVector2(),
-                new Rectangle(0, 0, _floor.Width, _floor.Height),
-                Color.White, 0, Vector2.Zero, Scale, SpriteEffects.None, 0);
+            if(State == X_RoomState.Closed || State == X_RoomState.LockedClosed)
+            {
+                //spriteBatch.Draw(
+                //    _floor, Rect.Location.ToVector2(),
+                //    new Rectangle(0, 0, _floor.Width, _floor.Height),
+                //    Color.White, 0, Vector2.Zero, Scale, SpriteEffects.None, 0);
+                
+                //Vector2 position = Rect.Location.ToVector2();
+                //draw(_tileTextures[X_DoorTextureLayer.Door], position, spriteBatch, false);
+
+                //spriteBatch.Draw(
+                //    _roof, Rect.Location.ToVector2(),
+                //    new Rectangle(0, 0, _floor.Width, _floor.Height),
+                //    Color.White, 0, Vector2.Zero, Scale, SpriteEffects.None, 0);
+            }
+            else if (State == X_RoomState.Opening || State == X_RoomState.Closing) {
+                spriteBatch.Draw(
+                    _floor, Rect.Location.ToVector2(),
+                    new Rectangle(0, 0, _floor.Width, _floor.Height),
+                    Color.White, 0, Vector2.Zero, Scale, SpriteEffects.None, 0);
+
+                Vector2 position = Rect.Location.ToVector2();
+                Vector2 movePosition = position;
+                movePosition.Y += _currentDoorOpenOffset;
+                draw(_tileTextures[X_DoorTextureLayer.Door], movePosition, spriteBatch, false);
+                if (_currentDoorOpenOffset % 2 == 0)
+                    draw(_tileTextures[X_DoorTextureLayer.Mechanism1], position, spriteBatch, false);
+                else
+                    draw(_tileTextures[X_DoorTextureLayer.Mechanism2], position, spriteBatch, false);
+
+                spriteBatch.Draw(
+                    _roof, Rect.Location.ToVector2(),
+                    new Rectangle(0, 0, _floor.Width, _floor.Height),
+                    Color.White, 0, Vector2.Zero, Scale, SpriteEffects.None, 0);
+            }
+            else
+            {
+                spriteBatch.Draw(
+                    _floor, Rect.Location.ToVector2(),
+                    new Rectangle(0, 0, _floor.Width, _floor.Height),
+                    Color.White, 0, Vector2.Zero, Scale, SpriteEffects.None, 0);
+                spriteBatch.Draw(
+                    _roof, Rect.Location.ToVector2(),
+                    new Rectangle(0, 0, _floor.Width, _floor.Height),
+                    Color.White, 0, Vector2.Zero, Scale, SpriteEffects.None, 0);
+            }
         }
 
         /// <summary>

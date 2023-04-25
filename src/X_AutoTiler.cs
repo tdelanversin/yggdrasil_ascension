@@ -117,25 +117,17 @@ namespace YGR
             tileInfo.Add(resourceFolder + jsonFileName, info);
 
             info.tileSize = data.size;
-
             info.tiles = new Dictionary<string, List<Color[]>>();
-            //info.tilesTexture = new Dictionary<string, List<Texture2D>>();
-
             info.masks = new Dictionary<string, X_TileType[,][]>();
-            //textures = new Dictionary<string, X_DoorTextureLayer>();
+
             foreach (var t in data.tiles)
             {
                 info.tiles.Add(t.Key, new List<Color[]>());
-                //info.tilesTexture.Add(t.Key, new List<Texture2D>());
                 foreach (var e in t.Value.coordinates)
                 {
                     Color[] temp = new Color[data.size * data.size];
                     texture.GetData<Color>(0, new Rectangle(e.x * data.size, e.y * data.size, data.size, data.size), temp, 0, data.size * data.size);
                     info.tiles[t.Key].Add(temp);
-
-                    //Texture2D ttemp = new Texture2D(graphicsDevice, data.size, data.size);
-                    //ttemp.SetData<Color>(temp);
-                    //info.tilesTexture[t.Key].Add(ttemp);
                 }
 
                 info.masks.Add(t.Key, map(t.Value.mask, mapJsonName));

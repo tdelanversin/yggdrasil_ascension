@@ -258,9 +258,6 @@ namespace YGR
             Caster casterType = Caster.Shadow
         )
         {
-            var watch = new Stopwatch();
-            watch.Start();
-            Logger.Info("---- 0 ----: " + watch.ElapsedMilliseconds.ToString());
             if ((open && IlluminationModelOpened == null) || (!open && IlluminationModelClosed == null))
             {
                 Logger.Error("Trying to illuminate a room without illumination model for the " + (open? "opened" : "closed") + " state of the level!");
@@ -273,25 +270,21 @@ namespace YGR
 
             var model = (open ? IlluminationModelOpened : IlluminationModelClosed);
 
-            var template = collisionTemplate; // room.Collision.GetCollisionTemplate();
-            //var tileSize = room.TextureTileSize;
+            var template = collisionTemplate;
 
             int width = template[0].Length * tileSize;
             int length = width * template.Length * tileSize;
             bool[] lighted = Enumerable.Repeat<bool>(!light, length).ToArray();
 
-            Vector3 offset = unscaledOffset; // new Vector3(room.Rect.Location.X / room.Scale, room.Rect.Location.Y / room.Scale, 0);
+            Vector3 offset = unscaledOffset;
 
-            //bool[] shadowMap = Enumerable.Repeat<bool>(true, length).ToArray();
             Tuple<int, Vector3>[] coords = new Tuple<int, Vector3>[length]; // Enumerable.Repeat<Vector3>(Vector3.Zero, length).ToArray();
-            //List<int> textureMap = new List<int>();// Enumerable.Repeat<int>(-1, length).ToArray();
-            //X_TileType[] tileType = Enumerable.Repeat<X_TileType>(X_TileType.Floor, length).ToArray();
 
             int shadowSpotSize = 1;
             float tto = 0.001f;
             int shadowSize = (tileSize + shadowSpotSize / 2) * (tileSize + shadowSpotSize / 2);
             int baseIndex = 0;
-            Logger.Info("---- 1 ----: " + watch.ElapsedMilliseconds.ToString());
+
             Parallel.For(0, template.Length, h =>
             //for (int h=0; h < template.Length; ++h)
             {
@@ -388,7 +381,7 @@ namespace YGR
                     }
                 }
             });
-            Logger.Info("---- 2 ----: " + watch.ElapsedMilliseconds.ToString() + " count: " + baseIndex.ToString() + " all: " + length);
+
             foreach (var lightSource in lights)
             {
                 Vector3 orig = lightSource.GetUnscaledPosition();
@@ -415,7 +408,7 @@ namespace YGR
                     }
                 });
             }
-            Logger.Info("@@@@@@@@@@@@@@@@@@@ calculate illumination: " + watch.ElapsedMilliseconds.ToString());
+
             return lighted;
             //saveShadeToFile(lighted, room, lights);
         }

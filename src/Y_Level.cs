@@ -1,6 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
+using Microsoft.Xna.Framework.Input;
 using Newtonsoft.Json;
 using SharpFont.Cache;
 using System;
@@ -67,8 +68,6 @@ namespace YGR
             var files = Directory.GetDirectories(Util.PathOsNormalization(_levelResourceFolder + _name));
             List<Y_CMRoom> bag = new List<Y_CMRoom>();
 
-            var watch = new Stopwatch();
-            watch.Start();
             foreach(var f in files)
             {
                 var roomName = f.Split(Path.DirectorySeparatorChar).Last();
@@ -85,6 +84,11 @@ namespace YGR
                 if (_availableRooms.ContainsKey(b.Name))
                     Logger.Error("Room with name " + b.Name + " already added");
                 var key = b.Name.Split("_")[0];
+                if(key == "Start" || key == "Gold")
+                {
+                    b.State = X_RoomState.LockedOpen;
+                }
+
                 List<Y_CMRoom> rooms;
                 if(!_availableRooms.TryGetValue(key, out rooms))
                 {
@@ -95,8 +99,6 @@ namespace YGR
                     rooms.Add(b);
                 }
             }
-
-            Logger.Info("Loaded all rooms: " + watch.ElapsedMilliseconds.ToString());
 
             var dataFile = _name.Split(Path.DirectorySeparatorChar)[1];
             var dataFilePath = _levelResourceFolder + dataFile + "_data.json";
@@ -118,12 +120,6 @@ namespace YGR
 
         public void Create(GraphicsDevice graphicsDevice) 
         { 
-            int connectorWidth = 17;
-            var watch2 = new Stopwatch();
-            var watch = new Stopwatch();
-            watch.Start();
-            watch2.Start();
-
             // put everything back
             foreach (var room in Rooms)
             {
@@ -190,14 +186,6 @@ namespace YGR
                         TileHeight,
                         out direction, out numTilesLength, out tileOffset);
 
-                    //if(fromRoom.Name == "Leaf_3" || toRoom.Name == "Leaf_3")
-                    ////if (Math.Abs(numTilesLength) < 7 || direction == X_DoorDirection.Corner && Math.Abs(tileOffset) < 7)
-                    //    Logger.Info("Problem");
-
-                    if(direction == X_DoorDirection.Corner)
-                    {
-                        Logger.Info("blup");
-                    }
                     var connector = new Y_Door(
                         direction,
                         numTilesLength,
@@ -219,74 +207,47 @@ namespace YGR
                 connectorIndex++;
             }
 
+            Manager_Players.ClearPlayers();
 
+            // get start position
+            var spawningPoints = ((Y_CMRoom)Rooms[0]).GetPlayerSpawningPoints();
 
+            var sp = spawningPoints.First();
+            Manager_Players.AddPlayer_Ninja(PlayerIndex.One, sp.ToVector2(), this, ControlLayout.KeyboardWASD);
 
+            for (int i = 0; i < 4; i++)
+            {
+                PlayerIndex playerIndex = (PlayerIndex)i;
+                var con = GamePad.GetState(playerIndex).IsConnected;
+                if (con)
+                {
+                    var spi = spawningPoints[i+1];
+                    Manager_Players.AddPlayer_SimplePlayer(playerIndex, position: spi.ToVector2(), this);
+                }
+            }
 
+            Camera.Players = Manager_Players.Players;
+            Camera.Mode = CameraMode.Room;
+            Camera.Room = Rooms[0];
 
+            foreach (var room in Rooms)
+            {
+                if (room.Key == 0) continue;
+                if (room.Value.WhatAreYou() != X_LevelElements.Room) continue;
 
+                var r = (Y_CMRoom)room.Value;
+                var regularSpawners = r.GetRegularSpawningPoints();
+                var bossSpawners = r.GetBossSpawningPoints();
 
-
-            //foreach (var room in _availableRooms)
-            //{
-            //    Rooms.Add(room.Key, room.Value);
-            //    _availableRooms.Remove(room.Key);
-            //}
-
-            //{
-            //    { "center", new Y_CMRoom("r2", TileWidth, TileHeight, resourceFolder + "Room_0", graphicsDevice) },
-            //    { "middle", new Y_CMRoom("r0", TileWidth, TileHeight, resourceFolder + "Room_1", graphicsDevice) },
-            //    { "top", new Y_CMRoom("r1", TileWidth, TileHeight, resourceFolder + "Room_2", graphicsDevice) },
-            //    { "left", new Y_CMRoom("r3-L", TileWidth, TileHeight, resourceFolder + "Room_3", graphicsDevice) },
-            //    { "right", new Y_CMRoom("r3-R", TileWidth, TileHeight, resourceFolder + "Room_4", graphicsDevice) },
-            //    { "bottom1", new Y_CMRoom("r3-B1", TileWidth, TileHeight, resourceFolder + "Room_5", graphicsDevice) },
-            //    { "bottom2", new Y_CMRoom("r3-B2", TileWidth, TileHeight, resourceFolder + "Room_5", graphicsDevice) },
-            //    { "bottom3", new Y_CMRoom("r3-B3", TileWidth, TileHeight, resourceFolder + "Room_5", graphicsDevice) },
-            //    { "bottom4", new Y_CMRoom("r3-B4", TileWidth, TileHeight, resourceFolder + "Room_5", graphicsDevice) },
-            //    { "bottom5", new Y_CMRoom("r3-B5", TileWidth, TileHeight, resourceFolder + "Room_5", graphicsDevice) },
-            //    { "bottom6", new Y_CMRoom("r3-B6", TileWidth, TileHeight, resourceFolder + "Room_5", graphicsDevice) },
-            //};
-
-            //Logger.Info("-----Initialized all rooms: " + watch.ElapsedMilliseconds.ToString());
-            //int width = -17;
-            //int offset2 = 9;
-            //Rooms.Add(0,
-            //    new Y_Door(
-            //        X_DoorDirection.Corner,
-            //        width,
-            //        TileWidth,
-            //        TileHeight,
-            //        offset2,
-            //        graphicsDevice,
-            //        "./Doors",
-            //        "data.json")
-            //    );
-
-            //Rooms.Add("door-center-to-left", new Y_Door(X_DoorDirection.Horizontal, connectorWidth, TileWidth, TileHeight, 1, graphicsDevice, "./Doors", "data.json"));
-            //Rooms.Add("door-center-to-right", new Y_Door(X_DoorDirection.Horizontal, connectorWidth, TileWidth, TileHeight, -3, graphicsDevice, "./Doors", "data.json"));
-            //Rooms.Add("door-center-to-bottom1", new Y_Door(X_DoorDirection.Vertical, connectorWidth, TileWidth, TileHeight, 0, graphicsDevice, "./Doors", "data.json"));
-            //Rooms.Add("door-middle-to-top", new Y_Door(X_DoorDirection.Vertical, connectorWidth, TileWidth, TileHeight, 0, graphicsDevice, "./Doors", "data.json"));
-            //Rooms.Add("door-center-to-bottom2", new Y_Door(X_DoorDirection.Vertical, connectorWidth, TileWidth, TileHeight, 3, graphicsDevice, "./Doors", "data.json"));
-            //Rooms.Add("door-center-to-bottom3", new Y_Door(X_DoorDirection.Vertical, connectorWidth, TileWidth, TileHeight, 3, graphicsDevice, "./Doors", "data.json"));
-            //Rooms.Add("door-center-to-bottom4", new Y_Door(X_DoorDirection.Vertical, connectorWidth, TileWidth, TileHeight, 3, graphicsDevice, "./Doors", "data.json"));
-            //Rooms.Add("door-center-to-bottom5", new Y_Door(X_DoorDirection.Vertical, connectorWidth, TileWidth, TileHeight, 3, graphicsDevice, "./Doors", "data.json"));
-            //Rooms.Add("door-center-to-bottom6", new Y_Door(X_DoorDirection.Vertical, connectorWidth, TileWidth, TileHeight, 3, graphicsDevice, "./Doors", "data.json"));
-
-            Logger.Info("-----Initialized all corridors: " + watch.ElapsedMilliseconds.ToString());
-
-            //((Y_Door)Rooms["door-center-to-middle"]).Connect(X_ConnectorSide.Bottom, Rooms["center"], X_ConnectorSide.Top, Rooms["middle"]);
-            //((Y_Door)Rooms["door-center-to-left"]).Connect(X_ConnectorSide.Right, Rooms["center"], X_ConnectorSide.Left, Rooms["left"]);
-            //((Y_Door)Rooms["door-center-to-right"]).Connect(X_ConnectorSide.Left, Rooms["center"], X_ConnectorSide.Right, Rooms["right"]);
-            //((Y_Door)Rooms["door-center-to-bottom1"]).Connect(X_ConnectorSide.Top, Rooms["center"], X_ConnectorSide.Bottom, Rooms["bottom1"]);
-            //((Y_Door)Rooms["door-middle-to-top"]).Connect(X_ConnectorSide.Bottom, Rooms["middle"], X_ConnectorSide.Top, Rooms["top"]);
-
-            //((Y_Door)Rooms["door-center-to-bottom2"]).Connect(X_ConnectorSide.Bottom, Rooms["top"], X_ConnectorSide.Top, Rooms["bottom2"]);
-            //((Y_Door)Rooms["door-center-to-bottom3"]).Connect(X_ConnectorSide.Bottom, Rooms["bottom2"], X_ConnectorSide.Top, Rooms["bottom3"]);
-            //((Y_Door)Rooms["door-center-to-bottom4"]).Connect(X_ConnectorSide.Bottom, Rooms["bottom3"], X_ConnectorSide.Top, Rooms["bottom4"]);
-            //((Y_Door)Rooms["door-center-to-bottom5"]).Connect(X_ConnectorSide.Bottom, Rooms["bottom4"], X_ConnectorSide.Top, Rooms["bottom5"]);
-            //((Y_Door)Rooms["door-center-to-bottom6"]).Connect(X_ConnectorSide.Bottom, Rooms["bottom5"], X_ConnectorSide.Top, Rooms["bottom6"]);
-
-            Logger.Info("------Connected all levels: " + watch.ElapsedMilliseconds.ToString());
+                if(regularSpawners != null)
+                {
+                    foreach (var spr in regularSpawners)
+                    {
+                        Manager_Enemies.AddEnemy_SimpleEnemy(spr.ToVector2(), this, Manager_Players.Players);
+                        Manager_Enemies.AddEnemy_SimpleEnemy(spr.ToVector2(), this, Manager_Players.Players);
+                    }
+                }
+            }
 
             //finalize: split collision models
             foreach (var room in Rooms)
@@ -296,85 +257,14 @@ namespace YGR
                     ((Y_Door)room.Value).SplitConnectedCollisionModels();
                 }
             }
-            Logger.Info("------Split collision models: " + watch.ElapsedMilliseconds.ToString());
 
             Manager_Light.CreateModel(this);
-            Logger.Info("------Initialized light manager: " + watch.ElapsedMilliseconds.ToString());
-
-            //float scale = (float)TileWidth / 32.0f;
-
-            //_lights = new List<X_Light>();
-            //foreach (var room in Rooms.Values)
-            //{
-            //    if (room.WhatAreYou() == X_LevelElements.Door) continue;
-            //    var rect = getLightRect(room, 2);
-            //    //rect.Offset(0, -20 * tileSize);
-            //    _lights.Add(
-            //        new X_Light(
-            //            //new Vector3((int)(3.5 * tileSize), (int)(4 * tileSize), 1 * tileSize),
-            //            new Vector3(room.Rect.X + -5*tileSize, room.Rect.Y + 5*tileSize, 5 * tileSize),
-            //            rect,
-            //            scale
-            //    ));
-            //}
-
-            //Rooms["center"].MoveTo(new Point(0, -(20 * tileSize)));
-
-            //var r = Rooms["center"];
-            //_lights.Add(
-            //        new X_Light(
-            //            //new Vector3((int)(3.5 * tileSize), (int)(4 * tileSize), 1 * tileSize),
-            //            new Vector3(r.Rect.X + tileSize, r.Rect.Y + tileSize, 5 * tileSize),
-            //            getLightRect(r, 2),
-            //            Color.Black,
-            //            0.4f,
-            //            scale
-            //    ));
-
-            //r = Rooms["left"];
-            //_lights.Add(
-            //        new X_Light(
-            //            //new Vector3((int)(3.5 * tileSize), (int)(4 * tileSize), 1 * tileSize),
-            //            new Vector3(r.Rect.X + tileSize, r.Rect.Y + tileSize, 5 * tileSize),
-            //            getLightRect(r, 2),
-            //            Color.Black,
-            //            0.4f,
-            //            scale
-            //    ));
-
-            //r = Rooms["middle"];
-            //_lights.Add(
-            //        new X_Light(
-            //            //new Vector3((int)(3.5 * tileSize), (int)(4 * tileSize), 1 * tileSize),
-            //            new Vector3(r.Rect.X + tileSize, r.Rect.Y + tileSize, 5 * tileSize),
-            //            getLightRect(r, 2 ),
-            //            Color.Black,
-            //            0.4f,
-            //            scale
-            //    ));
-
-            //if (Settings.Lighting)
-            //{
+            
             foreach (var room in Rooms.Values)
             {
                 room.Illuminate();
-                Logger.Info("                                intermediate: " + watch2.ElapsedMilliseconds.ToString());
             }
-            //}
-            Logger.Info("-------Initialized level: " + watch2.ElapsedMilliseconds.ToString());
-
-            //OutsideColor = ((Y_CMRoom)(Rooms.Values.First())).RegionColor;
         }
-
-        //private Rectangle getLightRect(IWalkable room, int offsetWidth)
-        //{
-        //    return new Rectangle(
-        //        room.Rect.X - offsetWidth * TileWidth,
-        //        room.Rect.Y - offsetWidth * TileHeight,
-        //        room.Rect.Width + 2 * offsetWidth * TileWidth,
-        //        room.Rect.Height + 2 * offsetWidth * TileHeight
-        //    );
-        //}
 
         public IWalkable GetRoom(IGameElement elem, IWalkable currentRoom)
         {
@@ -409,10 +299,6 @@ namespace YGR
             {
                 room.Value.DrawOutline(gameTime, globalOffset, spriteBatch);
             }
-            //foreach (var light in _lights)
-            //{
-            //    light.DrawOutline(gameTime, globalOffset, spriteBatch);
-            //}
         }
 
         public void Draw(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)

@@ -54,7 +54,7 @@ namespace YGR
             else
             {
                 // enemy shot the projectile
-                foreach (var victim in me.Level.Victims)
+                foreach (var victim in Manager_Players.Players)
                 {
                     if (victim == me.WhoFiredMe) continue;
 
