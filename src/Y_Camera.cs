@@ -97,7 +97,8 @@ namespace YGR
         {
             if (Players == null || Players.Count < 1) return;
 
-            var playersAlive = ((List<IVictim>)Players).FindAll(x => x.WhatAreYou() == X_LevelElements.Victim).ToList();
+            // var playersAlive = ((List<IVictim>)Players).FindAll(x => x.WhatAreYou() == X_LevelElements.Victim).ToList();
+            var playersAlive = Players;
 
             if (playersAlive.Count == 0)
             {
@@ -112,7 +113,6 @@ namespace YGR
             Vector2 playerMeanPos = Vector2.Zero;
             foreach (var player in playersAlive)
             {
-                if (player.WhatAreYou() == X_LevelElements.Ghost) continue;
                 playerMeanPos += player.Rect.Location.ToVector2();
                 left = Math.Min(player.Rect.X, left);
                 right = Math.Max(player.Rect.X, right);
