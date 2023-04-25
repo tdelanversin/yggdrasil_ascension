@@ -20,6 +20,8 @@ namespace YGR
         private Vector2 _maxVelocity;
 
         public Vector2 FacingDirection { get; set; }
+        private float SteeringDirection;
+
         public Texture2D Sprite { get; set; }
         public Rectangle SpriteRect = new Rectangle(0, 0, 42, 60);
         public X_CollisionModel_Victim Collision { get; }
@@ -59,7 +61,8 @@ namespace YGR
             _maxVelocity = Vector2.One * 0.2f;
 
             safetyDistance = 300f;
-            FacingDirection = new Vector2(0, 0);
+            FacingDirection = new Vector2(1, 0);
+            SteeringDirection = 0.0f;
             Sprite = Manager_Enemies.enemy_textures["default_enemy"];
             Collision = new X_CollisionModel_Victim(1.0f, 0.0f);
             _position = position;
@@ -160,7 +163,7 @@ namespace YGR
             Gun.Update(gameTime);
             bool canSee = FindTargetAndVisibility();
             int timeStepMS = gameTime.ElapsedGameTime.Milliseconds;
-            if (!canSee || Vector2.Distance(Target.Rect.Center.ToVector2(), Rect.Center.ToVector2()) > safetyDistance)
+            if (canSee && Vector2.Distance(Target.Rect.Center.ToVector2(), Rect.Center.ToVector2()) > safetyDistance)
             {
                 if (Target != null)
                 {
@@ -179,21 +182,46 @@ namespace YGR
                 Velocity += FacingDirection * _acceleration * (float)timeStepMS;
                 Velocity = Vector2.Clamp(Velocity, -_maxVelocity, _maxVelocity);
 
-                IList<Vector2> contactNormals;
-                IList<Point> contactPoints;
-                IList<IGameElement> who;
-                Vector2 newVelocity;
-                if (Collision.Intersect(this, timeStepMS, out newVelocity, out contactPoints, out contactNormals, out who))
-                {
-                    Velocity = newVelocity;
-                }
-                //Rectangle rect = me.Rect;
-                //rect.Location += (me.Velocity * timeStepMS).ToPoint();
-                //me.Rect = rect;
-
                 _position += Velocity * timeStepMS;
                 _rect.Location = _position.ToPoint();
             }
+            else // No target in line of sight, just wander
+            {
+                // Giga simple "wandering"
+                // FacingDirection += new Vector2(Util.Random.NextSingle() - 0.5f, Util.Random.NextSingle() - 0.5f);
+                // if (FacingDirection.LengthSquared() > 1)
+                // {
+                //     FacingDirection = Vector2.Normalize(FacingDirection);
+                // }
+
+                SteeringDirection += (Util.random.NextSingle() - 0.5f) / 2f;
+
+                // Centered steering model wandering: Move a point on a circle around the entity, always face that point
+                FacingDirection = new Vector2((float)Math.Cos(SteeringDirection), (float)Math.Sin(SteeringDirection));
+
+                // Offset circle steering model wandering: Move a point on a circle in front of the entity, always face that point
+                // Vector2 steeringCenter = _position + Vector2.Normalize(FacingDirection) / 2;
+                // Vector2 steeringPoint = steeringCenter + new Vector2((float)Math.Cos(SteeringDirection), (float)Math.Sin(SteeringDirection)) / 2;
+                // FacingDirection = steeringPoint - _position;
+            }
+            Velocity += FacingDirection * _acceleration * (float)timeStepMS;
+            Velocity = Vector2.Clamp(Velocity, -_maxVelocity, _maxVelocity);
+
+            IList<Vector2> contactNormals;
+            IList<Point> contactPoints;
+            IList<IGameElement> who;
+            Vector2 newVelocity;
+            if (Collision.Intersect(this, timeStepMS, out newVelocity, out contactPoints, out contactNormals, out who))
+            {
+                Velocity = newVelocity;
+            }
+            //Rectangle rect = me.Rect;
+            //rect.Location += (me.Velocity * timeStepMS).ToPoint();
+            //me.Rect = rect;
+
+            _position += Velocity * timeStepMS;
+            _rect.Location = _position.ToPoint();
+
 
             if (canSee)
             {
@@ -202,6 +230,17 @@ namespace YGR
                 targetDirection.Normalize();
                 Gun.Shoot(gameTime, origin.ToVector2(), targetDirection, Level, this);
             }
+        }
+
+        protected virtual void DrawFaceDirectionIndicator(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)
+        {
+
+            var angle = Math.Atan2(FacingDirection.Y, FacingDirection.X) + Math.PI / 2;
+            spriteBatch.Draw(
+                Manager_Players.SpriteAimIndicator[3], _rect.Center.ToVector2() + FacingDirection * _rect.Height,
+                null,
+                Color.White, (float)angle, new Vector2(Manager_Players.SpriteAimIndicator[3].Width / 2, 0), 0.03f, SpriteEffects.None, 0);
+
         }
 
         protected virtual void DrawOverheadString(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)
@@ -215,6 +254,9 @@ namespace YGR
         public void Draw(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)
         {
             spriteBatch.Draw(Sprite, _rect, SpriteRect, _color);
+#if DEBUG
+            DrawFaceDirectionIndicator(gameTime, globalOffset, spriteBatch);
+#endif
             DrawOverheadString(gameTime, globalOffset, spriteBatch);
         }
 
