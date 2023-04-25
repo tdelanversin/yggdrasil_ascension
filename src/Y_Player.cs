@@ -25,6 +25,7 @@ namespace YGR
         // IVictim fields
         public int LifePoints { get; set; }
         public bool HitInLastLoop { get; set; }
+        public IProjectile HitBy { get; set; }
         public X_CollisionModel_Victim Collision { get; }
         public Vector2 Velocity { get; set; }
         public Y_Level Level { get; set; }
@@ -51,6 +52,16 @@ namespace YGR
         protected Vector2 _maxVelocity;
         protected Vector2 _position;
         protected ParticleEffect pE;
+
+        protected bool _invincible;
+        protected float _invincibleDuration;
+        protected float _invincibleTimeLeft;
+
+        // timing related fields
+        protected float _animationTimer;
+        protected float _animationTreshold;
+        protected float _actionTimer;
+        protected float _actionTreshold;
 
         protected enum InputType
         {
@@ -80,12 +91,22 @@ namespace YGR
             _spriteAimIndicator = Manager_Players.SpriteAimIndicator[(int)playerIndex];
 
             _spriteDimensions = new Rectangle(0, 0, 42, 60);
+            _animationTimer = 0;
+            _animationTreshold = 250;
             _animationIndex = 0;
             _animations = new Dictionary<string, int[]> {
                 { "stand", new int[] { 0, 1, 8, 9 } },
                 { "walk_left", new int[] { 2, 3, 4 } },
                 { "walk_right", new int[] { 5, 6, 7 } }};
 
+            _rect = new Rectangle(
+                (int)_position.X - (int)(scale * _spriteDimensions.Width / 2),
+                (int)_position.Y - (int)(scale * _spriteDimensions.Height / 2),
+                (int)(scale * _spriteDimensions.Width), (int)(scale * _spriteDimensions.Height)
+            );
+            Scale = (float)Rect.Width / (float)_spriteDimensions.Width;
+
+            // Movement related
             Velocity = Vector2.Zero;
             _acceleration = Vector2.One * 0.008f;
             _deceleration = Vector2.One * 0.008f;
@@ -95,25 +116,25 @@ namespace YGR
             _cr = 0.0f; // elastic impact
             Collision = new X_CollisionModel_Victim(_mass, _cr);
 
+            // Character related
             _isAiming = false;
             _aimDirection = Vector2.Zero;
+            _invincible = false;
+            _invincibleDuration = 1250;
 
             LifePoints = 30;
             HitInLastLoop = false;
 
-            _rect = new Rectangle(
-                (int)_position.X - (int)(scale * _spriteDimensions.Width / 2),
-                (int)_position.Y - (int)(scale * _spriteDimensions.Height / 2),
-                (int)(scale * _spriteDimensions.Width), (int)(scale * _spriteDimensions.Height)
-            );
-
-            Scale = (float)Rect.Width / (float)_spriteDimensions.Width;
             Room = Level.GetRoom(this, Room);
         }
 
         public X_LevelElements WhatAreYou()
         {
-            if (IsAlive())
+            if (_invincible)
+            {
+                return X_LevelElements.Invincible;
+            }
+            else if (IsAlive())
             {
                 return X_LevelElements.Victim;
             }
@@ -128,8 +149,28 @@ namespace YGR
             return LifePoints > 0;
         }
 
+        /* Deal with being hit by projectile, basically physical therapy */
+        protected void HandleProjectileImpact(GameTime gameTime)
+        {
+            if (_invincibleTimeLeft < 0)
+            {
+                _invincible = false;
+            }
+            if (HitInLastLoop && !_invincible)
+            {
+                LifePoints -= 1;
+                _invincible = true;
+                _invincibleTimeLeft = _invincibleDuration;
+                HitInLastLoop = false;
+            }
+            if (_invincible)
+            {
+                _invincibleTimeLeft -= gameTime.ElapsedGameTime.Milliseconds;
+            }
+        }
+
         /* Handle GamePad movement, aiming and shooting */
-        public void HandleGamepadInput(GameTime gameTime, ref Vector2 input)
+        protected void HandleGamepadInput(GameTime gameTime, ref Vector2 input)
         {
             GamePadState gpState = GamePad.GetState(_playerIndex);
             if (gpState.IsConnected)
@@ -168,15 +209,12 @@ namespace YGR
         }
 
         /* Handle Keyboard & Mouse movement, aiming and shooting */
-        public void HandleMouseKeyboardInput(GameTime gameTime, ref Vector2 input)
+        protected void HandleMouseKeyboardInput(GameTime gameTime, ref Vector2 input)
         {
-
             if (_controlLayout > 0)
             {
                 if (_controlLayout == ControlLayout.KeyboardWASD)
                 {
-
-
                     if (Input.IsKeyDown(Keybinds.P1Right)) input.X += 1;
                     if (Input.IsKeyDown(Keybinds.P1Left)) input.X -= 1;
                     if (Input.IsKeyDown(Keybinds.P1Down)) input.Y += 1;
@@ -210,7 +248,7 @@ namespace YGR
             }
         }
 
-        public virtual void UpdateVelocity(Vector2 input, GameTime gameTime)
+        protected virtual void UpdateVelocity(Vector2 input, GameTime gameTime)
         {
             int timeStepMS = gameTime.ElapsedGameTime.Milliseconds;
 
@@ -238,7 +276,7 @@ namespace YGR
             Velocity = Vector2.Clamp(Velocity, -_maxVelocity, _maxVelocity);
         }
 
-        public virtual void UpdateCollision(GameTime gameTime)
+        protected virtual void UpdateCollision(GameTime gameTime)
         {
             int timeStepMS = gameTime.ElapsedGameTime.Milliseconds;
             /* ##########################################################################
@@ -261,6 +299,7 @@ namespace YGR
         public virtual void Update(GameTime gameTime)
         {
             Manager_Particles.Update(gameTime);
+            HandleProjectileImpact(gameTime);
             Vector2 input = Vector2.Zero;
             HandleGamepadInput(gameTime, ref input);
             HandleMouseKeyboardInput(gameTime, ref input);
@@ -287,11 +326,17 @@ namespace YGR
 
         protected virtual void DrawPlayer(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)
         {
+            Color color = Color.White;
+            if (_invincible)
+            {
+                color = Color.Black;
+            }
+
             spriteBatch.Draw(
                 texture: _spritePlayer,
                 position: _rect.Location.ToVector2(),
                 sourceRectangle: new Rectangle(_animationIndex * _spriteDimensions.Width, 0, _spriteDimensions.Width, _spriteDimensions.Height),
-                color: Color.White,
+                color: color,
                 rotation: 0,
                 origin: Vector2.Zero,
                 scale: Scale,
@@ -491,6 +536,7 @@ namespace YGR
             HandleGamepadInput(gameTime, ref input);
             HandleMouseKeyboardInput(gameTime, ref input);
 
+            HandleProjectileImpact(gameTime);
             UpdateVelocity(input, gameTime);
             UpdateDash(gameTime); // Updates Velocity directly for now, so call before UpdateCollision()
             UpdateCollision(gameTime);

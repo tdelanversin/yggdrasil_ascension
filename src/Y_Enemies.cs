@@ -11,6 +11,7 @@ namespace YGR
     {
         public int LifePoints { get; set; }
         public bool HitInLastLoop { get; set; }
+        public IProjectile HitBy { get; set; }
         protected float maxVelocity { get; set; }
         protected float safetyDistance { get; set; }
 
