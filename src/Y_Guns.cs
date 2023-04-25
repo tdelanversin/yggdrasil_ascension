@@ -263,4 +263,44 @@ namespace YGR
             nextShotCooldown = Math.Max(0, nextShotCooldown - gameTime.ElapsedGameTime.TotalMilliseconds);
         }
     }
+
+    public class Y_GigaGun : IShooter
+    {
+        double nextShotCooldown = 0.0f;
+        static int shotDelay = 3000;
+        static int shotCount = 128;
+        static double shotSpread = 2 * Math.PI / shotCount;
+
+
+        public Y_GigaGun() { }
+
+        public void Shoot(GameTime gameTime, Vector2 origin, Vector2 direction, Y_Level level, IGameElement who)
+        {
+            
+            if (nextShotCooldown > 0.0f)
+                return;
+
+            Manager_Sound.AddSound_Shotgun().Play();
+
+            nextShotCooldown = shotDelay;
+
+            double spread = -shotCount / 2 * shotSpread;
+            for (int i = 0; i < shotCount; i++)
+            {
+                var new_dir = new Vector2(
+                    (float)(direction.X * Math.Cos(spread) - direction.Y * Math.Sin(spread)),
+                    (float)(direction.X * Math.Sin(spread) + direction.Y * Math.Cos(spread))
+                );
+
+                Manager_Projectile.AddProjectile_ShotGunProjectile(origin, new_dir, gameTime.TotalGameTime.TotalMilliseconds, level, who);
+                spread += shotSpread;
+            }
+        }
+
+        public void Update(GameTime gameTime)
+        {
+            nextShotCooldown = Math.Max(0, nextShotCooldown - gameTime.ElapsedGameTime.TotalMilliseconds);
+        }
+
+    }
 }
