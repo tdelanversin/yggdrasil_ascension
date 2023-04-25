@@ -68,7 +68,7 @@ namespace YGR
             var files = Directory.GetDirectories(Util.PathOsNormalization(_levelResourceFolder + _name));
             List<Y_CMRoom> bag = new List<Y_CMRoom>();
 
-            foreach(var f in files)
+            foreach (var f in files)
             {
                 var roomName = f.Split(Path.DirectorySeparatorChar).Last();
                 //if (_availableRooms.ContainsKey(roomName))
@@ -79,18 +79,18 @@ namespace YGR
                 //var name = Path.GetDirectoryName(f);
             }//);
 
-            foreach(var b in bag)
+            foreach (var b in bag)
             {
                 if (_availableRooms.ContainsKey(b.Name))
                     Logger.Error("Room with name " + b.Name + " already added");
                 var key = b.Name.Split("_")[0];
-                if(key == "Start" || key == "Gold")
+                if (key == "Start" || key == "Gold")
                 {
                     b.State = X_RoomState.LockedOpen;
                 }
 
                 List<Y_CMRoom> rooms;
-                if(!_availableRooms.TryGetValue(key, out rooms))
+                if (!_availableRooms.TryGetValue(key, out rooms))
                 {
                     _availableRooms.Add(key, new List<Y_CMRoom> { b });
                 }
@@ -109,7 +109,7 @@ namespace YGR
                 _data = JsonConvert.DeserializeObject<Y_Level.Data>(array.ToString());
             }
 
-            foreach(var dk in _data.Level.Keys)
+            foreach (var dk in _data.Level.Keys)
             {
                 _data.Level[dk] = _data.Level[dk].OrderBy(x => x.Index).ToList();
             }
@@ -118,12 +118,12 @@ namespace YGR
         }
 
 
-        public void Create(GraphicsDevice graphicsDevice) 
-        { 
+        public void Create(GraphicsDevice graphicsDevice)
+        {
             // put everything back
             foreach (var room in Rooms)
             {
-                if(room.Value.WhatAreYou() == X_LevelElements.Room)
+                if (room.Value.WhatAreYou() == X_LevelElements.Room)
                 {
                     var r = (Y_CMRoom)room.Value;
                     var roomKey = r.Name.Split("_")[0];
@@ -149,8 +149,8 @@ namespace YGR
                 float h = 1.0f;
                 float w = (float)n.Rect.Width / (float)n.Rect.Height;
                 Point p = new Point(
-                    (int)(node.X * w * offset - n.Rect.Width/2), 
-                    (int)(node.Y * h * offset - n.Rect.Height/2));
+                    (int)(node.X * w * offset - n.Rect.Width / 2),
+                    (int)(node.Y * h * offset - n.Rect.Height / 2));
                 p.X = p.X + (TileWidth - p.X % TileWidth);
                 p.Y = p.Y + (TileHeight - p.Y % TileHeight);
                 n.MoveTo(p);
@@ -158,7 +158,7 @@ namespace YGR
             }
 
             List<IWalkable> connectors = new List<IWalkable>();
-            foreach(var room in Rooms)
+            foreach (var room in Rooms)
             {
                 int index = room.Key;
                 int len = tree[index].Connections.Count();
@@ -170,7 +170,7 @@ namespace YGR
                 int numTilesLength = 17;
                 X_DoorDirection direction = X_DoorDirection.Horizontal;
                 var fromRoom = room.Value;
-                foreach(var con in connection)
+                foreach (var con in connection)
                 {
                     X_ConnectorSide fromSide = Y_Door.ParseFromSide(con.Key);
                     int ll = con.Value.Length;
@@ -184,7 +184,7 @@ namespace YGR
                     var toConnectorPoint = toRoom.GetConnectorPoint(toSide.Item2);
                     Y_Door.GetDoorType(
                         fromConnectorPoint,
-                        toConnectorPoint, 
+                        toConnectorPoint,
                         TileHeight,
                         out direction, out numTilesLength, out tileOffset);
 
@@ -224,7 +224,7 @@ namespace YGR
                 var con = GamePad.GetState(playerIndex).IsConnected;
                 if (con)
                 {
-                    var spi = spawningPoints[i+1];
+                    var spi = spawningPoints[i + 1];
                     Manager_Players.AddPlayer_SimplePlayer(playerIndex, position: spi.ToVector2(), this);
                 }
             }
@@ -242,12 +242,19 @@ namespace YGR
                 var regularSpawners = r.GetRegularSpawningPoints();
                 var bossSpawners = r.GetBossSpawningPoints();
 
-                if(regularSpawners != null)
+                if (regularSpawners != null)
                 {
                     foreach (var spr in regularSpawners)
                     {
                         Manager_Enemies.AddEnemy_SimpleEnemy(spr.ToVector2(), this, Manager_Players.Players);
                         Manager_Enemies.AddEnemy_SimpleEnemy(spr.ToVector2(), this, Manager_Players.Players);
+                    }
+                }
+                if (bossSpawners != null)
+                {
+                    foreach (var spr in regularSpawners)
+                    {
+                        Manager_Enemies.AddEnemy_Gigachad(new Vector2(1050 + 400, 150), this, Manager_Players.Players);
                     }
                 }
             }
@@ -262,7 +269,7 @@ namespace YGR
             }
 
             Manager_Light.CreateModel(this);
-            
+
             foreach (var room in Rooms.Values)
             {
                 room.Illuminate();

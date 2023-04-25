@@ -17,6 +17,7 @@ namespace YGR
             enemy_textures = new Dictionary<string, Texture2D>()
             {
                 { "default_enemy", content.Load<Texture2D>("tester_60") },
+                { "gigachad", content.Load<Texture2D>("gigachad") },
             };
 
             _initialized = true;
@@ -35,6 +36,12 @@ namespace YGR
         {
             check();
             _enemies.Add(new Y_SimpleEnemy(position, level, players));
+        }
+
+        internal static void AddEnemy_Gigachad(Vector2 position, Y_Level level, IList<IVictim> players)
+        {
+            check();
+            _enemies.Add(new Enemy_Gigachad(position, level, players));
         }
 
         public static ReadOnlyCollection<IEnemy> GetEnemies()

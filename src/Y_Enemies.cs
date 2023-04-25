@@ -296,7 +296,7 @@ namespace YGR
                 texture: Sprite,
                 position: _rect.Location.ToVector2(),
                 sourceRectangle: SpriteRect,
-                color: Color.White,
+                color: _color,
                 rotation: 0,
                 origin: Vector2.Zero,
                 scale: Scale,
