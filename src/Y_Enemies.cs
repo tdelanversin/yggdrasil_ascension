@@ -11,16 +11,16 @@ namespace YGR
     {
         public int LifePoints { get; set; }
         public bool HitInLastLoop { get; set; }
-        private float maxVelocity { get; set; }
-        private float safetyDistance { get; set; }
+        protected float maxVelocity { get; set; }
+        protected float safetyDistance { get; set; }
 
         public Vector2 Velocity { get; set; }
-        private Vector2 _acceleration;
-        private Vector2 _deceleration;
-        private Vector2 _maxVelocity;
+        protected Vector2 _acceleration;
+        protected Vector2 _deceleration;
+        protected Vector2 _maxVelocity;
 
         public Vector2 FacingDirection { get; set; }
-        private float SteeringDirection;
+        protected float SteeringDirection;
 
         public Texture2D Sprite { get; set; }
         public Rectangle SpriteRect = new Rectangle(0, 0, 42, 60);
@@ -30,19 +30,19 @@ namespace YGR
         public Y_Level Level { get; set; }
         public IWalkable Room { get; set; }
         public IShooter Gun { get; set; }
-        private IList<IVictim> Players;
-        private IVictim Target = null;
-        public float Scale { get; }
+        protected IList<IVictim> Players;
+        protected IVictim Target = null;
+        public float Scale { get; set; }
 
         public string Name { get; set; }
 
-        private Vector2 _position;
-        private Color _hitColor;
-        private Color _regularColor;
-        private Color _color;
-        int _hitFrames = 10;
-        int _hitFramesCounter = 0;
-        Rectangle _rect;
+        protected Vector2 _position;
+        protected Color _hitColor;
+        protected Color _regularColor;
+        protected Color _color;
+        protected int _hitFrames = 10;
+        protected int _hitFramesCounter = 0;
+        protected Rectangle _rect;
 
         public string Identifier;
 
@@ -66,17 +66,22 @@ namespace YGR
             Sprite = Manager_Enemies.enemy_textures["default_enemy"];
             Collision = new X_CollisionModel_Victim(1.0f, 0.0f);
             _position = position;
+
             _rect = new Rectangle(
-                (int)position.X - SpriteRect.Width / 2,
-                (int)position.Y - SpriteRect.Height / 2,
+                (int)position.X,
+                (int)position.Y,
                 SpriteRect.Width, SpriteRect.Height
+            );
+
+            Scale = Math.Min(
+                _rect.Width / (float)SpriteRect.Width,
+                _rect.Height / (float)SpriteRect.Height
             );
 
             Level = level;
             Room = Level.GetRoom(this, Room);
             Gun = new Y_SimpleEnemyGun();
             Players = players;
-            Scale = 1.0f;
 
             Name = "base enemy";
 
@@ -287,10 +292,20 @@ namespace YGR
 
         public void Draw(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)
         {
-            spriteBatch.Draw(Sprite, _rect, SpriteRect, _color);
-#if DEBUG
-            DrawFaceDirectionIndicator(gameTime, globalOffset, spriteBatch);
-#endif
+            spriteBatch.Draw(
+                texture: Sprite,
+                position: _rect.Location.ToVector2(),
+                sourceRectangle: SpriteRect,
+                color: Color.White,
+                rotation: 0,
+                origin: Vector2.Zero,
+                scale: Scale,
+                effects: SpriteEffects.None,
+                layerDepth: 0);
+            if (Settings.Outlines)
+            {
+                DrawFaceDirectionIndicator(gameTime, globalOffset, spriteBatch);
+            }
             DrawOverheadString(gameTime, globalOffset, spriteBatch);
         }
 
