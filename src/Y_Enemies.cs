@@ -181,6 +181,7 @@ namespace YGR
 
             if (HitInLastLoop)
             {
+                LifePoints -= 1;
                 _color = _hitColor;
                 _hitFramesCounter++;
                 if (_hitFramesCounter > _hitFrames)
