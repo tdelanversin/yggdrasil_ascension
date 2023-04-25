@@ -3,6 +3,7 @@ using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace YGR
 {
@@ -84,7 +85,8 @@ namespace YGR
 
         internal static void Draw(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)
         {
-            foreach (var player in Players)
+            var playerSorted = Players.OrderBy(t => t.Rect.Y + t.Rect.Height);
+            foreach (var player in playerSorted)
             {
                 player.Draw(gameTime, globalOffset, spriteBatch);
             }
