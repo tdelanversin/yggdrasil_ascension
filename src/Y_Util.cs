@@ -80,6 +80,8 @@ namespace YGR
                 path += sepC;
             }
 
+            path = path.Replace((sepC + "." + sepC).ToString(), sepC.ToString());
+
             return path;
         }
 

@@ -22,7 +22,7 @@ namespace YGR
             public string Type;
             public float X;
             public float Y;
-            public Dictionary<string, string[]> Connections;
+            public List<Dictionary<string, string[]>> Connections;
         }
 
         internal class Data
@@ -34,7 +34,7 @@ namespace YGR
 
         public float Scale { get; }
         public Rectangle Rect { get; set; }
-        public IDictionary<string, IWalkable> Rooms { get; private set; }
+        public IDictionary<int, IWalkable> Rooms { get; private set; }
         public int TileWidth { get; }
         public int TileHeight { get; }
         public IList<IVictim> Victims { get; }
@@ -54,8 +54,7 @@ namespace YGR
             GraphicsDevice graphicsDevice
         )
         {
-            _name = name;
-
+            _name = Util.PathOsNormalization(name);
             _levelResourceFolder = Util.PathOsNormalization(levelResourceFolder);
             _doorResourceFolder = Util.PathOsNormalization(doorResourceFolder);
 
@@ -65,7 +64,7 @@ namespace YGR
 
             _availableRooms = new Dictionary<string, List<Y_CMRoom>>();
 
-            var files = Directory.GetDirectories(_levelResourceFolder);
+            var files = Directory.GetDirectories(Util.PathOsNormalization(_levelResourceFolder + _name));
             List<Y_CMRoom> bag = new List<Y_CMRoom>();
 
             var watch = new Stopwatch();
@@ -99,12 +98,21 @@ namespace YGR
 
             Logger.Info("Loaded all rooms: " + watch.ElapsedMilliseconds.ToString());
 
-            using (StreamReader stream = new StreamReader(_levelResourceFolder + "data.json"))
+            var dataFile = _name.Split(Path.DirectorySeparatorChar)[1];
+            var dataFilePath = _levelResourceFolder + dataFile + "_data.json";
+            using (StreamReader stream = new StreamReader(dataFilePath))
             {
                 string json = stream.ReadToEnd();
                 dynamic array = JsonConvert.DeserializeObject(json);
                 _data = JsonConvert.DeserializeObject<Y_Level.Data>(array.ToString());
             }
+
+            foreach(var dk in _data.Level.Keys)
+            {
+                _data.Level[dk] = _data.Level[dk].OrderBy(x => x.Index).ToList();
+            }
+
+            Rooms = new Dictionary<int, IWalkable>();
         }
 
 
@@ -115,7 +123,110 @@ namespace YGR
             var watch = new Stopwatch();
             watch.Start();
             watch2.Start();
-            Rooms = new Dictionary<string, IWalkable>();
+
+            // put everything back
+            foreach (var room in Rooms)
+            {
+                if(room.Value.WhatAreYou() == X_LevelElements.Room)
+                {
+                    var roomKey = room.Value.Name.Split("_")[0];
+                    _availableRooms[roomKey].Add((Y_CMRoom)room.Value);
+                }
+            }
+
+            Rooms = new Dictionary<int, IWalkable>();
+
+            var random = new Random();
+            // randomly select one level tree
+            var key = _data.Level.Keys.ToArray()[random.Next(0, _data.Level.Keys.Count)]; // [random.Next(0, _data.Level.Keys.Count)];
+            var tree = _data.Level[key];
+
+            float offset = 1024;
+            foreach (var node in tree)
+            {
+                var type = _availableRooms[node.Type];
+                int index = random.Next(0, type.Count);
+                var n = type[index];
+                type.RemoveAt(index);
+                float h = 1.0f;
+                float w = (float)n.Rect.Width / (float)n.Rect.Height;
+                Point p = new Point(
+                    (int)(node.X * w * offset - n.Rect.Width/2), 
+                    (int)(node.Y * h * offset - n.Rect.Height/2));
+                p.X = p.X + (TileWidth - p.X % TileWidth);
+                p.Y = p.Y + (TileHeight - p.Y % TileHeight);
+                n.MoveTo(p);
+                Rooms.Add(node.Index, n);
+            }
+
+            List<IWalkable> connectors = new List<IWalkable>();
+            foreach(var room in Rooms)
+            {
+                int index = room.Key;
+                int len = tree[index].Connections.Count();
+                if (len == 0) continue;
+
+                var connection = tree[index].Connections[random.Next(0, len)];
+
+                int tileOffset = 1;
+                int numTilesLength = 17;
+                X_DoorDirection direction = X_DoorDirection.Horizontal;
+                var fromRoom = room.Value;
+                foreach(var con in connection)
+                {
+                    X_ConnectorSide fromSide = Y_Door.ParseFromSide(con.Key);
+                    int ll = con.Value.Length;
+                    string toSideStr = con.Value[random.Next(0, ll)];
+                    Tuple<int, X_ConnectorSide> toSide = Y_Door.ParseToSide(toSideStr);
+
+                    if (toSide == null) continue;
+
+                    var fromConnectorPoint = fromRoom.GetConnectorPoint(fromSide);
+                    var toRoom = Rooms[toSide.Item1];
+                    var toConnectorPoint = toRoom.GetConnectorPoint(toSide.Item2);
+                    Y_Door.GetDoorType(
+                        fromConnectorPoint,
+                        toConnectorPoint, 
+                        TileHeight,
+                        out direction, out numTilesLength, out tileOffset);
+
+                    //if(fromRoom.Name == "Leaf_3" || toRoom.Name == "Leaf_3")
+                    ////if (Math.Abs(numTilesLength) < 7 || direction == X_DoorDirection.Corner && Math.Abs(tileOffset) < 7)
+                    //    Logger.Info("Problem");
+
+                    if(direction == X_DoorDirection.Corner)
+                    {
+                        Logger.Info("blup");
+                    }
+                    var connector = new Y_Door(
+                        direction,
+                        numTilesLength,
+                        TileWidth,
+                        TileHeight,
+                        tileOffset,
+                        graphicsDevice,
+                        "./Doors",
+                        "data.json");
+
+                    connectors.Add(connector.Connect(fromRoom, fromConnectorPoint, toRoom, toConnectorPoint, direction));
+                }
+            }
+
+            int connectorIndex = Rooms.Count();
+            foreach (var c in connectors)
+            {
+                Rooms.Add(connectorIndex, c);
+                connectorIndex++;
+            }
+
+
+
+
+
+
+
+
+
             //foreach (var room in _availableRooms)
             //{
             //    Rooms.Add(room.Key, room.Value);
@@ -135,20 +246,22 @@ namespace YGR
             //    { "bottom5", new Y_CMRoom("r3-B5", TileWidth, TileHeight, resourceFolder + "Room_5", graphicsDevice) },
             //    { "bottom6", new Y_CMRoom("r3-B6", TileWidth, TileHeight, resourceFolder + "Room_5", graphicsDevice) },
             //};
-            Logger.Info("-----Initialized all rooms: " + watch.ElapsedMilliseconds.ToString());
-            int width = 6;
-            int offset = 0;
-            Rooms.Add("testdoor", 
-                new Y_Door(
-                    X_DoorDirection.Horizontal, 
-                    width, 
-                    TileWidth, 
-                    TileHeight, 
-                    offset, 
-                    graphicsDevice, 
-                    "./Doors", 
-                    "data.json")
-                );
+
+            //Logger.Info("-----Initialized all rooms: " + watch.ElapsedMilliseconds.ToString());
+            //int width = -17;
+            //int offset2 = 9;
+            //Rooms.Add(0,
+            //    new Y_Door(
+            //        X_DoorDirection.Corner,
+            //        width,
+            //        TileWidth,
+            //        TileHeight,
+            //        offset2,
+            //        graphicsDevice,
+            //        "./Doors",
+            //        "data.json")
+            //    );
+
             //Rooms.Add("door-center-to-left", new Y_Door(X_DoorDirection.Horizontal, connectorWidth, TileWidth, TileHeight, 1, graphicsDevice, "./Doors", "data.json"));
             //Rooms.Add("door-center-to-right", new Y_Door(X_DoorDirection.Horizontal, connectorWidth, TileWidth, TileHeight, -3, graphicsDevice, "./Doors", "data.json"));
             //Rooms.Add("door-center-to-bottom1", new Y_Door(X_DoorDirection.Vertical, connectorWidth, TileWidth, TileHeight, 0, graphicsDevice, "./Doors", "data.json"));

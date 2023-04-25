@@ -157,6 +157,131 @@ namespace YGR
             //}
         }
 
+        public static X_ConnectorSide ParseFromSide(string side)
+        {
+            if (side.ToLower().StartsWith("t")) return X_ConnectorSide.Top;
+            if (side.ToLower().StartsWith("b")) return X_ConnectorSide.Bottom;
+            if (side.ToLower().StartsWith("l")) return X_ConnectorSide.Left;
+            if (side.ToLower().StartsWith("r")) return X_ConnectorSide.Right;
+
+            Logger.Error("Invalid side to parse");
+
+            return X_ConnectorSide.Bottom;
+        }
+
+        public static Tuple<int, X_ConnectorSide> ParseToSide(string side)
+        {
+            if (side == "") return null;
+
+            X_ConnectorSide cs = X_ConnectorSide.Left;
+            int index = 0;
+            if (side.ToLower().StartsWith("t")) cs = X_ConnectorSide.Top;
+            else if (side.ToLower().StartsWith("b")) cs = X_ConnectorSide.Bottom;
+            else if (side.ToLower().StartsWith("l")) cs = X_ConnectorSide.Left;
+            else if (side.ToLower().StartsWith("r")) cs = X_ConnectorSide.Right;
+
+            if(!int.TryParse(side.Substring(1), out index))
+            {
+                Logger.Error("Invalid index passed");
+            }
+
+            return new Tuple<int, X_ConnectorSide>(index, cs);
+        }
+
+        public static void GetDoorType(
+            X_ConnectorPoint from, 
+            X_ConnectorPoint to, 
+            int tileSize,
+            out X_DoorDirection direction,
+            out int numTilesLength,
+            out int tileOffset
+            )
+        {
+            direction = X_DoorDirection.Horizontal;
+            numTilesLength = 0;
+            tileOffset = 0;
+            int lOffset = 3 * tileSize;
+
+            Point fromP = from.Point + new Point(1000000, 1000000);
+            Point toP = to.Point + new Point(1000000, 1000000);
+            if(from.ConnectorSide == X_ConnectorSide.Top && to.ConnectorSide == X_ConnectorSide.Bottom)
+            {
+                direction = X_DoorDirection.Vertical;
+                tileOffset = toP.X - fromP.X;
+                numTilesLength = Math.Abs(fromP.Y - toP.Y) + lOffset;
+            }
+            else if (from.ConnectorSide == X_ConnectorSide.Bottom && to.ConnectorSide == X_ConnectorSide.Top)
+            {
+                direction = X_DoorDirection.Vertical;
+                tileOffset = fromP.X - toP.X;
+                numTilesLength = Math.Abs(fromP.Y - toP.Y) + lOffset;
+            }
+            else if (from.ConnectorSide == X_ConnectorSide.Left && to.ConnectorSide == X_ConnectorSide.Right)
+            {
+                direction = X_DoorDirection.Horizontal;
+                tileOffset = fromP.Y - toP.Y;
+                numTilesLength = Math.Abs(fromP.X - toP.X) + lOffset;
+            }
+            else if (from.ConnectorSide == X_ConnectorSide.Right && to.ConnectorSide == X_ConnectorSide.Left)
+            {
+                direction = X_DoorDirection.Horizontal;
+                tileOffset = toP.Y - fromP.Y;
+                numTilesLength = Math.Abs(fromP.X - toP.X) + lOffset;
+            }
+            else if (
+                (from.ConnectorSide == X_ConnectorSide.Left   && to.ConnectorSide == X_ConnectorSide.Bottom) ||
+                (from.ConnectorSide == X_ConnectorSide.Right  && to.ConnectorSide == X_ConnectorSide.Bottom)
+                )
+            {
+                direction = X_DoorDirection.Corner;
+                numTilesLength = toP.X - fromP.X;
+                tileOffset = Math.Abs(fromP.Y - toP.Y); // Math.Sign(toP.Y - fromP.Y) * 8 * tileSize; // toP.Y - fromP.Y;
+                numTilesLength += Math.Sign(numTilesLength) * (lOffset + tileSize);
+                tileOffset += Math.Sign(tileOffset) * (lOffset + tileSize);
+            }
+            else if(
+                (from.ConnectorSide == X_ConnectorSide.Top && to.ConnectorSide == X_ConnectorSide.Left) ||
+                (from.ConnectorSide == X_ConnectorSide.Top && to.ConnectorSide == X_ConnectorSide.Right)
+                )
+            {
+                direction = X_DoorDirection.Corner;
+                numTilesLength = fromP.X - toP.X;
+                tileOffset = -Math.Abs(toP.Y - fromP.Y); // Math.Sign(toP.Y - fromP.Y) * 8 * tileSize; // toP.Y - fromP.Y;
+                numTilesLength += Math.Sign(numTilesLength) * (lOffset + tileSize);
+                tileOffset += Math.Sign(tileOffset) * (lOffset + tileSize);
+            }
+            else if(
+                (from.ConnectorSide == X_ConnectorSide.Bottom && to.ConnectorSide == X_ConnectorSide.Left) ||
+                (from.ConnectorSide == X_ConnectorSide.Bottom && to.ConnectorSide == X_ConnectorSide.Right)
+                )
+            {
+                direction = X_DoorDirection.Corner;
+                numTilesLength = toP.X - fromP.X;
+                tileOffset = Math.Abs(fromP.Y - toP.Y); // Math.Sign(toP.Y - fromP.Y) * 8 * tileSize; // toP.Y - fromP.Y;
+                numTilesLength += Math.Sign(numTilesLength) * (lOffset + tileSize);
+                tileOffset += Math.Sign(tileOffset) * (lOffset + tileSize);
+            }
+            else if(
+                (from.ConnectorSide == X_ConnectorSide.Left && to.ConnectorSide == X_ConnectorSide.Top) ||
+                (from.ConnectorSide == X_ConnectorSide.Right && to.ConnectorSide == X_ConnectorSide.Top)
+                )
+            {
+                direction = X_DoorDirection.Corner;
+                numTilesLength = toP.X - fromP.X;
+                tileOffset = -Math.Abs(fromP.Y - toP.Y); // Math.Sign(toP.Y - fromP.Y) * 8 * tileSize; // toP.Y - fromP.Y;
+                numTilesLength += Math.Sign(numTilesLength) * (lOffset + tileSize);
+                tileOffset += Math.Sign(tileOffset) * (lOffset + tileSize);
+            }
+
+            if(numTilesLength == 0)
+            {
+                Logger.Error("Invalid connector setting requested");
+            }
+
+            numTilesLength /= tileSize;
+            tileOffset /= tileSize;
+        }
+
         public Tuple<X_ConnectorSide, Y_CMRoom> GetOtherDoor(Y_CMRoom room)
         {
             var p = new Point(room.Rect.X + room.Rect.Width / 2, room.Rect.Y + room.Rect.Height / 2);
@@ -706,7 +831,7 @@ namespace YGR
         }
 
         /// <summary>
-        /// <para>This method will connect two Y_Rooms</para>
+        /// <para>This method will connect two Y_Rooms. The method acts out of the PERSPECTIVE OF THE CONNECTOR!</para>
         /// <para>The connector is in the middle</para>
         /// 
         /// <br>-------------------- </br>
@@ -721,8 +846,6 @@ namespace YGR
         /// <br> |||||  </br>
         /// <br> bottom </br>
         /// 
-        /// <para>The method acts out of the PERSPECTIVE OF THE CONNECTOR!</para>
-        /// 
         /// <para>side1 = X_ConnectorSide.Left means, that room1 is on the left side of the connector.</para>
         /// </summary>
         /// <param name="side1">The origin side: the connector will place the other side with respect to this side</param>
@@ -732,9 +855,9 @@ namespace YGR
         /// <param name="random">Random generator for the random connector point selection</param>
         /// <returns></returns>
         public IWalkable Connect(
-            X_ConnectorSide side1,
+            X_ConnectorSide connectorSide1,
             IWalkable from,
-            X_ConnectorSide side2,
+            X_ConnectorSide connectorSide2,
             IWalkable to
         )
         {
@@ -746,21 +869,21 @@ namespace YGR
              * a point on the left side of room 2!!!!!!!
              */
 
-            if (side1 == X_ConnectorSide.Left) side1 = X_ConnectorSide.Right;
-            else if (side1 == X_ConnectorSide.Right) side1 = X_ConnectorSide.Left;
-            else if (side1 == X_ConnectorSide.Top) side1 = X_ConnectorSide.Bottom;
-            else if (side1 == X_ConnectorSide.Bottom) side1 = X_ConnectorSide.Top;
+            if (connectorSide1 == X_ConnectorSide.Left) connectorSide1 = X_ConnectorSide.Right;
+            else if (connectorSide1 == X_ConnectorSide.Right) connectorSide1 = X_ConnectorSide.Left;
+            else if (connectorSide1 == X_ConnectorSide.Top) connectorSide1 = X_ConnectorSide.Bottom;
+            else if (connectorSide1 == X_ConnectorSide.Bottom) connectorSide1 = X_ConnectorSide.Top;
 
-            if (side2 == X_ConnectorSide.Left) side2 = X_ConnectorSide.Right;
-            else if (side2 == X_ConnectorSide.Right) side2 = X_ConnectorSide.Left;
-            else if (side2 == X_ConnectorSide.Top) side2 = X_ConnectorSide.Bottom;
-            else if (side2 == X_ConnectorSide.Bottom) side2 = X_ConnectorSide.Top;
+            if (connectorSide2 == X_ConnectorSide.Left) connectorSide2 = X_ConnectorSide.Right;
+            else if (connectorSide2 == X_ConnectorSide.Right) connectorSide2 = X_ConnectorSide.Left;
+            else if (connectorSide2 == X_ConnectorSide.Top) connectorSide2 = X_ConnectorSide.Bottom;
+            else if (connectorSide2 == X_ConnectorSide.Bottom) connectorSide2 = X_ConnectorSide.Top;
 
-            return connect(from, from.GetConnectorPoint(side1), to, to.GetConnectorPoint(side2));
+            return ConnectAndMove(from, from.GetConnectorPoint(connectorSide1), to, to.GetConnectorPoint(connectorSide2));
         }
 
         /// <summary>
-        /// <para>This method will connect two Y_Rooms</para>
+        /// <para>This method will connect two Y_Rooms. The method acts out of the PERSPECTIVE OF THE ROOMS!</para>
         /// <para>The connector is in the middle</para>
         /// 
         /// <br>-------------------- </br>
@@ -775,8 +898,6 @@ namespace YGR
         /// <br> |||||  </br>
         /// <br> bottom </br>
         /// 
-        /// <para>The method acts out of the PERSPECTIVE OF THE ROOMS!</para>
-        /// 
         /// <para>If room1 is on the LEFT side of the connector, then the connectorPoint1 must be on the RIGHT side of room1.</para>
         /// </summary>
         /// <param name="room1">Y_Room with connectorPoint1</param>
@@ -784,20 +905,20 @@ namespace YGR
         /// <param name="room2">Y_Room with connectorPoint2</param>
         /// <param name="connectorPoint2">The connector point on Y_Room 2</param>
         /// <returns></returns>
-        private IWalkable connect(
+        public IWalkable ConnectAndMove(
             IWalkable room1,
-            X_ConnectorPoint connectorPoint1,
+            X_ConnectorPoint roomConnectorPoint1,
             IWalkable room2,
-            X_ConnectorPoint connectorPoint2
+            X_ConnectorPoint roomConnectorPoint2
         )
         {
             // check possibilities
             // horizontal: left and right or right and left
             // vertical: top and bottom or bottom and top
-            bool hCheck1 = connectorPoint1.ConnectorSide == X_ConnectorSide.Left && connectorPoint2.ConnectorSide == X_ConnectorSide.Right;
-            bool hCheck2 = connectorPoint1.ConnectorSide == X_ConnectorSide.Right && connectorPoint2.ConnectorSide == X_ConnectorSide.Left;
-            bool vCheck1 = connectorPoint1.ConnectorSide == X_ConnectorSide.Bottom && connectorPoint2.ConnectorSide == X_ConnectorSide.Top;
-            bool vCheck2 = connectorPoint1.ConnectorSide == X_ConnectorSide.Top && connectorPoint2.ConnectorSide == X_ConnectorSide.Bottom;
+            bool hCheck1 = roomConnectorPoint1.ConnectorSide == X_ConnectorSide.Left && roomConnectorPoint2.ConnectorSide == X_ConnectorSide.Right;
+            bool hCheck2 = roomConnectorPoint1.ConnectorSide == X_ConnectorSide.Right && roomConnectorPoint2.ConnectorSide == X_ConnectorSide.Left;
+            bool vCheck1 = roomConnectorPoint1.ConnectorSide == X_ConnectorSide.Bottom && roomConnectorPoint2.ConnectorSide == X_ConnectorSide.Top;
+            bool vCheck2 = roomConnectorPoint1.ConnectorSide == X_ConnectorSide.Top && roomConnectorPoint2.ConnectorSide == X_ConnectorSide.Bottom;
 
             // horizontal connectors only with left and right or right and left
             // vertical connectors only with top and bottom or bottom and top
@@ -813,39 +934,107 @@ namespace YGR
             if (hCheck1)
             {
                 var deltaPC = Rect.Location - Doors[X_ConnectorSide.Right].First().Point;
-                MoveTo(connectorPoint1.Point + deltaPC);
-                room2.MoveTo(Doors[X_ConnectorSide.Left].First().Point + room2.Rect.Location - connectorPoint2.Point);
+                MoveTo(roomConnectorPoint1.Point + deltaPC);
+                room2.MoveTo(Doors[X_ConnectorSide.Left].First().Point + room2.Rect.Location - roomConnectorPoint2.Point);
             }
             /* right to left */
             else if (hCheck2)
             {
                 var deltaPC = Rect.Location - Doors[X_ConnectorSide.Left].First().Point;
-                MoveTo(connectorPoint1.Point + deltaPC);
-                room2.MoveTo(Doors[X_ConnectorSide.Right].First().Point + room2.Rect.Location - connectorPoint2.Point);
+                MoveTo(roomConnectorPoint1.Point + deltaPC);
+                room2.MoveTo(Doors[X_ConnectorSide.Right].First().Point + room2.Rect.Location - roomConnectorPoint2.Point);
             }
             /* bottom to top */
             else if (vCheck1)
             {
                 var deltaPC = Rect.Location - Doors[X_ConnectorSide.Top].First().Point;
-                MoveTo(connectorPoint1.Point + deltaPC);
-                room2.MoveTo(Doors[X_ConnectorSide.Bottom].First().Point + room2.Rect.Location - connectorPoint2.Point);
+                MoveTo(roomConnectorPoint1.Point + deltaPC);
+                room2.MoveTo(Doors[X_ConnectorSide.Bottom].First().Point + room2.Rect.Location - roomConnectorPoint2.Point);
             }
             /* top to bottom */
             else if (vCheck2)
             {
                 var deltaPC = Rect.Location - Doors[X_ConnectorSide.Bottom].First().Point;
-                MoveTo(connectorPoint1.Point + deltaPC);
-                room2.MoveTo(Doors[X_ConnectorSide.Top].First().Point + room2.Rect.Location - connectorPoint2.Point);
+                MoveTo(roomConnectorPoint1.Point + deltaPC);
+                room2.MoveTo(Doors[X_ConnectorSide.Top].First().Point + room2.Rect.Location - roomConnectorPoint2.Point);
             }
 
             // the following flip of connectorPoint2 and connectorPoint1 is NOT a bug
-            DoorRooms.Add(connectorPoint2.ConnectorSide, new List<IWalkable> { room1 });
-            DoorRooms.Add(connectorPoint1.ConnectorSide, new List<IWalkable> { room2 });
-            room1.DoorRooms.Add(connectorPoint1.ConnectorSide, new List<IWalkable> { this });
-            room2.DoorRooms.Add(connectorPoint2.ConnectorSide, new List<IWalkable> { this });
+            DoorRooms.Add(roomConnectorPoint2.ConnectorSide, new List<IWalkable> { room1 });
+            DoorRooms.Add(roomConnectorPoint1.ConnectorSide, new List<IWalkable> { room2 });
+            room1.DoorRooms.Add(roomConnectorPoint1.ConnectorSide, new List<IWalkable> { this });
+            room2.DoorRooms.Add(roomConnectorPoint2.ConnectorSide, new List<IWalkable> { this });
 
             return this;
         }
+
+        public IWalkable Connect(
+            IWalkable room1,
+            X_ConnectorPoint roomConnectorPoint1,
+            IWalkable room2,
+            X_ConnectorPoint roomConnectorPoint2,
+            X_DoorDirection direction
+        )
+        {
+            if(direction != X_DoorDirection.Corner)
+            {
+                DoorRooms.Add(roomConnectorPoint2.ConnectorSide, new List<IWalkable> { room1 });
+                DoorRooms.Add(roomConnectorPoint1.ConnectorSide, new List<IWalkable> { room2 });
+                room1.DoorRooms.Add(roomConnectorPoint1.ConnectorSide, new List<IWalkable> { this });
+                room2.DoorRooms.Add(roomConnectorPoint2.ConnectorSide, new List<IWalkable> { this });
+
+                var deltaPC = Rect.Location - Doors[roomConnectorPoint2.ConnectorSide].First().Point;
+                MoveTo(roomConnectorPoint1.Point + deltaPC);
+            }
+            else
+            {
+                X_ConnectorSide connectorSide1;
+                if (roomConnectorPoint1.ConnectorSide == X_ConnectorSide.Top) connectorSide1 = X_ConnectorSide.Bottom;
+                else if (roomConnectorPoint1.ConnectorSide == X_ConnectorSide.Bottom) connectorSide1 = X_ConnectorSide.Top;
+                else if (roomConnectorPoint1.ConnectorSide == X_ConnectorSide.Left) connectorSide1 = X_ConnectorSide.Right;
+                else /*if (roomConnectorPoint1.ConnectorSide == X_ConnectorSide.Right)*/ connectorSide1 = X_ConnectorSide.Left;
+
+                X_ConnectorSide connectorSide2;
+                if (roomConnectorPoint2.ConnectorSide == X_ConnectorSide.Top) connectorSide2 = X_ConnectorSide.Bottom;
+                else if (roomConnectorPoint2.ConnectorSide == X_ConnectorSide.Bottom) connectorSide2 = X_ConnectorSide.Top;
+                else if (roomConnectorPoint2.ConnectorSide == X_ConnectorSide.Left) connectorSide2 = X_ConnectorSide.Right;
+                else /*if (roomConnectorPoint2.ConnectorSide == X_ConnectorSide.Right)*/ connectorSide2 = X_ConnectorSide.Left;
+
+                DoorRooms.Add(connectorSide1, new List<IWalkable> { room1 });
+                DoorRooms.Add(connectorSide2, new List<IWalkable> { room2 });
+                room1.DoorRooms.Add(roomConnectorPoint1.ConnectorSide, new List<IWalkable> { this });
+                room2.DoorRooms.Add(roomConnectorPoint2.ConnectorSide, new List<IWalkable> { this });
+
+                var deltaPC = Rect.Location - Doors[connectorSide1].First().Point;
+                MoveTo(roomConnectorPoint1.Point + deltaPC);
+            }
+            //if (direction == X_DoorDirection.Horizontal) deltaPC = new Point(deltaPC.X-4, deltaPC.Y);
+            //else if (direction == X_DoorDirection.Vertical) deltaPC = new Point(deltaPC.X, deltaPC.Y-4);
+            //if (direction == X_DoorDirection.Horizontal)
+            //{
+            //    if(roomConnectorPoint1.ConnectorSide == X_ConnectorSide.Left)
+            //    {
+
+            //    }
+            //    else if (roomConnectorPoint1.ConnectorSide == X_ConnectorSide.Right)
+            //    {
+            //        var deltaPC = Rect.Location - Doors[X_ConnectorSide.Left].First().Point;
+            //        MoveTo(roomConnectorPoint1.Point + deltaPC);
+            //    }
+
+            //}
+            //else if(direction == X_DoorDirection.Vertical)
+            //{
+
+            //}
+            //else if(direction == X_DoorDirection.Corner)
+            //{
+
+            //}
+
+            return this;
+        }
+            
 
         public void SplitConnectedCollisionModels()
         {

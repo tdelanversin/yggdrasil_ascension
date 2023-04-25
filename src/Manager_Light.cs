@@ -453,11 +453,11 @@ namespace YGR
 
                 // write to all available directories: current runtime directory and source code directory
                 File.WriteAllText(room.ResourceFolder + fileName, identifier);
-                //if (Debugger.IsAttached)
-                //{
-                //    var srcPath = Util.GetAbsResourceFolderPath(room.ResourceFolder);
-                //    File.WriteAllText(srcPath + fileName, identifier);
-                //}
+                if (Debugger.IsAttached)
+                {
+                    var srcPath = Util.GetAbsResourceFolderPath(room.ResourceFolder);
+                    File.WriteAllText(srcPath + fileName, identifier);
+                }
                 LoadedIlluminationTemplates.Add(room.ResourceFolder + fileName, shadeTemplate);
             }
         }

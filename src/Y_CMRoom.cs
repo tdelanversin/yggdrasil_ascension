@@ -628,6 +628,11 @@ namespace YGR
             {
                 door.Value.First().DrawOutline(gameTime, Rect.Location.ToVector2(), spriteBatch);
             }
+
+            foreach(var door in Doors)
+            {
+                door.Value.First().DrawOutline(gameTime, Rect.Location.ToVector2(), spriteBatch);
+            }
         }
 
         /// <summary>
