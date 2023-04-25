@@ -10,6 +10,7 @@
         Door,
         Victim,
         Enemy,
+        Invincible,
         Ghost,
         Projectile,
         Level

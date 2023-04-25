@@ -13,15 +13,13 @@ namespace YGR
         //public Vector2 _position { get; set; }
         //public Vector2 _direction { get; set; }
         public double TimeCreated { get; set; }
-
-        //public bool _isEnemy { get; set; }
         public string Name { get; set; }
         public bool DeleteNext { get; set; }
-        public X_CollisionModel_Projectile Collision { get; }
+        public X_CollisionModel_Projectile Collision { get; set; }
         public Vector2 Velocity { get; set; }
         public Y_Level Level { get; set; }
         public IWalkable Room { get; set; }
-        public IGameElement WhoFiredMe { get; }
+        public IGameElement WhoFiredMe { get; set; } 
 
         //public void Update(GameTime gameTime);
         //public void Draw(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch);
