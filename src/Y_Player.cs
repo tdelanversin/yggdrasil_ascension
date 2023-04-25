@@ -33,6 +33,9 @@ namespace YGR
 
         // private fields
         protected bool _isAiming;
+        protected bool _invincible;
+        protected float _invincibleDuration;
+        protected float _invincibleTimeLeft;
         protected ControlLayout _controlLayout;
         protected Dictionary<string, int[]> _animations;
         protected float _cr;
@@ -52,10 +55,7 @@ namespace YGR
         protected Vector2 _maxVelocity;
         protected Vector2 _position;
         protected ParticleEffect pE;
-
-        protected bool _invincible;
-        protected float _invincibleDuration;
-        protected float _invincibleTimeLeft;
+        protected Color _color;
 
         // timing related fields
         protected float _animationTimer;
@@ -89,6 +89,7 @@ namespace YGR
             _spritePlayer = Manager_Players.SpriteBasic;
             _spriteGhost = Manager_Players.SpriteGhost;
             _spriteAimIndicator = Manager_Players.SpriteAimIndicator[(int)playerIndex];
+            _color = Color.White;
 
             _spriteDimensions = new Rectangle(0, 0, 42, 60);
             _animationTimer = 0;
@@ -152,9 +153,18 @@ namespace YGR
         /* Deal with being hit by projectile, basically physical therapy */
         protected void HandleProjectileImpact(GameTime gameTime)
         {
-            if (_invincibleTimeLeft < 0)
+            if (_invincible)
             {
-                _invincible = false;
+                _invincibleTimeLeft -= gameTime.ElapsedGameTime.Milliseconds;
+                if (_invincibleTimeLeft < 0)
+                {
+                    _invincible = false;
+                    _color = Color.White;
+                }
+                else
+                {
+                    _color = Color.DimGray * (float)((Math.Sin(_invincibleTimeLeft / 50) + 1) / 2);
+                }
             }
             if (HitInLastLoop && !_invincible)
             {
@@ -162,10 +172,6 @@ namespace YGR
                 _invincible = true;
                 _invincibleTimeLeft = _invincibleDuration;
                 HitInLastLoop = false;
-            }
-            if (_invincible)
-            {
-                _invincibleTimeLeft -= gameTime.ElapsedGameTime.Milliseconds;
             }
         }
 
@@ -199,7 +205,7 @@ namespace YGR
                 {
                     _isAiming = false;
                 }
-                if ((gpState.IsButtonDown(Buttons.RightShoulder) || gpState.IsButtonDown(Buttons.RightTrigger)) && IsAlive())
+                if ((gpState.IsButtonDown(Buttons.RightShoulder) || gpState.IsButtonDown(Buttons.RightTrigger)) && IsAlive() && !_invincible)
                 {
                     _isAiming = true; // Show the aim indicator when firing
                     _currentAimInput = InputType.Controller;
@@ -236,7 +242,7 @@ namespace YGR
                     newAimDirection.Normalize();
                     _aimDirection = newAimDirection;
                 }
-                if (mouse.LeftButton == ButtonState.Pressed && IsAlive())
+                if (mouse.LeftButton == ButtonState.Pressed && IsAlive() && !_invincible)
                 {
                     _gun.Shoot(gameTime, playerCenter, _aimDirection, Level, this);
                 }
@@ -326,17 +332,11 @@ namespace YGR
 
         protected virtual void DrawPlayer(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)
         {
-            Color color = Color.White;
-            if (_invincible)
-            {
-                color = Color.Black;
-            }
-
             spriteBatch.Draw(
                 texture: _spritePlayer,
                 position: _rect.Location.ToVector2(),
                 sourceRectangle: new Rectangle(_animationIndex * _spriteDimensions.Width, 0, _spriteDimensions.Width, _spriteDimensions.Height),
-                color: color,
+                color: _color,
                 rotation: 0,
                 origin: Vector2.Zero,
                 scale: Scale,
@@ -611,7 +611,7 @@ namespace YGR
                     _spritePlayer,
                     new Rectangle(
                         _rect.X, _rect.Y, _rect.Width, _rect.Height),
-                        sourceRectangles[currentAnimationIndex], Color.White);
+                        sourceRectangles[currentAnimationIndex], _color);
         }
     }
 }
