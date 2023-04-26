@@ -899,6 +899,10 @@ namespace YGR
                             }
                             else _doorCollisionRectangles[rects.Key].AddRange(rects.Value);
                         }
+                        if(r.WhatAreYou() == X_LevelElements.Room)
+                        {
+                            ((Y_CMRoom)r).ResetRects.AddRange(res[X_DoorState.Closed]);
+                        }
                     }
                 }
                 else
@@ -915,6 +919,10 @@ namespace YGR
                                 _doorCollisionRectangles.Add(rects.Key, rects.Value);
                             }
                             else _doorCollisionRectangles[rects.Key].AddRange(rects.Value);
+                        }
+                        if (r.WhatAreYou() == X_LevelElements.Room)
+                        {
+                            ((Y_CMRoom)r).ResetRects.AddRange(res[X_DoorState.Closed]);
                         }
                     }
                 }

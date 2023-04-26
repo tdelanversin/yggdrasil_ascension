@@ -26,6 +26,11 @@ namespace YGR
             if (!_initialized) Logger.Error("Manager_Enemies not initialized: call Manager_Enemies.Initialize(ContentManager) somewhere!");
         }
 
+        public static void ClearEnemies()
+        {
+            _enemies.Clear();
+        }
+
         public static void AddEnemy_SimpleEnemy(Vector2 position, Y_Level level, IList<IVictim> players)
         {
             check();

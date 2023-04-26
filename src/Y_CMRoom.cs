@@ -173,6 +173,8 @@ namespace YGR
         public List<X_Light> Lights;
         public X_RoomState State { get; set; }
 
+        public List<Rectangle> ResetRects { get; }
+
         private Texture2D _floor;
         private Texture2D _roof;
         private Color[] _floorData;
@@ -216,6 +218,7 @@ namespace YGR
             Collision = new X_CollisionModel_Room(collisions, tileWidth, tileHeight);
             Graph = new X_RoomGraph(this, collisions, tileWidth, tileHeight);
             Rect = new Rectangle(0, 0, collisions[0].Length * Collision.TileWidth, collisions.Length * Collision.TileHeight);
+            ResetRects = new List<Rectangle>();
 
             Doors = new Dictionary<X_ConnectorSide, IList<X_ConnectorPoint>>();
             DoorRooms = new Dictionary<X_ConnectorSide, IList<IWalkable>>();
@@ -393,6 +396,15 @@ namespace YGR
             }
 
             File.WriteAllText(name, s);
+        }
+
+        public void ResetRoom()
+        {
+            var rects = Collision.GetCollisionRectangles().ToList();
+            rects.AddRange(ResetRects);
+            Collision.UpdateCollisionRectangles(rects);
+            DoorRooms.Clear();
+            ResetRects.Clear();
         }
 
         public static X_DoorTextureLayer MapTexture(string textureType)

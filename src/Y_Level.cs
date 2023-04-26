@@ -125,8 +125,10 @@ namespace YGR
             {
                 if(room.Value.WhatAreYou() == X_LevelElements.Room)
                 {
-                    var roomKey = room.Value.Name.Split("_")[0];
-                    _availableRooms[roomKey].Add((Y_CMRoom)room.Value);
+                    var r = (Y_CMRoom)room.Value;
+                    var roomKey = r.Name.Split("_")[0];
+                    r.ResetRoom();
+                    _availableRooms[roomKey].Add(r);
                 }
             }
 
@@ -209,6 +211,7 @@ namespace YGR
 
             Manager_Players.ClearPlayers();
 
+
             // get start position
             var spawningPoints = ((Y_CMRoom)Rooms[0]).GetPlayerSpawningPoints();
 
@@ -229,7 +232,7 @@ namespace YGR
             Camera.Players = Manager_Players.Players;
             Camera.Mode = CameraMode.Room;
             Camera.Room = Rooms[0];
-
+            Manager_Enemies.ClearEnemies();
             foreach (var room in Rooms)
             {
                 if (room.Key == 0) continue;
