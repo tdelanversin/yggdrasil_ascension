@@ -34,7 +34,8 @@ namespace YGR
             Game.Exit();
         }
 
-        public static int ProperMod(int i, int m) {
+        public static int ProperMod(int i, int m)
+        {
             return (i % m + m) % m;
         }
 
@@ -65,7 +66,7 @@ namespace YGR
                 path = path.Replace('\\', sepC);
             }
 
-            if (!path.Contains(Path.VolumeSeparatorChar))
+            if (path != Path.GetFullPath(path))
             {
                 // make path relative
                 var sep = sepC.ToString();
@@ -99,8 +100,8 @@ namespace YGR
 
         public static string GetAbsResourceFolderPath(string resourceFolder)
         {
-            if (resourceFolder.Substring(0,1) == ".") resourceFolder = resourceFolder.Substring(1, resourceFolder.Length - 1);
-            if (resourceFolder.Substring(0,1) == Path.DirectorySeparatorChar.ToString()) resourceFolder = resourceFolder.Substring(1, resourceFolder.Length - 1);
+            if (resourceFolder.Substring(0, 1) == ".") resourceFolder = resourceFolder.Substring(1, resourceFolder.Length - 1);
+            if (resourceFolder.Substring(0, 1) == Path.DirectorySeparatorChar.ToString()) resourceFolder = resourceFolder.Substring(1, resourceFolder.Length - 1);
 
             var srcPath = Path.Join(Util.GetSrcDirectory(), resourceFolder);
 
