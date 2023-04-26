@@ -25,8 +25,8 @@ namespace YGR
         public static IList<IVictim> Players { get; set; } // Players to focus
 
         // Zoom levels for...              { Follow, Room, Manual }
-        private static readonly float[] minZoom = { 0.60f, 0.25f, 0.05f };
-        private static readonly float[] maxZoom = { 1.25f, 1.75f, 16.0f };
+        private static readonly float[] minZoom = { 0.05f, 0.25f, 0.05f };
+        private static readonly float[] maxZoom = { 1.00f, 1.75f, 16.0f };
         private const float zoomSpeed = 0.1f;
         private const float panSpeed = 1024;
 
@@ -127,7 +127,7 @@ namespace YGR
 
             // Set zoom level to fit all players
             var stretch = Math.Max((float)(right - left) / Bounds.Width, (float)(bot - top) / Bounds.Height);
-            UpdateZoom(.75f / stretch);
+            UpdateZoom(.55f / stretch);
         }
 
         private static void focusOnRoom()
@@ -150,6 +150,7 @@ namespace YGR
             if (Input.IsKeyTriggered(Keys.F10))
             {
                 Mode = (CameraMode)(((int)Mode + 1) % Enum.GetNames(typeof(CameraMode)).Length);
+                Notifications.New("Camera mode switched to " + Mode);
             }
 
             switch (Mode)

@@ -15,6 +15,9 @@ namespace YGR
         public static Keys P2Down = Keys.Down;
         public static Keys P2Right = Keys.Right;
 
+        public static Buttons GamePadShoot = Buttons.RightTrigger;
+        public static Buttons GamePadAction = Buttons.LeftTrigger;
+
         public static Keys Enter = Keys.Enter;
 
         public static Keys CameraMoveUp = Keys.T;
@@ -22,6 +25,7 @@ namespace YGR
         public static Keys CameraMoveDown = Keys.G;
         public static Keys CameraMoveRight = Keys.H;
 
+        public static Keys CycleCameraMode = Keys.F10;
         public static Keys ToggleFullscreen = Keys.F11;
         public static Keys ToggleConnectors = Keys.O;
     }

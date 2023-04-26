@@ -205,7 +205,7 @@ namespace YGR
                 {
                     _isAiming = false;
                 }
-                if ((gpState.IsButtonDown(Buttons.RightShoulder) || gpState.IsButtonDown(Buttons.RightTrigger)) && IsAlive() && !_invincible)
+                if ((Input.IsButtonDown(_playerIndex, Keybinds.GamePadShoot)) && IsAlive() && !_invincible)
                 {
                     _isAiming = true; // Show the aim indicator when firing
                     _currentAimInput = InputType.Controller;
@@ -429,8 +429,7 @@ namespace YGR
         {
             /* Overrides from base class */
             _spritePlayer = Manager_Players.SpriteNinja;
-            LifePoints = 8; // Ninja squishy
-            _maxVelocity = Vector2.One * 0.5f; // Ninja go fast
+            LifePoints = 20;
 
             /* Class specifics */
             _isDashing = false;
@@ -514,7 +513,7 @@ namespace YGR
                 _dashCooldownTimer += timeStepMS;
             }
 
-            if (!_isDashing && (Input.IsKeyDown(Keybinds.ActionOne) || Input.IsButtonDown(_playerIndex, Buttons.A)) && _dashCooldownTimer >= _dashCooldown)
+            if (!_isDashing && (Input.IsKeyDown(Keybinds.ActionOne) || Input.IsButtonDown(_playerIndex, Keybinds.GamePadAction)) && _dashCooldownTimer >= _dashCooldown)
             {
                 _isDashing = true;
                 _dashTimer = 0;

@@ -128,6 +128,7 @@ namespace YGR
         protected override void Update(GameTime gameTime)
         {
             Input.Update();
+            Notifications.Update(gameTime);
 
             if (Input.IsKeyTriggered(Keys.Escape) || Input.IsButtonTriggered(0, Buttons.Back))
             {
@@ -230,6 +231,7 @@ namespace YGR
             var fpsColor = Color.BlanchedAlmond;
             _spriteBatch.Begin(SpriteSortMode.Immediate, null, null, null, null, null, null);
             _spriteBatch.DrawString(Fonts.Normal, fps, new Vector2(1, 1), fpsColor);
+            Notifications.Draw(gameTime, zero, _spriteBatch);
             _spriteBatch.End();
             base.Draw(gameTime);
         }
