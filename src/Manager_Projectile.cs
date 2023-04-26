@@ -43,12 +43,14 @@ namespace YGR
         public static void AddProjectile_StarterProjectile(Vector2 startPosition, Vector2 direction, double timeCreated, Y_Level level, IGameElement who)
         {
             check();
+            if (!((IVictim)who).Room.Rect.Contains(startPosition)) return;
             _projectiles.Add(new Y_StarterProjectile(startPosition, direction, timeCreated, level, who));
         }
 
         public static void AddProjectile_ShotGunProjectile(Vector2 startPosition, Vector2 direction, double timeCreated, Y_Level level, IGameElement who)
         {
             check();
+            if (!((IVictim)who).Room.Rect.Contains(startPosition)) return;
             _projectiles.Add(new Y_ShotGunProjectile(startPosition, direction, timeCreated, level, who));
         }
 

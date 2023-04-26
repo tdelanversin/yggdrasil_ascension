@@ -37,7 +37,10 @@ namespace YGR
             Rectangle myRect = me.Rect;
             newVelocity = me.Velocity;
 
-            if(me.WhoFiredMe.WhatAreYou() == X_LevelElements.Victim)
+            IWalkable room = me.Level.GetRoom(me, me.Room);
+            me.Room = room;
+            var whoFiredMe = (IVictim)me.WhoFiredMe;
+            if (whoFiredMe.WhatAreYou() == X_LevelElements.Victim)
             {
                 // regular player shot the projectile
                 foreach (var enemy in Manager_Enemies.GetEnemies())
@@ -68,10 +71,9 @@ namespace YGR
 
             if (!result)
             {
-                var room = me.Level.GetRoom(me, me.Room);
                 if (room != null)
                 {
-                    if (room.Collision.IntersectFast(ref myRect, ref newVelocity, timeStepMS, out point, out normal))
+                    if (room.Collision.Intersect(ref myRect, ref newVelocity, timeStepMS, out point, out normal))
                     {
                         result = true;
                         who.Add(room);
