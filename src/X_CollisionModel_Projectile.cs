@@ -40,7 +40,7 @@ namespace YGR
             IWalkable room = me.Level.GetRoom(me, me.Room);
             me.Room = room;
             var whoFiredMe = (IVictim)me.WhoFiredMe;
-            if (whoFiredMe.WhatAreYou() == X_LevelElements.Victim)
+            if (whoFiredMe.WhatAreYou() == X_LevelElements.Victim || whoFiredMe.WhatAreYou() == X_LevelElements.Invincible)
             {
                 // regular player shot the projectile
                 foreach (var enemy in Manager_Enemies.GetEnemies())

@@ -1,49 +1,61 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using Microsoft.Xna.Framework.Input;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 
 namespace YGR
 {
+    public enum EnemyState
+    {
+        Idle,
+        Wander,
+        Chase,
+        Flee,
+        Inactive,
+    }
+
     public class Enemy_Basic : IEnemy
     {
-        public int LifePoints { get; set; }
+        public string Name { get; set; } = "Mob";
+        public int LifePoints { get; set; } = 8;
         public bool HitInLastLoop { get; set; }
         public IProjectile HitBy { get; set; }
-        protected float maxVelocity { get; set; }
+
+        public EnemyState State { get; protected set; } = EnemyState.Idle;
+        protected int fleeingHPTreshold = 2; // Flee if at this treshold or lower
         protected float safetyDistance { get; set; }
 
         public Vector2 Velocity { get; set; }
+        protected float maxVelocity { get; set; }
         protected Vector2 _acceleration;
         protected Vector2 _deceleration;
         protected Vector2 _maxVelocity;
 
         public Vector2 FacingDirection { get; set; }
-        protected float SteeringDirection;
+        protected float _steeringDirection;
 
         public Texture2D Sprite { get; set; }
         public Rectangle SpriteRect = new Rectangle(0, 0, 42, 60);
-        public X_CollisionModel_Victim Collision { get; }
+        public X_CollisionModel_Victim Collision { get; set; }
         public Rectangle Rect { get { return _rect; } set { _rect = value; } }
 
         public Y_Level Level { get; set; }
         public IWalkable Room { get; set; }
         public IShooter Gun { get; set; }
-        protected IList<IVictim> Players;
         protected IVictim Target = null;
         public float Scale { get; set; }
-
-        public string Name { get; set; }
-
         protected Vector2 _position;
         protected Color _hitColor;
         protected Color _regularColor;
         protected Color _color;
-        protected int _hitFrames = 10;
+        protected int _hitFrames = 10; // How many frame do we show the hit color
         protected int _hitFramesCounter = 0;
         protected Rectangle _rect;
+
+        protected int _stateTimer = 0; // How long have we been idling / wandering
+        protected int _stateChangeTime = 0; // How long until we change state
+        protected int _stateTimerMax = 5000; // How long do we idle / wander at most
 
         public string Identifier;
 
@@ -53,17 +65,13 @@ namespace YGR
             IList<IVictim> players
         )
         {
-            LifePoints = 3;
-            HitInLastLoop = false;
-
             Velocity = Vector2.Zero;
             _acceleration = Vector2.One * 0.002f;
             _deceleration = Vector2.One * 0.02f;
             _maxVelocity = Vector2.One * 0.2f;
 
-            safetyDistance = 300f;
+            safetyDistance = 150f;
             FacingDirection = new Vector2(1, 0);
-            SteeringDirection = 0.0f;
             Sprite = Manager_Enemies.enemy_textures["default_enemy"];
             Collision = new X_CollisionModel_Victim(1.0f, 0.0f);
             _position = position;
@@ -82,23 +90,21 @@ namespace YGR
             Level = level;
             Room = Level.GetRoom(this, Room);
             Gun = new Y_SimpleEnemyGun();
-            Players = players;
 
-            Name = "Mob";
-
-            _hitColor = Color.Blue;
-            _regularColor = Color.Red;
+            _hitColor = Color.OrangeRed;
+            _regularColor = Color.Orange;
             _color = _regularColor;
 
             var rand = new Random();
             Identifier = DateTime.Now.Hour.ToString() + "-" + DateTime.Now.Second.ToString() + "-" + DateTime.Now.Millisecond.ToString() + "-" + rand.NextSingle().ToString();
         }
 
-
-        protected bool FindTargetAndVisibility()
+        // Sets Target to closest visible (and alive) player
+        protected void FindTarget()
         {
-            List<Tuple<float, IVictim>> inRange = new List<Tuple<float, IVictim>>();
-            foreach (IVictim player in Players)
+            Target = null;
+            float prevDistance = 0f;
+            foreach (IVictim player in Manager_Players.Players)
             {
                 if (player.WhatAreYou() == X_LevelElements.Ghost)
                 {
@@ -111,22 +117,19 @@ namespace YGR
                 }
 
                 float distance = Vector2.Distance(player.Rect.Center.ToVector2(), Rect.Center.ToVector2());
-                inRange.Add(new Tuple<float, IVictim>(distance, player));
+
+                if (Target == null || distance < prevDistance)
+                {
+                    Target = player;
+                    prevDistance = distance;
+                }
             }
-
-            Target = null;
-            if (inRange.Count == 0) return false;
-
-            inRange = inRange.OrderBy(t => t.Item1).ToList();
-            Target = inRange.First().Item2;
-
-            return true;
         }
 
         protected bool LineOfSight(Vector2 target)
         {
-            if (Room == null) return false;
-            if (target == null) return false;
+            if (Room == null) { return false; }
+            if (!Room.Rect.Contains(target)) { return false; }
 
             Point origin = Rect.Center;
             Vector2 targetDirection = target - Rect.Center.ToVector2();
@@ -147,7 +150,30 @@ namespace YGR
             return true;
         }
 
-        public virtual void UpdateVelocity(Vector2 input, GameTime gameTime)
+        protected void HandleProjectileImpact(GameTime gameTime)
+        {
+            if (HitInLastLoop)
+            {
+                LifePoints -= 1;
+                HitInLastLoop = false;
+                _hitFramesCounter = 1;
+                _color = _hitColor;
+            }
+            else if (_hitFramesCounter > 0)
+            {
+                if (_hitFramesCounter > _hitFrames)
+                {
+                    _hitFramesCounter = 0;
+                    _color = _regularColor;
+                }
+                else
+                {
+                    _hitFramesCounter++;
+                }
+            }
+        }
+
+        protected virtual void UpdateVelocity(Vector2 input, GameTime gameTime)
         {
             int timeStepMS = gameTime.ElapsedGameTime.Milliseconds;
 
@@ -175,105 +201,174 @@ namespace YGR
             Velocity = Vector2.Clamp(Velocity, -_maxVelocity, _maxVelocity);
         }
 
+        protected virtual void UpdateCollision(GameTime gameTime)
+        {
+            int timeStepMS = gameTime.ElapsedGameTime.Milliseconds;
+            /* ##########################################################################
+             * Collision with everything handling (takes care of location update as well)
+             * ########################################################################## */
+            IList<Vector2> contactNormal;
+            IList<Point> contactPoint;
+            IList<IGameElement> who;
+            Vector2 newVelocity = Velocity;
+            if (Collision.Intersect(this, timeStepMS, out newVelocity, out contactPoint, out contactNormal, out who))
+            {
+                //Logger.Info("Collided with something");
+
+                if (float.IsNaN(newVelocity.X))
+                {
+                    Logger.Error("newVelocity contains NaNs");
+                }
+                else
+                {
+                    Velocity = newVelocity;
+                }
+            }
+
+            _position += newVelocity * timeStepMS;
+            _rect.Location = _position.ToPoint();
+        }
+
+        protected virtual Vector2 Wander(GameTime gameTime)
+        {
+            float steeringDiff = (Util.random.NextSingle() - 0.5f) / 4f;
+
+            // Don't stupidly try walking into walls
+            int counter = 0;
+            do
+            {
+                _steeringDirection += steeringDiff;
+                steeringDiff *= 2;
+                counter++;
+                FacingDirection = new Vector2((float)Math.Cos(_steeringDirection), (float)Math.Sin(_steeringDirection));
+            } while (counter < 8 && !LineOfSight(Rect.Center.ToVector2() + FacingDirection * Rect.Height * 2));
+
+            /*
+            // Alternative Circle steering model wandering: Move a point on a circle in front of the entity, then face that point
+            Vector2 steeringCenter = _position + Vector2.Normalize(FacingDirection) / 2;
+            Vector2 steeringPoint = steeringCenter + new Vector2((float)Math.Cos(SteeringDirection), (float)Math.Sin(SteeringDirection)) / 2;
+            FacingDirection = steeringPoint - _position;
+            */
+
+            return FacingDirection;
+        }
+
+        protected virtual Vector2 Chase(GameTime gameTime)
+        {
+            Vector2 movement = Vector2.Zero;
+
+            // Move towards target if it's further than safety distance away
+            if (Target != null && Vector2.Distance(Target.Rect.Center.ToVector2(), Rect.Center.ToVector2()) > safetyDistance)
+            {
+                FacingDirection = Target.Rect.Center.ToVector2() - Rect.Center.ToVector2();
+                movement = FacingDirection;
+            }
+            else
+            {
+                // Just stand still, I guess?
+            }
+
+            return movement;
+        }
+
+        protected virtual Vector2 Flee(GameTime gameTime)
+        {
+            Vector2 movement = Vector2.Zero;
+
+            // Face away from closest player
+            FacingDirection = Rect.Center.ToVector2() - Target.Rect.Center.ToVector2();
+
+            // If we're running into an obstacle, try and face away from it, like we do when wandering
+            // _steeringDirection = (float)Math.Tan(FacingDirection.X / FacingDirection.Y);
+            float steeringDiff = (Util.random.NextSingle() - 0.5f) / 4f;
+
+            // Don't stupidly try walking into walls
+            int counter = 0;
+            while (counter < 8 && !LineOfSight(Rect.Center.ToVector2() + FacingDirection * Rect.Height * 2))
+            {
+                _steeringDirection += steeringDiff;
+                steeringDiff *= 2;
+                counter++;
+                FacingDirection = new Vector2((float)Math.Cos(_steeringDirection), (float)Math.Sin(_steeringDirection));
+            }
+            movement = FacingDirection;
+
+            return movement;
+        }
+
+        public virtual void UpdateState(GameTime gameTime)
+        {
+            if (Target != null)
+            {
+                if (LifePoints > fleeingHPTreshold)
+                {
+                    State = EnemyState.Chase;
+                }
+                else
+                {
+                    State = EnemyState.Flee;
+                }
+            }
+            else if (State == EnemyState.Wander)
+            { /* Flip states with higher likelyhood as time passes on */
+                _stateTimer -= gameTime.ElapsedGameTime.Milliseconds;
+                if (-_stateTimer > _stateChangeTime)
+                {
+                    State = EnemyState.Idle;
+                    _stateTimer = 0;
+                    _stateChangeTime = Util.random.Next(_stateTimerMax);
+                }
+            }
+            else if (State == EnemyState.Idle)
+            {
+                _stateTimer += gameTime.ElapsedGameTime.Milliseconds;
+                if (_stateTimer > _stateChangeTime)
+                {
+                    State = EnemyState.Wander;
+                    _stateTimer = 0;
+                    _stateChangeTime = Util.random.Next(_stateTimerMax);
+                }
+            } else { // Target left the room
+                State = EnemyState.Wander;
+            }
+        }
+
+
         public virtual void Update(GameTime gameTime)
         {
-            Room = Level.GetRoom(this, Room);
+            if (State == EnemyState.Inactive) { return; }
 
-            if (HitInLastLoop)
-            {
-                LifePoints -= 1;
-                HitInLastLoop = false;
-                _hitFramesCounter = 1;
-                _color = _hitColor;
-            }
-            else if (_hitFramesCounter > 0)
-            {
-                if (_hitFramesCounter > _hitFrames)
-                {
-                    _hitFramesCounter = 0;
-                    _color = _regularColor;
-                }
-                else
-                {
-                    _hitFramesCounter++;
-                }
-            }
-
-            Gun.Update(gameTime);
+            HandleProjectileImpact(gameTime);
+            FindTarget();
+            UpdateState(gameTime);
 
             Vector2 movement = Vector2.Zero;
-            bool canSee = FindTargetAndVisibility();
-            int timeStepMS = gameTime.ElapsedGameTime.Milliseconds;
-            if (canSee && Vector2.Distance(Target.Rect.Center.ToVector2(), Rect.Center.ToVector2()) > safetyDistance)
+            switch (State)
             {
-                if (Target != null)
-                {
-                    FacingDirection = Target.Rect.Center.ToVector2() - Rect.Center.ToVector2();
-                    movement = FacingDirection;
-                }
-                else
-                {
-                    Room = Level.GetRoom(this, Room);
-                    FacingDirection += new Vector2(Util.random.NextSingle() - 0.5f, Util.random.NextSingle() - 0.5f);
-                    if (FacingDirection.LengthSquared() > 1)
-                    {
-                        FacingDirection = Vector2.Normalize(FacingDirection);
-                    }
-                }
-                Velocity += FacingDirection * _acceleration * (float)timeStepMS;
-                Velocity = Vector2.Clamp(Velocity, -_maxVelocity, _maxVelocity);
-
-                _position += Velocity * timeStepMS;
-                _rect.Location = _position.ToPoint();
+                case EnemyState.Chase:
+                    movement = Chase(gameTime);
+                    break;
+                case EnemyState.Flee:
+                    movement = Flee(gameTime);
+                    break;
+                case EnemyState.Wander:
+                    movement = Wander(gameTime);
+                    break;
+                case EnemyState.Idle:
+                    break;
+                default:
+                    break;
             }
-            else // No target in line of sight, just wander
-            {
-                float steeringDiff = (Util.random.NextSingle() - 0.5f) / 4f;
-
-                // Don't stupidly try walking into walls
-                int counter = 0;
-                do
-                {
-                    SteeringDirection += steeringDiff;
-                    steeringDiff *= 2;
-                    counter++;
-                    FacingDirection = new Vector2((float)Math.Cos(SteeringDirection), (float)Math.Sin(SteeringDirection));
-                } while (counter < 8 && !LineOfSight(Rect.Center.ToVector2() + FacingDirection * Rect.Height * 2));
-
-                movement = FacingDirection;
-
-                // Centered steering model wandering: Move a point on a circle around the entity, always face that point
-                // Offset circle steering model wandering: Move a point on a circle in front of the entity, always face that point
-                // Vector2 steeringCenter = _position + Vector2.Normalize(FacingDirection) / 2;
-                // Vector2 steeringPoint = steeringCenter + new Vector2((float)Math.Cos(SteeringDirection), (float)Math.Sin(SteeringDirection)) / 2;
-                // FacingDirection = steeringPoint - _position;
-            }
-
 
             UpdateVelocity(movement, gameTime);
+            UpdateCollision(gameTime);
 
-            IList<Vector2> contactNormals;
-            IList<Point> contactPoints;
-            IList<IGameElement> who;
-            Vector2 newVelocity;
-            if (Collision.Intersect(this, timeStepMS, out newVelocity, out contactPoints, out contactNormals, out who))
+            Gun.Update(gameTime);
+            if (Target != null)
             {
-                Velocity = newVelocity;
-            }
-            //Rectangle rect = me.Rect;
-            //rect.Location += (me.Velocity * timeStepMS).ToPoint();
-            //me.Rect = rect;
-
-            _position += Velocity * timeStepMS;
-            _rect.Location = _position.ToPoint();
-
-
-            if (canSee)
-            {
-                Point origin = _rect.Center;
                 Vector2 targetDirection = Target.Rect.Center.ToVector2() - _rect.Center.ToVector2();
                 targetDirection.Normalize();
-                Gun.Shoot(gameTime, origin.ToVector2(), targetDirection, Level, this);
+                Gun.Shoot(gameTime, _rect.Center.ToVector2(), targetDirection, Level, this);
             }
         }
 

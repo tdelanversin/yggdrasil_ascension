@@ -247,7 +247,6 @@ namespace YGR
                     foreach (var spr in regularSpawners)
                     {
                         Manager_Enemies.AddEnemy_SimpleEnemy(spr.ToVector2(), this, Manager_Players.Players);
-                        Manager_Enemies.AddEnemy_SimpleEnemy(spr.ToVector2(), this, Manager_Players.Players);
                     }
                 }
                 if (bossSpawners != null)
