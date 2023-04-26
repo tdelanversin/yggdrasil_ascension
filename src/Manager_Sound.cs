@@ -17,21 +17,21 @@ namespace YGR
         private static SoundEffect bonus;
         private static SoundEffect level_cleared;
         private static SoundEffect player_death;
-        public static Dictionary<int,SoundEffect> playing_sound_effects;
+        public static Dictionary<int,SoundEffectInstance> playing_sound_effects;
 
         public static void LoadContent(ContentManager contentManager)
         {
             song = contentManager.Load<Song>("example_intro_song");
             fireball = contentManager.Load<SoundEffect>("better_fireball");
             explosion = contentManager.Load<SoundEffect>("explosion");
-            //dash = contentManager.Load<SoundEffect>("dash");
+            dash = contentManager.Load<SoundEffect>("dash");
             shotgun = contentManager.Load<SoundEffect>("shotgun");
             ennemy_death = contentManager.Load<SoundEffect>("ennemy_death_cry");
             bonus = contentManager.Load<SoundEffect>("bonus_sound");
             level_cleared = contentManager.Load<SoundEffect>("level_completion");
             player_death = contentManager.Load<SoundEffect>("player_death");
 
-            playing_sound_effects = new Dictionary<int, SoundEffect>();
+            playing_sound_effects = new Dictionary<int, SoundEffectInstance>();
         }   
         public static SoundEffect AddSound_Explosion() { return explosion; }
 

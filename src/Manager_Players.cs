@@ -85,7 +85,7 @@ namespace YGR
                    !Manager_Sound.playing_sound_effects.ContainsKey(player.ID))
 
                 {
-                    SoundEffect death_player_sound = Manager_Sound.AddSound_Player_Death();
+                    SoundEffectInstance death_player_sound = Manager_Sound.AddSound_Player_Death().CreateInstance();
                     Manager_Sound.playing_sound_effects.Add(player.ID, death_player_sound);
                     death_player_sound.Play();
                 }

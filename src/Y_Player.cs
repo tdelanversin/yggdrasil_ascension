@@ -473,6 +473,7 @@ namespace YGR
 
             if (!_isDashing && (Input.IsKeyDown(Keybinds.ActionOne) || Input.IsButtonDown(_playerIndex, Buttons.A)) && _dashCooldownTimer >= _dashCooldown)
             {
+                Manager_Sound.AddSound_Dash().Play();
                 _isDashing = true;
                 _dashTimer = 0;
                 _dashCooldownTimer = 0; // Reset timer
@@ -488,6 +489,7 @@ namespace YGR
                 }
                 else
                 {
+                    
                     Velocity *= _dashSpeed;
                 }
             }
