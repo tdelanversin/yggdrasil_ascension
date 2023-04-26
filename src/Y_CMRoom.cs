@@ -782,6 +782,12 @@ namespace YGR
         /// <param name="spriteBatch">Active Monogame SpriteBatch</param>
         public void DrawOutline(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)
         {
+            // Culling
+            if (Rectangle.Intersect(Camera.VisibleArea, Rect) == Rectangle.Empty)
+            {
+                return;
+            }
+
             Collision.DrawOutline(gameTime, globalOffset, spriteBatch);
             Factory_Debug.DrawRectangle(Rect.X, Rect.Y, Rect.Width, Rect.Height, 3, Color.Blue, spriteBatch);
             foreach(var light in Lights)
@@ -827,6 +833,12 @@ namespace YGR
         /// <param name="spriteBatch">Active Monogame SpriteBatch</param>
         public void Draw(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)
         {
+            // Culling
+            if (Rectangle.Intersect(Camera.VisibleArea, Rect) == Rectangle.Empty)
+            {
+                return;
+            }
+
             if(State == X_RoomState.Closed || State == X_RoomState.LockedClosed)
             {
                 //spriteBatch.Draw(

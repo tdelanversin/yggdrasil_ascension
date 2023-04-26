@@ -298,6 +298,12 @@ namespace YGR
 
         public void Draw(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)
         {
+            // Culling
+            if (Rectangle.Intersect(Camera.VisibleArea, Rect) == Rectangle.Empty)
+            {
+                return;
+            }
+
             spriteBatch.Draw(
                 texture: Sprite,
                 position: _rect.Location.ToVector2(),
@@ -317,6 +323,12 @@ namespace YGR
 
         public void DrawOutline(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)
         {
+            // Culling
+            if (Rectangle.Intersect(Camera.VisibleArea, Rect) == Rectangle.Empty)
+            {
+                return;
+            }
+
             Factory_Debug.DrawRectangle(_rect.X, _rect.Y, Rect.Width, _rect.Height, 1, Color.OrangeRed, spriteBatch);
             Collision.DrawOutline(gameTime, globalOffset, spriteBatch);
         }
