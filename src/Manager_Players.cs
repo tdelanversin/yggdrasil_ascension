@@ -1,4 +1,5 @@
 ﻿using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using System;
@@ -79,6 +80,15 @@ namespace YGR
             foreach (var player in Players)
             {
                 player.Update(gameTime);
+                
+                if (player.LifePoints <= 0 && 
+                   !Manager_Sound.playing_sound_effects.ContainsKey(player.ID))
+
+                {
+                    SoundEffect death_player_sound = Manager_Sound.AddSound_Player_Death();
+                    Manager_Sound.playing_sound_effects.Add(player.ID, death_player_sound);
+                    death_player_sound.Play();
+                }
             }
         }
 

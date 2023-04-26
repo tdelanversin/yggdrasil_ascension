@@ -44,6 +44,7 @@ namespace YGR
         public Dictionary<X_ConnectorSide, IList<X_ConnectorPoint>> Doors { get; set; }
         public Dictionary<X_ConnectorSide, IList<IWalkable>> DoorRooms { get; set; }
         public int TextureTileSize { get; }
+        public int ID { get ; set; }
 
         private new Dictionary<X_DoorState, List<Rectangle>> _doorCollisionRectangles;
 

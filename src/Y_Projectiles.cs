@@ -18,6 +18,8 @@ namespace YGR
         public Rectangle Rect { get { return _rect; } set { _rect = value; } }
         public IGameElement WhoFiredMe { get; }
 
+        public int ID { get; set; }
+
         private Vector2 _position;
         private Texture2D _sprite;
         public Rectangle _window;
@@ -166,6 +168,8 @@ namespace YGR
         //public Rectangle Rect { get; set; }
         public Rectangle Rect { get { return _rect; } set { _rect = value; } }
         public IGameElement WhoFiredMe { get; }
+
+        public int ID { get; set; }
 
         private Vector2 _position;
         private Texture2D _sprite;

@@ -14,6 +14,7 @@ namespace YGR
         public void Update(GameTime gameTime);
         public void DrawOutline(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch);
         public void Draw(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch);
-        public X_LevelElements WhatAreYou();
+        public X_LevelElements WhatAreYou(); 
+        public int ID{ get; set; }
     }
 }

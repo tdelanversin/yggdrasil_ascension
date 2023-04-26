@@ -32,6 +32,8 @@ namespace YGR
         public Dictionary<X_ConnectorSide, IList<IWalkable>> DoorRooms { get; set; }
         public int TextureTileSize { get; }
 
+        public int ID { get; set; }
+
         public Color RegionColor { get; }
 
         private Texture2D _floor;

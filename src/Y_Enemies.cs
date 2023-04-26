@@ -21,6 +21,8 @@ namespace YGR
         public X_CollisionModel_Victim Collision { get; }
         public Rectangle Rect { get { return _rect; } set { _rect = value; } }
 
+        public int ID { get; set; }
+
         public Y_Level Level { get; set; }
         public IWalkable Room { get; set; }
         public IShooter Gun { get; set; }
@@ -207,5 +209,7 @@ namespace YGR
         }
 
         public X_LevelElements WhatAreYou() => X_LevelElements.Enemy;
+
+
     }
 }

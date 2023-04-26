@@ -19,6 +19,7 @@ namespace YGR
         public IList<IVictim> Victims { get; }
         public Color OutsideColor { get; set; }
 
+        public int ID { get; set; }
         private string _name;
 
         private List<X_Light> _lights;

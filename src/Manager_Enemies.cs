@@ -11,6 +11,7 @@ namespace YGR
         public static Dictionary<string, Texture2D> enemy_textures;
         private static List<IEnemy> _enemies = new List<IEnemy>();
         private static bool _initialized = false;
+        private static bool level_clear = false;
 
         public static void Initialize(ContentManager content)
         {
@@ -44,8 +45,21 @@ namespace YGR
             foreach (IEnemy enemy in _enemies)
             {
                 enemy.Update(gameTime);
+                if(enemy.LifePoints<= 0)
+                {
+                    Manager_Sound.AddSound_Ennemy_Death().Play();
+                }
             }
             _enemies.RemoveAll(enemy => enemy.LifePoints <= 0);
+           if (!level_clear && _enemies.Count <=0)
+            {
+                // Private variable to reset each time we start a new level
+                level_clear = true;
+                // TODO: add a wating time for the level clear sound
+                //System.Threading.Thread.Sleep(1000);
+                Manager_Sound.AddSound_Level_Clear().Play();
+            }
+           
         }
 
         public static void Draw(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)
@@ -65,5 +79,7 @@ namespace YGR
                 enemy.DrawOutline(gameTime, globalOffset, spriteBatch);
             }
         }
+
+      
     }
 }

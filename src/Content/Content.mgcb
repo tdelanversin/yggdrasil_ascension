@@ -31,6 +31,12 @@
 /processorParam:TextureFormat=Color
 /build:background.png
 
+#begin better_fireball.wav
+/importer:WavImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:better_fireball.wav
+
 #begin big_dust_cloud.png
 /importer:TextureImporter
 /processor:TextureProcessor
@@ -42,6 +48,12 @@
 /processorParam:MakeSquare=False
 /processorParam:TextureFormat=Color
 /build:big_dust_cloud.png
+
+#begin bonus_sound.wav
+/importer:WavImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:bonus_sound.wav
 
 #begin charaset.png
 /importer:TextureImporter
@@ -55,6 +67,12 @@
 /processorParam:TextureFormat=Color
 /build:charaset.png
 
+#begin dash.wav
+/importer:WavImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:dash.wav
+
 #begin dust_particle.png
 /importer:TextureImporter
 /processor:TextureProcessor
@@ -66,6 +84,12 @@
 /processorParam:MakeSquare=False
 /processorParam:TextureFormat=Color
 /build:dust_particle.png
+
+#begin ennemy_death_cry.wav
+/importer:WavImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:ennemy_death_cry.wav
 
 #begin example_intro_song.mp3
 /importer:Mp3Importer
@@ -170,6 +194,18 @@
 /processorParam:MakeSquare=False
 /processorParam:TextureFormat=Color
 /build:heart_yellow.png
+
+#begin level_completion.wav
+/importer:WavImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:level_completion.wav
+
+#begin player_death.wav
+/importer:WavImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:player_death.wav
 
 #begin projectile.png
 /importer:TextureImporter

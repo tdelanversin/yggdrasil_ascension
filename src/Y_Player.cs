@@ -30,6 +30,10 @@ namespace YGR
         public Y_Level Level { get; set; }
         public IWalkable Room { get; set; }
 
+        public int ID { get; set; }
+
+     
+
         // private fields
         protected bool _isAiming;
         protected ControlLayout _controlLayout;
@@ -67,6 +71,8 @@ namespace YGR
             float scale = 1.0f
             )
         {
+            Random random=new Random();
+            ID = random.Next(100000000);
             // Use all constructor arguments
             Level = level;
             _playerIndex = playerIndex;
@@ -120,6 +126,7 @@ namespace YGR
             }
             else
             {
+                    
                 return X_LevelElements.Ghost;
             }
         }
