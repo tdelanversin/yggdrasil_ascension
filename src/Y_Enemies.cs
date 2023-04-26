@@ -182,17 +182,21 @@ namespace YGR
             if (HitInLastLoop)
             {
                 LifePoints -= 1;
+                HitInLastLoop = false;
+                _hitFramesCounter = 1;
                 _color = _hitColor;
-                _hitFramesCounter++;
+            }
+            else if (_hitFramesCounter > 0)
+            {
                 if (_hitFramesCounter > _hitFrames)
                 {
-                    HitInLastLoop = false;
                     _hitFramesCounter = 0;
+                    _color = _regularColor;
                 }
-            }
-            else
-            {
-                _color = _regularColor;
+                else
+                {
+                    _hitFramesCounter++;
+                }
             }
 
             Gun.Update(gameTime);
