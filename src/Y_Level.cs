@@ -252,9 +252,9 @@ namespace YGR
                 }
                 if (bossSpawners != null)
                 {
-                    foreach (var spr in regularSpawners)
+                    foreach (var spr in bossSpawners)
                     {
-                        Manager_Enemies.AddEnemy_Gigachad(new Vector2(1050 + 400, 150), this, Manager_Players.Players);
+                        Manager_Enemies.AddEnemy_Gigachad(spr.ToVector2(), this, Manager_Players.Players);
                     }
                 }
             }

@@ -57,7 +57,7 @@ namespace YGR
             }
             else // No target in line of sight, just wander
             {
-                float steeringDiff = (Util.Random.NextSingle() - 0.5f) / 4f;
+                float steeringDiff = (Util.random.NextSingle() - 0.5f) / 4f;
 
                 // Don't stupidly try walking into walls
                 int counter = 0;
