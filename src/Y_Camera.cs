@@ -147,6 +147,11 @@ namespace YGR
             Bounds = bounds.Bounds;
             UpdateMatrix();
 
+            if (Input.IsKeyTriggered(Keys.F10))
+            {
+                Mode = (CameraMode)(((int)Mode + 1) % Enum.GetNames(typeof(CameraMode)).Length);
+            }
+
             switch (Mode)
             {
                 case CameraMode.Manual:
