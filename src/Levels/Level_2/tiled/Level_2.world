@@ -1,0 +1,29 @@
+{
+	"maps": [
+		{ "fileName": "0001_Trunc_0.tmx", "x": 0, "y": -416 },
+		{ "fileName": "0002_Start_0.tmx", "x": 32, "y": -2720 },
+		{ "fileName": "0003_Gold_0.tmx", "x": 1984, "y": -2720 },
+		{ "fileName": "0004_Trunc_1.tmx", "x": 1344, "y": -416 },
+		{ "fileName": "0005_Trunc_2.tmx", "x": 2688, "y": -416 },
+		{ "fileName": "0006_Leaf_0.tmx", "x": 4640, "y": -384 },
+		{ "fileName": "0007_Leaf_1.tmx", "x": 5664, "y": -384 },
+		{ "fileName": "0008_Leaf_2.tmx", "x": 6688, "y": -384 },
+		{ "fileName": "0009_Leaf_3.tmx", "x": 4640, "y": 640 },
+		{ "fileName": "0010_Leaf_4.tmx", "x": 5664, "y": 640 },
+		{ "fileName": "0011_Leaf_5.tmx", "x": 6688, "y": 640 },
+		{ "fileName": "0012_Leaf_6.tmx", "x": 4640, "y": 1664 },
+		{ "fileName": "0013_Leaf_7.tmx", "x": 5664, "y": 1664 },
+		{ "fileName": "0014_Leaf_8.tmx", "x": 6688, "y": 1664 },
+		{ "fileName": "0015_Trunc_3.tmx", "x": 0, "y": 608 },
+		{ "fileName": "0016_Trunc_6.tmx", "x": 0, "y": 1632 },
+		{ "fileName": "0017_Trunc_9.tmx", "x": 0, "y": 2656 },
+		{ "fileName": "0018_Trunc_10.tmx", "x": 1344, "y": 2656 },
+		{ "fileName": "0019_Trunc_11.tmx", "x": 2688, "y": 2656 },
+		{ "fileName": "0020_Trunc_7.tmx", "x": 1344, "y": 1632 },
+		{ "fileName": "0021_Trunc_8.tmx", "x": 2688, "y": 1632 },
+		{ "fileName": "0022_Trunc_4.tmx", "x": 1344, "y": 608 },
+		{ "fileName": "0023_Trunc_5.tmx", "x": 2688, "y": 608 },
+		{ "fileName": "0024_Mini_0.tmx", "x": 0, "y": -1024 }
+	],
+	"type": "world"
+}

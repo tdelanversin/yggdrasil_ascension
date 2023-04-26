@@ -4,7 +4,7 @@ using System.IO;
 
 /// <summary>
 /// This class instanciates a Logger and makes it available everywhere
-/// <param>Usage: just type Logger.Info(...) or Logger.Debug(...) anywhere in the program</param>
+/// <param>Usage: just type//Logger.Info(...) or Logger.Debug(...) anywhere in the program</param>
 /// </summary>
 public static class Logger
 {
@@ -66,7 +66,7 @@ class Program
 #endif
         try
         {
-            Logger.Info("=================== " + time.ToLongDateString() + " | " + time.ToLongTimeString() + " ===================");
+           //Logger.Info("=================== " + time.ToLongDateString() + " | " + time.ToLongTimeString() + " ===================");
             var game = new YGR.A_Yggdrasil();
             game.Run();
         }

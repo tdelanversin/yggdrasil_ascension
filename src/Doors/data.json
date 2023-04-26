@@ -1,0 +1,371 @@
+{
+    "textureName": "tiles_32.png",
+    "size" : 32,
+    "tiles" : {
+        "floor": {
+            "coordinates" : [
+                {
+                    "x": 0,
+                    "y": 0 
+                },
+                {
+                    "x": 1,
+                    "y": 0 
+                },
+                {
+                    "x": 2,
+                    "y": 0 
+                }
+            ],
+            "mask" : [
+                [[""],[""],[""]],
+                [[""],["Floor"],[""]],
+                [[""],[""],[""]]
+            ]
+        }, 
+        "roofStraightVerticalL": {
+            "coordinates" : [
+                {
+                    "x": 4,
+                    "y": 1 
+                },
+                {
+                    "x": 5,
+                    "y": 1 
+                },
+                {
+                    "x": 6,
+                    "y": 1 
+                }
+            ],
+            "mask" : [
+                [[""],["Roof"],[""]],
+                [[""],["Roof"],["Floor","Wall"]],
+                [[""],["Roof"],[""]]
+            ]
+        },
+        "roofStraightVerticalR": {
+            "coordinates": [
+                {
+                    "x": 4,
+                    "y": 2 
+                },
+                {
+                    "x": 5,
+                    "y": 2 
+                },
+                {
+                    "x": 6,
+                    "y": 2 
+                }
+            ],
+            "mask" : [
+                [[""],["Roof"],[""]],
+                [["Floor","Wall"],["Roof"],[""]],
+                [[""],["Roof"],[""]]
+            ]
+        },
+        "roofStraightHorizontalB": {
+            "coordinates" : [
+                {
+                    "x": 0,
+                    "y": 1 
+                },
+                {
+                    "x": 1,
+                    "y": 1 
+                },
+                {
+                    "x": 2,
+                    "y": 1 
+                }
+            ],
+            "mask" : [
+                [[""],["Floor"],[""]],
+                [["Roof"],["Roof"],["Roof"]],
+                [[""],[""],[""]]
+            ]
+        },
+        "roofStraightHorizontalT": {
+            "coordinates" : [
+                {
+                    "x": 0,
+                    "y": 2 
+                },
+                {
+                    "x": 1,
+                    "y": 2 
+                },
+                {
+                    "x": 2,
+                    "y": 2 
+                }
+            ],
+            "mask" : [
+                [[""],[""],[""]],
+                [["Roof"],["Roof"],["Roof"]],
+                [[""],["Wall"],[""]]
+            ]
+        },
+        "wall": {
+            "coordinates" : [
+                {
+                    "x": 0,
+                    "y": 3 
+                }
+            ],
+            "mask" : [
+                [[""],[""],[""]],
+                [[""],["Wall"],[""]],
+                [[""],[""],[""]]
+            ]
+        },
+        "roofCornerOutsideBr": {
+            "coordinates": [
+                {
+                    "x": 0,
+                    "y": 4 
+                }
+            ],
+            "mask" : [
+                [["Floor"],["Roof"],[""]],
+                [["Roof"],["Roof"],[""]],
+                [[""],[""],[""]]
+            ]
+        },
+        "roofCornerOutsideTl": {
+            "coordinates" : [
+                {
+                    "x": 2,
+                    "y": 4 
+                }
+            ],
+            "mask" : [
+                [[""],[""],[""]],
+                [[""],["Roof"],["Roof"]],
+                [[""],["Roof"],["Wall"]]
+            ]
+        },
+        "roofCornerOutsideTr": {
+            "coordinates" : [
+                {
+                    "x": 1,
+                    "y": 4 
+                }
+            ],
+            "mask" : [
+                [[""],[""],[""]],
+                [["Roof"],["Roof"],[""]],
+                [["Wall"],["Roof"],[""]]
+            ]
+        },
+        "roofCornerOutsideBl": {
+            "coordinates" : [
+                {
+                    "x": 3,
+                    "y": 4 
+                }
+            ],
+            "mask" : [
+                [[""],["Roof"],["Floor"]],
+                [[""],["Roof"],["Roof"]],
+                [[""],[""],[""]]
+            ]
+        },
+        "roofCornerInsideBr": {
+            "coordinates" : [
+                {
+                    "x": 4,
+                    "y": 4 
+                }
+            ],
+            "mask" : [
+                [["Floor"],[""],[""]],
+                [[""],["Roof"],["Roof"]],
+                [[""],["Roof"],[""]]
+            ]
+        },
+        "roofCornerInsideTr": {
+            "coordinates" : [
+                {
+                    "x": 5,
+                    "y": 4 
+                }
+            ],
+            "mask" : [
+                [[""],["Roof"],[""]],
+                [[""],["Roof"],["Roof"]],
+                [["Floor"],[""],[""]]
+            ]
+        },
+        "roofCornerInsideTl": {
+            "coordinates" : [
+                {
+                    "x": 6,
+                    "y": 4
+                }
+            ],
+            "mask" : [
+                [[""],["Roof"],[""]],
+                [["Roof"],["Roof"],[""]],
+                [[""],[""],["Floor"]]
+            ]
+        },
+        "roofCornerInsideBl": {
+            "coordinates" : [
+                {
+                    "x": 7,
+                    "y": 4 
+                }
+            ],
+            "mask" : [
+                [[""],[""],["Floor"]],
+                [["Roof"],["Roof"],[""]],
+                [[""],["Roof"],[""]]
+            ]
+        },
+        "roofEndH1": {
+            "coordinates" : [
+                {
+                    "x": 5,
+                    "y": 4 
+                }
+            ],
+            "mask" : [
+                [[""],[""],[""]],
+                [["Out"],["Roof"],["Roof"]],
+                [["Floor"],["Wall"],["Wall"]]
+            ]
+        },
+        "roofEndH2": {
+            "coordinates" : [
+                {
+                    "x": 4,
+                    "y": 4 
+                }
+            ],
+            "mask" : [
+                [["Floor"],["Floor"],["Floor"]],
+                [["Out"],["Roof"],["Roof"]],
+                [[""],[""],[""]]
+            ]
+        },
+        "roofEndH3": {
+            "coordinates" : [
+                {
+                    "x": 7,
+                    "y": 4 
+                }
+            ],
+            "mask" : [
+                [["Floor"],["Floor"],["Floor"]],
+                [["Roof"],["Roof"],["Out"]],
+                [[""],[""],[""]]
+            ]
+        },
+        "roofEndH4": {
+            "coordinates" : [
+                {
+                    "x": 6,
+                    "y": 4 
+                }
+            ],
+            "mask" : [
+                [[""],[""],[""]],
+                [["Roof"],["Roof"],["Out"]],
+                [["Wall"],["Wall"],["Floor"]]
+            ]
+        },
+        "roofEndV1": {
+            "coordinates" : [
+                {
+                    "x": 6,
+                    "y": 4 
+                }
+            ],
+            "mask" : [
+                [[""],["Roof"],["Floor"]],
+                [[""],["Roof"],["Floor"]],
+                [[""],["Out"],["Floor"]]
+            ]
+        },
+        "roofEndV2": {
+            "coordinates" : [
+                {
+                    "x": 5,
+                    "y": 4 
+                }
+            ],
+            "mask" : [
+                [["Floor"],["Roof"],[""]],
+                [["Floor"],["Roof"],[""]],
+                [["Floor"],["Out"],[""]]
+            ]
+        },
+        "roofEndV3": {
+            "coordinates" : [
+                {
+                    "x": 7,
+                    "y": 4 
+                }
+            ],
+            "mask" : [
+                [[""],["Out"],["Floor"]],
+                [[""],["Roof"],["Floor"]],
+                [[""],["Roof"],["Floor"]]
+            ]
+        },
+        "roofEndV4": {
+            "coordinates" : [
+                {
+                    "x": 4,
+                    "y": 4 
+                }
+            ],
+            "mask" : [
+                [["Floor"],["Out"], [""]],
+                [["Floor"],["Roof"],[""]],
+                [["Floor"],["Roof"],[""]]
+            ]
+        },
+        "mechanism1": {
+            "coordinates" : [
+                {
+                    "x": 0,
+                    "y": 6 
+                }
+            ],
+            "mask" : [
+                [[""],[""], [""]],
+                [[""],["Roof"],[""]],
+                [[""],[""],[""]]
+            ]
+        },
+        "mechanism2": {
+            "coordinates" : [
+                {
+                    "x": 1,
+                    "y": 6 
+                }
+            ],
+            "mask" : [
+                [[""],[""], [""]],
+                [[""],["Roof"],[""]],
+                [[""],[""],[""]]
+            ]
+        },
+        "doorCover": {
+            "coordinates" : [
+                {
+                    "x": 0,
+                    "y": 5 
+                }
+            ], 
+            "mask" : [
+                [[""],["Floor","Roof","Wall"],[""]],
+                [["Floor","Roof","Wall"],["Floor","Wall"],["Floor","Roof","Wall"]],
+                [[""],["Floor","Roof"],[""]]
+            ]
+        }
+    }
+}

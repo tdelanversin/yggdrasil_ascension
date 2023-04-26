@@ -50,7 +50,7 @@ namespace YGR
                 Gdm.PreferredBackBufferWidth = RES_X;
                 Gdm.PreferredBackBufferHeight = RES_Y;
                 Gdm.IsFullScreen = false;
-                Logger.Info("Turning fullscreen OFF. Resolution: " + RES_X.ToString() + "x" + RES_Y.ToString());
+               //Logger.Info("Turning fullscreen OFF. Resolution: " + RES_X.ToString() + "x" + RES_Y.ToString());
                 ret = false;
             }
             else
@@ -58,7 +58,7 @@ namespace YGR
                 Gdm.PreferredBackBufferWidth = GraphicsAdapter.DefaultAdapter.CurrentDisplayMode.Width;
                 Gdm.PreferredBackBufferHeight = GraphicsAdapter.DefaultAdapter.CurrentDisplayMode.Height;
                 Gdm.IsFullScreen = true;
-                Logger.Info("Turning fullscreen ON. Resolution: " + Gdm.PreferredBackBufferWidth.ToString() + "x" + Gdm.PreferredBackBufferHeight.ToString());
+               //Logger.Info("Turning fullscreen ON. Resolution: " + Gdm.PreferredBackBufferWidth.ToString() + "x" + Gdm.PreferredBackBufferHeight.ToString());
                 ret = true;
             }
             Gdm.ApplyChanges();

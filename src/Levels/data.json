@@ -1,0 +1,45 @@
+{
+    "textureName": "tiles_32.png",
+    "size" : 32,
+    "tiles" : {
+        "mechanism1": {
+            "coordinates" : [
+                {
+                    "x": 0,
+                    "y": 6 
+                }
+            ],
+            "mask" : [
+                [[""],[""], [""]],
+                [[""],["Roof"],[""]],
+                [[""],[""],[""]]
+            ]
+        },
+        "mechanism2": {
+            "coordinates" : [
+                {
+                    "x": 1,
+                    "y": 6 
+                }
+            ],
+            "mask" : [
+                [[""],[""], [""]],
+                [[""],["Roof"],[""]],
+                [[""],[""],[""]]
+            ]
+        },
+        "doorCover": {
+            "coordinates" : [
+                {
+                    "x": 0,
+                    "y": 5 
+                }
+            ], 
+            "mask" : [
+                [[""],["Floor","Roof","Wall"],[""]],
+                [["Floor","Roof","Wall"],["Floor","Wall"],["Floor","Roof","Wall"]],
+                [[""],["Floor","Roof"],[""]]
+            ]
+        }
+    }
+}

@@ -2,6 +2,9 @@
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using Microsoft.Xna.Framework.Media;
+using Microsoft.Xna.Framework.Audio;
+using System.Linq;
+using System.Diagnostics;
 
 namespace YGR
 {
@@ -37,19 +40,28 @@ namespace YGR
             Util.Initialize(this);
             Menu.Initialize(this);
 
+#if DEBUG
+#else
             Settings.ToggleFullscreen();
+#endif
 
             var res_x = _graphics.PreferredBackBufferWidth;
             var res_y = _graphics.PreferredBackBufferHeight;
             Camera.Position = new Vector2(res_x / 2, res_y / 2);
             Camera.Bounds = _graphics.GraphicsDevice.Viewport.Bounds;
-            Camera.Mode = CameraMode.Follow; /* 'Follow' to follow players, 'Manual' for keyboard controlled */
+            Camera.Mode = CameraMode.Manual; // CameraMode.Follow; /* 'Follow' to follow players, 'Manual' for keyboard controlled */
 
             Factory_Debug.Initialize(Content);
             Manager_Projectile.Initialize(Content);
             Manager_Enemies.Initialize(Content);
             Manager_Players.Initialize();
             Manager_Particles.Initialize();
+            Manager_Light.Initialize("./Levels/Level_2/simplified");
+            X_AutoTiler.Initialize("./Doors/", "data.json", GraphicsDevice, Y_Door.MapJsonName);
+            X_AutoTiler.Initialize("./Levels/", "data.json", GraphicsDevice, Y_CMRoom.MapJsonName);
+
+            _level = new Y_Level("Level_2/simplified", 32, "./Levels/", "./Doors", GraphicsDevice);
+
             base.Initialize();
         }
 
@@ -100,29 +112,7 @@ namespace YGR
               for a smooth transition.
             */
 
-            _level = new Y_Level("level_0", 48, "Levels/Level_0", GraphicsDevice);
-
-            Manager_Players.ClearPlayers();
-
-            Manager_Players.AddPlayer_Ninja(PlayerIndex.One, new Vector2(200, 180), _level, ControlLayout.KeyboardWASD);
-            Manager_Players.AddPlayer_SimplePlayer(PlayerIndex.Two, new Vector2(200, 360), _level, ControlLayout.KeyboardArrows);
-
-            for (int i = 2; i < 4; i++)
-            {
-                PlayerIndex playerIndex = (PlayerIndex)i;
-                if (GamePad.GetState(playerIndex).IsConnected)
-                {
-                    Manager_Players.AddPlayer_SimplePlayer(playerIndex, position: new Vector2(200, 180 + i * 180), _level);
-                }
-            }
-            
-            // Pass players to camera so it can follow their positions
-            Camera.Players = Manager_Players.Players;
-
-            for (int i = 0; i < 6; i++)
-            {
-                Manager_Enemies.AddEnemy_SimpleEnemy(new Vector2(1050 + i * 200, 350), _level, Manager_Players.Players);
-            }
+            _level.Create(GraphicsDevice);
 
             // Once everything is in place, inform Update() of the new desired state
             DesiredState = GameState.InGame;

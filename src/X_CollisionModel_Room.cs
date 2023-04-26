@@ -67,6 +67,8 @@ namespace YGR
                 if (col[index].Contains(p)) break;
             }
 
+            if (index >= col.Count()) return new Dictionary<X_DoorState, List<Rectangle>>();
+
             var old = col[index];
             Rectangle rectTop = new Rectangle(
                 old.X, old.Y,
@@ -100,6 +102,8 @@ namespace YGR
                 if (col[index].Contains(p)) break;
             }
 
+            if (index >= col.Count()) return new Dictionary<X_DoorState, List<Rectangle>>();
+
             var old = col[index];
             Rectangle rectLeft = new Rectangle(
                 old.X, old.Y,
@@ -127,7 +131,7 @@ namespace YGR
         private int[][] cleanUpCollisionTemplate(int[][] collision)
         {
             int[][] pattern = collision.Clone() as int[][];
-            output(pattern, "./logs/pattern.csv");
+            //output(pattern, "./logs/pattern.csv");
             for (int i = 0; i < pattern.Length; i++)
             {
                 for (int j = 0; j < pattern[0].Length; ++j)
@@ -244,7 +248,7 @@ namespace YGR
                 }
             }
 
-            output(_collisionTemplate, "logs/blub.csv");
+            //output(_collisionTemplate, "logs/blub.csv");
             floor.RemoveAll(x => x.Count() == 0);
             return floor;
         }

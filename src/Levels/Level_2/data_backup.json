@@ -1,0 +1,110 @@
+{
+    "W" : 1.33,
+    "H" : 1.0,
+    "Level" : {
+        "Tree1" : [
+            {
+                "Index" : 0,
+                "Optional" : false,
+                "Type" : "Start",
+                "X" : 0.0,
+                "Y" : 0.0,
+                "Connections" : {
+                    "T" : ["B1"]
+                }
+            },
+            {
+                "Index" : 1,
+                "Optional" : false,
+                "Type" : "Trunc",
+                "X" : 0.0,
+                "Y" : -2.5,
+                "Connections" : {
+                    "L" : ["B2", "R2"],
+                    "T" : ["B8"],
+                    "R" : ["B5", "L5"]
+                }
+            },
+            {
+                "Index" : 2,
+                "Optional" : false,
+                "Type" : "Trunc",
+                "X" : -1.5,
+                "Y" : -3.0,
+                "Connections" : {
+                    "L" : ["B3", "R3"],
+                    "T" : ["B4"]
+                }
+            },
+            {
+                "Index" : 3,
+                "Optional" : false,
+                "Type" : "Leaf",
+                "X" : -3.0,
+                "Y" : -3.5,
+                "Connections" : {
+                    "T" : ["","L4"]
+                }
+            },
+            {
+                "Index" : 4,
+                "Optional" : false,
+                "Type" : "Leaf",
+                "X" : -1.0,
+                "Y" : -4.5,
+                "Connections" : {
+                    "R" : ["L8"]
+                }
+            },
+            {
+                "Index" : 5,
+                "Optional" : false,
+                "Type" : "Trunc",
+                "X" : -1.5,
+                "Y" : -3.0,
+                "Connections" : {
+                    "T" : ["B7"],
+                    "R" : ["L6","B6"]
+                }
+            },
+            {
+                "Index" : 6,
+                "Optional" : false,
+                "Type" : "Trunc",
+                "X" : 3.0,
+                "Y" : -3.5,
+                "Connections" : {
+                    "T" : ["","L7"]
+                }
+            },
+            {
+                "Index" : 7,
+                "Optional" : false,
+                "Type" : "Leaf",
+                "X" : 1.0,
+                "Y" : -4.5,
+                "Connections" : {
+                    "L" : ["R8"]
+                }
+            },
+            {
+                "Index" : 8,
+                "Optional" : false,
+                "Type" : "Trunc",
+                "X" : 0.0,
+                "Y" : -4.0,
+                "Connections" : {
+                    "T" : ["B9"]
+                }
+            },
+            {
+                "Index" : 9,
+                "Optional" : false,
+                "Type" : "Trunc",
+                "X" : 0.0,
+                "Y" : -5.5,
+                "Connections" : {}
+            }
+        ]
+    }
+}

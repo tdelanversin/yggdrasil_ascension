@@ -17,7 +17,8 @@ namespace YGR
         public Dictionary<X_ConnectorSide, IList<IWalkable>> DoorRooms { get; set; }
         public void MoveTo(Point position);
         public X_ConnectorPoint GetConnectorPoint(X_ConnectorSide side, string name="");
-        public ref Texture2D GetFloor();
         public int TextureTileSize { get; }
+        public string ResourceFolder { get; }
+        public void Illuminate();
     }
 }

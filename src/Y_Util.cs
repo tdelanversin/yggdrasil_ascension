@@ -1,7 +1,11 @@
 using System;
-using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using System.Runtime.CompilerServices;
+using System.IO;
+using System.Runtime.InteropServices;
+using Microsoft.VisualBasic;
+using System.Collections.Generic;
 
 /*
  * Useful static methods
@@ -15,6 +19,7 @@ namespace YGR
         static GraphicsDeviceManager Gdm;
         static GameWindow Window;
         static Random random;
+
 
         internal static void Initialize(A_Yggdrasil game)
         {
@@ -47,5 +52,76 @@ namespace YGR
             );
         }
 
+        public static string PathOsNormalization(string path)
+        {
+            var sepC = Path.DirectorySeparatorChar;
+
+            // switch separators if necessary
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                path = path.Replace('/', sepC);
+            }
+            else
+            {
+                path = path.Replace('\\', sepC);
+            }
+
+            if (path != Path.GetFullPath(path))
+            {
+                // make path relative
+                var sep = sepC.ToString();
+                if (path.Substring(0, 1) == sep)
+                    path = "." + path;
+                else if (path.Substring(0, 2) != ("." + sep))
+                    path = "." + sep + path;
+            }
+
+            if (!Path.EndsInDirectorySeparator(path))
+            {
+                path += sepC;
+            }
+
+            path = path.Replace((sepC + "." + sepC).ToString(), sepC.ToString());
+
+            return path;
+        }
+
+        private static string GetThisFilePath([CallerFilePath] string path = null)
+        {
+            return path;
+        }
+
+        public static string GetSrcDirectory()
+        {
+            var path = GetThisFilePath();
+            var srcDirectory = Path.GetDirectoryName(path);
+            return srcDirectory;
+        }
+
+        public static string GetAbsResourceFolderPath(string resourceFolder)
+        {
+            if (resourceFolder.Substring(0, 1) == ".") resourceFolder = resourceFolder.Substring(1, resourceFolder.Length - 1);
+            if (resourceFolder.Substring(0, 1) == Path.DirectorySeparatorChar.ToString()) resourceFolder = resourceFolder.Substring(1, resourceFolder.Length - 1);
+
+            var srcPath = Path.Join(Util.GetSrcDirectory(), resourceFolder);
+
+            return srcPath;
+        }
+
+        public static string CreateGenericIdentifier()
+        {
+            var time = DateAndTime.Now;
+            var random = new Random();
+
+            return time.Year.ToString() +
+                    time.Month.ToString().PadLeft(2, '0') +
+                    time.Day.ToString().PadLeft(2, '0') +
+                    time.Hour.ToString().PadLeft(2, '0') +
+                    time.Minute.ToString().PadLeft(2, '0') +
+                    time.Second.ToString().PadLeft(2, '0') +
+                    time.Millisecond.ToString() +
+                    "_" +
+                    random.Next().ToString();
+        }
     }
 }

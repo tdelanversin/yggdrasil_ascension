@@ -33,6 +33,7 @@ namespace YGR
             newVelocity = me.Velocity;
             // check the room
             IWalkable room = me.Level.GetRoom(me, me.Room);
+            me.Room = room;
             if(room != null)
             {
                 if (room.Collision.Intersect(ref myRect, ref newVelocity, timeStepMS, out point, out normal))
