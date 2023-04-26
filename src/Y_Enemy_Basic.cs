@@ -7,7 +7,7 @@ using System.Linq;
 
 namespace YGR
 {
-    public class Y_SimpleEnemy : IEnemy
+    public class Enemy_Basic : IEnemy
     {
         public int LifePoints { get; set; }
         public bool HitInLastLoop { get; set; }
@@ -47,7 +47,7 @@ namespace YGR
 
         public string Identifier;
 
-        public Y_SimpleEnemy(
+        public Enemy_Basic(
             Vector2 position,
             Y_Level level,
             IList<IVictim> players
@@ -84,7 +84,7 @@ namespace YGR
             Gun = new Y_SimpleEnemyGun();
             Players = players;
 
-            Name = "base enemy";
+            Name = "Mob";
 
             _hitColor = Color.Blue;
             _regularColor = Color.Red;
@@ -290,10 +290,10 @@ namespace YGR
 
         protected virtual void DrawOverheadString(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)
         {
-            // TODO: Improve
-            string str = LifePoints.ToString();
-            float str_width = Fonts.Normal.MeasureString(str).X;
-            spriteBatch.DrawString(Fonts.Normal, str, new Vector2(_rect.Location.X + _rect.Width / 2 - str_width / 2, _rect.Location.Y - 16), Color.OrangeRed);
+            string str = String.Format("{0} {1}", Name, LifePoints);
+            Vector2 str_size = Fonts.Normal.MeasureString(str);
+            Vector2 str_pos = new Vector2(_rect.Location.X + _rect.Width / 2 - str_size.X / 2, _rect.Location.Y - str_size.Y - 2);
+            spriteBatch.DrawString(Fonts.Normal, str, str_pos, Color.OrangeRed);
         }
 
         public void Draw(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)
@@ -312,7 +312,7 @@ namespace YGR
                 rotation: 0,
                 origin: Vector2.Zero,
                 scale: Scale,
-                effects: SpriteEffects.None,
+                effects: Velocity.X >= 0 ? SpriteEffects.None : SpriteEffects.FlipHorizontally,
                 layerDepth: 0);
             if (Settings.Outlines)
             {

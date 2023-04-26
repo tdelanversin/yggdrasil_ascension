@@ -4,8 +4,10 @@ using System.Collections.Generic;
 
 namespace YGR
 {
-    public class Enemy_Gigachad : Y_SimpleEnemy
+    public class Enemy_Gigachad : Enemy_Basic
     {
+        IShooter Gun2; // Gigachad needs moar guns
+
         public Enemy_Gigachad(
             Vector2 position,
             Y_Level level,
@@ -35,6 +37,7 @@ namespace YGR
             );
 
             Gun = new Y_GigaGun();
+            Gun2 = new Y_FunkyGun();
 
             Name = "Gigachad";
         }
@@ -43,6 +46,13 @@ namespace YGR
         {
             Room = Level.GetRoom(this, Room);
             Gun.Update(gameTime);
+            Gun2.Update(gameTime);
+
+            if (HitInLastLoop)
+            {
+                LifePoints -= 1;
+                HitInLastLoop = false;
+            }
 
             Vector2 movement = Vector2.Zero;
             bool canSee = FindTargetAndVisibility();
@@ -87,7 +97,19 @@ namespace YGR
             _position += Velocity * timeStepMS;
             _rect.Location = _position.ToPoint();
 
-            // Gigachad shoots no matter what
+
+            // Gigachad sees players, Gigachad shoots player
+            if (canSee)
+            {
+                Vector2 targetDirection = Target.Rect.Center.ToVector2() - _rect.Center.ToVector2();
+                targetDirection.Normalize();
+                Gun2.Shoot(gameTime, _rect.Center.ToVector2(), targetDirection, Level, this);
+            }
+
+            var playersInSameRoom = ((List<IVictim>)Manager_Players.Players).FindAll(x => x.Room == Room);
+            if (playersInSameRoom.Count < 1) return;
+
+            // Gigachad shoot Big Gun no matter what (as long as there are players in the same room)
             Gun.Shoot(gameTime, _rect.Center.ToVector2(), Vector2.One, Level, this);
         }
     }

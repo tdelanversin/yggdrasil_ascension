@@ -35,7 +35,7 @@ namespace YGR
         public static void AddEnemy_SimpleEnemy(Vector2 position, Y_Level level, IList<IVictim> players)
         {
             check();
-            _enemies.Add(new Y_SimpleEnemy(position, level, players));
+            _enemies.Add(new Enemy_Basic(position, level, players));
         }
 
         internal static void AddEnemy_Gigachad(Vector2 position, Y_Level level, IList<IVictim> players)
