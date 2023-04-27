@@ -20,6 +20,7 @@ namespace YGR
         public Y_Level Level { get; set; }
         public IWalkable Room { get; set; }
         public IGameElement WhoFiredMe { get; set; } 
+        public int Damage { get; set; }
 
         //public void Update(GameTime gameTime);
         //public void Draw(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch);

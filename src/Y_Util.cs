@@ -42,10 +42,10 @@ namespace YGR
         public static IShooter getRandomGun()
         {
             List<Type> gunTypes = new List<Type> {
-                typeof(Y_StarterGun),
-                typeof(Y_WideGun),
-                typeof(Y_FunkyGun),
-                typeof(Y_ShotGun),
+                typeof(Gun_Basic),
+                // typeof(Gun_Wide), // Make game child friendly for now
+                // typeof(Gun_Funky),
+                typeof(Gun_ShotGun),
             };
             return (IShooter)Activator.CreateInstance(
                 gunTypes[random.Next(gunTypes.Count)]

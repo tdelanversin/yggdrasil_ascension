@@ -20,8 +20,8 @@ namespace YGR
             SpriteRect = Sprite.Bounds;
 
             Name = "Gigachad";
-            Gun = new Y_FunkyGun();
-            Gun2 = new Y_GigaGun();
+            Gun = new Gun_ShotGun(13);
+            Gun2 = new Gun_Gigagun();
 
             _hitColor = Color.OrangeRed;
             _regularColor = Color.White;
@@ -50,7 +50,7 @@ namespace YGR
         {
             if (State == EnemyState.Inactive) { return; }
 
-            HandleProjectileImpact(gameTime);
+            UpdateHitCounters(gameTime);
             FindTarget();
             UpdateState(gameTime);
 

@@ -1,11 +1,9 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
-using MonoGame.Extended;
 using MonoGame.Extended.Particles;
 using System;
 using System.Collections.Generic;
-using System.Reflection.Metadata;
 
 namespace YGR
 {
@@ -24,8 +22,6 @@ namespace YGR
 
         // IVictim fields
         public int LifePoints { get; set; }
-        public bool HitInLastLoop { get; set; }
-        public IProjectile HitBy { get; set; }
         public X_CollisionModel_Victim Collision { get; }
         public Vector2 Velocity { get; set; }
         public Y_Level Level { get; set; }
@@ -37,11 +33,9 @@ namespace YGR
         protected bool _invincible;
         protected float _invincibleDuration;
         protected float _invincibleTimeLeft;
-        protected Dictionary<string, int[]> _animations;
         protected float _cr;
         protected float _mass;
         protected InputType _currentAimInput;
-        protected int _animationIndex;
         protected IShooter _gun;
         protected PlayerIndex _playerIndex;
         protected Rectangle _rect;
@@ -57,11 +51,14 @@ namespace YGR
         protected ParticleEffect pE;
         protected Color _color;
 
-        // timing related fields
-        protected float _animationTimer;
-        protected float _animationTreshold;
         protected float _actionTimer;
         protected float _actionTreshold;
+
+        protected Dictionary<string, int[]> _animations;
+        protected string _animationDirection;
+        protected int _animationIndex;
+        protected float _animationTimer;
+        protected float _animationTreshold;
 
         protected enum InputType
         {
@@ -91,21 +88,26 @@ namespace YGR
             _spriteAimIndicator = Manager_Players.SpriteAimIndicator[(int)playerIndex];
             _color = Color.White;
 
-            _spriteDimensions = new Rectangle(0, 0, 42, 60);
+            _spriteDimensions = new Rectangle(0, 0, 44, 62);
             _animationTimer = 0;
-            _animationTreshold = 250;
+            _animationTreshold = 250; // After how many ms to cycle through sprites
             _animationIndex = 0;
             _animations = new Dictionary<string, int[]> {
-                { "stand", new int[] { 0, 1, 8, 9 } },
-                { "walk_left", new int[] { 2, 3, 4 } },
-                { "walk_right", new int[] { 5, 6, 7 } }};
+                { "idle", new int[] { 0 } },
+                { "left", new int[] { 1, 2 } },
+                { "right", new int[] { 3, 4 } }};
+            _animationDirection = "idle";
 
             _rect = new Rectangle(
                 (int)_position.X - (int)(scale * _spriteDimensions.Width / 2),
                 (int)_position.Y - (int)(scale * _spriteDimensions.Height / 2),
                 (int)(scale * _spriteDimensions.Width), (int)(scale * _spriteDimensions.Height)
             );
-            Scale = (float)Rect.Width / (float)_spriteDimensions.Width;
+
+            Scale = Math.Min(
+                _rect.Width / (float)_spriteDimensions.Width,
+                _rect.Height / (float)_spriteDimensions.Height
+            );
 
             // Movement related
             Velocity = Vector2.Zero;
@@ -124,7 +126,6 @@ namespace YGR
             _invincibleDuration = 1250;
 
             LifePoints = 30;
-            HitInLastLoop = false;
 
             Room = Level.GetRoom(this, Room);
         }
@@ -151,7 +152,16 @@ namespace YGR
         }
 
         /* Deal with being hit by projectile, basically physical therapy */
-        protected void HandleProjectileImpact(GameTime gameTime)
+        public void Hit(IProjectile projectile)
+        {
+            if (_invincible) { return; }
+
+            LifePoints -= projectile.Damage;
+            _invincible = true;
+            _invincibleTimeLeft = _invincibleDuration;
+        }
+
+        protected void UpdateInvincibility(GameTime gameTime)
         {
             if (_invincible)
             {
@@ -166,12 +176,46 @@ namespace YGR
                     _color = Color.DimGray * (float)((Math.Sin(_invincibleTimeLeft / 50) + 1) / 2);
                 }
             }
-            if (HitInLastLoop && !_invincible)
+        }
+
+        protected void UpdateAnimation(GameTime gameTime)
+        {
+            string newAnimationDirection = _animationDirection;
+            if (Velocity.X > 0 && _animations.ContainsKey("right"))
             {
-                LifePoints -= 1;
-                _invincible = true;
-                _invincibleTimeLeft = _invincibleDuration;
-                HitInLastLoop = false;
+                newAnimationDirection = "right";
+            }
+            else if (Velocity.X < 0 && _animations.ContainsKey("left"))
+            {
+                newAnimationDirection = "left";
+            }
+            else if (Velocity.Y > 0 && _animations.ContainsKey("up"))
+            {
+                newAnimationDirection = "up";
+            }
+            else if (Velocity.Y < 0 && _animations.ContainsKey("down"))
+            {
+                newAnimationDirection = "down";
+            }
+            else if (_animations.ContainsKey("idle"))
+            {
+                newAnimationDirection = "idle";
+            }
+
+            if (newAnimationDirection == _animationDirection)
+            {
+                _animationTimer += gameTime.ElapsedGameTime.Milliseconds;
+                if (_animationTimer > _animationTreshold)
+                {
+                    _animationTimer = 0;
+                    _animationIndex = (_animationIndex + 1) % _animations[_animationDirection].Length;
+                }
+            }
+            else
+            {
+                _animationTimer = 0;
+                _animationIndex = 0;
+                _animationDirection = newAnimationDirection;
             }
         }
 
@@ -305,12 +349,13 @@ namespace YGR
         public virtual void Update(GameTime gameTime)
         {
             Manager_Particles.Update(gameTime);
-            HandleProjectileImpact(gameTime);
+            UpdateInvincibility(gameTime);
             Vector2 input = Vector2.Zero;
             HandleGamepadInput(gameTime, ref input);
             HandleMouseKeyboardInput(gameTime, ref input);
             UpdateVelocity(input, gameTime);
             UpdateCollision(gameTime);
+            UpdateAnimation(gameTime);
             _gun.Update(gameTime);
 
         }
@@ -332,7 +377,7 @@ namespace YGR
                 rotation: 0,
                 origin: Vector2.Zero,
                 scale: (float)Rect.Width / width,
-                effects: SpriteEffects.None,
+                effects: Velocity.X >= 0 ? SpriteEffects.None : SpriteEffects.FlipHorizontally,
                 layerDepth: 0);
         }
 
@@ -341,7 +386,7 @@ namespace YGR
             spriteBatch.Draw(
                 texture: _spritePlayer,
                 position: _rect.Location.ToVector2(),
-                sourceRectangle: new Rectangle(_animationIndex * _spriteDimensions.Width, 0, _spriteDimensions.Width, _spriteDimensions.Height),
+                sourceRectangle: new Rectangle(_animations[_animationDirection][_animationIndex] * (_spriteDimensions.Width), 0, _spriteDimensions.Width, _spriteDimensions.Height),
                 color: _color,
                 rotation: 0,
                 origin: Vector2.Zero,
@@ -541,7 +586,7 @@ namespace YGR
             HandleGamepadInput(gameTime, ref input);
             HandleMouseKeyboardInput(gameTime, ref input);
 
-            HandleProjectileImpact(gameTime);
+            UpdateInvincibility(gameTime);
             UpdateVelocity(input, gameTime);
             UpdateDash(gameTime); // Updates Velocity directly for now, so call before UpdateCollision()
             UpdateCollision(gameTime);

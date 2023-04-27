@@ -19,8 +19,6 @@ namespace YGR
     {
         public string Name { get; set; } = "Mob";
         public int LifePoints { get; set; } = 8;
-        public bool HitInLastLoop { get; set; }
-        public IProjectile HitBy { get; set; }
 
         public EnemyState State { get; protected set; } = EnemyState.Idle;
         protected int fleeingHPTreshold = 2; // Flee if at this treshold or lower
@@ -89,7 +87,7 @@ namespace YGR
 
             Level = level;
             Room = Level.GetRoom(this, Room);
-            Gun = new Y_SimpleEnemyGun();
+            Gun = new Gun_BasicSlow();
 
             _hitColor = Color.OrangeRed;
             _regularColor = Color.Orange;
@@ -150,16 +148,17 @@ namespace YGR
             return true;
         }
 
-        protected void HandleProjectileImpact(GameTime gameTime)
+        /* Deal with being hit by projectile, basically physical therapy */
+        public void Hit(IProjectile projectile)
         {
-            if (HitInLastLoop)
-            {
-                LifePoints -= 1;
-                HitInLastLoop = false;
-                _hitFramesCounter = 1;
-                _color = _hitColor;
-            }
-            else if (_hitFramesCounter > 0)
+            LifePoints -= projectile.Damage;
+            _hitFramesCounter = 1;
+            _color = _hitColor;
+        }
+
+        protected void UpdateHitCounters(GameTime gameTime)
+        {
+            if (_hitFramesCounter > 0)
             {
                 if (_hitFramesCounter > _hitFrames)
                 {
@@ -328,7 +327,9 @@ namespace YGR
                     _stateTimer = 0;
                     _stateChangeTime = Util.random.Next(_stateTimerMax);
                 }
-            } else { // Target left the room
+            }
+            else
+            { // Target left the room
                 State = EnemyState.Wander;
             }
         }
@@ -338,7 +339,7 @@ namespace YGR
         {
             if (State == EnemyState.Inactive) { return; }
 
-            HandleProjectileImpact(gameTime);
+            UpdateHitCounters(gameTime);
             FindTarget();
             UpdateState(gameTime);
 

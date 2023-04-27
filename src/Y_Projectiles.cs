@@ -15,6 +15,7 @@ namespace YGR
         public Y_Level Level { get; set; }
         public IWalkable Room { get; set; }
         public IGameElement WhoFiredMe { get; set; } 
+        public int Damage { get; set; }
 
         public float Scale { get; protected set; }
         public Rectangle Rect { get { return _rect; } set { _rect = value; } }
@@ -43,6 +44,7 @@ namespace YGR
             _direction = direction;
             Velocity = Vector2.One * direction;
             TimeCreated = timeCreated;
+            Damage = 1;
             _isEnemy = false;
             Name = "StarterProjectile";
             Level = level;
@@ -52,7 +54,7 @@ namespace YGR
             WhoFiredMe = who;
             if (WhoFiredMe is IVictim)
             { // Add 50% of the players momentum to the bullet. Adds 50% more fun to the game.
-                Velocity += ((IVictim)WhoFiredMe).Velocity * .5f;
+                // Velocity += ((IVictim)WhoFiredMe).Velocity * .5f;
                 /* 
                 TODO: Clamp the velocity and make sure the bullets don't go
                 backwards if the player is going backwards super fast (looking
@@ -96,12 +98,7 @@ namespace YGR
                     // If victim, tell it what it was hit by
                     if (obj is IVictim)
                     {
-                        IVictim victim = (IVictim)obj;
-                        if (!victim.HitInLastLoop)
-                        {
-                            victim.HitInLastLoop = true;
-                            victim.HitBy = this;
-                        }
+                       ((IVictim)obj).Hit(this);
                     }
 
                     Velocity = newVelocity;
@@ -180,7 +177,7 @@ namespace YGR
             WhoFiredMe = who;
             if (WhoFiredMe is IVictim)
             { // Add 50% of the players momentum to the bullet. Adds 50% more fun to the game.
-                Velocity += ((IVictim)WhoFiredMe).Velocity * .5f;
+                // Velocity += ((IVictim)WhoFiredMe).Velocity * .5f;
                 /* 
                 TODO: Clamp the velocity and make sure the bullets don't go
                 backwards if the player is going backwards super fast (looking

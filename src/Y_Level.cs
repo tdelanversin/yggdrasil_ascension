@@ -223,7 +223,7 @@ namespace YGR
             }
 
             // Make the last one controllable by keyboard
-            ((SimplePlayer)Manager_Players.Players[-1]).ControlLayout = ControlLayout.KeyboardWASD;
+            ((SimplePlayer)Manager_Players.Players[3]).ControlLayout = ControlLayout.KeyboardWASD;
 
             _interactables.Clear();
 
