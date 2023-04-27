@@ -1,4 +1,5 @@
 ﻿using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Graphics;
 
 namespace YGR
@@ -13,6 +14,7 @@ namespace YGR
         static GameWindow Window;
         public static bool Lighting;
         public static bool Outlines;
+        public static bool Sound;
 
         public static void Initialize(A_Yggdrasil game)
         {
@@ -20,11 +22,13 @@ namespace YGR
             Gdm = game._graphics;
             Window = game.Window;
 
+            Sound = true;
+
             // Defaults
 #if DEBUG
             Lighting = false;
             Outlines = true;
-#else
+#else       
             Lighting = true;
             Outlines = false;
 #endif
@@ -64,6 +68,21 @@ namespace YGR
             Gdm.ApplyChanges();
             Menu.RepositionMenuItems();
             return ret;
+        }
+
+        public static bool Toggle_Volume()
+        {
+            Sound = !Sound;
+            if (SoundEffect.MasterVolume != 0f)
+            {
+                SoundEffect.MasterVolume = 0f;
+                
+            }
+            else
+            {
+                SoundEffect.MasterVolume = 1f;
+            }
+            return Sound;
         }
     }
 }

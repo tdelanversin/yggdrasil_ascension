@@ -73,6 +73,12 @@
 /processorParam:Quality=Best
 /build:dash.wav
 
+#begin dramatic_music.wav
+/importer:WavImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:dramatic_music.wav
+
 #begin dust_particle.png
 /importer:TextureImporter
 /processor:TextureProcessor
@@ -90,12 +96,6 @@
 /processor:SoundEffectProcessor
 /processorParam:Quality=Best
 /build:ennemy_death_cry.wav
-
-#begin example_intro_song.mp3
-/importer:Mp3Importer
-/processor:SongProcessor
-/processorParam:Quality=Best
-/build:example_intro_song.mp3
 
 #begin explosion.wav
 /importer:WavImporter

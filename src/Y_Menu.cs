@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
@@ -136,6 +138,7 @@ namespace YGR
                 new SettingsItem("Lighting: ", Settings.Lighting, toggleFunc: Settings.ToggleLighting),
                 new SettingsItem("Outlines: ", Settings.Outlines, toggleFunc: Settings.ToggleOutlines),
                 new MenuItem(os_exit_string, Util.Quit),
+                new SettingsItem("Sound: ", Settings.Sound, toggleFunc: Settings.Toggle_Volume),
             };
             SelectableItems[SelectedMenu].IsSelected = true;
             RepositionMenuItems();
