@@ -6,11 +6,12 @@ namespace YGR
 
     public static class Settings
     {
-        public const int RES_X = 1280;
-        public const int RES_Y = 720;
+        public const int RES_X = 1600;
+        public const int RES_Y = 900;
         static Game Game;
         static GraphicsDeviceManager Gdm;
         static GameWindow Window;
+        public static bool Fullscreen;
         public static bool Lighting;
         public static bool Outlines;
         public static bool DrawFPS;
@@ -24,10 +25,12 @@ namespace YGR
             // Defaults
             DrawFPS = true; // Always on for now, shouldn't really bother anyone
 #if DEBUG
+            Fullscreen = false;
             Lighting = false;
             Outlines = true;
 #else
-            Lighting = true;
+            Fullscreen = true;
+            Lighting = false; // Off by default for now, since it's very slow
             Outlines = false;
 #endif
         }
@@ -50,28 +53,39 @@ namespace YGR
             return DrawFPS;
         }
 
-        public static bool ToggleFullscreen()
+        public static void ApplyScreenConfiguration()
         {
-            bool ret;
-            if (Gdm.IsFullScreen)
-            {
-                Gdm.PreferredBackBufferWidth = RES_X;
-                Gdm.PreferredBackBufferHeight = RES_Y;
-                Gdm.IsFullScreen = false;
-               //Logger.Info("Turning fullscreen OFF. Resolution: " + RES_X.ToString() + "x" + RES_Y.ToString());
-                ret = false;
-            }
-            else
+            if (Fullscreen)
             {
                 Gdm.PreferredBackBufferWidth = GraphicsAdapter.DefaultAdapter.CurrentDisplayMode.Width;
                 Gdm.PreferredBackBufferHeight = GraphicsAdapter.DefaultAdapter.CurrentDisplayMode.Height;
                 Gdm.IsFullScreen = true;
-               //Logger.Info("Turning fullscreen ON. Resolution: " + Gdm.PreferredBackBufferWidth.ToString() + "x" + Gdm.PreferredBackBufferHeight.ToString());
-                ret = true;
+            }
+            else
+            {
+                Gdm.PreferredBackBufferWidth = RES_X;
+                Gdm.PreferredBackBufferHeight = RES_Y;
+                Gdm.IsFullScreen = false;
             }
             Gdm.ApplyChanges();
             Menu.RepositionMenuItems();
-            return ret;
+        }
+
+        public static bool ToggleFullscreen()
+        {
+            if (Fullscreen)
+            {
+                Fullscreen = false;
+                ApplyScreenConfiguration();
+                Logger.Debug("Turning fullscreen OFF. Resolution: " + RES_X.ToString() + "x" + RES_Y.ToString());
+            }
+            else
+            {
+                Fullscreen = true;
+                ApplyScreenConfiguration();
+                Logger.Debug("Turning fullscreen ON. Resolution: " + Gdm.PreferredBackBufferWidth.ToString() + "x" + Gdm.PreferredBackBufferHeight.ToString());
+            }
+            return Fullscreen;
         }
     }
 }

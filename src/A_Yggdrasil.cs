@@ -2,9 +2,6 @@
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using Microsoft.Xna.Framework.Media;
-using Microsoft.Xna.Framework.Audio;
-using System.Linq;
-using System.Diagnostics;
 
 namespace YGR
 {
@@ -40,17 +37,13 @@ namespace YGR
             Input.Initialize();
             Util.Initialize(this);
             Menu.Initialize(this);
-
-#if DEBUG
-#else
-            Settings.ToggleFullscreen();
-#endif
+            Settings.ApplyScreenConfiguration();
 
             var res_x = _graphics.PreferredBackBufferWidth;
             var res_y = _graphics.PreferredBackBufferHeight;
             Camera.Position = new Vector2(res_x / 2, res_y / 2);
             Camera.Bounds = _graphics.GraphicsDevice.Viewport.Bounds;
-            Camera.Mode = CameraMode.Manual; // CameraMode.Follow; /* 'Follow' to follow players, 'Manual' for keyboard controlled */
+            Camera.Mode = CameraMode.Follow; /* 'Follow' to follow players, 'Manual' for keyboard controlled */
 
             Factory_Debug.Initialize(Content);
             Manager_Projectile.Initialize(Content);
