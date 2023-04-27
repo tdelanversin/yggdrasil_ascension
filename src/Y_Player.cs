@@ -561,7 +561,7 @@ namespace YGR
 
             if (!_isDashing && (Input.IsKeyDown(Keybinds.ActionOne) || Input.IsButtonDown(_playerIndex, Keybinds.GamePadAction)) && _dashCooldownTimer >= _dashCooldown)
             {
-                Manager_Sound.AddSound_Dash().Play();
+                Manager_Sound.Sound_Dash.Play();
                 _isDashing = true;
                 _dashTimer = 0;
                 _dashCooldownTimer = 0; // Reset timer

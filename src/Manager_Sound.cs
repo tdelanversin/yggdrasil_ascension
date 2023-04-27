@@ -1,41 +1,37 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Data;
+﻿using System.Collections.Generic;
 using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Content;
-using Microsoft.Xna.Framework.Media;
-using MonoGame.Extended.Content;
 
 namespace YGR
 {
     static class Manager_Sound
     {
-        private static SoundEffect song;
-        private static SoundEffect explosion;
-        private static SoundEffect fireball;
-        private static SoundEffect dash;
-        private static SoundEffect shotgun;
-        private static SoundEffect enemy_death;
-        private static SoundEffect bonus;
-        private static SoundEffect level_cleared;
-        private static SoundEffect player_death;
-        private static SoundEffect menu_select;
+        public static SoundEffect Song_Dramatic;
+        public static SoundEffect Sound_Explosion;
+        public static SoundEffect Sound_Fireball;
+        public static SoundEffect Sound_Dash;
+        public static SoundEffect Sound_Shotgun;
+        public static SoundEffect Sound_EnemyDeath;
+        public static SoundEffect Sound_Bonus;
+        public static SoundEffect Sound_LevelCleared;
+        public static SoundEffect Sound_PlayerDeath;
+        public static SoundEffect Sound_MenuSelect;
 
-        private static SoundEffect bogus_sound;
+        // private static SoundEffect bogus_sound;
         public static Dictionary<IGameElement, SoundEffectInstance> playing_sound_effects;
 
         public static void LoadContent(ContentManager contentManager)
         {
-            song = contentManager.Load<SoundEffect>("Sounds/dramatic_music");
-            fireball = contentManager.Load<SoundEffect>("Sounds/better_fireball");
-            explosion = contentManager.Load<SoundEffect>("Sounds/explosion");
-            dash = contentManager.Load<SoundEffect>("Sounds/dash");
-            shotgun = contentManager.Load<SoundEffect>("Sounds/shotgun");
-            enemy_death = contentManager.Load<SoundEffect>("Sounds/enemy_death_cry");
-            bonus = contentManager.Load<SoundEffect>("Sounds/bonus_sound");
-            level_cleared = contentManager.Load<SoundEffect>("Sounds/level_completion");
-            player_death = contentManager.Load<SoundEffect>("Sounds/player_death");
-            menu_select = contentManager.Load<SoundEffect>("Sounds/menu-select");
+            Song_Dramatic = contentManager.Load<SoundEffect>("Sounds/dramatic_music");
+            Sound_Fireball = contentManager.Load<SoundEffect>("Sounds/better_fireball");
+            Sound_Explosion = contentManager.Load<SoundEffect>("Sounds/explosion");
+            Sound_Dash = contentManager.Load<SoundEffect>("Sounds/dash");
+            Sound_Shotgun = contentManager.Load<SoundEffect>("Sounds/shotgun");
+            Sound_EnemyDeath = contentManager.Load<SoundEffect>("Sounds/enemy_death_cry");
+            Sound_Bonus = contentManager.Load<SoundEffect>("Sounds/bonus_sound");
+            Sound_LevelCleared = contentManager.Load<SoundEffect>("Sounds/level_completion");
+            Sound_PlayerDeath = contentManager.Load<SoundEffect>("Sounds/player_death");
+            Sound_MenuSelect = contentManager.Load<SoundEffect>("Sounds/menu-select");
 
             //byte[] buffer= new byte[10];
             //AudioChannels channels= new AudioChannels();
@@ -43,26 +39,5 @@ namespace YGR
 
             playing_sound_effects = new Dictionary<IGameElement, SoundEffectInstance>();
         }
-        public static SoundEffect AddSound_Explosion() { return explosion; }
-
-        public static SoundEffect AddSound_Fireball() { return fireball; }
-
-        public static SoundEffect AddSound_Dash() { return dash; }
-
-        public static SoundEffect AddSound_Shotgun() { return shotgun; }
-
-        public static SoundEffect AddSong_Dramatic() { return song; }
-
-        public static SoundEffect AddSound_Enemy_Death() { return enemy_death; }
-
-        public static SoundEffect AddSound_Bonus() { return bonus; }
-
-        public static SoundEffect AddSound_Level_Clear() { return level_cleared; }
-
-        public static SoundEffect AddSound_Player_Death() { return player_death; }
-
-        public static SoundEffect AddSound_Bogus() { return bogus_sound; }
-
-
     }
 }

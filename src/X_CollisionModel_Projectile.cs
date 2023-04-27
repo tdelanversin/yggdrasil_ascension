@@ -24,9 +24,6 @@ namespace YGR
 
         public bool Intersect(IProjectile me, int timeStepMS, out Vector2 newVelocity, out IList<Point> contactPoint, out IList<Vector2> contactNormal, out IList<IGameElement> who)
         {
-            // TODO: fix issue eith the widespread projectiles causing too many sounds for monogame == crashes game
-            // Manager_Sound.AddSound_Explosion().Play();
-
             who = new List<IGameElement>();
             contactPoint = new List<Point>();
             contactNormal = new List<Vector2>();

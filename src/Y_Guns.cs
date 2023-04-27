@@ -18,7 +18,7 @@ namespace YGR
             if (NextShotCooldown > 0.0f)
                 return;
 
-            Manager_Sound.AddSound_Fireball().Play();
+            Manager_Sound.Sound_Fireball.Play();
 
             NextShotCooldown = ShotDelay;
 
@@ -62,7 +62,7 @@ namespace YGR
             if (NextShotCooldown > 0.0f)
                 return;
 
-            Manager_Sound.AddSound_Shotgun().Play();
+            Manager_Sound.Sound_Shotgun.Play();
 
             NextShotCooldown = ShotDelay;
 
@@ -268,7 +268,7 @@ namespace YGR
             // direction does not matter, just make sure it's sensible
             direction = Vector2.One;
 
-            Manager_Sound.AddSound_Shotgun().Play();
+            Manager_Sound.Sound_Explosion.Play();
 
             nextShotCooldown = shotDelay;
 

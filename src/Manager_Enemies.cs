@@ -59,7 +59,7 @@ namespace YGR
                 enemy.Update(gameTime);
                 if (enemy.LifePoints <= 0)
                 {
-                    Manager_Sound.AddSound_Enemy_Death().Play();
+                    Manager_Sound.Sound_EnemyDeath.Play();
                 }
             }
             _enemies.RemoveAll(enemy => enemy.LifePoints <= 0);
@@ -69,7 +69,7 @@ namespace YGR
                 level_clear = true;
                 // TODO: add a wating time for the level clear sound
                 //System.Threading.Thread.Sleep(1000);
-                Manager_Sound.AddSound_Level_Clear().Play();
+                Manager_Sound.Sound_LevelCleared.Play();
             }
         }
 
