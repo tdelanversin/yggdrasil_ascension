@@ -11,7 +11,7 @@ namespace YGR
     {
 
         // Player list
-        public static IList<IVictim> Players { get; private set; }
+        public static List<IVictim> Players { get; private set; }
 
         // Sprites
         public static Texture2D SpriteNinja { get; private set; }
@@ -73,6 +73,27 @@ namespace YGR
                 controlLayout,
                 scale: 1.0f
                 ));
+        }
+
+        public static void AddPlayer_Random(
+            PlayerIndex playerIndex,
+            Vector2 position,
+            Y_Level level,
+            ControlLayout controlLayout = ControlLayout.ControllerOnly
+        )
+        {
+            int r = Util.random.Next() % 2;
+            switch (r)
+            {
+                case 0:
+                    Manager_Players.AddPlayer_Ninja(playerIndex, position, level, controlLayout);
+                    break;
+                case 1:
+                    Manager_Players.AddPlayer_SimplePlayer(playerIndex, position, level, controlLayout);
+                    break;
+                default:
+                    break;
+            }
         }
 
         internal static void Update(GameTime gameTime)
