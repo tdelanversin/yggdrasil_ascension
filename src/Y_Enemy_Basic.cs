@@ -51,6 +51,13 @@ namespace YGR
         protected int _hitFramesCounter = 0;
         protected Rectangle _rect;
 
+        protected Rectangle _spriteDimensions;
+        protected Dictionary<string, int[]> _animations;
+        protected string _animationDirection;
+        protected int _animationIndex;
+        protected float _animationTimer;
+        protected float _animationTreshold;
+
         protected int _stateTimer = 0; // How long have we been idling / wandering
         protected int _stateChangeTime = 0; // How long until we change state
         protected int _stateTimerMax = 5000; // How long do we idle / wander at most
@@ -73,6 +80,16 @@ namespace YGR
             Sprite = Manager_Enemies.enemy_textures["default_enemy"];
             Collision = new X_CollisionModel_Victim(1.0f, 0.0f);
             _position = position;
+
+            _spriteDimensions = new Rectangle(0, 0, 44, 62);
+            _animationTimer = 0;
+            _animationTreshold = 250; // After how many ms to cycle through sprites
+            _animationIndex = 0;
+            _animations = new Dictionary<string, int[]> {
+                { "idle", new int[] { 0 } },
+                { "left", new int[] { 1, 2 } },
+                { "right", new int[] { 3, 4 } }};
+            _animationDirection = "idle";
 
             _rect = new Rectangle(
                 (int)position.X,
@@ -169,6 +186,47 @@ namespace YGR
                 {
                     _hitFramesCounter++;
                 }
+            }
+        }
+
+        protected void UpdateAnimation(GameTime gameTime)
+        {
+            string newAnimationDirection = _animationDirection;
+            if (Velocity.X > 0 && _animations.ContainsKey("right"))
+            {
+                newAnimationDirection = "right";
+            }
+            else if (Velocity.X < 0 && _animations.ContainsKey("left"))
+            {
+                newAnimationDirection = "left";
+            }
+            else if (Velocity.Y > 0 && _animations.ContainsKey("up"))
+            {
+                newAnimationDirection = "up";
+            }
+            else if (Velocity.Y < 0 && _animations.ContainsKey("down"))
+            {
+                newAnimationDirection = "down";
+            }
+            else if (_animations.ContainsKey("idle"))
+            {
+                newAnimationDirection = "idle";
+            }
+
+            if (newAnimationDirection == _animationDirection)
+            {
+                _animationTimer += gameTime.ElapsedGameTime.Milliseconds;
+                if (_animationTimer > _animationTreshold)
+                {
+                    _animationTimer = 0;
+                    _animationIndex = (_animationIndex + 1) % _animations[_animationDirection].Length;
+                }
+            }
+            else
+            {
+                _animationTimer = 0;
+                _animationIndex = 0;
+                _animationDirection = newAnimationDirection;
             }
         }
 
@@ -363,6 +421,7 @@ namespace YGR
 
             UpdateVelocity(movement, gameTime);
             UpdateCollision(gameTime);
+            UpdateAnimation(gameTime);
 
             Gun.Update(gameTime);
             if (Target != null)
@@ -392,6 +451,20 @@ namespace YGR
             spriteBatch.DrawString(Fonts.Normal, str, str_pos, Color.OrangeRed);
         }
 
+        protected virtual void DrawCharacterSprite(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)
+        {
+            spriteBatch.Draw(
+                texture: Sprite,
+                position: _rect.Location.ToVector2(),
+                sourceRectangle: new Rectangle(_animations[_animationDirection][_animationIndex] * (_spriteDimensions.Width), 0, _spriteDimensions.Width, _spriteDimensions.Height),
+                color: _color,
+                rotation: 0,
+                origin: Vector2.Zero,
+                scale: Scale,
+                effects: SpriteEffects.None,
+                layerDepth: 0);
+        }
+
         public void Draw(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)
         {
             // Culling
@@ -400,16 +473,24 @@ namespace YGR
                 return;
             }
 
-            spriteBatch.Draw(
-                texture: Sprite,
-                position: _rect.Location.ToVector2(),
-                sourceRectangle: SpriteRect,
-                color: _color,
-                rotation: 0,
-                origin: Vector2.Zero,
-                scale: Scale,
-                effects: Velocity.X >= 0 ? SpriteEffects.None : SpriteEffects.FlipHorizontally,
-                layerDepth: 0);
+            if (Room.WhatAreYou() == X_LevelElements.Room)
+            {
+                if (((Y_CMRoom)Room).State == X_RoomState.Closed)
+                {
+                    return;
+                }
+
+            }
+            else if (Room.WhatAreYou() == X_LevelElements.Door)
+            {
+                if (((Y_Door)Room).State == X_DoorState.Closed)
+                {
+                    return;
+                }
+
+            }
+
+            DrawCharacterSprite(gameTime, globalOffset, spriteBatch);
             if (Settings.Outlines)
             {
                 DrawFaceDirectionIndicator(gameTime, globalOffset, spriteBatch);

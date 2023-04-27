@@ -381,7 +381,7 @@ namespace YGR
                 layerDepth: 0);
         }
 
-        protected virtual void DrawPlayer(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)
+        protected virtual void DrawCharacterSprite(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)
         {
             spriteBatch.Draw(
                 texture: _spritePlayer,
@@ -410,7 +410,7 @@ namespace YGR
             {
                 var angle = Math.Atan2(_aimDirection.Y, _aimDirection.X) + Math.PI / 2;
                 spriteBatch.Draw(
-                    _spriteAimIndicator, _rect.Location.ToVector2() + _spriteDimensions.Center.ToVector2() + _aimDirection * _spriteDimensions.Height,
+                    _spriteAimIndicator, _rect.Location.ToVector2() + _spriteDimensions.Center.ToVector2() + _aimDirection * (int)(_rect.Height * 1.5),
                     null,
                     Color.White, (float)angle, new Vector2(_spriteAimIndicator.Width / 2, 0), 0.1f, SpriteEffects.None, 0);
             }
@@ -421,7 +421,7 @@ namespace YGR
 
             if (IsAlive())
             {
-                DrawPlayer(gameTime, globalOffset, spriteBatch);
+                DrawCharacterSprite(gameTime, globalOffset, spriteBatch);
                 DrawAimIndicator(gameTime, globalOffset, spriteBatch);
                 DrawOverheadString(gameTime, globalOffset, spriteBatch);
             }
@@ -654,7 +654,7 @@ namespace YGR
 
         }
 
-        override protected void DrawPlayer(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)
+        override protected void DrawCharacterSprite(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)
         {
 
             spriteBatch.Draw(

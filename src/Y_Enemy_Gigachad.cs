@@ -1,4 +1,5 @@
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 using System;
 using System.Collections.Generic;
 
@@ -91,6 +92,20 @@ namespace YGR
 
             // Gigachad shoot Big Gun no matter what (as long as there are players in the same room)
             Gun2.Shoot(gameTime, _rect.Center.ToVector2(), Vector2.One, Level, this);
+        }
+
+        protected override void DrawCharacterSprite(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)
+        {
+            spriteBatch.Draw(
+                texture: Sprite,
+                position: _rect.Location.ToVector2(),
+                sourceRectangle: SpriteRect,
+                color: _color,
+                rotation: 0,
+                origin: Vector2.Zero,
+                scale: Scale,
+                effects: Velocity.X >= 0 ? SpriteEffects.None : SpriteEffects.FlipHorizontally,
+                layerDepth: 0);
         }
     }
 }
