@@ -123,6 +123,9 @@ namespace YGR
 
         public void Create(GraphicsDevice graphicsDevice)
         {
+            // Stop any songs that are playing
+            Manager_Sound.SongInstance_Dramatic.Stop(immediate: true);
+
             // put everything back
             foreach (var room in Rooms)
             {

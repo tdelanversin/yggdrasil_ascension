@@ -784,8 +784,10 @@ namespace YGR
                     }
                     if (!enemiesInRoom)
                     {
+                        /* Room cleared */
                         _cleared = true;
                         OpenDoorsAndAdjacentRooms();
+                        Manager_Sound.Sound_LevelCleared.Play(1, 0, 0);
                         Logger.Info("Room " + Name + " cleared");
                     }
                 }

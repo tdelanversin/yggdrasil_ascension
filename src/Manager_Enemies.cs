@@ -69,7 +69,11 @@ namespace YGR
                 level_clear = true;
                 // TODO: add a wating time for the level clear sound
                 //System.Threading.Thread.Sleep(1000);
-                Manager_Sound.Sound_LevelCleared.Play();
+                // Manager_Sound.Sound_LevelCleared.Play();
+
+                // ---> For now, this is is done in the Y_CMRoom Update()
+                // method, but later we might move game play state handling
+                // somewhere else entirely
             }
         }
 

@@ -69,11 +69,11 @@
 /processorParam:Quality=Best
 /build:Sounds/fireball.wav
 
-#begin Sounds/gun-cocking-sound.mp3
-/importer:Mp3Importer
-/processor:SongProcessor
+#begin Sounds/gun-cocking-sound.wav
+/importer:WavImporter
+/processor:SoundEffectProcessor
 /processorParam:Quality=Best
-/build:Sounds/gun-cocking-sound.mp3
+/build:Sounds/gun-cocking-sound.wav
 
 #begin Sounds/level_completion.wav
 /importer:WavImporter
@@ -86,6 +86,12 @@
 /processor:SoundEffectProcessor
 /processorParam:Quality=Best
 /build:Sounds/menu-select.wav
+
+#begin Sounds/platform_activate.wav
+/importer:WavImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:Sounds/platform_activate.wav
 
 #begin Sounds/player_death.wav
 /importer:WavImporter

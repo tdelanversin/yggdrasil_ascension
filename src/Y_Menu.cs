@@ -160,10 +160,16 @@ namespace YGR
 
         private static void SelectMenu(int nextSelected)
         {
+            if (nextSelected == SelectedMenu) { return; }
             SelectableItems[SelectedMenu].IsSelected = false;
+
             // Wrap index around in both directions
             SelectedMenu = Util.ProperMod(nextSelected, SelectableItems.Count);
             SelectableItems[SelectedMenu].IsSelected = true;
+            if (SelectableItems[SelectedMenu].IsActive)
+            {
+                Manager_Sound.Sound_MenuSelect.Play(1, 0, 0);
+            }
         }
 
         private static void SelectMenuNext()

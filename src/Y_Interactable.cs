@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Timers;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
@@ -56,13 +57,16 @@ namespace YGR
     // Simple field for players to stand in
     public class Interactable_PlayerField : Interactable_Basic
     {
+        public List<IVictim> PlayersInside = new List<IVictim> { };
+        private string BaseLabel = "Move here!";
+
         public Interactable_PlayerField(
             Rectangle bounds,
             Y_Level level,
             Y_CMRoom room
         ) : base(bounds, level, room)
         {
-            Label = "Players move\n   in here";
+            Label = BaseLabel;
         }
 
         public virtual List<IVictim> GetPlayersInside()
@@ -72,8 +76,19 @@ namespace YGR
 
         public override void Update(GameTime gameTime)
         {
-            // Light up if a player stands inside
-            if (GetPlayersInside().Count > 0)
+            var playersInside = GetPlayersInside();
+
+            if (playersInside.FindAll(p => !PlayersInside.Contains(p)).Count > 0)
+            {
+                // Play sound effect when a new player enters the field
+                Manager_Sound.Sound_GunCocking.Play();
+            }
+
+            PlayersInside = playersInside;
+            Label = BaseLabel + "\nPlayers: " + PlayersInside.Count;
+
+            // Light up if any player stands inside
+            if (PlayersInside.Count > 0)
             {
                 Color = Color.Azure;
             }
@@ -104,7 +119,7 @@ namespace YGR
 
         public void TriggerInteraction(GameTime gameTime)
         {
-            List<IVictim> selectedPlayers = PlayerField.GetPlayersInside();
+            List<IVictim> selectedPlayers = PlayerField.PlayersInside;
 
             // If not a single player manages to stand in the field, we're not starting the game
             if (selectedPlayers.Count < 1) { return; }
@@ -114,6 +129,14 @@ namespace YGR
             Room.OpenDoorsAndAdjacentRooms();
             Label = "Go get 'em! :)";
             Color = Color.SpringGreen;
+            Manager_Sound.Sound_PlatformActivate.Play(1, 0, 0);
+
+            // Start the dramatic song after a while
+            // Later, ideally we start it once we enter the first room with enemies
+            Timer t = new Timer(4000);
+            t.Elapsed += (sender, e) => Manager_Sound.SongInstance_Dramatic.Play();
+            t.AutoReset = false;
+            t.Enabled = true;
             InteractionComplete = true;
         }
 
@@ -124,6 +147,10 @@ namespace YGR
             // Amazing "collision detection"
             foreach (var projectile in Manager_Projectile.GetProjectiles())
             {
+                // Can only be triggered by a player standing in the field
+                if (projectile.WhoFiredMe is not IVictim) { return; }
+                if (!PlayerField.PlayersInside.Contains((IVictim)projectile.WhoFiredMe)) { return; }
+
                 if (Rect.Contains(projectile.Rect))
                 {
                     TriggerInteraction(gameTime);

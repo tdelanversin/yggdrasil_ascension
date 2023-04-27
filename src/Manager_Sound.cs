@@ -7,12 +7,15 @@ namespace YGR
     static class Manager_Sound
     {
         public static SoundEffect Song_Dramatic;
+        public static SoundEffectInstance SongInstance_Dramatic;
         public static SoundEffect Sound_Explosion;
         public static SoundEffect Sound_Fireball;
         public static SoundEffect Sound_Dash;
         public static SoundEffect Sound_Shotgun;
+        public static SoundEffect Sound_GunCocking;
         public static SoundEffect Sound_EnemyDeath;
         public static SoundEffect Sound_Bonus;
+        public static SoundEffect Sound_PlatformActivate;
         public static SoundEffect Sound_LevelCleared;
         public static SoundEffect Sound_PlayerDeath;
         public static SoundEffect Sound_MenuSelect;
@@ -32,6 +35,11 @@ namespace YGR
             Sound_LevelCleared = contentManager.Load<SoundEffect>("Sounds/level_completion");
             Sound_PlayerDeath = contentManager.Load<SoundEffect>("Sounds/player_death");
             Sound_MenuSelect = contentManager.Load<SoundEffect>("Sounds/menu-select");
+            Sound_GunCocking = contentManager.Load<SoundEffect>("Sounds/gun-cocking-sound");
+            Sound_PlatformActivate = contentManager.Load<SoundEffect>("Sounds/platform_activate");
+
+            SongInstance_Dramatic = Song_Dramatic.CreateInstance();
+            SongInstance_Dramatic.Volume = 0.6f;
 
             //byte[] buffer= new byte[10];
             //AudioChannels channels= new AudioChannels();
