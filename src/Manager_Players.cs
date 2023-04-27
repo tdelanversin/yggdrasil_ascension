@@ -22,14 +22,14 @@ namespace YGR
 
         public static void LoadContent(ContentManager contentManager)
         {
-            SpriteNinja = contentManager.Load<Texture2D>("charaset");
-            SpriteBasic = contentManager.Load<Texture2D>("tester_60");
-            SpriteGhost = contentManager.Load<Texture2D>("ghosty");
+            SpriteNinja = contentManager.Load<Texture2D>("SpritesCharacters/charaset");
+            SpriteBasic = contentManager.Load<Texture2D>("SpritesCharacters/tester_60");
+            SpriteGhost = contentManager.Load<Texture2D>("SpritesCharacters/ghosty");
             SpriteAimIndicator = new List<Texture2D> {
-                contentManager.Load<Texture2D>("target_indicator_red"),
-                contentManager.Load<Texture2D>("target_indicator_blue"),
-                contentManager.Load<Texture2D>("target_indicator_green"),
-                contentManager.Load<Texture2D>("target_indicator_yellow"),
+                contentManager.Load<Texture2D>("SpritesOther/target_indicator_red"),
+                contentManager.Load<Texture2D>("SpritesOther/target_indicator_blue"),
+                contentManager.Load<Texture2D>("SpritesOther/target_indicator_green"),
+                contentManager.Load<Texture2D>("SpritesOther/target_indicator_yellow"),
             };
         }
 

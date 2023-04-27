@@ -19,21 +19,23 @@ namespace YGR
         private static SoundEffect bonus;
         private static SoundEffect level_cleared;
         private static SoundEffect player_death;
+        private static SoundEffect menu_select;
 
         private static SoundEffect bogus_sound;
         public static Dictionary<IGameElement, SoundEffectInstance> playing_sound_effects;
 
         public static void LoadContent(ContentManager contentManager)
         {
-            song = contentManager.Load<SoundEffect>("dramatic_music");
-            fireball = contentManager.Load<SoundEffect>("better_fireball");
-            explosion = contentManager.Load<SoundEffect>("explosion");
-            dash = contentManager.Load<SoundEffect>("dash");
-            shotgun = contentManager.Load<SoundEffect>("shotgun");
-            enemy_death = contentManager.Load<SoundEffect>("ennemy_death_cry");
-            bonus = contentManager.Load<SoundEffect>("bonus_sound");
-            level_cleared = contentManager.Load<SoundEffect>("level_completion");
-            player_death = contentManager.Load<SoundEffect>("player_death");
+            song = contentManager.Load<SoundEffect>("Sounds/dramatic_music");
+            fireball = contentManager.Load<SoundEffect>("Sounds/better_fireball");
+            explosion = contentManager.Load<SoundEffect>("Sounds/explosion");
+            dash = contentManager.Load<SoundEffect>("Sounds/dash");
+            shotgun = contentManager.Load<SoundEffect>("Sounds/shotgun");
+            enemy_death = contentManager.Load<SoundEffect>("Sounds/enemy_death_cry");
+            bonus = contentManager.Load<SoundEffect>("Sounds/bonus_sound");
+            level_cleared = contentManager.Load<SoundEffect>("Sounds/level_completion");
+            player_death = contentManager.Load<SoundEffect>("Sounds/player_death");
+            menu_select = contentManager.Load<SoundEffect>("Sounds/menu-select");
 
             //byte[] buffer= new byte[10];
             //AudioChannels channels= new AudioChannels();

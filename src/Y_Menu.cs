@@ -256,7 +256,7 @@ namespace YGR
 
         internal static void LoadContent(ContentManager content)
         {
-            TitleImage = content.Load<Texture2D>("title_image");
+            TitleImage = content.Load<Texture2D>("SpritesOther/title_image");
         }
     }
 }

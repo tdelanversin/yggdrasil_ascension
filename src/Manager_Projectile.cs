@@ -23,8 +23,8 @@ namespace YGR
         {
             projectile_textures = new Dictionary<string, Texture2D>()
             {
-                { "default_projectile", content.Load<Texture2D>("projectile") },
-                { "smaller_projectile", content.Load<Texture2D>("smaller_projectile")}
+                { "default_projectile", content.Load<Texture2D>("SpritesOther/projectile") },
+                { "smaller_projectile", content.Load<Texture2D>("SpritesOther/smaller_projectile")}
             };
 
             _initialized = true;

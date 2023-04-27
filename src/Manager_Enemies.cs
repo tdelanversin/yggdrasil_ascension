@@ -17,8 +17,8 @@ namespace YGR
         {
             enemy_textures = new Dictionary<string, Texture2D>()
             {
-                { "default_enemy", content.Load<Texture2D>("tester_60") },
-                { "gigachad", content.Load<Texture2D>("gigachad") },
+                { "default_enemy", content.Load<Texture2D>("SpritesCharacters/tester_60") },
+                { "gigachad", content.Load<Texture2D>("SpritesCharacters/gigachad") },
             };
 
             _initialized = true;

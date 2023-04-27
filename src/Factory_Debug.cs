@@ -23,16 +23,16 @@ namespace YGR
         public static void Initialize(ContentManager content)
         {
             _strokes = new Texture2D[]{
-                content.Load<Texture2D>("stroke_1px"),
-                content.Load<Texture2D>("stroke_2px"),
-                content.Load<Texture2D>("stroke_3px"),
-                content.Load<Texture2D>("stroke_4px"),
-                content.Load<Texture2D>("stroke_5px"),
-                content.Load<Texture2D>("stroke_6px"),
-                content.Load<Texture2D>("stroke_7px"),
-                content.Load<Texture2D>("stroke_8px"),
-                content.Load<Texture2D>("stroke_9px"),
-                content.Load<Texture2D>("stroke_10px")
+                content.Load<Texture2D>("SpritesOther/stroke_1px"),
+                content.Load<Texture2D>("SpritesOther/stroke_2px"),
+                content.Load<Texture2D>("SpritesOther/stroke_3px"),
+                content.Load<Texture2D>("SpritesOther/stroke_4px"),
+                content.Load<Texture2D>("SpritesOther/stroke_5px"),
+                content.Load<Texture2D>("SpritesOther/stroke_6px"),
+                content.Load<Texture2D>("SpritesOther/stroke_7px"),
+                content.Load<Texture2D>("SpritesOther/stroke_8px"),
+                content.Load<Texture2D>("SpritesOther/stroke_9px"),
+                content.Load<Texture2D>("SpritesOther/stroke_10px")
             };
 
             _initialized = true;
