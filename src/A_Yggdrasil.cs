@@ -41,9 +41,7 @@ namespace YGR
 
             var res_x = _graphics.PreferredBackBufferWidth;
             var res_y = _graphics.PreferredBackBufferHeight;
-            Camera.Position = new Vector2(res_x / 2, res_y / 2);
-            Camera.Bounds = _graphics.GraphicsDevice.Viewport.Bounds;
-            Camera.Mode = CameraMode.Follow; /* 'Follow' to follow players, 'Manual' for keyboard controlled */
+            Camera.Initialize(new Vector2(res_x / 2, res_y / 2), _graphics.GraphicsDevice.Viewport, CameraMode.Follow);
 
             Factory_Debug.Initialize(Content);
             Manager_Projectile.Initialize(Content);
@@ -67,7 +65,7 @@ namespace YGR
             Manager_Players.LoadContent(Content);
             _spriteBatch = new SpriteBatch(GraphicsDevice);
             Manager_Particles.LoadContent(Content);
-           
+            Manager_Sound.PlayMainMenuMusic();
         }
 
         protected override void UnloadContent()
@@ -108,7 +106,7 @@ namespace YGR
             // Once everything is in place, inform Update() of the new desired state
             DesiredState = GameState.InGame;
         }
-    
+
         protected override void Update(GameTime gameTime)
         {
             Input.Update();
@@ -143,10 +141,7 @@ namespace YGR
                     Menu.Update();
                     break;
                 case GameState.InGame:
-                    float deltaTime = (float)gameTime.ElapsedGameTime.TotalSeconds;
-
-                    Camera.UpdateCamera(_graphics.GraphicsDevice.Viewport, deltaTime);
-
+                    Camera.Update(_graphics.GraphicsDevice.Viewport, gameTime);
                     Manager_Players.Update(gameTime);
                     Manager_Projectile.Update(gameTime);
                     Manager_Enemies.Update(gameTime);
