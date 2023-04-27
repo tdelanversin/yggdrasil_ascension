@@ -1,4 +1,5 @@
 ﻿using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Graphics;
 
 namespace YGR
@@ -15,6 +16,7 @@ namespace YGR
         public static bool Lighting;
         public static bool Outlines;
         public static bool DrawFPS;
+        public static bool Sound;
 
         public static void Initialize(A_Yggdrasil game)
         {
@@ -22,8 +24,10 @@ namespace YGR
             Gdm = game._graphics;
             Window = game.Window;
 
+
             // Defaults
             DrawFPS = true; // Always on for now, shouldn't really bother anyone
+            Sound = true;
 #if DEBUG
             Fullscreen = false;
             Lighting = false;
@@ -86,6 +90,21 @@ namespace YGR
                 Logger.Debug("Turning fullscreen ON. Resolution: " + Gdm.PreferredBackBufferWidth.ToString() + "x" + Gdm.PreferredBackBufferHeight.ToString());
             }
             return Fullscreen;
+        }
+
+        public static bool Toggle_Volume()
+        {
+            Sound = !Sound;
+            if (SoundEffect.MasterVolume != 0f)
+            {
+                SoundEffect.MasterVolume = 0f;
+
+            }
+            else
+            {
+                SoundEffect.MasterVolume = 1f;
+            }
+            return Sound;
         }
     }
 }

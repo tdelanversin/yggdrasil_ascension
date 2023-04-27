@@ -67,10 +67,7 @@ namespace YGR
             Manager_Players.LoadContent(Content);
             _spriteBatch = new SpriteBatch(GraphicsDevice);
             Manager_Particles.LoadContent(Content);
-            // Uncomment to play intro sound in a loop
-            //MediaPlayer.Play(Manager_Sound.AddSong_Intro());
-            MediaPlayer.IsRepeating = true;
-            MediaPlayer.MediaStateChanged += MediaPlayer_MediaStateChanged;
+           
         }
 
         protected override void UnloadContent()
@@ -111,13 +108,7 @@ namespace YGR
             // Once everything is in place, inform Update() of the new desired state
             DesiredState = GameState.InGame;
         }
-        void MediaPlayer_MediaStateChanged(object sender, System.
-                                   EventArgs e)
-        {
-            // 0.0f is silent, 1.0f is full volume
-            // MediaPlayer.Volume -= 0.1f;
-            // MediaPlayer.Play(song);
-        }
+    
         protected override void Update(GameTime gameTime)
         {
             Input.Update();
