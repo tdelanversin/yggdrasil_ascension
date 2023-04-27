@@ -1,20 +1,11 @@
-﻿using Assimp;
-using Assimp.Unmanaged;
-using LDtk;
-using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Audio;
-using Microsoft.Xna.Framework.Content;
+﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Newtonsoft.Json;
-using SharpFont;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using static YGR.Y_CMRoom;
 
 namespace YGR
 {
@@ -192,6 +183,8 @@ namespace YGR
         List<Point> _bossSpawner;
         List<Point> _playerSpawner;
 
+        bool _cleared;
+
         public Y_CMRoom(
             string name,
             int tileWidth,
@@ -199,7 +192,7 @@ namespace YGR
             string resourceFolder,
             GraphicsDevice graphicsDevice
         )
-        {   
+        {
             ResourceFolder = Util.PathOsNormalization(resourceFolder);
             var files = Directory.GetFiles(ResourceFolder);
             string dataFileName = Path.GetFileName(files.Where(x => Path.GetFileName(x).Contains("data") && Path.GetFileName(x).EndsWith(".json")).First());
@@ -213,7 +206,7 @@ namespace YGR
                 collisions[counter] = line.Split(',').Where(i => i != "").Select(int.Parse).ToArray();
                 counter++;
             }
-            
+
             collisions = paddOutline(collisions);
             Collision = new X_CollisionModel_Room(collisions, tileWidth, tileHeight);
             Graph = new X_RoomGraph(this, collisions, tileWidth, tileHeight);
@@ -253,7 +246,7 @@ namespace YGR
                         }
                     }
                 }
-                if(array.entities.Spawner != null)
+                if (array.entities.Spawner != null)
                 {
                     var spawner = JsonConvert.DeserializeObject<List<Spawner>>(array.entities.Spawner.ToString());
                     _spawner = new List<Point>();
@@ -281,14 +274,15 @@ namespace YGR
                     }
                 }
             }
-            
+
             Name = name;
             Color[] target = null;
-            for (int i=0; i<layers.Count-1; ++i)
+            for (int i = 0; i < layers.Count - 1; ++i)
             {
                 using (FileStream fileStream = new FileStream(ResourceFolder + layers[i], FileMode.Open))
                 {
-                    if(i==0){
+                    if (i == 0)
+                    {
                         _floor = Texture2D.FromStream(graphicsDevice, fileStream);
                         target = new Color[_floor.Width * _floor.Height];
                         _floor.GetData<Color>(target);
@@ -299,12 +293,12 @@ namespace YGR
                         Color[] source = new Color[_floor.Width * _floor.Height];
                         Texture2D.FromStream(graphicsDevice, fileStream).GetData<Color>(source);
 
-                        for(int h=0; h<_floor.Height; ++h)
+                        for (int h = 0; h < _floor.Height; ++h)
                         {
                             for (int w = 0; w < _floor.Width; ++w)
                             {
                                 var c = source[h * _floor.Width + w];
-                                if(c.A != 0)
+                                if (c.A != 0)
                                     target[h * _floor.Width + w] = source[h * _floor.Width + w];
                             }
                         }
@@ -313,7 +307,7 @@ namespace YGR
             }
             _floor.SetData<Color>(target);
 
-            using (FileStream fileStream = new FileStream(ResourceFolder + layers[layers.Count()-1], FileMode.Open))
+            using (FileStream fileStream = new FileStream(ResourceFolder + layers[layers.Count() - 1], FileMode.Open))
             {
                 _roof = Texture2D.FromStream(graphicsDevice, fileStream);
             }
@@ -407,6 +401,45 @@ namespace YGR
             ResetRects.Clear();
         }
 
+        public void OpenDoorsAndAdjacentRooms()
+        {
+            foreach (var side in DoorRooms)
+            {
+                foreach (var walkable in side.Value)
+                {
+                    if (walkable.WhatAreYou() == X_LevelElements.Door)
+                    {
+                        Y_Door door = (Y_Door)walkable;
+                        if (door.State == X_DoorState.Closed)
+                        {
+                            door.State = X_DoorState.Opening;
+                        }
+
+                        // Now the door hall is open, but the next room is not visible. so let's recurse...
+                        foreach (var con in door.DoorRooms)
+                        {
+                            foreach (var room in con.Value)
+                            {
+                                if (room == this)
+                                {
+                                    continue; // We are already open
+                                }
+                                Y_CMRoom cmroom = (Y_CMRoom)room;
+                                if (cmroom.State == X_RoomState.Closed)
+                                {
+                                    cmroom.State = X_RoomState.Opening;
+                                }
+                            }
+                        }
+                    }
+                    else if (walkable.WhatAreYou() == X_LevelElements.Room)
+                    {
+                        Logger.Error("Found room where there should have been a door");
+                    }
+                }
+            }
+        }
+
         public static X_DoorTextureLayer MapTexture(string textureType)
         {
             if (textureType.ToLower().Contains("wall") || textureType.ToLower().Contains("floor")) return X_DoorTextureLayer.Floor;
@@ -480,8 +513,8 @@ namespace YGR
             var keys = DoorRooms.Select(x => x.Key).ToArray();
 
             Color[] data = new Color[_floor.Width * _floor.Height];
-            
-            
+
+
             Parallel.For(0, _illuminatedClosed.Length, i =>
             //for (int i = 0; i < _illuminatedClosed.Length; ++i)
             {
@@ -606,7 +639,7 @@ namespace YGR
 
             float min = float.MaxValue;
             int ind = 0;
-            for(int i=0; i<dists.Length; ++i)
+            for (int i = 0; i < dists.Length; ++i)
             {
                 if (dists[i] < min)
                 {
@@ -632,19 +665,19 @@ namespace YGR
             Collision.MoveBy(p);
             foreach (var side in Doors)
             {
-                for (int i=0; i<side.Value.Count(); ++i)
+                for (int i = 0; i < side.Value.Count(); ++i)
                 {
                     side.Value[i].MoveBy(p);
                     //side.Value[i] = new Tuple<int, int>(position.X + side.Value[i].Item1, position.Y + side.Value[i].Item2);
                 }
             }
-            
-            foreach(var light in Lights)
+
+            foreach (var light in Lights)
             {
                 light.MoveBy(p);
             }
 
-            foreach(var door in _doorMasks)
+            foreach (var door in _doorMasks)
             {
                 door.Value.First().MoveBy(p);
             }
@@ -652,23 +685,23 @@ namespace YGR
             // needs to be done this way because properties return by value and not by ref
             Rect = new Rectangle(position.X, position.Y, Rect.Width, Rect.Height);
 
-            if(_spawner != null)
+            if (_spawner != null)
             {
-                for(int i=0; i<_spawner.Count; ++i)
+                for (int i = 0; i < _spawner.Count; ++i)
                 {
                     _spawner[i] += p;
                 }
             }
 
-            if(_bossSpawner != null)
+            if (_bossSpawner != null)
             {
                 for (int i = 0; i < _bossSpawner.Count; ++i)
                 {
                     _bossSpawner[i] += p;
                 }
             }
-            
-            if(_playerSpawner != null)
+
+            if (_playerSpawner != null)
             {
                 for (int i = 0; i < _playerSpawner.Count; ++i)
                 {
@@ -726,6 +759,40 @@ namespace YGR
         /// <param name="gameTime">Monogame GameTime</param>
         public void Update(GameTime gameTime)
         {
+            // Basic room clear logic: If players are in the room but no enemies, open up the doors
+            if (!_cleared && Name != "Start_0")
+            {
+                bool playersInRoom = false;
+                foreach (var player in Manager_Players.Players)
+                {
+                    if (player.Room == this)
+                    {
+                        playersInRoom = true;
+                        break;
+                    }
+                }
+                if (playersInRoom)
+                {
+                    bool enemiesInRoom = false;
+                    foreach (var enemy in Manager_Enemies.GetEnemies())
+                    {
+                        if (enemy.Room == this)
+                        {
+                            enemiesInRoom = true;
+                            break;
+                        }
+                    }
+                    if (!enemiesInRoom)
+                    {
+                        _cleared = true;
+                        OpenDoorsAndAdjacentRooms();
+                        Logger.Info("Room " + Name + " cleared");
+                    }
+                }
+            }
+
+
+
             bool keyPressed = Input.IsKeyTriggered(Keybinds.ToggleConnectors);
             float dt = gameTime.ElapsedGameTime.Milliseconds;
             switch (State)
@@ -776,7 +843,7 @@ namespace YGR
 
             Collision.DrawOutline(gameTime, globalOffset, spriteBatch);
             Factory_Debug.DrawRectangle(Rect.X, Rect.Y, Rect.Width, Rect.Height, 3, Color.Blue, spriteBatch);
-            foreach(var light in Lights)
+            foreach (var light in Lights)
             {
                 light.DrawOutline(gameTime, globalOffset, spriteBatch);
             }
@@ -786,7 +853,7 @@ namespace YGR
                 door.Value.First().DrawOutline(gameTime, Rect.Location.ToVector2(), spriteBatch);
             }
 
-            foreach(var door in Doors)
+            foreach (var door in Doors)
             {
                 door.Value.First().DrawOutline(gameTime, Rect.Location.ToVector2(), spriteBatch);
             }
@@ -825,13 +892,13 @@ namespace YGR
                 return;
             }
 
-            if(State == X_RoomState.Closed || State == X_RoomState.LockedClosed)
+            if (State == X_RoomState.Closed || State == X_RoomState.LockedClosed)
             {
                 //spriteBatch.Draw(
                 //    _floor, Rect.Location.ToVector2(),
                 //    new Rectangle(0, 0, _floor.Width, _floor.Height),
                 //    Color.White, 0, Vector2.Zero, Scale, SpriteEffects.None, 0);
-                
+
                 //Vector2 position = Rect.Location.ToVector2();
                 //draw(_tileTextures[X_DoorTextureLayer.Door], position, spriteBatch, false);
 
@@ -840,7 +907,8 @@ namespace YGR
                 //    new Rectangle(0, 0, _floor.Width, _floor.Height),
                 //    Color.White, 0, Vector2.Zero, Scale, SpriteEffects.None, 0);
             }
-            else if (State == X_RoomState.Opening || State == X_RoomState.Closing) {
+            else if (State == X_RoomState.Opening || State == X_RoomState.Closing)
+            {
                 spriteBatch.Draw(
                     _floor, Rect.Location.ToVector2(),
                     new Rectangle(0, 0, _floor.Width, _floor.Height),
