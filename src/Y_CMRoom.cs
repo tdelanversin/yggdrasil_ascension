@@ -677,20 +677,6 @@ namespace YGR
             }
         }
 
-        /// <summary>
-        /// Return the rectangle representing the inside of the room, excluding the wall tiles
-        /// </summary>
-        public Rectangle GetInnerBounds()
-        {
-            // TODO: not really correct
-            return new Rectangle(
-                Rect.X + Collision.TileWidth,
-                Rect.Y + Collision.TileHeight,
-                Rect.Width - 2 * Collision.TileWidth,
-                Rect.Height - 2 * Collision.TileHeight
-            );
-        }
-
         public X_ConnectorPoint GetConnectorPoint(X_ConnectorSide side)
         {
             return Doors[side].First();
