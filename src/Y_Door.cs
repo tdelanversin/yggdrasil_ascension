@@ -60,7 +60,7 @@ namespace YGR
 
         private new Dictionary<X_DoorState, List<Rectangle>> _doorCollisionRectangles;
 
-        public X_DoorState State { get; private set; }
+        public X_DoorState State { get; set; }
 
         private X_DoorDirection _direction;
         //private Texture2D _floor;

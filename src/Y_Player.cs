@@ -31,12 +31,12 @@ namespace YGR
         public Y_Level Level { get; set; }
         public IWalkable Room { get; set; }
 
-        // private fields
+        // Class fields
+        public ControlLayout ControlLayout;
         protected bool _isAiming;
         protected bool _invincible;
         protected float _invincibleDuration;
         protected float _invincibleTimeLeft;
-        protected ControlLayout _controlLayout;
         protected Dictionary<string, int[]> _animations;
         protected float _cr;
         protected float _mass;
@@ -83,7 +83,7 @@ namespace YGR
             _playerIndex = playerIndex;
             _position = initialPosition;
             _gun = gun;
-            _controlLayout = controlLayout;
+            ControlLayout = controlLayout;
 
             // Set all the sprites
             _spritePlayer = Manager_Players.SpriteBasic;
@@ -217,16 +217,16 @@ namespace YGR
         /* Handle Keyboard & Mouse movement, aiming and shooting */
         protected void HandleMouseKeyboardInput(GameTime gameTime, ref Vector2 input)
         {
-            if (_controlLayout > 0)
+            if (ControlLayout > 0)
             {
-                if (_controlLayout == ControlLayout.KeyboardWASD)
+                if (ControlLayout == ControlLayout.KeyboardWASD)
                 {
                     if (Input.IsKeyDown(Keybinds.P1Right)) input.X += 1;
                     if (Input.IsKeyDown(Keybinds.P1Left)) input.X -= 1;
                     if (Input.IsKeyDown(Keybinds.P1Down)) input.Y += 1;
                     if (Input.IsKeyDown(Keybinds.P1Up)) input.Y -= 1;
                 }
-                else if (_controlLayout == ControlLayout.KeyboardArrows)
+                else if (ControlLayout == ControlLayout.KeyboardArrows)
                 {
                     if (Input.IsKeyDown(Keybinds.P2Right)) input.X += 1;
                     if (Input.IsKeyDown(Keybinds.P2Left)) input.X -= 1;

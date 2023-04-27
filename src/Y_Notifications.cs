@@ -10,7 +10,7 @@ namespace YGR
         internal class Notification
         {
             internal int Age = 0;
-            internal int AgeMax = 3000;
+            internal int AgeMax = 4000;
             internal string Message = "";
             internal Color Color = Color.BlanchedAlmond;
             internal Vector2 Size;
@@ -61,7 +61,7 @@ namespace YGR
         public static void Draw(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)
         {
             int x = Camera.Bounds.Width / 2;
-            int y = 10;
+            int y = Camera.Bounds.Height / 32;
 
             foreach (var n in _notifications)
             {

@@ -44,6 +44,9 @@ namespace YGR
         private string _name;
         private string _levelResourceFolder;
         private string _doorResourceFolder;
+
+        private List<Interactable_Basic> _interactables = new List<Interactable_Basic> { };
+
         Dictionary<string, List<Y_CMRoom>> _availableRooms;
         Y_Level.Data _data;
 
@@ -211,23 +214,29 @@ namespace YGR
 
             Manager_Players.ClearPlayers();
 
-
-            // get start position
+            // Place all players, even if they're not going to play
             var spawningPoints = ((Y_CMRoom)Rooms[0]).GetPlayerSpawningPoints();
-
             var sp = spawningPoints.First();
-            Manager_Players.AddPlayer_Ninja(PlayerIndex.One, sp.ToVector2(), this, ControlLayout.KeyboardWASD);
-
-            for (int i = 0; i < 4; i++)
+            for (int i = Manager_Players.Players.Count; i < 4; i++)
             {
-                PlayerIndex playerIndex = (PlayerIndex)i;
-                var con = GamePad.GetState(playerIndex).IsConnected;
-                if (con)
-                {
-                    var spi = spawningPoints[i + 1];
-                    Manager_Players.AddPlayer_SimplePlayer(playerIndex, position: spi.ToVector2(), this);
-                }
+                Manager_Players.AddPlayer_Random((PlayerIndex)i, position: spawningPoints[i].ToVector2(), this);
             }
+
+            // Make the last one controllable by keyboard
+            ((SimplePlayer)Manager_Players.Players[-1]).ControlLayout = ControlLayout.KeyboardWASD;
+
+            _interactables.Clear();
+
+            // Useless box were all to be participating players should go in
+            Interactable_PlayerField playerField = new Interactable_PlayerField(
+                new Rectangle(5, 5, 8, 8), this, (Y_CMRoom)Rooms[0]
+            );
+            _interactables.Add(playerField);
+
+            // Room opener to start the game with all players standing in the field
+            _interactables.Add(new Interactable_RoomOpener(
+                new Rectangle(29, 5, 8, 8), this, (Y_CMRoom)Rooms[0], playerField)
+            );
 
             Camera.Players = Manager_Players.Players;
             Camera.Mode = CameraMode.Room;
@@ -300,6 +309,11 @@ namespace YGR
             {
                 room.Update(gameTime);
             }
+
+            foreach (var interactable in _interactables)
+            {
+                interactable.Update(gameTime);
+            }
         }
 
         public void DrawOutline(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)
@@ -315,6 +329,11 @@ namespace YGR
             foreach (var room in Rooms)
             {
                 room.Value.Draw(gameTime, globalOffset, spriteBatch);
+            }
+
+            foreach (var interactable in _interactables)
+            {
+                interactable.Draw(gameTime, globalOffset, spriteBatch);
             }
         }
 

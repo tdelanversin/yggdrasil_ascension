@@ -13,6 +13,7 @@
         Invincible,
         Ghost,
         Projectile,
-        Level
+        Level,
+        Interactable,
     }
 }
