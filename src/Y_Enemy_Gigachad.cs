@@ -85,7 +85,7 @@ namespace YGR
                 Gun.Shoot(gameTime, _rect.Center.ToVector2(), targetDirection, Level, this);
             }
 
-            var playersInSameRoom = ((List<IVictim>)Manager_Players.Players).FindAll(x => x.Room == Room);
+            var playersInSameRoom = ((List<IVictim>)Manager_Players.Players).FindAll(x => x.LifePoints > 0 && x.Room == Room);
             if (playersInSameRoom.Count < 1) return;
 
             // Gigachad shoot Big Gun no matter what (as long as there are players in the same room)

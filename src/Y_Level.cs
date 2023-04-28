@@ -36,6 +36,7 @@ namespace YGR
             Start, // Not completed starting room
             FreeRoam, // Not in an encounter, players can freely roam
             Encounter, // Players are in an encounter, room locked
+            End,
         }
 
         public float Scale { get; }
@@ -141,6 +142,7 @@ namespace YGR
             //var room = new Y_CMRoom(roomName, TileWidth, TileHeight, f, graphicsDevice);
             // Stop any songs that are playing
             Manager_Sound.StopMusic();
+            Notifications.Clear();
 
             Manager_Sound.Sound_VikingHorn.Play();
 
@@ -365,10 +367,12 @@ namespace YGR
                     if (_interactables[1].InteractionComplete)
                     {
                         State = GamePlayState.FreeRoam;
-                        Camera.focusOnPlayers();
+                        Camera.SetFocusPlayers();
                     }
                     break;
+
                 case GamePlayState.FreeRoam:
+                    // Just sample the first room the first player is in right now
                     ActiveRoom = Manager_Players.Players[0].Room;
 
                     if (ActiveRoom.WhatAreYou() != X_LevelElements.Room)
@@ -382,13 +386,24 @@ namespace YGR
                         break;
                     }
 
+                    // Make sure all players are inside
                     if (cmroom.GetPlayersInside().Count != Manager_Players.Players.Count)
                     {
                         break;
                     }
 
+                    if (cmroom.GetEnemiesInside().Count < 1)
+                    {
+                        // Room does not contain any enemies, so just mark as cleared an move on
+                        cmroom.Cleared = true;
+                        cmroom.OpenDoorsAndAdjacentRooms();
+                        break;
+                    }
+
+                    // At this point we have all players inside a room with
+                    // enemies. Time to go in lock down and let the battle begin
                     cmroom.LockRoom();
-                    Camera.focusOnRoom(cmroom);
+                    Camera.SetFocusRoom(cmroom);
                     foreach (var enemy in cmroom.GetEnemiesInside())
                     {
                         enemy.State = EnemyState.Idle;
@@ -405,10 +420,22 @@ namespace YGR
 
                     State = GamePlayState.Encounter;
                     break;
+
                 case GamePlayState.Encounter:
                     // We can assume at this point that _currentRoom is actually
                     // a room, otherwise we wouldn't be here
                     var encounterRoom = (Y_CMRoom)ActiveRoom;
+
+                    // Check if players died
+                    if (encounterRoom.GetPlayersInside().FindAll(p => p.LifePoints > 0).Count < 1)
+                    {
+                        Notifications.New("\n\n\n\n", Color.Wheat, 60000);
+                        Notifications.New("Fighting to the bitter end, our heroes couldn't prove", Color.Wheat, 60000, Fonts.Large);
+                        Notifications.New("themselves worthy of fighting alongside the gods...", Color.Wheat, 60000, Fonts.Large);
+                        Manager_Sound.PlayFreeRoamMusic();
+                        State = GamePlayState.End;
+                        break;
+                    }
 
                     if (encounterRoom.GetEnemiesInside().Count > 0)
                     {
@@ -416,13 +443,18 @@ namespace YGR
                     }
                     encounterRoom.Cleared = true;
                     encounterRoom.OpenDoorsAndAdjacentRooms();
-                    Camera.focusOnPlayers();
+                    Camera.SetFocusPlayers();
 
                     Manager_Sound.PlayFreeRoamMusic();
                     Notifications.New("Room " + ActiveRoom.Name + " cleared!");
 
                     State = GamePlayState.FreeRoam;
                     break;
+
+                case GamePlayState.End:
+                    // Nothing yet
+                    break;
+
                 default:
                     break;
             }
