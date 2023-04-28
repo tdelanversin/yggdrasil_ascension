@@ -5,7 +5,7 @@ using System.Collections.Generic;
 
 namespace YGR
 {
-    public class Y_StarterProjectile : IProjectile
+    public class Projectile_Basic : IProjectile
     {
         public double TimeCreated { get; set; }
         public string Name { get; set; }
@@ -16,6 +16,7 @@ namespace YGR
         public IWalkable Room { get; set; }
         public IGameElement WhoFiredMe { get; set; } 
         public int Damage { get; set; }
+        public Color Color { get; set; }
 
         public float Scale { get; protected set; }
         public Rectangle Rect { get { return _rect; } set { _rect = value; } }
@@ -28,8 +29,12 @@ namespace YGR
         protected bool _isEnemy;
         protected X_ConnectorSide _lastSide;
         protected Rectangle _rect;
+        protected float _speed;
+        protected float _mass;
+        protected float _cr;
+        protected float _scale;
 
-        public Y_StarterProjectile(
+        public Projectile_Basic(
             Vector2 position,
             Vector2 direction,
             double timeCreated,
@@ -37,20 +42,24 @@ namespace YGR
             IGameElement who
         )
         {
+            Name = "Basic Projectile";
+            Damage = 1;
+            _speed = 0.7f;
+            _mass = 0.5f;
+            _cr = 1.0f;
+            _scale = 0.55f;
+
+            Velocity = _speed * direction;
+            TimeCreated = timeCreated;
+            Level = level;
             _sprite = Manager_Projectile.projectile_textures["smaller_projectile"];
             _window = new Rectangle(0, 0, 32, 32);
             _animationIndex = 0;
             _position = position;
             _direction = direction;
-            Velocity = Vector2.One * direction;
-            TimeCreated = timeCreated;
-            Damage = 1;
             _isEnemy = false;
-            Name = "StarterProjectile";
-            Level = level;
             DeleteNext = false;
-            Collision = new X_CollisionModel_Projectile(0.5f, 1.0f);
-
+            Collision = new X_CollisionModel_Projectile(_mass, _cr);
             WhoFiredMe = who;
             if (WhoFiredMe is IVictim)
             { // Add 50% of the players momentum to the bullet. Adds 50% more fun to the game.
@@ -60,9 +69,19 @@ namespace YGR
                 backwards if the player is going backwards super fast (looking
                 at you, Ninja...)
                 */
+            }            
+            
+            // Enemies shots are slower and have different color
+            // TODO: make entirely different projectiles with different sprites for this later
+            if (WhoFiredMe is IEnemy) {
+                Color = Color.DarkOrange;
             }
+            else {
+                Color = Color.LightBlue;
+            }
+
             Room = Level.GetRoom(this, Room);
-            Scale = 0.25f * Room.Scale;
+            Scale = _scale * Room.Scale;
             _rect = new Rectangle(
                 (int)position.X - (int)((float)_window.Width / 2.0f * Scale),
                 (int)position.Y - (int)((float)_window.Height / 2.0f * Scale),
@@ -130,7 +149,7 @@ namespace YGR
             spriteBatch.Draw(
                 _sprite, destinationRectangle.Location.ToVector2(),
                 sourceRectangle,
-                Color.White, 0, Vector2.Zero, Scale, SpriteEffects.None, 0);
+                Color, 0, Vector2.Zero, Scale, SpriteEffects.None, 0);
         }
 
         /// <summary>
@@ -151,9 +170,9 @@ namespace YGR
         }
     }
 
-    public class Y_ShotGunProjectile : Y_StarterProjectile
+    public class Projectile_Shotgun : Projectile_Basic
     {
-        public Y_ShotGunProjectile(
+        public Projectile_Shotgun(
             Vector2 position,
             Vector2 direction,
             double timeCreated,
@@ -161,18 +180,16 @@ namespace YGR
             IGameElement who
         ) : base(position, direction, timeCreated, level, who)
         {
+            Name = "Shotgun Projectile";
             _sprite = Manager_Projectile.projectile_textures["smaller_projectile"];
-            _window = new Rectangle(0, 0, 32, 32);
-            _animationIndex = 0;
-            _position = position;
-            _direction = direction;
-            Velocity = 0.7f * direction;
-            TimeCreated = timeCreated;
-            _isEnemy = false;
-            Name = "StarterProjectile";
-            Level = level;
-            DeleteNext = false;
-            Collision = new X_CollisionModel_Projectile(0.1f, 1.0f);
+            
+            _speed = 0.6f;
+            _mass = 0.1f;
+            _cr = 1.0f;
+            _scale = 0.25f;
+
+            Velocity = 0.4f * direction;
+            Collision = new X_CollisionModel_Projectile(_mass, _cr);
 
             WhoFiredMe = who;
             if (WhoFiredMe is IVictim)
@@ -185,7 +202,7 @@ namespace YGR
                 */
             }
             Room = Level.GetRoom(this, Room);
-            Scale = 0.15f * Room.Scale;
+            Scale = _scale * Room.Scale;
 
             _rect = new Rectangle(
                 (int)position.X - (int)((float)_window.Width / 2.0f * Scale),

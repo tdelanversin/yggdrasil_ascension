@@ -396,7 +396,7 @@ namespace YGR
                     Camera.focusOnPlayers();
 
                     Manager_Sound.PlayFreeRoamMusic();
-                    Notifications.New("Room " + ActiveRoom + " cleared!");
+                    Notifications.New("Room " + ActiveRoom.Name + " cleared!");
 
                     State = GamePlayState.FreeRoam;
                     break;

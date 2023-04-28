@@ -32,9 +32,9 @@ namespace YGR
     }
 
     // Slower version of basic gun for basic enemies
-    public class Gun_BasicSlow : Gun_Basic
+    public class Gun_BasicEnemy : Gun_Basic
     {
-        public Gun_BasicSlow() { 
+        public Gun_BasicEnemy() { 
             ShotDelay = 1000;
         }
     }

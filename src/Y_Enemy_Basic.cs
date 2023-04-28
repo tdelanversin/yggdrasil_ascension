@@ -64,7 +64,7 @@ namespace YGR
             Velocity = Vector2.Zero;
             _acceleration = Vector2.One * 0.002f;
             _deceleration = Vector2.One * 0.02f;
-            _maxVelocity = Vector2.One * 0.2f;
+            _maxVelocity = Vector2.One * 0.10f;
 
             safetyDistance = 150f;
             FacingDirection = new Vector2(1, 0);
@@ -95,7 +95,7 @@ namespace YGR
 
             Level = level;
             Room = Level.GetRoom(this, Room);
-            Gun = new Gun_BasicSlow();
+            Gun = new Gun_BasicEnemy();
 
             _hitColor = Color.OrangeRed;
             _regularColor = Color.Orange;
@@ -179,7 +179,10 @@ namespace YGR
                     _hitFramesCounter++;
                 }
             }
-            _color = _regularColor;
+            else
+            {
+                _color = _regularColor;
+            }
         }
 
         protected void UpdateAnimation(GameTime gameTime)
