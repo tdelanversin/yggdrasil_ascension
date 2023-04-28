@@ -1,6 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Graphics;
+using Microsoft.Xna.Framework.Media;
 
 namespace YGR
 {
@@ -95,14 +96,15 @@ namespace YGR
         public static bool Toggle_Volume()
         {
             Sound = !Sound;
-            if (SoundEffect.MasterVolume != 0f)
+            if (!Sound)
             {
                 SoundEffect.MasterVolume = 0f;
-
+                MediaPlayer.Pause();
             }
             else
             {
                 SoundEffect.MasterVolume = 1f;
+                MediaPlayer.Resume();
             }
             return Sound;
         }
