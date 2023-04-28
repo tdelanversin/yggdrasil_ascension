@@ -43,10 +43,10 @@ namespace YGR
         protected Texture2D _spriteAimIndicator;
         protected Texture2D _spriteGhost;
         protected Texture2D _spritePlayer;
-        protected Vector2 _acceleration;
+        protected float _acceleration;
         protected Vector2 _aimDirection;
-        protected Vector2 _deceleration;
-        protected Vector2 _maxVelocity;
+        protected float _deceleration;
+        protected float _maxVelocity;
         protected Vector2 _position;
         protected ParticleEffect pE;
         protected Color _color;
@@ -111,9 +111,9 @@ namespace YGR
 
             // Movement related
             Velocity = Vector2.Zero;
-            _acceleration = Vector2.One * 0.008f;
-            _deceleration = Vector2.One * 0.008f;
-            _maxVelocity = Vector2.One * 0.4f;
+            _acceleration = 0.008f;
+            _deceleration = 0.004f;
+            _maxVelocity = 0.35f;
 
             _mass = 1.0f;
             _cr = 0.0f; // elastic impact
@@ -142,7 +142,6 @@ namespace YGR
             }
             else
             {
-                    
                 return X_LevelElements.Ghost;
             }
         }
@@ -320,11 +319,11 @@ namespace YGR
             else
             {
                 Velocity = new Vector2(
-                    Math.Sign(Velocity.X) * Math.Max(0.0f, Math.Abs(Velocity.X) - _deceleration.X * timeStepMS),
-                    Math.Sign(Velocity.Y) * Math.Max(0.0f, Math.Abs(Velocity.Y) - _deceleration.Y * timeStepMS));
+                    Math.Sign(Velocity.X) * Math.Max(0.0f, Math.Abs(Velocity.X) - _deceleration * timeStepMS),
+                    Math.Sign(Velocity.Y) * Math.Max(0.0f, Math.Abs(Velocity.Y) - _deceleration * timeStepMS));
             }
 
-            Velocity = Vector2.Clamp(Velocity, -_maxVelocity, _maxVelocity);
+            Velocity = Util.ClampMagnitude(Velocity, _maxVelocity);
         }
 
         protected virtual void UpdateCollision(GameTime gameTime)
@@ -559,7 +558,7 @@ namespace YGR
                 _dashCooldownTimer += timeStepMS;
             }
 
-            if (!_isDashing && (Input.IsKeyDown(Keybinds.ActionOne) || Input.IsButtonDown(_playerIndex, Keybinds.GamePadAction)) && _dashCooldownTimer >= _dashCooldown)
+            if (!_isDashing && (ControlLayout != ControlLayout.ControllerOnly && Input.IsKeyDown(Keybinds.ActionOne) || Input.IsButtonDown(_playerIndex, Keybinds.GamePadAction)) && _dashCooldownTimer >= _dashCooldown)
             {
                 Manager_Sound.Sound_Dash.Play();
                 _isDashing = true;
@@ -577,7 +576,6 @@ namespace YGR
                 }
                 else
                 {
-                    
                     Velocity *= _dashSpeed;
                 }
             }

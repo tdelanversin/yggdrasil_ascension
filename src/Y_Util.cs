@@ -39,6 +39,18 @@ namespace YGR
             return (i % m + m) % m;
         }
 
+        /* Clamp the length of a vector to the specified length */
+        public static Vector2 ClampMagnitude(Vector2 v, float max)
+        {
+            var r = v;
+            var factor = v.Length() / max;
+            if (factor > 1)
+            {
+                r = v / factor;
+            }
+            return r;
+        }
+
         public static IShooter getRandomGun()
         {
             List<Type> gunTypes = new List<Type> {

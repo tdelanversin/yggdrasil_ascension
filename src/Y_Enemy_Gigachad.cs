@@ -28,10 +28,8 @@ namespace YGR
             _regularColor = Color.White;
             _color = _regularColor;
 
-            Velocity = Vector2.Zero;
-            _acceleration = Vector2.One * 0.0008f;
-            _deceleration = Vector2.One * 0.02f;
-            _maxVelocity = Vector2.One * 0.12f;
+            _maxVelocity = 0.075f;
+
             var _mass = 8.0f; // Heavier than other entities
             Collision = new X_CollisionModel_Victim(_mass, 0.0f);
 

@@ -44,7 +44,7 @@ namespace YGR
         {
             Name = "Basic Projectile";
             Damage = 1;
-            _speed = 0.7f;
+            _speed = 0.55f;
             _mass = 0.5f;
             _cr = 1.0f;
             _scale = 0.55f;
@@ -127,7 +127,7 @@ namespace YGR
 
             _position += newVelocity * timeStepMS;
             _rect.Location = _position.ToPoint();
-            _animationIndex = (int)(5 - (gameTime.TotalGameTime.TotalMilliseconds - TimeCreated) / 300);
+            _animationIndex = (int)(5 - (gameTime.TotalGameTime.TotalMilliseconds - TimeCreated) / 500);
         }
 
         public virtual void Draw(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)
@@ -183,12 +183,12 @@ namespace YGR
             Name = "Shotgun Projectile";
             _sprite = Manager_Projectile.projectile_textures["smaller_projectile"];
             
-            _speed = 0.6f;
+            _speed = 0.50f;
             _mass = 0.1f;
             _cr = 1.0f;
             _scale = 0.25f;
 
-            Velocity = 0.4f * direction;
+            Velocity = _speed * direction;
             Collision = new X_CollisionModel_Projectile(_mass, _cr);
 
             WhoFiredMe = who;

@@ -8,8 +8,8 @@ namespace YGR
 {
     public class Enemy_Basic : IEnemy
     {
-        public string Name { get; set; } = "Mob";
-        public int LifePoints { get; set; } = 8;
+        public string Name { get; set; }
+        public int LifePoints { get; set; }
 
         public EnemyState State { get; set; } = EnemyState.Inactive;
         protected int fleeingHPTreshold = 2; // Flee if at this treshold or lower
@@ -17,9 +17,9 @@ namespace YGR
 
         public Vector2 Velocity { get; set; }
         protected float maxVelocity { get; set; }
-        protected Vector2 _acceleration;
-        protected Vector2 _deceleration;
-        protected Vector2 _maxVelocity;
+        protected float _acceleration;
+        protected float _deceleration;
+        protected float _maxVelocity;
 
         public Vector2 FacingDirection { get; set; }
         protected float _steeringDirection;
@@ -38,7 +38,7 @@ namespace YGR
         protected Color _hitColor;
         protected Color _regularColor;
         protected Color _color;
-        protected int _hitFrames = 10; // How many frame do we show the hit color
+        protected int _hitFrames = 10; // = 8 How many frame do we show the hit color
         protected int _hitFramesCounter = 0;
         protected Rectangle _rect;
 
@@ -61,10 +61,13 @@ namespace YGR
             IList<IVictim> players
         )
         {
+            Name = "Mob";
+            LifePoints = 8;
+
             Velocity = Vector2.Zero;
-            _acceleration = Vector2.One * 0.002f;
-            _deceleration = Vector2.One * 0.02f;
-            _maxVelocity = Vector2.One * 0.10f;
+            _acceleration = 0.006f;
+            _deceleration = 0.04f;
+            _maxVelocity = 0.15f;
 
             safetyDistance = 150f;
             FacingDirection = new Vector2(1, 0);
@@ -247,11 +250,11 @@ namespace YGR
             else
             {
                 Velocity = new Vector2(
-                    Math.Sign(Velocity.X) * Math.Max(0.0f, Math.Abs(Velocity.X) - _deceleration.X * timeStepMS),
-                    Math.Sign(Velocity.Y) * Math.Max(0.0f, Math.Abs(Velocity.Y) - _deceleration.Y * timeStepMS));
+                    Math.Sign(Velocity.X) * Math.Max(0.0f, Math.Abs(Velocity.X) - _deceleration * timeStepMS),
+                    Math.Sign(Velocity.Y) * Math.Max(0.0f, Math.Abs(Velocity.Y) - _deceleration * timeStepMS));
             }
 
-            Velocity = Vector2.Clamp(Velocity, -_maxVelocity, _maxVelocity);
+            Velocity = Util.ClampMagnitude(Velocity, _maxVelocity);
         }
 
         protected virtual void UpdateCollision(GameTime gameTime)

@@ -17,7 +17,7 @@ namespace YGR
         public static Dictionary<string, Texture2D> projectile_textures;
         private static List<IProjectile> _projectiles = new List<IProjectile>();
         private static bool _initialized = false;
-        private static double _maxlifetime = 1500.0;
+        private static double _maxlifetime = 2500.0;
 
         public static void Initialize(ContentManager content)
         {
