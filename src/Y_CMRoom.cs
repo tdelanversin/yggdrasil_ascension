@@ -166,6 +166,8 @@ namespace YGR
 
         public List<Rectangle> ResetRects { get; }
 
+        private Dictionary<string, string> _ldtkRoomTypeProperties;
+
         private Texture2D _floor;
         private Texture2D _roof;
         private Color[] _floorData;
@@ -190,6 +192,7 @@ namespace YGR
             int tileWidth,
             int tileHeight,
             string resourceFolder,
+            Dictionary<string, string> ldtkRoomTypeProperties,
             GraphicsDevice graphicsDevice
         )
         {
@@ -216,9 +219,10 @@ namespace YGR
             Doors = new Dictionary<X_ConnectorSide, IList<X_ConnectorPoint>>();
             DoorRooms = new Dictionary<X_ConnectorSide, IList<IWalkable>>();
             _doorMasks = new Dictionary<X_ConnectorSide, IList<X_DoorMask>>();
+            _ldtkRoomTypeProperties = ldtkRoomTypeProperties;
 
             X_AutoTiler.Resolve<X_DoorTextureLayer>(
-                Util.PathOsNormalization("./Levels/"), "data.json",
+                Util.PathOsNormalization("./Levels/"), "doors.json",
                 graphicsDevice,
                 Collision.GetCollisionTemplate(),
                 MapTexture,
@@ -277,37 +281,31 @@ namespace YGR
 
             Name = name;
             Color[] target = null;
-            for (int i = 0; i < layers.Count - 1; ++i)
+            using (FileStream fileStream = new FileStream(ResourceFolder + _ldtkRoomTypeProperties["Floor"], FileMode.Open))
             {
-                using (FileStream fileStream = new FileStream(ResourceFolder + layers[i], FileMode.Open))
-                {
-                    if (i == 0)
-                    {
-                        _floor = Texture2D.FromStream(graphicsDevice, fileStream);
-                        target = new Color[_floor.Width * _floor.Height];
-                        _floor.GetData<Color>(target);
-                    }
-                    else
-                    {
-                        var t = Texture2D.FromStream(graphicsDevice, fileStream);
-                        Color[] source = new Color[_floor.Width * _floor.Height];
-                        Texture2D.FromStream(graphicsDevice, fileStream).GetData<Color>(source);
+                _floor = Texture2D.FromStream(graphicsDevice, fileStream);
+                target = new Color[_floor.Width * _floor.Height];
+                _floor.GetData<Color>(target);
+            }
+            using (FileStream fileStream = new FileStream(ResourceFolder + _ldtkRoomTypeProperties["Wall"], FileMode.Open))
+            {
+                var t = Texture2D.FromStream(graphicsDevice, fileStream);
+                Color[] source = new Color[_floor.Width * _floor.Height];
+                Texture2D.FromStream(graphicsDevice, fileStream).GetData<Color>(source);
 
-                        for (int h = 0; h < _floor.Height; ++h)
-                        {
-                            for (int w = 0; w < _floor.Width; ++w)
-                            {
-                                var c = source[h * _floor.Width + w];
-                                if (c.A != 0)
-                                    target[h * _floor.Width + w] = source[h * _floor.Width + w];
-                            }
-                        }
+                for (int h = 0; h < _floor.Height; ++h)
+                {
+                    for (int w = 0; w < _floor.Width; ++w)
+                    {
+                        var c = source[h * _floor.Width + w];
+                        if (c.A != 0)
+                            target[h * _floor.Width + w] = source[h * _floor.Width + w];
                     }
                 }
             }
             _floor.SetData<Color>(target);
 
-            using (FileStream fileStream = new FileStream(ResourceFolder + layers[layers.Count() - 1], FileMode.Open))
+            using (FileStream fileStream = new FileStream(ResourceFolder + _ldtkRoomTypeProperties["Roof"], FileMode.Open))
             {
                 _roof = Texture2D.FromStream(graphicsDevice, fileStream);
             }
