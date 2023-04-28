@@ -18,9 +18,11 @@ namespace YGR
         static MouseState previousMouseState;
         static IList<GamePadState> currentGamePadState;
         static IList<GamePadState> previousGamePadState;
+        static Game Game;
 
-        internal static void Initialize()
+        internal static void Initialize(Game game)
         {
+            Game = game;
             previousGamePadState = new List<GamePadState>(4);
             currentGamePadState = new List<GamePadState>(4);
 
@@ -37,10 +39,14 @@ namespace YGR
         /// <returns></returns>
         public static void Update()
         {
+            if (!Game.IsActive)
+            {
+                return;
+            }
+
             // The previous states are needed to figure out when something is
             // pressed __initially__, to bind a actions to a key/button without
             // triggering them multiple times in between letting go of it.
-
             previousKeyState = currentKeyState;
             currentKeyState = Keyboard.GetState();
 
@@ -73,9 +79,19 @@ namespace YGR
             return currentGamePadState[(int)gamePadIndex].IsButtonDown(button) && !previousGamePadState[(int)gamePadIndex].IsButtonDown(button);
         }
 
+        public static Point GetMousePosition()
+        {
+            return currentMouseState.Position;
+        }
+
         public static bool HasMouseMoved()
         {
             return currentMouseState.Position != previousMouseState.Position;
+        }
+
+        public static bool IsLeftMousePressed()
+        {
+            return currentMouseState.LeftButton == ButtonState.Pressed;
         }
 
         public static bool IsLeftMouseClick()

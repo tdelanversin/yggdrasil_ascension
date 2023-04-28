@@ -33,7 +33,7 @@ namespace YGR
         {
             State = GameState.PreGame;
             Settings.Initialize(this);
-            Input.Initialize();
+            Input.Initialize(this);
             Util.Initialize(this);
             Menu.Initialize(this);
             Settings.ApplyScreenConfiguration();

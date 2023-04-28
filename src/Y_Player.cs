@@ -287,14 +287,14 @@ namespace YGR
                 }
                 MouseState mouse = Mouse.GetState();
                 Vector2 playerCenter = Rect.Center.ToVector2();
-                if (Input.HasMouseMoved() && !_isAiming) // Skip if controller is already aiming
+                if ((Input.HasMouseMoved() || Input.IsLeftMousePressed()) && !_isAiming) // Skip if controller is already aiming
                 {
-                    Vector2 mouseInGamePosition = mouse.Position.ToVector2() / Camera.Zoom + Camera.VisibleArea.Location.ToVector2();
+                    Vector2 mouseInGamePosition = Input.GetMousePosition().ToVector2() / Camera.Zoom + Camera.VisibleArea.Location.ToVector2();
                     Vector2 newAimDirection = mouseInGamePosition - playerCenter;
                     newAimDirection.Normalize();
                     _aimDirection = newAimDirection;
                 }
-                if (mouse.LeftButton == ButtonState.Pressed && IsAlive() && !_invincible)
+                if (Input.IsLeftMousePressed() && IsAlive() && !_invincible)
                 {
                     _gun.Shoot(gameTime, playerCenter, _aimDirection, Level, this);
                 }
