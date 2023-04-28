@@ -2,6 +2,7 @@
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using Microsoft.Xna.Framework.Media;
 using Newtonsoft.Json;
 using SharpFont.Cache;
 using System;
@@ -33,6 +34,13 @@ namespace YGR
             public Dictionary<string, List<LevelNode>> Level;
         }
 
+        public enum GamePlayState
+        {
+            Start, // Not completed starting room
+            FreeRoam, // Not in an encounter, players can freely roam
+            Encounter, // Players are in an encounter, room locked
+        }
+
         public float Scale { get; }
         public Rectangle Rect { get; set; }
         public IDictionary<int, IWalkable> Rooms { get; private set; }
@@ -45,6 +53,9 @@ namespace YGR
         private string _levelResourceFolder;
         private string _doorResourceFolder;
 
+        // Gameplay state objects
+        public IWalkable ActiveRoom;
+        public GamePlayState State;
         private List<Interactable_Basic> _interactables = new List<Interactable_Basic> { };
 
         Dictionary<string, List<Y_CMRoom>> _availableRooms;
@@ -124,7 +135,9 @@ namespace YGR
         public void Create(GraphicsDevice graphicsDevice)
         {
             // Stop any songs that are playing
-            Manager_Sound.SongInstance_Dramatic.Stop(immediate: true);
+            Manager_Sound.StopMusic();
+
+            Manager_Sound.Sound_VikingHorn.Play();
 
             // put everything back
             foreach (var room in Rooms)
@@ -241,9 +254,12 @@ namespace YGR
                 new Rectangle(29, 5, 8, 8), this, (Y_CMRoom)Rooms[0], playerField)
             );
 
+            // Gameplay state
+            State = GamePlayState.Start;
+            ActiveRoom = Rooms[0];
+            Camera.focusOnRoom(Rooms[0]);
+
             Camera.Players = Manager_Players.Players;
-            Camera.Mode = CameraMode.Room;
-            Camera.Room = Rooms[0];
             Manager_Enemies.ClearEnemies();
             foreach (var room in Rooms)
             {
@@ -285,6 +301,8 @@ namespace YGR
             {
                 room.Illuminate();
             }
+
+            Manager_Sound.PlayFreeRoamMusic();
         }
 
         public IWalkable GetRoom(IGameElement elem, IWalkable currentRoom)
@@ -316,6 +334,74 @@ namespace YGR
             foreach (var interactable in _interactables)
             {
                 interactable.Update(gameTime);
+            }
+
+            switch (State)
+            {
+                case GamePlayState.Start:
+                    if (_interactables[1].InteractionComplete)
+                    {
+                        State = GamePlayState.FreeRoam;
+                        Camera.focusOnPlayers();
+                    }
+                    break;
+                case GamePlayState.FreeRoam:
+                    ActiveRoom = Manager_Players.Players[0].Room;
+
+                    if (ActiveRoom.WhatAreYou() != X_LevelElements.Room)
+                    {
+                        break;
+                    }
+                    var cmroom = (Y_CMRoom)ActiveRoom;
+
+                    if (cmroom == Rooms[0] || cmroom.Cleared)
+                    {
+                        break;
+                    }
+
+                    if (cmroom.GetPlayersInside().Count != Manager_Players.Players.Count)
+                    {
+                        break;
+                    }
+
+                    cmroom.LockRoom();
+                    Camera.focusOnRoom(cmroom);
+                    foreach (var enemy in cmroom.GetEnemiesInside())
+                    {
+                        enemy.State = EnemyState.Idle;
+                    }
+                    if (cmroom.Name == "Gold_0")
+                    {
+                        Manager_Sound.PlayBossMusic();
+                    }
+                    else
+                    {
+                        Manager_Sound.PlayEncounterMusic();
+                    }
+                    Notifications.New("Starting encouter");
+
+                    State = GamePlayState.Encounter;
+                    break;
+                case GamePlayState.Encounter:
+                    // We can assume at this point that _currentRoom is actually
+                    // a room, otherwise we wouldn't be here
+                    var encounterRoom = (Y_CMRoom)ActiveRoom;
+
+                    if (encounterRoom.GetEnemiesInside().Count > 0)
+                    {
+                        break; // let players fight
+                    }
+                    encounterRoom.Cleared = true;
+                    encounterRoom.OpenDoorsAndAdjacentRooms();
+                    Camera.focusOnPlayers();
+
+                    Manager_Sound.PlayFreeRoamMusic();
+                    Notifications.New("Room " + ActiveRoom + " cleared!");
+
+                    State = GamePlayState.FreeRoam;
+                    break;
+                default:
+                    break;
             }
         }
 

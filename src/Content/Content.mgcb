@@ -99,11 +99,47 @@
 /processorParam:Quality=Best
 /build:Sounds/player_death.wav
 
+#begin Sounds/short_fireball.wav
+/importer:WavImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:Sounds/short_fireball.wav
+
 #begin Sounds/shotgun.wav
 /importer:WavImporter
 /processor:SoundEffectProcessor
 /processorParam:Quality=Best
 /build:Sounds/shotgun.wav
+
+#begin Sounds/song_dramatic.mp3
+/importer:Mp3Importer
+/processor:SongProcessor
+/processorParam:Quality=Best
+/build:Sounds/song_dramatic.mp3
+
+#begin Sounds/song_orchestra.mp3
+/importer:Mp3Importer
+/processor:SongProcessor
+/processorParam:Quality=Best
+/build:Sounds/song_orchestra.mp3
+
+#begin Sounds/song_space.mp3
+/importer:Mp3Importer
+/processor:SongProcessor
+/processorParam:Quality=Best
+/build:Sounds/song_space.mp3
+
+#begin Sounds/song_the-white-lion.mp3
+/importer:Mp3Importer
+/processor:SongProcessor
+/processorParam:Quality=Best
+/build:Sounds/song_the-white-lion.mp3
+
+#begin Sounds/viking_horn.wav
+/importer:WavImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:Sounds/viking_horn.wav
 
 #begin SpritesCharacters/charaset.png
 /importer:TextureImporter

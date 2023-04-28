@@ -113,7 +113,7 @@ namespace YGR
             ) : base(bounds, level, room)
         {
             Color = Color.DarkGoldenrod;
-            Label = "Then shoot this\n box to start!";
+            Label = "Shoot me when all\n players ready! ";
             PlayerField = playerField;
         }
 
@@ -125,18 +125,10 @@ namespace YGR
             if (selectedPlayers.Count < 1) { return; }
 
             Manager_Players.Players.RemoveAll(p => !selectedPlayers.Contains(p));
-            Camera.Mode = CameraMode.Follow;
             Room.OpenDoorsAndAdjacentRooms();
             Label = "Go get 'em! :)";
             Color = Color.SpringGreen;
             Manager_Sound.Sound_PlatformActivate.Play(1, 0, 0);
-
-            // Start the dramatic song after a while
-            // Later, ideally we start it once we enter the first room with enemies
-            Timer t = new Timer(4000);
-            t.Elapsed += (sender, e) => Manager_Sound.SongInstance_Dramatic.Play();
-            t.AutoReset = false;
-            t.Enabled = true;
             InteractionComplete = true;
         }
 

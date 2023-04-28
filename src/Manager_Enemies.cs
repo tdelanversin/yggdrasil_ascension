@@ -59,7 +59,7 @@ namespace YGR
                 enemy.Update(gameTime);
                 if (enemy.LifePoints <= 0)
                 {
-                    Manager_Sound.Sound_EnemyDeath.Play();
+                    Manager_Sound.Sound_EnemyDeath.Play(0.8f, -0.5f, 0);
                 }
             }
             _enemies.RemoveAll(enemy => enemy.LifePoints <= 0);

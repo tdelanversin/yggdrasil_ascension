@@ -183,7 +183,7 @@ namespace YGR
         List<Point> _bossSpawner;
         List<Point> _playerSpawner;
 
-        bool _cleared;
+        public bool Cleared;
 
         public Y_CMRoom(
             string name,
@@ -399,6 +399,26 @@ namespace YGR
             Collision.UpdateCollisionRectangles(rects);
             DoorRooms.Clear();
             ResetRects.Clear();
+            Cleared = false;
+        }
+
+        // One player has COVID -> Lockdown
+        public void LockRoom()
+        {
+            foreach (var side in DoorRooms)
+            {
+                foreach (var walkable in side.Value)
+                {
+                    if (walkable.WhatAreYou() == X_LevelElements.Door)
+                    {
+                        Y_Door door = (Y_Door)walkable;
+                        if (door.State == X_DoorState.Open)
+                        {
+                            door.State = X_DoorState.Closing;
+                        }
+                    }
+                }
+            }
         }
 
         public void OpenDoorsAndAdjacentRooms()
@@ -753,6 +773,16 @@ namespace YGR
             return _playerSpawner;
         }
 
+        public List<IVictim> GetPlayersInside()
+        {
+            return Manager_Players.Players.FindAll(p => p.Room == this);
+        }
+
+        public List<IEnemy> GetEnemiesInside()
+        {
+            return Manager_Enemies.GetEnemies().ToList().FindAll(e => e.Room == this);
+        }
+
         /// <summary>
         /// Regular Monogame Update method
         /// </summary>
@@ -760,38 +790,31 @@ namespace YGR
         public void Update(GameTime gameTime)
         {
             // Basic room clear logic: If players are in the room but no enemies, open up the doors
-            if (!_cleared && Name != "Start_0")
-            {
-                bool playersInRoom = false;
-                foreach (var player in Manager_Players.Players)
-                {
-                    if (player.Room == this)
-                    {
-                        playersInRoom = true;
-                        break;
-                    }
-                }
-                if (playersInRoom)
-                {
-                    bool enemiesInRoom = false;
-                    foreach (var enemy in Manager_Enemies.GetEnemies())
-                    {
-                        if (enemy.Room == this)
-                        {
-                            enemiesInRoom = true;
-                            break;
-                        }
-                    }
-                    if (!enemiesInRoom)
-                    {
-                        /* Room cleared */
-                        _cleared = true;
-                        OpenDoorsAndAdjacentRooms();
-                        Manager_Sound.Sound_LevelCleared.Play(1, 0, 0);
-                        Logger.Info("Room " + Name + " cleared");
-                    }
-                }
-            }
+            // if (!Cleared && Name != "Start_0")
+            // {
+            //     bool playersInRoom = false;
+
+            //     if (playersInRoom)
+            //     {
+            //         bool enemiesInRoom = false;
+            //         foreach (var enemy in Manager_Enemies.GetEnemies())
+            //         {
+            //             if (enemy.Room == this)
+            //             {
+            //                 enemiesInRoom = true;
+            //                 break;
+            //             }
+            //         }
+            //         if (!enemiesInRoom)
+            //         {
+            //             /* Room cleared */
+            //             Cleared = true;
+            //             OpenDoorsAndAdjacentRooms();
+            //             Manager_Sound.Sound_LevelCleared.Play(1, 0, 0);
+            //             Logger.Info("Room " + Name + " cleared");
+            //         }
+            //     }
+            // }
 
 
 

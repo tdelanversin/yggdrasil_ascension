@@ -6,21 +6,12 @@ using System.Linq;
 
 namespace YGR
 {
-    public enum EnemyState
-    {
-        Idle,
-        Wander,
-        Chase,
-        Flee,
-        Inactive,
-    }
-
     public class Enemy_Basic : IEnemy
     {
         public string Name { get; set; } = "Mob";
         public int LifePoints { get; set; } = 8;
 
-        public EnemyState State { get; protected set; } = EnemyState.Idle;
+        public EnemyState State { get; set; } = EnemyState.Inactive;
         protected int fleeingHPTreshold = 2; // Flee if at this treshold or lower
         protected float safetyDistance { get; set; }
 
@@ -108,7 +99,7 @@ namespace YGR
 
             _hitColor = Color.OrangeRed;
             _regularColor = Color.Orange;
-            _color = _regularColor;
+            _color = Color.DarkSlateGray; // Initially we're disabled
 
             var rand = new Random();
             Identifier = DateTime.Now.Hour.ToString() + "-" + DateTime.Now.Second.ToString() + "-" + DateTime.Now.Millisecond.ToString() + "-" + rand.NextSingle().ToString();
@@ -168,6 +159,8 @@ namespace YGR
         /* Deal with being hit by projectile, basically physical therapy */
         public void Hit(IProjectile projectile)
         {
+            if (State == EnemyState.Inactive) { return; }
+
             LifePoints -= projectile.Damage;
             _hitFramesCounter = 1;
             _color = _hitColor;
@@ -180,13 +173,13 @@ namespace YGR
                 if (_hitFramesCounter > _hitFrames)
                 {
                     _hitFramesCounter = 0;
-                    _color = _regularColor;
                 }
                 else
                 {
                     _hitFramesCounter++;
                 }
             }
+            _color = _regularColor;
         }
 
         protected void UpdateAnimation(GameTime gameTime)
