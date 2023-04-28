@@ -15,8 +15,8 @@ namespace YGR
 
         internal static void LoadContent(ContentManager content)
         {
-            Normal = content.Load<SpriteFont>("font_normal");
-            Large = content.Load<SpriteFont>("font_large");
+            Normal = content.Load<SpriteFont>("Fonts/font_normal");
+            Large = content.Load<SpriteFont>("Fonts/font_large");
         }
     }
 }

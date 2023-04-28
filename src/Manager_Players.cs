@@ -1,8 +1,10 @@
 ﻿using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace YGR
 {
@@ -10,7 +12,7 @@ namespace YGR
     {
 
         // Player list
-        public static IList<IVictim> Players { get; private set; }
+        public static List<IVictim> Players { get; private set; }
 
         // Sprites
         public static Texture2D SpriteNinja { get; private set; }
@@ -20,14 +22,14 @@ namespace YGR
 
         public static void LoadContent(ContentManager contentManager)
         {
-            SpriteNinja = contentManager.Load<Texture2D>("charaset");
-            SpriteBasic = contentManager.Load<Texture2D>("tester_60");
-            SpriteGhost = contentManager.Load<Texture2D>("ghost");
+            SpriteNinja = contentManager.Load<Texture2D>("SpritesCharacters/charaset");
+            SpriteBasic = contentManager.Load<Texture2D>("SpritesCharacters/tester_60");
+            SpriteGhost = contentManager.Load<Texture2D>("SpritesCharacters/ghosty");
             SpriteAimIndicator = new List<Texture2D> {
-                contentManager.Load<Texture2D>("target_indicator_red"),
-                contentManager.Load<Texture2D>("target_indicator_blue"),
-                contentManager.Load<Texture2D>("target_indicator_green"),
-                contentManager.Load<Texture2D>("target_indicator_yellow"),
+                contentManager.Load<Texture2D>("SpritesOther/target_indicator_red"),
+                contentManager.Load<Texture2D>("SpritesOther/target_indicator_blue"),
+                contentManager.Load<Texture2D>("SpritesOther/target_indicator_green"),
+                contentManager.Load<Texture2D>("SpritesOther/target_indicator_yellow"),
             };
         }
 
@@ -74,17 +76,48 @@ namespace YGR
                 ));
         }
 
+        public static void AddPlayer_Random(
+            PlayerIndex playerIndex,
+            Vector2 position,
+            Y_Level level,
+            ControlLayout controlLayout = ControlLayout.ControllerOnly
+        )
+        {
+            int r = Util.random.Next() % 2;
+            switch (r)
+            {
+                case 0:
+                    Manager_Players.AddPlayer_Ninja(playerIndex, position, level, controlLayout);
+                    break;
+                case 1:
+                    Manager_Players.AddPlayer_SimplePlayer(playerIndex, position, level, controlLayout);
+                    break;
+                default:
+                    break;
+            }
+        }
+
         internal static void Update(GameTime gameTime)
         {
             foreach (var player in Players)
             {
                 player.Update(gameTime);
+
+                if (player.LifePoints <= 0 &&
+                   !Manager_Sound.playing_sound_effects.ContainsKey(player))
+
+                {
+                    SoundEffectInstance death_player_sound = Manager_Sound.Sound_PlayerDeath.CreateInstance();
+                    Manager_Sound.playing_sound_effects.Add(player, death_player_sound);
+                    death_player_sound.Play();
+                }
             }
         }
 
         internal static void Draw(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)
         {
-            foreach (var player in Players)
+            var playerSorted = Players.OrderBy(t => t.Rect.Y + t.Rect.Height);
+            foreach (var player in playerSorted)
             {
                 player.Draw(gameTime, globalOffset, spriteBatch);
             }

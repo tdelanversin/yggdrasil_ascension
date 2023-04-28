@@ -17,14 +17,14 @@ namespace YGR
         public static Dictionary<string, Texture2D> projectile_textures;
         private static List<IProjectile> _projectiles = new List<IProjectile>();
         private static bool _initialized = false;
-        private static double _maxlifetime = 1500.0;
+        private static double _maxlifetime = 2500.0;
 
         public static void Initialize(ContentManager content)
         {
             projectile_textures = new Dictionary<string, Texture2D>()
             {
-                { "default_projectile", content.Load<Texture2D>("projectile") },
-                { "smaller_projectile", content.Load<Texture2D>("smaller_projectile")}
+                { "default_projectile", content.Load<Texture2D>("SpritesOther/projectile") },
+                { "smaller_projectile", content.Load<Texture2D>("SpritesOther/smaller_projectile")}
             };
 
             _initialized = true;
@@ -44,14 +44,14 @@ namespace YGR
         {
             check();
             if (!((IVictim)who).Room.Rect.Contains(startPosition)) return;
-            _projectiles.Add(new Y_StarterProjectile(startPosition, direction, timeCreated, level, who));
+            _projectiles.Add(new Projectile_Basic(startPosition, direction, timeCreated, level, who));
         }
 
         public static void AddProjectile_ShotGunProjectile(Vector2 startPosition, Vector2 direction, double timeCreated, Y_Level level, IGameElement who)
         {
             check();
             if (!((IVictim)who).Room.Rect.Contains(startPosition)) return;
-            _projectiles.Add(new Y_ShotGunProjectile(startPosition, direction, timeCreated, level, who));
+            _projectiles.Add(new Projectile_Shotgun(startPosition, direction, timeCreated, level, who));
         }
 
         public static void Update(GameTime gameTime)

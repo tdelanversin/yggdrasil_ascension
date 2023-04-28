@@ -132,13 +132,10 @@ namespace YGR
             SelectableItems = new List<MenuItem> {
                 new MenuItem("Play", NewGame),
                 new MenuItem("Restart", NewGame, isActive: false),
-#if DEBUG
-                new SettingsItem("Fullscreen: ", false, toggleFunc: Settings.ToggleFullscreen),
-#else
-                new SettingsItem("Fullscreen: ", true, toggleFunc: Settings.ToggleFullscreen),
-#endif
+                new SettingsItem("Fullscreen: ", Settings.Fullscreen, toggleFunc: Settings.ToggleFullscreen),
                 new SettingsItem("Lighting: ", Settings.Lighting, toggleFunc: Settings.ToggleLighting),
                 new SettingsItem("Outlines: ", Settings.Outlines, toggleFunc: Settings.ToggleOutlines),
+                new SettingsItem("Sound: ", Settings.Sound, toggleFunc: Settings.Toggle_Volume),
                 new MenuItem(os_exit_string, Util.Quit),
             };
             SelectableItems[SelectedMenu].IsSelected = true;
@@ -163,10 +160,16 @@ namespace YGR
 
         private static void SelectMenu(int nextSelected)
         {
+            if (nextSelected == SelectedMenu) { return; }
             SelectableItems[SelectedMenu].IsSelected = false;
+
             // Wrap index around in both directions
             SelectedMenu = Util.ProperMod(nextSelected, SelectableItems.Count);
             SelectableItems[SelectedMenu].IsSelected = true;
+            if (SelectableItems[SelectedMenu].IsActive)
+            {
+                Manager_Sound.Sound_MenuSelect.Play(1, 0, 0);
+            }
         }
 
         private static void SelectMenuNext()
@@ -259,7 +262,7 @@ namespace YGR
 
         internal static void LoadContent(ContentManager content)
         {
-            TitleImage = content.Load<Texture2D>("title_image");
+            TitleImage = content.Load<Texture2D>("SpritesOther/title_image");
         }
     }
 }

@@ -24,9 +24,6 @@ namespace YGR
 
         public bool Intersect(IProjectile me, int timeStepMS, out Vector2 newVelocity, out IList<Point> contactPoint, out IList<Vector2> contactNormal, out IList<IGameElement> who)
         {
-            // TODO: fix issue eith the widespread projectiles causing too many sounds for monogame == crashes game
-            // Manager_Sound.AddSound_Explosion().Play();
-
             who = new List<IGameElement>();
             contactPoint = new List<Point>();
             contactNormal = new List<Vector2>();
@@ -40,7 +37,7 @@ namespace YGR
             IWalkable room = me.Level.GetRoom(me, me.Room);
             me.Room = room;
             var whoFiredMe = (IVictim)me.WhoFiredMe;
-            if (whoFiredMe.WhatAreYou() == X_LevelElements.Victim)
+            if (whoFiredMe.WhatAreYou() == X_LevelElements.Victim || whoFiredMe.WhatAreYou() == X_LevelElements.Invincible)
             {
                 // regular player shot the projectile
                 foreach (var enemy in Manager_Enemies.GetEnemies())
@@ -60,6 +57,12 @@ namespace YGR
                 foreach (var victim in Manager_Players.Players)
                 {
                     if (victim == me.WhoFiredMe) continue;
+
+                    // Can't touch ghost
+                    if (victim.WhatAreYou() == X_LevelElements.Ghost) continue;
+                    
+                    // Pass through player if they are currently invincible
+                    if (victim.WhatAreYou() == X_LevelElements.Invincible) continue;
 
                     if (handlePotentialImpact(me, victim, ref myRect, ref newVelocity, ref contactPoint, ref contactNormal, ref who, timeStepMS))
                     {

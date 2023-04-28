@@ -2,9 +2,6 @@
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using Microsoft.Xna.Framework.Media;
-using Microsoft.Xna.Framework.Audio;
-using System.Linq;
-using System.Diagnostics;
 
 namespace YGR
 {
@@ -21,6 +18,7 @@ namespace YGR
 
         public GraphicsDeviceManager _graphics;
         public SpriteBatch _spriteBatch;
+        private FrameCounter _frameCounter = new FrameCounter();
 
         Y_Level _level;
         public GameState State;
@@ -39,17 +37,11 @@ namespace YGR
             Input.Initialize();
             Util.Initialize(this);
             Menu.Initialize(this);
-
-#if DEBUG
-#else
-            Settings.ToggleFullscreen();
-#endif
+            Settings.ApplyScreenConfiguration();
 
             var res_x = _graphics.PreferredBackBufferWidth;
             var res_y = _graphics.PreferredBackBufferHeight;
-            Camera.Position = new Vector2(res_x / 2, res_y / 2);
-            Camera.Bounds = _graphics.GraphicsDevice.Viewport.Bounds;
-            Camera.Mode = CameraMode.Manual; // CameraMode.Follow; /* 'Follow' to follow players, 'Manual' for keyboard controlled */
+            Camera.Initialize(new Vector2(res_x / 2, res_y / 2), _graphics.GraphicsDevice.Viewport, CameraMode.Follow);
 
             Factory_Debug.Initialize(Content);
             Manager_Projectile.Initialize(Content);
@@ -73,10 +65,7 @@ namespace YGR
             Manager_Players.LoadContent(Content);
             _spriteBatch = new SpriteBatch(GraphicsDevice);
             Manager_Particles.LoadContent(Content);
-            // Uncomment to play intro sound in a loop
-            //MediaPlayer.Play(Manager_Sound.AddSong_Intro());
-            MediaPlayer.IsRepeating = true;
-            MediaPlayer.MediaStateChanged += MediaPlayer_MediaStateChanged;
+            Manager_Sound.PlayMainMenuMusic();
         }
 
         protected override void UnloadContent()
@@ -117,16 +106,11 @@ namespace YGR
             // Once everything is in place, inform Update() of the new desired state
             DesiredState = GameState.InGame;
         }
-        void MediaPlayer_MediaStateChanged(object sender, System.
-                                   EventArgs e)
-        {
-            // 0.0f is silent, 1.0f is full volume
-            // MediaPlayer.Volume -= 0.1f;
-            // MediaPlayer.Play(song);
-        }
+
         protected override void Update(GameTime gameTime)
         {
             Input.Update();
+            Notifications.Update(gameTime);
 
             if (Input.IsKeyTriggered(Keys.Escape) || Input.IsButtonTriggered(0, Buttons.Back))
             {
@@ -143,7 +127,6 @@ namespace YGR
                     // Nothing for now
                 }
             }
-            
             // Only switch actual state during Update(), otherwise you can mess up the Draw call
             State = DesiredState;
 
@@ -158,10 +141,7 @@ namespace YGR
                     Menu.Update();
                     break;
                 case GameState.InGame:
-                    float deltaTime = (float)gameTime.ElapsedGameTime.TotalSeconds;
-
-                    Camera.UpdateCamera(_graphics.GraphicsDevice.Viewport, deltaTime);
-
+                    Camera.Update(_graphics.GraphicsDevice.Viewport, gameTime);
                     Manager_Players.Update(gameTime);
                     Manager_Projectile.Update(gameTime);
                     Manager_Enemies.Update(gameTime);
@@ -224,6 +204,14 @@ namespace YGR
                     _spriteBatch.End();
                     break;
             }
+
+            _frameCounter.Update((float)gameTime.ElapsedGameTime.TotalSeconds);
+            string fps = string.Format("FPS: {0:0}", _frameCounter.AverageFramesPerSecond);
+            var fpsColor = Color.BlanchedAlmond;
+            _spriteBatch.Begin(SpriteSortMode.Immediate, null, null, null, null, null, null);
+            _spriteBatch.DrawString(Fonts.Normal, fps, new Vector2(1, 1), fpsColor);
+            Notifications.Draw(gameTime, zero, _spriteBatch);
+            _spriteBatch.End();
             base.Draw(gameTime);
         }
     }

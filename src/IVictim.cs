@@ -14,10 +14,11 @@ namespace YGR
     public interface IVictim : IGameElement
     {
         public int LifePoints { get; set; }
-        public bool HitInLastLoop { get; set; }
         public X_CollisionModel_Victim Collision { get; }
         public Vector2 Velocity { get; set; }
         public Y_Level Level { get; set; }
         public IWalkable Room { get; set; }
+
+        void Hit(IProjectile projectile);
     }
 }

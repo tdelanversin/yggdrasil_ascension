@@ -1,59 +1,73 @@
 using Microsoft.Xna.Framework;
-using System.Collections.Generic;
 using System.Linq;
 using System;
-using Microsoft.Xna.Framework.Audio;
 #nullable enable
 
 namespace YGR
 {
-    public class Y_StarterGun : IShooter
+    // Basic gun, does nothing special, shoots fast
+    public class Gun_Basic : IShooter
     {
-        double nextShotCooldown = 0.0f;
-        static int shotDelay = 1000;
+        protected double NextShotCooldown = 0.0f;
+        protected int ShotDelay = 240;
 
-        public Y_StarterGun() { }
+        public Gun_Basic() { }
 
-        public void Shoot(GameTime gameTime, Vector2 origin, Vector2 direction, Y_Level level, IGameElement who)
+        public virtual void Shoot(GameTime gameTime, Vector2 origin, Vector2 direction, Y_Level level, IGameElement who)
         {
-            if (nextShotCooldown > 0.0f)
+            if (NextShotCooldown > 0.0f)
                 return;
 
-            Manager_Sound.AddSound_Fireball().Play();
+            Manager_Sound.Sound_Fireball.Play(0.2f, 0, 0);
 
-            nextShotCooldown = shotDelay;
+            NextShotCooldown = ShotDelay;
 
             Manager_Projectile.AddProjectile_StarterProjectile(origin, direction, gameTime.TotalGameTime.TotalMilliseconds, level, who);
         }
 
-        public void Update(GameTime gameTime)
+        public virtual void Update(GameTime gameTime)
         {
-            nextShotCooldown = Math.Max(0, nextShotCooldown - gameTime.ElapsedGameTime.TotalMilliseconds);
+            NextShotCooldown = Math.Max(0, NextShotCooldown - gameTime.ElapsedGameTime.TotalMilliseconds);
         }
     }
 
-    public class Y_ShotGun : IShooter
+    // Slower version of basic gun for basic enemies
+    public class Gun_BasicEnemy : Gun_Basic
     {
-        double nextShotCooldown = 0.0f;
-        static int shotDelay = 1000;
-        static int shotCount = 3;
-        static double shotSpread = .1;
+        public Gun_BasicEnemy() { 
+            ShotDelay = 1000;
+        }
+    }
 
+    public class Gun_ShotGun : Gun_Basic
+    {
+        protected int ShotCount;
+        protected double ShotSpread;
 
-        public Y_ShotGun() { }
-
-        public void Shoot(GameTime gameTime, Vector2 origin, Vector2 direction, Y_Level level, IGameElement who)
+        public Gun_ShotGun()
         {
-            
-            if (nextShotCooldown > 0.0f)
+            ShotDelay = 1200;
+            ShotCount = 5;
+            ShotSpread = .3 / ShotCount;
+        }
+
+        public Gun_ShotGun(int shotCount) : this()
+        {
+            ShotCount = shotCount;
+            ShotSpread = .3 / ShotCount;
+        }
+
+        public override void Shoot(GameTime gameTime, Vector2 origin, Vector2 direction, Y_Level level, IGameElement who)
+        {
+            if (NextShotCooldown > 0.0f)
                 return;
 
-            Manager_Sound.AddSound_Shotgun().Play();
+            Manager_Sound.Sound_Shotgun.Play(0.3f, 0, 0);
 
-            nextShotCooldown = shotDelay;
+            NextShotCooldown = ShotDelay;
 
-            double spread = -shotCount / 2 * shotSpread;
-            for (int i = 0; i < shotCount; i++)
+            double spread = -ShotCount / 2 * ShotSpread;
+            for (int i = 0; i < ShotCount; i++)
             {
                 var new_dir = new Vector2(
                     (float)(direction.X * Math.Cos(spread) - direction.Y * Math.Sin(spread)),
@@ -61,18 +75,12 @@ namespace YGR
                 );
 
                 Manager_Projectile.AddProjectile_ShotGunProjectile(origin, new_dir, gameTime.TotalGameTime.TotalMilliseconds, level, who);
-                spread += shotSpread;
+                spread += ShotSpread;
             }
         }
-
-        public void Update(GameTime gameTime)
-        {
-            nextShotCooldown = Math.Max(0, nextShotCooldown - gameTime.ElapsedGameTime.TotalMilliseconds);
-        }
-
     }
 
-    public class Y_FunkyGun : IShooter
+    public class Gun_Funky : IShooter
     {
         double timeSinceShot = 1001;
         Vector2 _origin = new Vector2(0, 0);
@@ -98,11 +106,11 @@ namespace YGR
         // static double[] shotTimings = { 0.0, 60.0, 120.0 };
         static double[] shotTimings = { 0.0, 60.0, 120.0, 180.0, 240.0, 300.0, 360.0, 420.0 };
 
-        public Y_FunkyGun() { }
+        public Gun_Funky() { }
 
         public void Shoot(GameTime gameTime, Vector2 origin, Vector2 direction, Y_Level level, IGameElement who)
         {
-           
+
             if (timeSinceShot < shotDelay)
                 return;
 
@@ -156,7 +164,7 @@ namespace YGR
         }
     }
 
-    public class Y_WideGun : IShooter
+    public class Gun_Wide : IShooter
     {
         double timeSinceShot = 1001;
         Vector2 _origin = new Vector2(0, 0);
@@ -183,7 +191,7 @@ namespace YGR
         static double[] shotSpread = { 0, 0, 0, 0, 0 };
 
 
-        public Y_WideGun() { }
+        public Gun_Wide() { }
 
         public void Shoot(GameTime gameTime, Vector2 origin, Vector2 direction, Y_Level level, IGameElement who)
         {
@@ -208,7 +216,7 @@ namespace YGR
 
             shotTimings.Last();
             if (lastUpdate >= shotTimings.Last())
-                return; 
+                return;
 
             for (int i = 0; i < shotTimings.GetLength(0); ++i)
             {
@@ -241,26 +249,46 @@ namespace YGR
         }
     }
 
-    public class Y_SimpleEnemyGun : IShooter
+    // Gun for Gigachad
+    public class Gun_Gigagun : IShooter
     {
         double nextShotCooldown = 0.0f;
-        static int shotDelay = 1000;
+        static int shotDelay = 3000;
+        static int shotCount = 256;
+        static double shotSpread = 2 * Math.PI / shotCount;
 
-        public Y_SimpleEnemyGun() { }
+        public Gun_Gigagun() { }
 
         public void Shoot(GameTime gameTime, Vector2 origin, Vector2 direction, Y_Level level, IGameElement who)
         {
+
             if (nextShotCooldown > 0.0f)
                 return;
 
+            // direction does not matter, just make sure it's sensible
+            direction = Vector2.One;
+
+            Manager_Sound.Sound_Explosion.Play(1f, 0, 0);
+
             nextShotCooldown = shotDelay;
 
-            Manager_Projectile.AddProjectile_StarterProjectile(origin, direction, gameTime.TotalGameTime.TotalMilliseconds, level, who);
+            double spread = -shotCount / 2 * shotSpread;
+            for (int i = 0; i < shotCount; i++)
+            {
+                var new_dir = new Vector2(
+                    (float)(direction.X * Math.Cos(spread) - direction.Y * Math.Sin(spread)),
+                    (float)(direction.X * Math.Sin(spread) + direction.Y * Math.Cos(spread))
+                );
+
+                Manager_Projectile.AddProjectile_ShotGunProjectile(origin, new_dir, gameTime.TotalGameTime.TotalMilliseconds, level, who);
+                spread += shotSpread;
+            }
         }
 
         public void Update(GameTime gameTime)
         {
             nextShotCooldown = Math.Max(0, nextShotCooldown - gameTime.ElapsedGameTime.TotalMilliseconds);
         }
+
     }
 }

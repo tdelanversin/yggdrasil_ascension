@@ -18,7 +18,7 @@ namespace YGR
         static Game Game;
         static GraphicsDeviceManager Gdm;
         static GameWindow Window;
-        static Random random;
+        public static Random random;
 
 
         internal static void Initialize(A_Yggdrasil game)
@@ -39,13 +39,25 @@ namespace YGR
             return (i % m + m) % m;
         }
 
+        /* Clamp the length of a vector to the specified length */
+        public static Vector2 ClampMagnitude(Vector2 v, float max)
+        {
+            var r = v;
+            var factor = v.Length() / max;
+            if (factor > 1)
+            {
+                r = v / factor;
+            }
+            return r;
+        }
+
         public static IShooter getRandomGun()
         {
             List<Type> gunTypes = new List<Type> {
-                typeof(Y_StarterGun),
-                typeof(Y_WideGun),
-                typeof(Y_FunkyGun),
-                typeof(Y_ShotGun),
+                typeof(Gun_Basic),
+                // typeof(Gun_Wide), // Make game child friendly for now
+                // typeof(Gun_Funky),
+                typeof(Gun_ShotGun),
             };
             return (IShooter)Activator.CreateInstance(
                 gunTypes[random.Next(gunTypes.Count)]

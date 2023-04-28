@@ -15,22 +15,40 @@ namespace YGR
     }
     public static class Camera
     {
-        public static float Zoom { get; set; } = 1f;
+        public static float Zoom { get; set; }
         public static Vector2 Position { get; set; }
         public static Rectangle Bounds { get; set; }
         public static Rectangle VisibleArea { get; set; }
         public static Matrix Transform { get; set; }
-        public static CameraMode Mode { get; set; }
-        public static IWalkable Room; // Room to focus on
+        public static CameraMode Mode { get; private set; }
+        public static IWalkable Room { get; private set; } // Room to focus on
         public static IList<IVictim> Players { get; set; } // Players to focus
 
+        private static float _animationDuration = 1000;
+        private static float _animationTimer = _animationDuration;
+        private static float _transitionalZoom;
+        private static Vector2 _transitionalPosition;
+        private static float _previousZoom;
+        private static Vector2 _previousPosition;
+
+
         // Zoom levels for...              { Follow, Room, Manual }
-        private static readonly float[] minZoom = { 0.60f, 0.25f, 0.05f };
-        private static readonly float[] maxZoom = { 1.25f, 1.75f, 16.0f };
+        private static readonly float[] minZoom = { 0.05f, 0.25f, 0.05f };
+        private static readonly float[] maxZoom = { 1.00f, 1.75f, 16.0f };
         private const float zoomSpeed = 0.1f;
-        private const float panSpeed = 1024;
+        private const float panSpeed = 1;
 
         private static float currentMouseWheelValue, previousMouseWheelValue;
+
+        public static void Initialize(Vector2 position, Viewport bounds, CameraMode mode)
+        {
+            Position = position;
+            _transitionalPosition = Position;
+            Zoom = 1f;
+            _transitionalZoom = Zoom;
+            Bounds = bounds.Bounds;
+            Mode = mode;
+        }
 
         private static void UpdateVisibleArea()
         {
@@ -52,8 +70,8 @@ namespace YGR
 
         private static void UpdateMatrix()
         {
-            Transform = Matrix.CreateTranslation(new Vector3(-Position.X, -Position.Y, 0)) *
-                    Matrix.CreateScale(Zoom) *
+            Transform = Matrix.CreateTranslation(new Vector3(-_transitionalPosition.X, -_transitionalPosition.Y, 0)) *
+                    Matrix.CreateScale(_transitionalZoom) *
                     Matrix.CreateTranslation(new Vector3(Bounds.Width * 0.5f, Bounds.Height * 0.5f, 0));
             UpdateVisibleArea();
         }
@@ -70,10 +88,10 @@ namespace YGR
             Zoom = Math.Clamp(zoom, minZoom[(int)Mode], maxZoom[(int)Mode]);
         }
 
-        private static void keyboardMove(float deltaTime)
+        private static void keyboardMove(GameTime gameTime)
         {
             Vector2 cameraMovement = Vector2.Zero;
-            float moveSpeed = deltaTime * panSpeed / (float)Math.Sqrt(Zoom);
+            float moveSpeed = gameTime.ElapsedGameTime.Milliseconds * panSpeed / (float)Math.Sqrt(Zoom);
 
             if (Input.IsKeyDown(Keybinds.CameraMoveLeft)) cameraMovement.X = -moveSpeed;
             if (Input.IsKeyDown(Keybinds.CameraMoveRight)) cameraMovement.X = moveSpeed;
@@ -97,7 +115,8 @@ namespace YGR
         {
             if (Players == null || Players.Count < 1) return;
 
-            var playersAlive = ((List<IVictim>)Players).FindAll(x => x.WhatAreYou() == X_LevelElements.Victim).ToList();
+            // var playersAlive = ((List<IVictim>)Players).FindAll(x => x.WhatAreYou() == X_LevelElements.Victim).ToList();
+            var playersAlive = Players;
 
             if (playersAlive.Count == 0)
             {
@@ -112,7 +131,6 @@ namespace YGR
             Vector2 playerMeanPos = Vector2.Zero;
             foreach (var player in playersAlive)
             {
-                if (player.WhatAreYou() == X_LevelElements.Ghost) continue;
                 playerMeanPos += player.Rect.Location.ToVector2();
                 left = Math.Min(player.Rect.X, left);
                 right = Math.Max(player.Rect.X, right);
@@ -127,7 +145,7 @@ namespace YGR
 
             // Set zoom level to fit all players
             var stretch = Math.Max((float)(right - left) / Bounds.Width, (float)(bot - top) / Bounds.Height);
-            UpdateZoom(.75f / stretch);
+            UpdateZoom(.55f / stretch);
         }
 
         private static void focusOnRoom()
@@ -142,15 +160,18 @@ namespace YGR
             UpdateZoom(.95f / stretch);
         }
 
-        public static void UpdateCamera(Viewport bounds, float deltaTime)
+        public static void Update(Viewport bounds, GameTime gameTime)
         {
-            Bounds = bounds.Bounds;
-            UpdateMatrix();
+            if (Input.IsKeyTriggered(Keys.F10))
+            {
+                Mode = (CameraMode)(((int)Mode + 1) % Enum.GetNames(typeof(CameraMode)).Length);
+                Notifications.New("Camera mode switched to " + Mode);
+            }
 
             switch (Mode)
             {
                 case CameraMode.Manual:
-                    keyboardMove(deltaTime);
+                    keyboardMove(gameTime);
                     break;
 
                 case CameraMode.Follow:
@@ -161,10 +182,43 @@ namespace YGR
                     focusOnRoom();
                     break;
             }
+            Bounds = bounds.Bounds;
+
+            if (_animationTimer < _animationDuration)
+            {
+                var animationFraction = _animationTimer / _animationDuration;
+                _transitionalPosition = (Position * animationFraction) + _previousPosition * (1f - animationFraction);
+                _transitionalZoom = (Zoom * animationFraction) +  _previousZoom * (1f - animationFraction);
+                _animationTimer += gameTime.ElapsedGameTime.Milliseconds;
+            } else {
+                _transitionalPosition = Position;
+                _transitionalZoom = Zoom;
+            }
+
+            UpdateMatrix();
+        }
+
+        private static void startAnimation()
+        {
+            _previousPosition = _transitionalPosition;
+            _previousZoom = _transitionalZoom;
+            _animationTimer = 0;
+        }
+
+        public static void focusManual()
+        {
+            Mode = CameraMode.Manual;
+        }
+
+        public static void focusOnPlayers()
+        {
+            startAnimation();
+            Mode = CameraMode.Follow;
         }
 
         public static void focusOnRoom(IWalkable room)
         {
+            startAnimation();
             Room = room;
             Mode = CameraMode.Room;
         }

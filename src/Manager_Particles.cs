@@ -27,7 +27,7 @@ namespace YGR
 
         public static void LoadContent(ContentManager contentManager)
         {
-            _particleTexture = contentManager.Load<Texture2D>("dust_particle");
+            _particleTexture = contentManager.Load<Texture2D>("SpritesEffects/dust_particle");
             GenParticleEffect();
         }
         public static void GenParticleEffect( )
