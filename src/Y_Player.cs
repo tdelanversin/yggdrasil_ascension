@@ -373,18 +373,19 @@ namespace YGR
         {
             int width = _spriteGhost.Width / 4;
             int height = _spriteGhost.Height;
+            float scale = (float)Rect.Width / width;
             // TODO: use the proper animation framework to pingpong through the frames
             int totalMS = gameTime.TotalGameTime.Milliseconds / 200;
             int step = totalMS % 6;
             int animationIndex = 3 - Math.Abs(3 - step);
             spriteBatch.Draw(
                 texture: _spriteGhost,
-                position: _rect.Location.ToVector2(),
+                position: _rect.Location.ToVector2() - new Vector2(0, height * scale - _rect.Height),
                 sourceRectangle: new Rectangle(width * animationIndex, 0, width, height),
                 color: Color.White,
                 rotation: 0,
                 origin: Vector2.Zero,
-                scale: (float)Rect.Width / width,
+                scale: scale,
                 effects: Velocity.X >= 0 ? SpriteEffects.None : SpriteEffects.FlipHorizontally,
                 layerDepth: 0);
         }
