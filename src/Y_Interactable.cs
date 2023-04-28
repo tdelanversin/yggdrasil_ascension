@@ -136,18 +136,38 @@ namespace YGR
         {
             if (InteractionComplete) { return; }
 
+            bool hitByPlayerNotInField = false;
+
             // Amazing "collision detection"
             foreach (var projectile in Manager_Projectile.GetProjectiles())
             {
-                // Can only be triggered by a player standing in the field
-                if (projectile.WhoFiredMe is not IVictim) { return; }
-                if (!PlayerField.PlayersInside.Contains((IVictim)projectile.WhoFiredMe)) { return; }
-
-                if (Rect.Contains(projectile.Rect))
+                if (!Rect.Contains(projectile.Rect))
                 {
-                    TriggerInteraction(gameTime);
-                    return;
+                    continue;
                 }
+                // Can only be triggered by a player standing in the field
+                if (projectile.WhoFiredMe is not IVictim)
+                {
+                    continue;
+                }
+
+                if (!PlayerField.PlayersInside.Contains((IVictim)projectile.WhoFiredMe))
+                {
+                    hitByPlayerNotInField = true;
+                    continue;
+                }
+
+                TriggerInteraction(gameTime);
+                return;
+            }
+
+            if (hitByPlayerNotInField)
+            {
+                Color = Color.Red;
+            }
+            else
+            {
+                Color = Color.DarkGoldenrod;
             }
         }
     }
