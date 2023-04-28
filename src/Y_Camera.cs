@@ -17,8 +17,8 @@ namespace YGR
         public static float Zoom { get; set; }
         public static Vector2 Position { get; set; }
         public static Rectangle Bounds { get; set; }
-        public static Rectangle VisibleArea { get; set; }
-        public static Matrix Transform { get; set; }
+        public static Rectangle VisibleArea { get; private set; }
+        public static Matrix Transform { get; private set; }
         public static CameraMode Mode { get; private set; }
         public static IWalkable Room { get; private set; } // Room to focus on
         public static IList<IVictim> Players { get; set; } // Players to focus
@@ -75,13 +75,13 @@ namespace YGR
             UpdateVisibleArea();
         }
 
-        public static void MoveCamera(Vector2 movePosition)
+        private static void MoveCamera(Vector2 movePosition)
         {
             Vector2 newPosition = Position + movePosition;
             Position = newPosition;
         }
 
-        public static void UpdateZoom(float zoom)
+        private static void UpdateZoom(float zoom)
         {
             // Clamp to the min/max zoom level allowed in the current mode
             Zoom = Math.Clamp(zoom, minZoom[(int)Mode], maxZoom[(int)Mode]);
@@ -159,11 +159,29 @@ namespace YGR
             UpdateZoom(.95f / stretch);
         }
 
+        private static void CycleCameraMode()
+        {
+            switch (Mode)
+            {
+                case CameraMode.Manual:
+                    SetFocusPlayers();
+                    break;
+                case CameraMode.Follow:
+                    SetFocusRoom(Room);
+                    break;
+                case CameraMode.Room:
+                    SetFocusManual();
+                    break;
+                default:
+                    break;
+            }
+        }
+
         public static void Update(Viewport bounds, GameTime gameTime)
         {
             if (Input.IsKeyTriggered(Keys.F10))
             {
-                Mode = (CameraMode)(((int)Mode + 1) % Enum.GetNames(typeof(CameraMode)).Length);
+                CycleCameraMode();
                 Notifications.New("Camera mode switched to " + Mode);
             }
 
@@ -185,11 +203,15 @@ namespace YGR
 
             if (_animationTimer < _animationDuration)
             {
-                var animationFraction = _animationTimer / _animationDuration;
+                // var animationFraction = _animationTimer / _animationDuration; // linear
+                // Hand-made Slow-in, slow-out function, using sin(): (1+sin(pi*x/500-pi/2))/2
+                float animationFraction = (float)(1d + Math.Sin(Math.PI * _animationTimer / _animationDuration - Math.PI / 2d)) / 2f;
                 _transitionalPosition = (Position * animationFraction) + _previousPosition * (1f - animationFraction);
-                _transitionalZoom = (Zoom * animationFraction) +  _previousZoom * (1f - animationFraction);
+                _transitionalZoom = (Zoom * animationFraction) + _previousZoom * (1f - animationFraction);
                 _animationTimer += gameTime.ElapsedGameTime.Milliseconds;
-            } else {
+            }
+            else
+            {
                 _transitionalPosition = Position;
                 _transitionalZoom = Zoom;
             }
@@ -197,27 +219,33 @@ namespace YGR
             UpdateMatrix();
         }
 
-        private static void startAnimation()
+        private static void ResetAnimation()
         {
             _previousPosition = _transitionalPosition;
             _previousZoom = _transitionalZoom;
             _animationTimer = 0;
         }
 
-        public static void focusManual()
+        public static void SetFocusManual()
         {
             Mode = CameraMode.Manual;
         }
 
-        public static void focusOnPlayers()
+        public static void SetFocusPlayers(bool animate = true)
         {
-            startAnimation();
+            if (animate)
+            {
+                ResetAnimation();
+            }
             Mode = CameraMode.Follow;
         }
 
-        public static void focusOnRoom(IWalkable room)
+        public static void SetFocusRoom(IWalkable room, bool animate = true)
         {
-            startAnimation();
+            if (animate)
+            {
+                ResetAnimation();
+            }
             Room = room;
             Mode = CameraMode.Room;
         }

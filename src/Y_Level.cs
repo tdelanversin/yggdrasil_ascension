@@ -290,8 +290,8 @@ namespace YGR
             // Gameplay state
             State = GamePlayState.Start;
             ActiveRoom = _startRoom;
-            Camera.focusOnRoom(_startRoom);
-            // Camera.focusManual();
+            Camera.SetFocusRoom(_startRoom, animate: false);
+            // Camera.SetFocusManual();
 
             Camera.Players = Manager_Players.Players;
             Manager_Enemies.ClearEnemies();
