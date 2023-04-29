@@ -201,6 +201,50 @@ namespace YGR
             File.WriteAllText(name, s);
         }
 
+        public struct RoofDoor
+        {
+            public Texture2D Roof;
+            public Texture2D Mechanism1;
+            public Texture2D Mechanism2;
+        }
+
+        public static Texture2D RoomCoverTexture(
+            string resourceFolder, string jsonFileName,
+            GraphicsDevice graphicsDevice,
+            int[][] pattern
+        )
+        {
+            string staticKey = resourceFolder + jsonFileName;
+            if (!tileInfo.ContainsKey(staticKey)) Logger.Error("No tile info for the resource " + staticKey);
+
+            TileInfo info = tileInfo[staticKey];
+
+            //var tileList = info.tiles[];
+
+            Texture2D texture = new Texture2D(graphicsDevice, pattern[0].Length * info.tileSize, pattern.Length * info.tileSize);
+
+            for (int i = 0; i < pattern.Length; ++i)
+            {
+                for (int j = 0; j < pattern[0].Length; ++j)
+                {
+                    if ((X_TileType)pattern[j][i] == X_TileType.Floor || (X_TileType)pattern[j][i] == X_TileType.Wall)
+                    {
+                        var rect = new Rectangle(j * info.tileSize, i * info.tileSize, info.tileSize, info.tileSize);
+                        texture.SetData<Color>(0, rect, info.tiles["doorCover"].First(), 0, info.tileSize * info.tileSize);
+                    }
+                }
+            }
+
+            RoofDoor res = new RoofDoor();
+
+            res.Mechanism1 = new Texture2D(graphicsDevice, info.tileSize, info.tileSize);
+            res.Mechanism1.SetData<Color>(info.tiles["mechanism1"].First());
+            res.Mechanism2 = new Texture2D(graphicsDevice, info.tileSize, info.tileSize);
+            res.Mechanism2.SetData<Color>(info.tiles["mechanism2"].First());
+            res.Roof = texture;
+            return texture;
+        }
+
         public static void Resolve<Types>(
             string resourceFolder, string jsonFileName,
             GraphicsDevice graphicsDevice,

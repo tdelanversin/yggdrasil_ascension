@@ -217,8 +217,8 @@ namespace YGR
         private float _doorOpeningTime = 2000.0f;
         private float _animationTime = 0.0f;
 
-        Dictionary<X_DoorTextureLayer, List<X_AutoTiler.X_AutoTileTexture>> _tileTextures;
-        Dictionary<X_DoorTextureLayer, List<X_AutoTiler.X_AutoTileColor>> _tileColors;
+        //Dictionary<X_DoorTextureLayer, List<X_AutoTiler.X_AutoTileTexture>> _tileTextures;
+        //Dictionary<X_DoorTextureLayer, List<X_AutoTiler.X_AutoTileColor>> _tileColors;
 
         List<Point> _spawner;
         List<Point> _bossSpawner;
@@ -263,12 +263,12 @@ namespace YGR
             _doorMasks = new Dictionary<X_ConnectorSide, IList<X_DoorMask>>();
             _ldtkRoomTypeProperties = ldtkRoomTypeProperties;
 
-            X_AutoTiler.Resolve<X_DoorTextureLayer>(
-                Util.PathOsNormalization("./Levels/"), "doors.json",
-                graphicsDevice,
-                Collision.GetCollisionTemplate(),
-                MapTexture,
-                out _tileTextures, out _tileColors);
+            //X_AutoTiler.Resolve<X_DoorTextureLayer>(
+            //    Util.PathOsNormalization("./Levels/"), "doors.json",
+            //    graphicsDevice,
+            //    Collision.GetCollisionTemplate(),
+            //    MapTexture,
+            //    out _tileTextures, out _tileColors);
 
             Name = name;
             Color[] target = null;
@@ -1040,24 +1040,24 @@ namespace YGR
             }
         }
 
-        private void draw(
-            List<X_AutoTiler.X_AutoTileTexture> textures,
-            Vector2 position,
-            SpriteBatch spriteBatch,
-            bool partial)
-        {
-            foreach (var t in textures)
-            {
-                int height = t.Texture().Height;
-                int width = t.Texture().Width;
-                Vector2 pos = position + t.Location().ToVector2() * TextureTileSize;
+        //private void draw(
+        //    List<X_AutoTiler.X_AutoTileTexture> textures,
+        //    Vector2 position,
+        //    SpriteBatch spriteBatch,
+        //    bool partial)
+        //{
+        //    foreach (var t in textures)
+        //    {
+        //        int height = t.Texture().Height;
+        //        int width = t.Texture().Width;
+        //        Vector2 pos = position + t.Location().ToVector2() * TextureTileSize;
 
-                spriteBatch.Draw(
-                    t.Texture(), pos,
-                    new Rectangle(0, 0, width, height),
-                    Color.White, 0, Vector2.Zero, Scale, SpriteEffects.None, 0);
-            }
-        }
+        //        spriteBatch.Draw(
+        //            t.Texture(), pos,
+        //            new Rectangle(0, 0, width, height),
+        //            Color.White, 0, Vector2.Zero, Scale, SpriteEffects.None, 0);
+        //    }
+        //}
 
         /// <summary>
         /// Regular Draw method for all drawable objects
