@@ -5,47 +5,50 @@ using System.Linq;
 
 namespace YGR
 {
-    public enum SpriteDirection
+    public enum AnimationState
     {
+        WalkLeft,
+        WalkRight,
+        IdleLeft,
+        IdleRight,
         Idle,
-        Left,
-        Right,
-        Up,
-        Down,
+        WalkUp,
+        WalkDown,
     }
 
     public class AnimatedSprite
     {
         public Texture2D Texture { get; }
-        public SpriteEffects Effect { get; private set; }
         public Vector2 SpriteDimension { get; }
-        public Vector2 SourceRectangle { get; private set; }
-        public SpriteDirection Direction { get; private set; }
-        public Dictionary<SpriteDirection, int[]> Animations { get; }
-        public bool UseHorizontalFlip { get; }
+        public Rectangle SourceRectangle { get; private set; }
+        public AnimationState Direction { get; private set; }
+        public Dictionary<AnimationState, int[]> Animations { get; }
         public float AnimationDuration { get; }
         public int AnimationIndex { get; private set; }
 
-        int[] CurrentAnimation;
+        int[] CurrentAnimationSet;
         int DirectionalIndex;
         float AnimationTimer;
         float AnimationTreshold;
+        Vector2 LastMovement;
 
-        public AnimatedSprite(Texture2D texture, Vector2 spriteDimension, Dictionary<SpriteDirection, int[]> animations, bool useHorizontalFlip = false)
+        public AnimatedSprite(Texture2D texture, Vector2 spriteDimension, Dictionary<AnimationState, int[]> animations)
         {
-            if (Animations.Keys.Count < 1)
+            if (animations.Keys.Count < 1)
             {
                 throw new System.Exception("Animation dictionary cannot be empty");
             }
+            Animations = animations;
             Texture = texture;
             SpriteDimension = spriteDimension;
-            UseHorizontalFlip = useHorizontalFlip;
             AnimationTimer = 0;
             AnimationDuration = 1000;
+            SourceRectangle = new Rectangle(0, 0, (int)SpriteDimension.X, (int)SpriteDimension.Y);
+            LastMovement = new Vector2(1, 0);
         }
 
-        public AnimatedSprite(Texture2D texture, Vector2 spriteDimension, Dictionary<SpriteDirection, int[]> animations, float animationDuration, bool useHorizontalFlip = false)
-        : this(texture, spriteDimension, animations, useHorizontalFlip)
+        public AnimatedSprite(Texture2D texture, Vector2 spriteDimension, Dictionary<AnimationState, int[]> animations, float animationDuration)
+        : this(texture, spriteDimension, animations)
         {
             AnimationDuration = animationDuration;
         }
@@ -53,9 +56,10 @@ namespace YGR
         private void ResetAnimation()
         {
             AnimationTimer = 0;
-            AnimationTreshold = AnimationDuration / CurrentAnimation.Length;
+            AnimationTreshold = AnimationDuration / CurrentAnimationSet.Length;
             DirectionalIndex = 0;
-            AnimationIndex = CurrentAnimation[DirectionalIndex];
+            AnimationIndex = CurrentAnimationSet[DirectionalIndex];
+            SourceRectangle = new Rectangle(AnimationIndex * (int)SpriteDimension.X, 0, (int)SpriteDimension.X, (int)SpriteDimension.Y);
         }
 
         private void UpdateAnimation(GameTime gameTime)
@@ -64,33 +68,55 @@ namespace YGR
 
             if (AnimationTimer > AnimationTreshold)
             {
-                DirectionalIndex = (DirectionalIndex + 1) % CurrentAnimation.Length;
-                AnimationIndex = CurrentAnimation[DirectionalIndex];
+                DirectionalIndex = (DirectionalIndex + 1) % CurrentAnimationSet.Length;
+                AnimationIndex = CurrentAnimationSet[DirectionalIndex];
                 AnimationTimer = 0;
+                SourceRectangle = new Rectangle(AnimationIndex * (int)SpriteDimension.X, 0, (int)SpriteDimension.X, (int)SpriteDimension.Y);
             }
         }
 
-        private SpriteDirection GetFallbackDirection(SpriteDirection direction)
+        private AnimationState FlipDirection(AnimationState direction)
         {
             switch (direction)
             {
-                case SpriteDirection.Idle:
-                    if (Animations.ContainsKey(SpriteDirection.Right)) { return SpriteDirection.Right; }
-                    if (Animations.ContainsKey(SpriteDirection.Left)) { return SpriteDirection.Left; }
+                case AnimationState.WalkLeft:
+                    return AnimationState.WalkRight;
+                case AnimationState.WalkRight:
+                    return AnimationState.WalkLeft;
+                case AnimationState.IdleLeft:
+                    return AnimationState.IdleRight;
+                default:
+                    return AnimationState.IdleLeft;
+            }
+        }
+
+        private AnimationState GetFallbackDirection(AnimationState direction)
+        {
+            switch (direction)
+            {
+                case AnimationState.Idle:
+                    if (Animations.ContainsKey(AnimationState.IdleRight)) { return AnimationState.IdleRight; }
+                    if (Animations.ContainsKey(AnimationState.IdleLeft)) { return AnimationState.IdleLeft; }
                     break;
-                case SpriteDirection.Left:
-                    if (Animations.ContainsKey(SpriteDirection.Idle)) { return SpriteDirection.Idle; }
+                case AnimationState.WalkLeft:
+                    if (Animations.ContainsKey(AnimationState.IdleLeft)) { return AnimationState.IdleLeft; }
                     break;
-                case SpriteDirection.Right:
-                    if (Animations.ContainsKey(SpriteDirection.Idle)) { return SpriteDirection.Idle; }
+                case AnimationState.WalkRight:
+                    if (Animations.ContainsKey(AnimationState.IdleRight)) { return AnimationState.IdleRight; }
                     break;
-                case SpriteDirection.Up:
-                    if (Animations.ContainsKey(SpriteDirection.Right)) { return SpriteDirection.Right; }
-                    if (Animations.ContainsKey(SpriteDirection.Left)) { return SpriteDirection.Left; }
+                case AnimationState.IdleLeft:
+                    if (Animations.ContainsKey(AnimationState.Idle)) { return AnimationState.Idle; }
                     break;
-                case SpriteDirection.Down:
-                    if (Animations.ContainsKey(SpriteDirection.Left)) { return SpriteDirection.Left; }
-                    if (Animations.ContainsKey(SpriteDirection.Right)) { return SpriteDirection.Right; }
+                case AnimationState.IdleRight:
+                    if (Animations.ContainsKey(AnimationState.Idle)) { return AnimationState.Idle; }
+                    break;
+                case AnimationState.WalkUp:
+                    if (Animations.ContainsKey(AnimationState.WalkRight)) { return AnimationState.WalkRight; }
+                    if (Animations.ContainsKey(AnimationState.WalkLeft)) { return AnimationState.WalkLeft; }
+                    break;
+                case AnimationState.WalkDown:
+                    if (Animations.ContainsKey(AnimationState.WalkLeft)) { return AnimationState.WalkLeft; }
+                    if (Animations.ContainsKey(AnimationState.WalkRight)) { return AnimationState.WalkRight; }
                     break;
                 default:
                     break;
@@ -99,7 +125,7 @@ namespace YGR
             return Animations.Keys.First();
         }
 
-        private void UpdateDirection(SpriteDirection direction)
+        private void UpdateDirection(AnimationState direction)
         {
             if (!Animations.ContainsKey(direction))
             {
@@ -107,10 +133,10 @@ namespace YGR
             }
 
             Direction = direction;
-            CurrentAnimation = Animations[Direction];
+            CurrentAnimationSet = Animations[Direction];
         }
 
-        public void Update(GameTime gameTime, SpriteDirection direction)
+        public void Update(GameTime gameTime, AnimationState direction)
         {
             if (direction != Direction)
             {
@@ -121,7 +147,56 @@ namespace YGR
             {
                 UpdateAnimation(gameTime);
             }
-            SourceRectangle = new Vector2(AnimationIndex * SpriteDimension.X, 0);
+        }
+
+        public void Update(GameTime gameTime, Vector2 movement)
+        {
+            // Idling
+            if (movement == Vector2.Zero)
+            {
+                // If character comes to a halt, try to keep facing the same direction
+                if (LastMovement.X > 0)
+                {
+                    Update(gameTime, AnimationState.IdleRight);
+                }
+                else if (LastMovement.X < 0)
+                {
+                    Update(gameTime, AnimationState.IdleLeft);
+                }
+            } // Walking
+            else if (movement.X > 0)
+            {
+                Update(gameTime, AnimationState.WalkRight);
+                LastMovement.X = movement.X;
+            }
+            else if (movement.X < 0)
+            {
+                Update(gameTime, AnimationState.WalkLeft);
+                LastMovement.X = movement.X;
+            }
+            else if (movement.Y > 0 && Animations.ContainsKey(AnimationState.WalkDown))
+            {
+                Update(gameTime, AnimationState.WalkDown);
+                LastMovement.Y = movement.Y;
+            }
+            else if (movement.Y < 0 && Animations.ContainsKey(AnimationState.WalkUp))
+            {
+                Update(gameTime, AnimationState.WalkUp);
+                LastMovement.Y = movement.Y;
+            }
+            else
+            {
+                // At this point we move up/down but have no sprite sets for that, so just use the walking sprite
+                // in the same direction that we previously walked in
+                if (LastMovement.X > 0)
+                {
+                    Update(gameTime, AnimationState.WalkRight);
+                }
+                else if (LastMovement.X < 0)
+                {
+                    Update(gameTime, AnimationState.WalkLeft);
+                }
+            }
         }
     }
 }
