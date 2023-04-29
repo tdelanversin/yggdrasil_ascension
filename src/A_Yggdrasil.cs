@@ -43,16 +43,19 @@ namespace YGR
             var res_y = _graphics.PreferredBackBufferHeight;
             Camera.Initialize(new Vector2(res_x / 2, res_y / 2), _graphics.GraphicsDevice.Viewport, CameraMode.Follow);
 
+            string level = "Level_3";
             Factory_Debug.Initialize(Content);
             Manager_Projectile.Initialize(Content);
             Manager_Enemies.Initialize(Content);
             Manager_Players.Initialize();
             Manager_Particles.Initialize();
-            Manager_Light.Initialize("./Levels/Level_2/simplified");
+            Manager_Light.Initialize("./Levels/" + level + "/simplified");
             X_AutoTiler.Initialize("./Doors/", "data.json", GraphicsDevice, Y_Door.MapJsonName);
-            X_AutoTiler.Initialize("./Levels/", "data.json", GraphicsDevice, Y_CMRoom.MapJsonName);
+            X_AutoTiler.Initialize("./Levels/", "doors.json", GraphicsDevice, Y_CMRoom.MapJsonName);
+            Y_PowerUp.Initialize(Content);
+            Y_MultiPowerUp.Initialize(Content);
 
-            _level = new Y_Level("Level_2/simplified", 32, "./Levels/", "./Doors", GraphicsDevice);
+            _level = new Y_Level(level, 32, "./Levels/", "./Doors", GraphicsDevice);
 
             base.Initialize();
         }

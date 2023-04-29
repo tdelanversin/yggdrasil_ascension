@@ -18,7 +18,6 @@ namespace YGR
         public Vector2 Velocity { get; set; }
         public Y_Level Level { get; set; }
         public IWalkable Room { get; set; }
-
         void Hit(IProjectile projectile);
     }
 }

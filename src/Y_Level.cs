@@ -29,6 +29,8 @@ namespace YGR
 
         internal class Data
         {
+            public string LdtkSubfolderName;
+            public Dictionary<string, Dictionary<string, string>> LdtkRoomTypes;
             public float W;
             public float H;
             public Dictionary<string, List<LevelNode>> Level;
@@ -79,43 +81,8 @@ namespace YGR
 
             _availableRooms = new Dictionary<string, List<Y_CMRoom>>();
 
-            var files = Directory.GetDirectories(Util.PathOsNormalization(_levelResourceFolder + _name));
-            List<Y_CMRoom> bag = new List<Y_CMRoom>();
-
-            foreach (var f in files)
-            {
-                var roomName = f.Split(Path.DirectorySeparatorChar).Last();
-                //if (_availableRooms.ContainsKey(roomName))
-                //    Logger.Error("Room with name " + roomName + " already added");
-                var room = new Y_CMRoom(roomName, TileWidth, TileHeight, f, graphicsDevice);
-                room.PreloadIlluminations();
-                bag.Add(room);
-                //var name = Path.GetDirectoryName(f);
-            }//);
-
-            foreach (var b in bag)
-            {
-                if (_availableRooms.ContainsKey(b.Name))
-                    Logger.Error("Room with name " + b.Name + " already added");
-                var key = b.Name.Split("_")[0];
-                if (key == "Start" || key == "Gold")
-                {
-                    b.State = X_RoomState.LockedOpen;
-                }
-
-                List<Y_CMRoom> rooms;
-                if (!_availableRooms.TryGetValue(key, out rooms))
-                {
-                    _availableRooms.Add(key, new List<Y_CMRoom> { b });
-                }
-                else
-                {
-                    rooms.Add(b);
-                }
-            }
-
             var dataFile = _name.Split(Path.DirectorySeparatorChar)[1];
-            var dataFilePath = _levelResourceFolder + dataFile + "_data.json";
+            var dataFilePath = _levelResourceFolder + "data.json";
             using (StreamReader stream = new StreamReader(dataFilePath))
             {
                 string json = stream.ReadToEnd();
@@ -128,12 +95,64 @@ namespace YGR
                 _data.Level[dk] = _data.Level[dk].OrderBy(x => x.Index).ToList();
             }
 
+            var categoryFolders = Directory.GetDirectories(Util.PathOsNormalization(_levelResourceFolder + _name));
+            foreach (var folder in categoryFolders)
+            {
+                string category = folder.Split(Path.DirectorySeparatorChar).Last();
+                //if (category == "Start")
+                //{
+                var files = Directory.GetDirectories(Util.PathOsNormalization(folder + Path.DirectorySeparatorChar + category + Path.DirectorySeparatorChar + _data.LdtkSubfolderName));
+                List<Y_CMRoom> list = new List<Y_CMRoom>();
+                foreach (var f in files)
+                {
+
+                    var roomName = f.Split(Path.DirectorySeparatorChar).Last();
+                    //if (_availableRooms.ContainsKey(roomName))
+                    //    Logger.Error("Room with name " + roomName + " already added");
+                    var room = new Y_CMRoom(roomName, TileWidth, TileHeight, f, _data.LdtkRoomTypes[category], graphicsDevice);
+                    room.PreloadIlluminations();
+                    room.Category = category;
+                    if (category == "Start" || category == "Gold")
+                    {
+                        room.State = X_RoomState.LockedOpen;
+                    }
+                    list.Add(room);
+                }
+
+                _availableRooms.Add(category, list);
+            }
+                //var name = Path.GetDirectoryName(f);
+            
+            //);
+
+            //foreach (var b in bag)
+            //{
+            //    if (_availableRooms.ContainsKey(b.Name))
+            //        Logger.Error("Room with name " + b.Name + " already added");
+            //    var key = b.Name.Split("_")[0];
+            //    if (key == "Start" || key == "Gold")
+            //    {
+            //        b.State = X_RoomState.LockedOpen;
+            //    }
+
+            //    List<Y_CMRoom> rooms;
+            //    if (!_availableRooms.TryGetValue(key, out rooms))
+            //    {
+            //        _availableRooms.Add(key, new List<Y_CMRoom> { b });
+            //    }
+            //    else
+            //    {
+            //        rooms.Add(b);
+            //    }
+            //}
+
             Rooms = new Dictionary<int, IWalkable>();
         }
 
 
         public void Create(GraphicsDevice graphicsDevice)
         {
+            //var room = new Y_CMRoom(roomName, TileWidth, TileHeight, f, graphicsDevice);
             // Stop any songs that are playing
             Manager_Sound.StopMusic();
 
@@ -145,14 +164,15 @@ namespace YGR
                 if (room.Value.WhatAreYou() == X_LevelElements.Room)
                 {
                     var r = (Y_CMRoom)room.Value;
-                    var roomKey = r.Name.Split("_")[0];
                     r.ResetRoom();
-                    _availableRooms[roomKey].Add(r);
+                    _availableRooms[r.Category].Add(r);
                 }
             }
 
             Rooms = new Dictionary<int, IWalkable>();
 
+            //Rooms.Add(0, _availableRooms["Start"].First());
+            
             var random = new Random();
             // randomly select one level tree
             var key = _data.Level.Keys.ToArray()[random.Next(0, _data.Level.Keys.Count)]; // [random.Next(0, _data.Level.Keys.Count)];
@@ -228,6 +248,15 @@ namespace YGR
                 connectorIndex++;
             }
 
+            //finalize: split collision models
+            foreach (var room in Rooms)
+            {
+                if (room.Value.WhatAreYou() == X_LevelElements.Door)
+                {
+                    ((Y_Door)room.Value).SplitConnectedCollisionModels();
+                }
+            }
+
             Manager_Players.ClearPlayers();
 
             // Place all players, even if they're not going to play
@@ -258,6 +287,7 @@ namespace YGR
             State = GamePlayState.Start;
             ActiveRoom = Rooms[0];
             Camera.focusOnRoom(Rooms[0]);
+            //Camera.focusManual();
 
             Camera.Players = Manager_Players.Players;
             Manager_Enemies.ClearEnemies();
@@ -283,15 +313,6 @@ namespace YGR
                     {
                         Manager_Enemies.AddEnemy_Gigachad(spr.ToVector2(), this, Manager_Players.Players);
                     }
-                }
-            }
-
-            //finalize: split collision models
-            foreach (var room in Rooms)
-            {
-                if (room.Value.WhatAreYou() == X_LevelElements.Door)
-                {
-                    ((Y_Door)room.Value).SplitConnectedCollisionModels();
                 }
             }
 

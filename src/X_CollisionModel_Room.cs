@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net.Security;
 using System.Reflection.Emit;
 using static YGR.Manager_Collision;
 
@@ -21,19 +22,22 @@ namespace YGR
 
         public int TileWidth;
         public int TileHeight;
+        private bool _isRoomCollisionModel;
 
         public X_CollisionModel_Room(
             int[][] collisionTemplate,
             int tileWidth,
-            int tileHeight
+            int tileHeight,
+            bool isRoomCollisionModel = true
         )
         {
             TileWidth = tileWidth;
             TileHeight = tileHeight;
             _collisionTemplate = collisionTemplate;
+            _isRoomCollisionModel = isRoomCollisionModel;
 
             var components = fitRectangles(_collisionTemplate);
-            createCollisionModelRectangles(components.Item1, components.Item2);
+            createCollisionModelRectangles(components);
 
             _collisionTemplate = cleanUpCollisionTemplate(_collisionTemplate);
 
@@ -67,7 +71,11 @@ namespace YGR
                 if (col[index].Contains(p)) break;
             }
 
-            if (index >= col.Count()) return new Dictionary<X_DoorState, List<Rectangle>>();
+            if (index >= col.Count())
+            {
+                Logger.Info("hello");
+                return new Dictionary<X_DoorState, List<Rectangle>>();
+            }                
 
             var old = col[index];
             Rectangle rectTop = new Rectangle(
@@ -163,7 +171,7 @@ namespace YGR
                     if (pattern[i][j] < 0) pattern[i][j] = (int)X_TileType.Outside;
                 }
             }
-            output(pattern, "./logs/pattern.csv");
+            //output(pattern, "./logs/pattern.csv");
             return pattern;
         }
 
@@ -277,9 +285,12 @@ namespace YGR
             return wall;
         }
 
-        private Tuple<Dictionary<int, List<Tuple<int, int>>>, Dictionary<int, List<Tuple<int, int>>>> fitRectangles(int[][] pattern)
+        private Dictionary<string, Dictionary<int, List<Tuple<int, int>>>> fitRectangles(int[][] pattern)
         {
-            Dictionary<int, List<Tuple<int, int>>> lines = new Dictionary<int, List<Tuple<int, int>>>();
+            //output(pattern, "output0.csv");
+
+            Dictionary<int, List<Tuple<int, int>>> hLines = new Dictionary<int, List<Tuple<int, int>>>();
+            Dictionary<int, List<Tuple<int, int>>> vLines = new Dictionary<int, List<Tuple<int, int>>>();
             Dictionary<int, List<Tuple<int, int>>> rectangles = new Dictionary<int, List<Tuple<int, int>>>();
 
             int key = 2;
@@ -287,7 +298,7 @@ namespace YGR
 
             for (int x=1; x<pattern.Length-1; ++x)
             {
-                for(int y=1; y<pattern.Length-1; ++y)
+                for(int y=1; y < pattern[0].Length-1; ++y)
                 {
                     var match = createPattern(x, y);
                     var matchPos = findMatch(match, pattern);
@@ -303,9 +314,77 @@ namespace YGR
                 }
             }
 
+            if (_isRoomCollisionModel)
+            {
+                // find the horizontal outlines
+                int xend = pattern.Length - 1;
+                for (int y = 0; y < pattern[0].Length; ++y)
+                {
+                    List<Tuple<int, int>> list;
+                    if (!hLines.TryGetValue(key, out list))
+                    {
+                        hLines.Add(key, new List<Tuple<int, int>> { new Tuple<int, int>(0, y) });
+                    }
+                    else
+                    {
+                        list.Add(new Tuple<int, int>(0, y));
+                    }
+                    pattern[0][y] = key;
+                }
+                key++;
+
+                for (int y = 0; y < pattern[0].Length; ++y)
+                {
+                    List<Tuple<int, int>> list;
+                    if (!hLines.TryGetValue(key, out list))
+                    {
+                        hLines.Add(key, new List<Tuple<int, int>> { new Tuple<int, int>(xend, y) });
+                    }
+                    else
+                    {
+                        list.Add(new Tuple<int, int>(xend, y));
+                    }
+                    pattern[xend][y] = key;
+                }
+                key++;
+
+                int yend = pattern[0].Length - 1;
+                for (int x = 0; x < pattern.Length; ++x)
+                {
+                    List<Tuple<int, int>> list;
+                    if (!vLines.TryGetValue(key, out list))
+                    {
+                        vLines.Add(key, new List<Tuple<int, int>> { new Tuple<int, int>(x, 0) });
+                    }
+                    else
+                    {
+                        list.Add(new Tuple<int, int>(x, 0));
+                    }
+                    pattern[x][0] = key;
+                }
+                key++;
+
+                for (int x = 0; x < pattern.Length; ++x)
+                {
+                    List<Tuple<int, int>> list;
+                    if (!vLines.TryGetValue(key, out list))
+                    {
+                        vLines.Add(key, new List<Tuple<int, int>> { new Tuple<int, int>(x, yend) });
+                    }
+                    else
+                    {
+                        list.Add(new Tuple<int, int>(x, yend));
+                    }
+                    pattern[x][yend] = key;
+                }
+                key++;
+            }
+            
+
             //output(pattern, "output0.csv");
 
             // first find all horizontal ones
+            Dictionary<int, List<Tuple<int, int>>> temp = new Dictionary<int, List<Tuple<int, int>>>();
             for (int x = 0; x < pattern.Length; ++x)
             {
                 int y = 0;
@@ -315,9 +394,9 @@ namespace YGR
                     while (y < pattern[0].Length - 1 && pattern[x][y] >= 1 && pattern[x][y + 1] == 1)
                     {
                         List<Tuple<int, int>> list;
-                        if (!lines.TryGetValue(key, out list))
+                        if (!temp.TryGetValue(key, out list))
                         {
-                            lines.Add(key, new List<Tuple<int, int>> { new Tuple<int, int>(x, y), new Tuple<int, int>(x, y + 1) });
+                            temp.Add(key, new List<Tuple<int, int>> { new Tuple<int, int>(x, y), new Tuple<int, int>(x, y + 1) });
                             add = true;
                         }
                         else
@@ -339,9 +418,38 @@ namespace YGR
                 }
             }
 
-            //output(pattern, "output1.csv");
+            if (_isRoomCollisionModel)
+            {
+                while (temp.Count() > 0)
+                {
+                    var first = temp.First();
+                    int starty = first.Value.First().Item2;
+                    int endy = first.Value.Last().Item2;
+                    var take = temp.Where(x => x.Value.First().Item2 == starty && x.Value.Last().Item2 == endy).ToList();
+
+                    List<Tuple<int, int>> newList = new List<Tuple<int, int>>();
+                    int lastx = take.First().Value.First().Item1;
+                    foreach (var t in take)
+                    {
+                        if (t.Value.First().Item1 > lastx + 1) break;
+                        lastx = t.Value.First().Item1;
+                        newList.AddRange(t.Value);
+                        temp.Remove(t.Key);
+                    }
+                    hLines.Add(key, newList);
+                    key++;
+                }
+            }
+            else
+            {
+                foreach(var t in temp)
+                {
+                    hLines.Add(t.Key, t.Value);
+                }
+            }
 
             // then go vertical
+            Dictionary<int, List<Tuple<int, int>>> temp2 = new Dictionary<int, List<Tuple<int, int>>>();
             for (int y = 0; y < pattern[0].Length; ++y)
             {
                 int x = 0;
@@ -351,9 +459,9 @@ namespace YGR
                     while (x < pattern.Length - 1 && pattern[x][y] >= 1 && pattern[x + 1][y] == 1)
                     {
                         List<Tuple<int, int>> list;
-                        if (!lines.TryGetValue(key, out list))
+                        if (!temp2.TryGetValue(key, out list))
                         {
-                            lines.Add(key, new List<Tuple<int, int>> { new Tuple<int, int>(x, y), new Tuple<int, int>(x + 1, y) });
+                            temp2.Add(key, new List<Tuple<int, int>> { new Tuple<int, int>(x, y), new Tuple<int, int>(x + 1, y) });
                             add = true;
                         }
                         else
@@ -367,20 +475,51 @@ namespace YGR
                         pattern[x + 1][y] = key;
                         x++;
                     }
-                    if(add) key++;
+                    if (add) key++;
                     x++;
                 }
             }
 
-            return new Tuple<Dictionary<int, List<Tuple<int, int>>>, Dictionary<int, List<Tuple<int, int>>>>(lines, rectangles);
+            if (_isRoomCollisionModel)
+            {
+                // merge lines that start and end at the same x coordinate
+                while (temp2.Count() > 0)
+                {
+                    var first = temp2.First();
+                    int startx = first.Value.First().Item1;
+                    int endx = first.Value.Last().Item1;
+                    var take = temp2.Where(x => x.Value.First().Item1 == startx && x.Value.Last().Item1 == endx).ToList();
+
+                    List<Tuple<int, int>> newList = new List<Tuple<int, int>>();
+                    int lasty = take.First().Value.First().Item2;
+                    foreach (var t in take)
+                    {
+                        if (t.Value.First().Item2 > lasty + 1) break;
+                        lasty = t.Value.First().Item2;
+                        newList.AddRange(t.Value);
+                        temp2.Remove(t.Key);
+                    }
+                    vLines.Add(key, newList);
+                    key++;
+                }
+            }
+            else
+            {
+                foreach(var t in temp2)
+                {
+                    vLines.Add(t.Key, t.Value);
+                }
+            }
+
+            return new Dictionary<string, Dictionary<int, List<Tuple<int, int>>>>() { { "vertical", vLines }, { "horizontal", hLines }, { "rectangle", rectangles } };
         }
 
-        private void createCollisionModelRectangles(Dictionary<int, List<Tuple<int, int>>> lines, Dictionary<int, List<Tuple<int, int>>> rectangles)
+        private void createCollisionModelRectangles(Dictionary<string, Dictionary<int, List<Tuple<int, int>>>> components)
         {
             var rects = new List<Rectangle>();
 
             int offset = 2;
-            foreach (var line in lines)
+            foreach (var line in components["horizontal"])
             {
                 var list = line.Value;
                 var topleft = list.OrderBy(x => x.Item1).ThenBy(x => x.Item2).ToList();
@@ -392,31 +531,40 @@ namespace YGR
                 int width, height;
 
                 // make these a little bit shorter and offset them a little bit
-                if (tlX == brX)
-                {
-                    height = 1;
-                    width = (brY - tlY + 1);
-                    // make these a little bit shorter and offset them a little bit
-                    rects.Add(new Rectangle(
-                        tlY * TileWidth + _location.X + offset,
-                        tlX * TileHeight + _location.Y,
-                        width * TileWidth - 2 * offset,
-                        height * TileHeight));
-                }
-                else
-                {
-                    width = 1;
-                    height = (brX - tlX + 1);
-                    // make these a little bit less high and offset them a little bit
-                    rects.Add(new Rectangle(
-                        tlY * TileWidth + _location.X,
-                        tlX * TileHeight + _location.Y + offset,
-                        width * TileWidth,
-                        height * TileHeight - 2 * offset));
-                }
+                //if (tlX == brX)
+                //{
+                height = (brX - tlX + 1);
+                width = (brY - tlY + 1);
+                // make these a little bit shorter and offset them a little bit
+                rects.Add(new Rectangle(
+                    tlY * TileWidth + _location.X + offset,
+                    tlX * TileHeight + _location.Y,
+                    width * TileWidth - 2 * offset,
+                    height * TileHeight));
             }
 
-            foreach(var rectangle in rectangles)
+            foreach (var line in components["vertical"]) 
+            {
+                var list = line.Value;
+                var topleft = list.OrderBy(x => x.Item1).ThenBy(x => x.Item2).ToList();
+
+                int tlX = topleft.First().Item1;
+                int tlY = topleft.First().Item2;
+                int brX = topleft.Last().Item1;
+                int brY = topleft.Last().Item2;
+                int width, height;
+
+                width = (brY - tlY + 1);
+                height = (brX - tlX + 1);
+                // make these a little bit less high and offset them a little bit
+                rects.Add(new Rectangle(
+                    tlY * TileWidth + _location.X,
+                    tlX * TileHeight + _location.Y + offset,
+                    width * TileWidth,
+                    height * TileHeight - 2 * offset));
+            }
+
+            foreach(var rectangle in components["rectangle"])
             {
                 var list = rectangle.Value;
                 var topleft = list.OrderBy(x => x.Item1).ThenBy(x => x.Item2).ToList();

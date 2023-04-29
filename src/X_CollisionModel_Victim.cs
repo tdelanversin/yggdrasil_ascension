@@ -36,6 +36,10 @@ namespace YGR
             me.Room = room;
             if(room != null)
             {
+                if(room.WhatAreYou() == X_LevelElements.Room)
+                {
+                    ((Y_CMRoom)room).ApplyPowerUps(me);
+                }
                 if (room.Collision.Intersect(ref myRect, ref newVelocity, timeStepMS, out point, out normal))
                 {
                     result = true;

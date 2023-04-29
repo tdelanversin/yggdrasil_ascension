@@ -80,6 +80,8 @@ namespace YGR
         bool[] _illuminated;
         //private Y_Door _door;
 
+        bool _closingTheDoor;
+
 
         //Rectangle _outsideRect1;
         //Rectangle _outsideRect2;
@@ -103,7 +105,7 @@ namespace YGR
             collision = getDoorPoints(collision, tileWidth, tileHeight);
             _illuminated = null;
 
-            Collision = new X_CollisionModel_Room(collision, tileWidth, tileHeight);
+            Collision = new X_CollisionModel_Room(collision, tileWidth, tileHeight, isRoomCollisionModel: false);
 
             Rect = new Rectangle(0, 0, tileWidth * collision[0].Length, tileHeight * collision.Length);
             Scale = 1.0f;
@@ -121,6 +123,7 @@ namespace YGR
             TextureTileSize = _tileTextures.First().Value.First().Texture().Height;
             _tileSize = (int)(TextureTileSize * Scale);
             State = X_DoorState.Closed;
+            _closingTheDoor = false;
 
             int width = Collision.GetCollisionTemplate()[0].Length;
             int height = Collision.GetCollisionTemplate().Length;
@@ -974,10 +977,15 @@ namespace YGR
                     }
                     break;
                 case X_DoorState.Closing:
+                    if (!_closingTheDoor)
+                    {
+                        CloseDoor();
+                        _closingTheDoor = true;
+                    }
                     if (!doorAnimation(dt, false))
                     {
+                        _closingTheDoor = false;
                         State = X_DoorState.Closed;
-                        CloseDoor();
                         foreach (var room in DoorRooms.Values) room.First().Illuminate();
                     }
                     break;

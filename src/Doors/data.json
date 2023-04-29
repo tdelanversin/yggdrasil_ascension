@@ -1,20 +1,40 @@
 {
-    "textureName": "tiles_32.png",
+    "textureName": "32x32-tiles.png",
     "size" : 32,
     "tiles" : {
         "floor": {
             "coordinates" : [
                 {
-                    "x": 0,
-                    "y": 0 
-                },
-                {
-                    "x": 1,
-                    "y": 0 
+                    "x": 2,
+                    "y": 1 
                 },
                 {
                     "x": 2,
-                    "y": 0 
+                    "y": 2 
+                },
+                {
+                    "x": 2,
+                    "y": 3 
+                },
+                {
+                    "x": 2,
+                    "y": 4 
+                },
+                {
+                    "x": 3,
+                    "y": 1 
+                },
+                {
+                    "x": 3,
+                    "y": 2 
+                },
+                {
+                    "x": 3,
+                    "y": 3 
+                },
+                {
+                    "x": 3,
+                    "y": 4 
                 }
             ],
             "mask" : [
@@ -26,16 +46,20 @@
         "roofStraightVerticalL": {
             "coordinates" : [
                 {
-                    "x": 4,
-                    "y": 1 
+                    "x": 9,
+                    "y": 5 
                 },
                 {
-                    "x": 5,
-                    "y": 1 
+                    "x": 9,
+                    "y": 6 
                 },
                 {
-                    "x": 6,
-                    "y": 1 
+                    "x": 9,
+                    "y": 9 
+                },
+                {
+                    "x": 9,
+                    "y": 10 
                 }
             ],
             "mask" : [
@@ -47,16 +71,20 @@
         "roofStraightVerticalR": {
             "coordinates": [
                 {
-                    "x": 4,
-                    "y": 2 
-                },
-                {
-                    "x": 5,
-                    "y": 2 
+                    "x": 6,
+                    "y": 1 
                 },
                 {
                     "x": 6,
                     "y": 2 
+                },
+                {
+                    "x": 6,
+                    "y": 13 
+                },
+                {
+                    "x": 6,
+                    "y": 14 
                 }
             ],
             "mask" : [
@@ -68,16 +96,20 @@
         "roofStraightHorizontalB": {
             "coordinates" : [
                 {
-                    "x": 0,
-                    "y": 1 
+                    "x": 7,
+                    "y": 0 
                 },
                 {
-                    "x": 1,
-                    "y": 1 
+                    "x": 8,
+                    "y": 0 
                 },
                 {
-                    "x": 2,
-                    "y": 1 
+                    "x": 7,
+                    "y": 4 
+                },
+                {
+                    "x": 8,
+                    "y": 4 
                 }
             ],
             "mask" : [
@@ -89,16 +121,20 @@
         "roofStraightHorizontalT": {
             "coordinates" : [
                 {
-                    "x": 0,
-                    "y": 2 
+                    "x": 7,
+                    "y": 11 
                 },
                 {
-                    "x": 1,
-                    "y": 2 
+                    "x": 8,
+                    "y": 11 
                 },
                 {
-                    "x": 2,
-                    "y": 2 
+                    "x": 7,
+                    "y": 15 
+                },
+                {
+                    "x": 8,
+                    "y": 15 
                 }
             ],
             "mask" : [
@@ -111,7 +147,27 @@
             "coordinates" : [
                 {
                     "x": 0,
-                    "y": 3 
+                    "y": 0 
+                },
+                {
+                    "x": 1,
+                    "y": 0 
+                },
+                {
+                    "x": 2,
+                    "y": 0 
+                },
+                {
+                    "x": 3,
+                    "y": 0 
+                },
+                {
+                    "x": 4,
+                    "y": 0 
+                },
+                {
+                    "x": 5,
+                    "y": 0 
                 }
             ],
             "mask" : [
@@ -123,8 +179,8 @@
         "roofCornerOutsideBr": {
             "coordinates": [
                 {
-                    "x": 0,
-                    "y": 4 
+                    "x": 7,
+                    "y": 10 
                 }
             ],
             "mask" : [
@@ -136,8 +192,8 @@
         "roofCornerOutsideTl": {
             "coordinates" : [
                 {
-                    "x": 2,
-                    "y": 4 
+                    "x": 8,
+                    "y": 1 
                 }
             ],
             "mask" : [
@@ -149,8 +205,8 @@
         "roofCornerOutsideTr": {
             "coordinates" : [
                 {
-                    "x": 1,
-                    "y": 4 
+                    "x": 8,
+                    "y": 6 
                 }
             ],
             "mask" : [
@@ -162,8 +218,8 @@
         "roofCornerOutsideBl": {
             "coordinates" : [
                 {
-                    "x": 3,
-                    "y": 4 
+                    "x": 7,
+                    "y": 13 
                 }
             ],
             "mask" : [
@@ -175,8 +231,8 @@
         "roofCornerInsideBr": {
             "coordinates" : [
                 {
-                    "x": 4,
-                    "y": 4 
+                    "x": 6,
+                    "y": 0 
                 }
             ],
             "mask" : [
@@ -188,8 +244,8 @@
         "roofCornerInsideTr": {
             "coordinates" : [
                 {
-                    "x": 5,
-                    "y": 4 
+                    "x": 6,
+                    "y": 15 
                 }
             ],
             "mask" : [
@@ -201,8 +257,8 @@
         "roofCornerInsideTl": {
             "coordinates" : [
                 {
-                    "x": 6,
-                    "y": 4
+                    "x": 9,
+                    "y": 11
                 }
             ],
             "mask" : [
@@ -214,7 +270,7 @@
         "roofCornerInsideBl": {
             "coordinates" : [
                 {
-                    "x": 7,
+                    "x": 9,
                     "y": 4 
                 }
             ],
@@ -227,8 +283,8 @@
         "roofEndH1": {
             "coordinates" : [
                 {
-                    "x": 5,
-                    "y": 4 
+                    "x": 6,
+                    "y": 15 
                 }
             ],
             "mask" : [
@@ -240,8 +296,8 @@
         "roofEndH2": {
             "coordinates" : [
                 {
-                    "x": 4,
-                    "y": 4 
+                    "x": 6,
+                    "y": 0 
                 }
             ],
             "mask" : [
@@ -253,7 +309,7 @@
         "roofEndH3": {
             "coordinates" : [
                 {
-                    "x": 7,
+                    "x": 9,
                     "y": 4 
                 }
             ],
@@ -266,8 +322,8 @@
         "roofEndH4": {
             "coordinates" : [
                 {
-                    "x": 6,
-                    "y": 4 
+                    "x": 9,
+                    "y": 11 
                 }
             ],
             "mask" : [
@@ -279,8 +335,8 @@
         "roofEndV1": {
             "coordinates" : [
                 {
-                    "x": 6,
-                    "y": 4 
+                    "x": 9,
+                    "y": 11 
                 }
             ],
             "mask" : [
@@ -292,8 +348,8 @@
         "roofEndV2": {
             "coordinates" : [
                 {
-                    "x": 5,
-                    "y": 4 
+                    "x": 6,
+                    "y": 15 
                 }
             ],
             "mask" : [
@@ -305,7 +361,7 @@
         "roofEndV3": {
             "coordinates" : [
                 {
-                    "x": 7,
+                    "x": 9,
                     "y": 4 
                 }
             ],
@@ -318,8 +374,8 @@
         "roofEndV4": {
             "coordinates" : [
                 {
-                    "x": 4,
-                    "y": 4 
+                    "x": 6,
+                    "y": 0 
                 }
             ],
             "mask" : [
@@ -332,7 +388,7 @@
             "coordinates" : [
                 {
                     "x": 0,
-                    "y": 6 
+                    "y": 11 
                 }
             ],
             "mask" : [
@@ -345,7 +401,7 @@
             "coordinates" : [
                 {
                     "x": 1,
-                    "y": 6 
+                    "y": 11 
                 }
             ],
             "mask" : [
@@ -357,8 +413,20 @@
         "doorCover": {
             "coordinates" : [
                 {
-                    "x": 0,
-                    "y": 5 
+                    "x": 2,
+                    "y": 7 
+                },
+                {
+                    "x": 2,
+                    "y": 8 
+                },
+                {
+                    "x": 2,
+                    "y": 9 
+                },
+                {
+                    "x": 2,
+                    "y": 10 
                 }
             ], 
             "mask" : [
