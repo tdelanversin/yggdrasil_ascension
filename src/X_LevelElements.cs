@@ -15,6 +15,7 @@
         Projectile,
         Level,
         Interactable,
-        PowerUp
+        PowerUp,
+        MultiPowerUp
     }
 }

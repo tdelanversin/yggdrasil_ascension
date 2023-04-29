@@ -59,7 +59,7 @@ namespace YGR
         public int color;
     }
 
-    public sealed class MultiPowreUp
+    public sealed class MultiPowerUp
     {
         public string id;
         public string iid;
@@ -108,16 +108,6 @@ namespace YGR
 
     public class Y_CMRoom : IWalkable
     {
-        internal class PowerUpItem
-        {
-            public bool Active { get; set; }
-            public Y_PowerUp Item { get; }
-            public PowerUpItem(Y_PowerUp item)
-            {
-                Item = item;
-                Active = true;
-            }
-        }
         internal class X_DoorMask
         {
             static public int RoiDepth { get { return 4; } }
@@ -233,9 +223,9 @@ namespace YGR
         List<Point> _spawner;
         List<Point> _bossSpawner;
         List<Point> _playerSpawner;
-        List<Rectangle> _multiPowreUp;
 
         private List<PowerUpItem> _powerUps;
+        private List<MultiPowerUpItem> _multiPowerups;
 
         public bool Cleared;
 
@@ -339,7 +329,6 @@ namespace YGR
                     }
                 }
                 // assign power ups
-                _powerUps = new List<PowerUpItem>();
                 if (array.entities.Spawner != null)
                 {
                     var spawner = JsonConvert.DeserializeObject<List<Spawner>>(array.entities.Spawner.ToString());
@@ -368,7 +357,8 @@ namespace YGR
                     }
                 }
 
-                if(array.entities.Life != null)
+                _powerUps = new List<PowerUpItem>();
+                if (array.entities.Life != null)
                 {
                     var life = JsonConvert.DeserializeObject<List<Life>>(array.entities.Life.ToString());
                     foreach (var s in life)
@@ -387,13 +377,28 @@ namespace YGR
                     }
                 }
 
+                _multiPowerups = new List<MultiPowerUpItem>();
                 if (array.entities.MultiPowerUp != null)
                 {
-                    var multiPowerUp = JsonConvert.DeserializeObject<List<MultiPowreUp>>(array.entities.Revive.ToString());
-                    _multiPowreUp = new List<Rectangle>();
+                    var multiPowerUp = JsonConvert.DeserializeObject<List<MultiPowerUp>>(array.entities.MultiPowerUp.ToString());
                     foreach (var s in multiPowerUp)
                     {
-                        _multiPowreUp.Add(new Rectangle(s.x + Rect.X, s.y + Rect.Y, s.width, s.height));
+                        Point location = new Point(s.x + Rect.X, s.y + Rect.Y);
+                        int width = s.width;
+                        int height = s.height;
+                        _multiPowerups.Add(new MultiPowerUpItem(Y_MultiPowerUp.Factory(Y_MultiPowerUps.Radio, location, width, height, TextureTileSize, Scale, null)));
+                    }
+                }
+            }
+
+            // check which power ups are inside multi power ups
+            foreach(var mpu in _multiPowerups) { 
+
+                foreach (var pu in _powerUps)
+                {
+                    if (pu.Item.Rect.Intersects(mpu.Item.Rect))
+                    {
+                        pu.MultiPowerUp = mpu;
                     }
                 }
             }
@@ -488,6 +493,11 @@ namespace YGR
             {
                 _powerUps[i].Active = true;
             }
+
+            for (int i = 0; i < _multiPowerups.Count(); ++i)
+            {
+                _multiPowerups[i].Active = true;
+            }
         }
 
         public void ApplyPowerUps(IVictim player)
@@ -499,6 +509,13 @@ namespace YGR
                     _powerUps[i].Active = false;
                     _powerUps[i].Item.Action(player);
                     Manager_Sound.Sound_CashIn.Play();
+
+                    if (_powerUps[i].MultiPowerUp != null && _powerUps[i].MultiPowerUp.Active)
+                    {
+                        _powerUps[i].MultiPowerUp.Item.Action(_powerUps[i], _powerUps);
+                        _powerUps[i].MultiPowerUp.Active = false;
+                    }
+                    return;
                 }
             }
         }
@@ -808,6 +825,11 @@ namespace YGR
                 powerUp.Item.MoveBy(p);
             }
 
+            foreach (var powerUp in _multiPowerups)
+            {
+                powerUp.Item.MoveBy(p);
+            }
+
             // needs to be done this way because properties return by value and not by ref
             Rect = new Rectangle(position.X, position.Y, Rect.Width, Rect.Height);
 
@@ -832,14 +854,6 @@ namespace YGR
                 for (int i = 0; i < _playerSpawner.Count; ++i)
                 {
                     _playerSpawner[i] += p;
-                }
-            }
-
-            if(_multiPowreUp != null)
-            {
-                for (int i = 0; i < _multiPowreUp.Count; ++i)
-                {
-                    _multiPowreUp[i].Offset(p);
                 }
             }
         }
@@ -1010,6 +1024,14 @@ namespace YGR
                     powerUp.Item.DrawOutline(gameTime, globalOffset, spriteBatch);
                 }
             }
+
+            foreach (var mpu in _multiPowerups)
+            {
+                if (mpu.Active == true)
+                {
+                    mpu.Item.DrawOutline(gameTime, globalOffset, spriteBatch);
+                }
+            }
         }
 
         private void draw(
@@ -1095,6 +1117,14 @@ namespace YGR
                 foreach(var powerUp in _powerUps)
                 {
                     if(powerUp.Active == true)
+                    {
+                        powerUp.Item.Draw(gameTime, globalOffset, spriteBatch);
+                    }
+                }
+
+                foreach (var powerUp in _multiPowerups)
+                {
+                    if (powerUp.Active == true)
                     {
                         powerUp.Item.Draw(gameTime, globalOffset, spriteBatch);
                     }
