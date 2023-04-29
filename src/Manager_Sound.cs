@@ -25,6 +25,7 @@ namespace YGR
         public static SoundEffect Sound_PlayerDeath;
         public static SoundEffect Sound_Shotgun;
         public static SoundEffect Sound_VikingHorn;
+        public static SoundEffect Sound_CashIn; // https://freesound.org/people/kiddpark/sounds/201159/
 
         // private static SoundEffect bogus_sound;
         public static Dictionary<IGameElement, SoundEffectInstance> playing_sound_effects;
@@ -48,6 +49,7 @@ namespace YGR
             Sound_PlayerDeath = contentManager.Load<SoundEffect>("Sounds/player_death");
             Sound_Shotgun = contentManager.Load<SoundEffect>("Sounds/shotgun");
             Sound_VikingHorn = contentManager.Load<SoundEffect>("Sounds/viking_horn");
+            Sound_CashIn = contentManager.Load<SoundEffect>("Sounds/cash-in");
 
             // Set up media player
             MediaPlayer.IsRepeating = true;

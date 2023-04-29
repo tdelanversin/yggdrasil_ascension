@@ -1,10 +1,15 @@
-﻿using Microsoft.Xna.Framework;
+﻿using Assimp.Unmanaged;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Newtonsoft.Json;
+using SharpFont.PostScript;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace YGR
 {
@@ -229,6 +234,9 @@ namespace YGR
                 }
             }
 
+            //var ttexture = new ConcurrentDictionary<Types, List<X_AutoTileTexture>>();
+            //var ccolor = new ConcurrentDictionary<Types, List<X_AutoTileColor>>();
+
             texture = new Dictionary<Types, List<X_AutoTileTexture>>();
             color = new Dictionary<Types, List<X_AutoTileColor>>();
 
@@ -238,15 +246,17 @@ namespace YGR
             TileInfo info = tileInfo[staticKey];
 
             int len = info.tileSize * info.tileSize;
+            //var watch = new Stopwatch();
+            //watch.Start();
             foreach (var m in info.masks)
             {
                 var res = match(padded, m.Value);
+                var key = MapTexture(m.Key);
                 foreach (var t in res)
                 {
                     Rectangle rect = new Rectangle(t.Item1 * info.tileSize, t.Item2 * info.tileSize, info.tileSize, info.tileSize);
                     int ind = getRandomTile(info.tiles[m.Key]);
 
-                    var key = MapTexture(m.Key);
                     X_AutoTileColor nc = new X_AutoTileColor(new Point(t.Item1, t.Item2), info.tiles[m.Key][ind].Clone() as Color[]);
                     List<X_AutoTileColor> list2;
                     if (color.TryGetValue(key, out list2))
@@ -256,12 +266,15 @@ namespace YGR
                     else
                     {
                         list2 = new List<X_AutoTileColor>() { nc };
+                        //color.AddOrUpdate(key, list2, (key, oldValue) => { oldValue.AddRange(list2); return oldValue; });
                         color.Add(key, list2);
                     }
 
                     var tex = new Texture2D(graphicsDevice, info.tileSize, info.tileSize);
                     tex.SetData<Color>(nc.Color());
+
                     X_AutoTileTexture np = new X_AutoTileTexture(new Point(t.Item1, t.Item2), tex);
+
                     List<X_AutoTileTexture> list;
                     if (texture.TryGetValue(key, out list))
                     {
@@ -270,10 +283,14 @@ namespace YGR
                     else
                     {
                         list = new List<X_AutoTileTexture>() { np };
+                        //ttexture.AddOrUpdate(key, list, (key, oldValue) => { oldValue.AddRange(list); return oldValue; });
                         texture.Add(key, list);
                     }
                 }
             }
+
+            //color = ccolor.ToDictionary(kvp => kvp.Key, kvp => kvp.Value, ccolor.Comparer);
+            //texture = ttexture.ToDictionary(kvp => kvp.Key, kvp => kvp.Value, ttexture.Comparer);
         }
 
         private static int getRandomTile(List<Color[]> colors)

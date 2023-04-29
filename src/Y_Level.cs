@@ -111,6 +111,7 @@ namespace YGR
                     //    Logger.Error("Room with name " + roomName + " already added");
                     var room = new Y_CMRoom(roomName, TileWidth, TileHeight, f, _data.LdtkRoomTypes[category], graphicsDevice);
                     room.PreloadIlluminations();
+                    room.Category = category;
                     if (category == "Start" || category == "Gold")
                     {
                         room.State = X_RoomState.LockedOpen;
@@ -163,9 +164,8 @@ namespace YGR
                 if (room.Value.WhatAreYou() == X_LevelElements.Room)
                 {
                     var r = (Y_CMRoom)room.Value;
-                    var roomKey = r.Name.Split("_")[0];
                     r.ResetRoom();
-                    _availableRooms[roomKey].Add(r);
+                    _availableRooms[r.Category].Add(r);
                 }
             }
 
@@ -249,13 +249,13 @@ namespace YGR
             }
 
             //finalize: split collision models
-            //foreach (var room in Rooms)
-            //{
-            //    if (room.Value.WhatAreYou() == X_LevelElements.Door)
-            //    {
-            //        ((Y_Door)room.Value).SplitConnectedCollisionModels();
-            //    }
-            //}
+            foreach (var room in Rooms)
+            {
+                if (room.Value.WhatAreYou() == X_LevelElements.Door)
+                {
+                    ((Y_Door)room.Value).SplitConnectedCollisionModels();
+                }
+            }
 
             Manager_Players.ClearPlayers();
 
@@ -286,8 +286,8 @@ namespace YGR
             // Gameplay state
             State = GamePlayState.Start;
             ActiveRoom = Rooms[0];
-            //Camera.focusOnRoom(Rooms[0]);
-            Camera.focusManual();
+            Camera.focusOnRoom(Rooms[0]);
+            //Camera.focusManual();
 
             Camera.Players = Manager_Players.Players;
             Manager_Enemies.ClearEnemies();

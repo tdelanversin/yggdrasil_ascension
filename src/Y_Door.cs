@@ -103,7 +103,7 @@ namespace YGR
             collision = getDoorPoints(collision, tileWidth, tileHeight);
             _illuminated = null;
 
-            Collision = new X_CollisionModel_Room(collision, tileWidth, tileHeight);
+            Collision = new X_CollisionModel_Room(collision, tileWidth, tileHeight, isRoomCollisionModel: false);
 
             Rect = new Rectangle(0, 0, tileWidth * collision[0].Length, tileHeight * collision.Length);
             Scale = 1.0f;

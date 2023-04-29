@@ -52,6 +52,7 @@ namespace YGR
             Manager_Light.Initialize("./Levels/" + level + "/simplified");
             X_AutoTiler.Initialize("./Doors/", "data.json", GraphicsDevice, Y_Door.MapJsonName);
             X_AutoTiler.Initialize("./Levels/", "doors.json", GraphicsDevice, Y_CMRoom.MapJsonName);
+            Y_PowerUp.Initialize(Content);
 
             _level = new Y_Level(level, 32, "./Levels/", "./Doors", GraphicsDevice);
 

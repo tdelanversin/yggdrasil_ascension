@@ -60,6 +60,8 @@ namespace YGR
         protected float _animationTimer;
         protected float _animationTreshold;
 
+        protected int _allLifePoints;
+
         protected enum InputType
         {
             Controller = 0,
@@ -126,6 +128,7 @@ namespace YGR
             _invincibleDuration = 1250;
 
             LifePoints = 30;
+            _allLifePoints = LifePoints;
 
             Room = Level.GetRoom(this, Room);
         }
@@ -149,6 +152,11 @@ namespace YGR
         public bool IsAlive()
         {
             return LifePoints > 0;
+        }
+
+        public void Revive()
+        {
+            LifePoints = _allLifePoints;
         }
 
         /* Deal with being hit by projectile, basically physical therapy */

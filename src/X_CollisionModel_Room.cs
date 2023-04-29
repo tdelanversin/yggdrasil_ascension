@@ -22,16 +22,19 @@ namespace YGR
 
         public int TileWidth;
         public int TileHeight;
+        private bool _isRoomCollisionModel;
 
         public X_CollisionModel_Room(
             int[][] collisionTemplate,
             int tileWidth,
-            int tileHeight
+            int tileHeight,
+            bool isRoomCollisionModel = true
         )
         {
             TileWidth = tileWidth;
             TileHeight = tileHeight;
             _collisionTemplate = collisionTemplate;
+            _isRoomCollisionModel = isRoomCollisionModel;
 
             var components = fitRectangles(_collisionTemplate);
             createCollisionModelRectangles(components);
@@ -68,7 +71,11 @@ namespace YGR
                 if (col[index].Contains(p)) break;
             }
 
-            if (index >= col.Count()) return new Dictionary<X_DoorState, List<Rectangle>>();
+            if (index >= col.Count())
+            {
+                Logger.Info("hello");
+                return new Dictionary<X_DoorState, List<Rectangle>>();
+            }                
 
             var old = col[index];
             Rectangle rectTop = new Rectangle(
@@ -307,68 +314,72 @@ namespace YGR
                 }
             }
 
-            // find the horizontal outlines
-            int xend = pattern.Length-1;
-            for (int y=0; y < pattern[0].Length; ++y)
+            if (_isRoomCollisionModel)
             {
-                List<Tuple<int, int>> list;
-                if (!hLines.TryGetValue(key, out list))
+                // find the horizontal outlines
+                int xend = pattern.Length - 1;
+                for (int y = 0; y < pattern[0].Length; ++y)
                 {
-                    hLines.Add(key, new List<Tuple<int, int>> { new Tuple<int, int>(0, y) });
+                    List<Tuple<int, int>> list;
+                    if (!hLines.TryGetValue(key, out list))
+                    {
+                        hLines.Add(key, new List<Tuple<int, int>> { new Tuple<int, int>(0, y) });
+                    }
+                    else
+                    {
+                        list.Add(new Tuple<int, int>(0, y));
+                    }
+                    pattern[0][y] = key;
                 }
-                else
-                {
-                    list.Add(new Tuple<int, int>(0, y));
-                }
-                pattern[0][y] = key;
-            }
-            key++;
+                key++;
 
-            for (int y = 0; y < pattern[0].Length; ++y)
-            {
-                List<Tuple<int, int>> list;
-                if (!hLines.TryGetValue(key, out list))
+                for (int y = 0; y < pattern[0].Length; ++y)
                 {
-                    hLines.Add(key, new List<Tuple<int, int>> { new Tuple<int, int>(xend, y) });
+                    List<Tuple<int, int>> list;
+                    if (!hLines.TryGetValue(key, out list))
+                    {
+                        hLines.Add(key, new List<Tuple<int, int>> { new Tuple<int, int>(xend, y) });
+                    }
+                    else
+                    {
+                        list.Add(new Tuple<int, int>(xend, y));
+                    }
+                    pattern[xend][y] = key;
                 }
-                else
-                {
-                    list.Add(new Tuple<int, int>(xend, y));
-                }
-                pattern[xend][y] = key;
-            }
-            key++;
+                key++;
 
-            int yend = pattern[0].Length - 1;
-            for (int x = 0; x < pattern.Length; ++x)
-            {
-                List<Tuple<int, int>> list;
-                if (!vLines.TryGetValue(key, out list))
+                int yend = pattern[0].Length - 1;
+                for (int x = 0; x < pattern.Length; ++x)
                 {
-                    vLines.Add(key, new List<Tuple<int, int>> { new Tuple<int, int>(x, 0) });
+                    List<Tuple<int, int>> list;
+                    if (!vLines.TryGetValue(key, out list))
+                    {
+                        vLines.Add(key, new List<Tuple<int, int>> { new Tuple<int, int>(x, 0) });
+                    }
+                    else
+                    {
+                        list.Add(new Tuple<int, int>(x, 0));
+                    }
+                    pattern[x][0] = key;
                 }
-                else
-                {
-                    list.Add(new Tuple<int, int>(0, yend));
-                }
-                pattern[x][0] = key;
-            }
-            key++;
+                key++;
 
-            for (int x = 0; x < pattern.Length; ++x)
-            {
-                List<Tuple<int, int>> list;
-                if (!vLines.TryGetValue(key, out list))
+                for (int x = 0; x < pattern.Length; ++x)
                 {
-                    vLines.Add(key, new List<Tuple<int, int>> { new Tuple<int, int>(x, yend) });
+                    List<Tuple<int, int>> list;
+                    if (!vLines.TryGetValue(key, out list))
+                    {
+                        vLines.Add(key, new List<Tuple<int, int>> { new Tuple<int, int>(x, yend) });
+                    }
+                    else
+                    {
+                        list.Add(new Tuple<int, int>(x, yend));
+                    }
+                    pattern[x][yend] = key;
                 }
-                else
-                {
-                    list.Add(new Tuple<int, int>(x, yend));
-                }
-                pattern[x][yend] = key;
+                key++;
             }
-            key++;
+            
 
             //output(pattern, "output0.csv");
 
@@ -407,24 +418,34 @@ namespace YGR
                 }
             }
 
-            while (temp.Count() > 0)
+            if (_isRoomCollisionModel)
             {
-                var first = temp.First();
-                int starty = first.Value.First().Item2;
-                int endy = first.Value.Last().Item2;
-                var take = temp.Where(x => x.Value.First().Item2 == starty && x.Value.Last().Item2 == endy).ToList();
-
-                List<Tuple<int, int>> newList = new List<Tuple<int, int>>();
-                int lastx = take.First().Value.First().Item1;
-                foreach (var t in take)
+                while (temp.Count() > 0)
                 {
-                    if (t.Value.First().Item1 > lastx + 1) break;
-                    lastx = t.Value.First().Item1;
-                    newList.AddRange(t.Value);
-                    temp.Remove(t.Key);
+                    var first = temp.First();
+                    int starty = first.Value.First().Item2;
+                    int endy = first.Value.Last().Item2;
+                    var take = temp.Where(x => x.Value.First().Item2 == starty && x.Value.Last().Item2 == endy).ToList();
+
+                    List<Tuple<int, int>> newList = new List<Tuple<int, int>>();
+                    int lastx = take.First().Value.First().Item1;
+                    foreach (var t in take)
+                    {
+                        if (t.Value.First().Item1 > lastx + 1) break;
+                        lastx = t.Value.First().Item1;
+                        newList.AddRange(t.Value);
+                        temp.Remove(t.Key);
+                    }
+                    hLines.Add(key, newList);
+                    key++;
                 }
-                hLines.Add(key, newList);
-                key++;
+            }
+            else
+            {
+                foreach(var t in temp)
+                {
+                    hLines.Add(t.Key, t.Value);
+                }
             }
 
             // then go vertical
@@ -459,25 +480,35 @@ namespace YGR
                 }
             }
 
-            // merge lines that start and end at the same x coordinate
-            while (temp2.Count() > 0)
+            if (_isRoomCollisionModel)
             {
-                var first = temp2.First();
-                int startx = first.Value.First().Item1;
-                int endx = first.Value.Last().Item1;
-                var take = temp2.Where(x => x.Value.First().Item1 == startx && x.Value.Last().Item1 == endx).ToList();
-
-                List<Tuple<int, int>> newList = new List<Tuple<int, int>>();
-                int lasty = take.First().Value.First().Item2;
-                foreach (var t in take)
+                // merge lines that start and end at the same x coordinate
+                while (temp2.Count() > 0)
                 {
-                    if (t.Value.First().Item2 > lasty + 1) break;
-                    lasty = t.Value.First().Item2;
-                    newList.AddRange(t.Value);
-                    temp2.Remove(t.Key);
+                    var first = temp2.First();
+                    int startx = first.Value.First().Item1;
+                    int endx = first.Value.Last().Item1;
+                    var take = temp2.Where(x => x.Value.First().Item1 == startx && x.Value.Last().Item1 == endx).ToList();
+
+                    List<Tuple<int, int>> newList = new List<Tuple<int, int>>();
+                    int lasty = take.First().Value.First().Item2;
+                    foreach (var t in take)
+                    {
+                        if (t.Value.First().Item2 > lasty + 1) break;
+                        lasty = t.Value.First().Item2;
+                        newList.AddRange(t.Value);
+                        temp2.Remove(t.Key);
+                    }
+                    vLines.Add(key, newList);
+                    key++;
                 }
-                vLines.Add(key, newList);
-                key++;
+            }
+            else
+            {
+                foreach(var t in temp2)
+                {
+                    vLines.Add(t.Key, t.Value);
+                }
             }
 
             return new Dictionary<string, Dictionary<int, List<Tuple<int, int>>>>() { { "vertical", vLines }, { "horizontal", hLines }, { "rectangle", rectangles } };

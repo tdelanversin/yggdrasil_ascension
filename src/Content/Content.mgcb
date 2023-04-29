@@ -39,6 +39,12 @@
 /processorParam:Quality=Best
 /build:Sounds/bonus_sound.wav
 
+#begin Sounds/cash-in.wav
+/importer:WavImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:Sounds/cash-in.wav
+
 #begin Sounds/dash.wav
 /importer:WavImporter
 /processor:SoundEffectProcessor
@@ -297,6 +303,18 @@
 /processorParam:TextureFormat=Color
 /build:SpritesOther/heart_yellow.png
 
+#begin SpritesOther/heart.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:SpritesOther/heart.png
+
 #begin SpritesOther/projectile.png
 /importer:TextureImporter
 /processor:TextureProcessor
@@ -320,6 +338,18 @@
 /processorParam:MakeSquare=False
 /processorParam:TextureFormat=Color
 /build:SpritesOther/smaller_projectile.png
+
+#begin SpritesOther/star.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:SpritesOther/star.png
 
 #begin SpritesOther/stroke_10px.png
 /importer:TextureImporter
