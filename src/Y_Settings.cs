@@ -99,12 +99,12 @@ namespace YGR
             if (!Sound)
             {
                 SoundEffect.MasterVolume = 0f;
-                MediaPlayer.Pause();
+                MediaPlayer.IsMuted = true;
             }
             else
             {
                 SoundEffect.MasterVolume = 1f;
-                MediaPlayer.Resume();
+                MediaPlayer.IsMuted = false;
             }
             return Sound;
         }
