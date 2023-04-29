@@ -201,14 +201,16 @@ namespace YGR
             File.WriteAllText(name, s);
         }
 
-        public struct RoofDoor
+        public struct X_RoofDoor
         {
             public Texture2D Roof;
             public Texture2D Mechanism1;
+            public Vector2[] Mechanism1Positions;
             public Texture2D Mechanism2;
+            public Vector2[] Mechanism2Positions;
         }
 
-        public static Texture2D RoomCoverTexture(
+        public static X_RoofDoor RoomCoverTexture(
             string resourceFolder, string jsonFileName,
             GraphicsDevice graphicsDevice,
             int[][] pattern
@@ -223,26 +225,35 @@ namespace YGR
 
             Texture2D texture = new Texture2D(graphicsDevice, pattern[0].Length * info.tileSize, pattern.Length * info.tileSize);
 
+            X_RoofDoor res = new X_RoofDoor();
+            var mechanism1Positions = new List<Vector2>();
+            var mechanism2Positions = new List<Vector2>();
             for (int i = 0; i < pattern.Length; ++i)
             {
                 for (int j = 0; j < pattern[0].Length; ++j)
                 {
-                    if ((X_TileType)pattern[j][i] == X_TileType.Floor || (X_TileType)pattern[j][i] == X_TileType.Wall)
+                    if ((X_TileType)pattern[i][j] == X_TileType.Floor || (X_TileType)pattern[i][j] == X_TileType.Wall)
                     {
                         var rect = new Rectangle(j * info.tileSize, i * info.tileSize, info.tileSize, info.tileSize);
                         texture.SetData<Color>(0, rect, info.tiles["doorCover"].First(), 0, info.tileSize * info.tileSize);
                     }
+                    else if((X_TileType)pattern[i][j] == X_TileType.Roof)
+                    {
+                        mechanism1Positions.Add(new Vector2(j * info.tileSize, i * info.tileSize));
+                        mechanism2Positions.Add(new Vector2(j * info.tileSize, i * info.tileSize));
+                    }
                 }
-            }
-
-            RoofDoor res = new RoofDoor();
+            }            
 
             res.Mechanism1 = new Texture2D(graphicsDevice, info.tileSize, info.tileSize);
             res.Mechanism1.SetData<Color>(info.tiles["mechanism1"].First());
+            res.Mechanism1Positions = mechanism1Positions.ToArray();
             res.Mechanism2 = new Texture2D(graphicsDevice, info.tileSize, info.tileSize);
             res.Mechanism2.SetData<Color>(info.tiles["mechanism2"].First());
+            res.Mechanism2Positions = mechanism2Positions.ToArray();
             res.Roof = texture;
-            return texture;
+
+            return res;
         }
 
         public static void Resolve<Types>(

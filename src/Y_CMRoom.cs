@@ -8,6 +8,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using static YGR.X_AutoTiler;
 
 namespace YGR
 {
@@ -220,6 +221,8 @@ namespace YGR
         //Dictionary<X_DoorTextureLayer, List<X_AutoTiler.X_AutoTileTexture>> _tileTextures;
         //Dictionary<X_DoorTextureLayer, List<X_AutoTiler.X_AutoTileColor>> _tileColors;
 
+        X_RoofDoor _roofDoor;
+
         List<Point> _spawner;
         List<Point> _bossSpawner;
         List<Point> _playerSpawner;
@@ -269,6 +272,8 @@ namespace YGR
             //    Collision.GetCollisionTemplate(),
             //    MapTexture,
             //    out _tileTextures, out _tileColors);
+
+            _roofDoor = X_AutoTiler.RoomCoverTexture(Util.PathOsNormalization("./Levels/"), "doors.json", graphicsDevice, Collision.GetCollisionTemplate());
 
             Name = name;
             Color[] target = null;
@@ -1098,11 +1103,35 @@ namespace YGR
                 Vector2 position = Rect.Location.ToVector2();
                 Vector2 movePosition = position;
                 movePosition.Y += _currentDoorOpenOffset;
-                draw(_tileTextures[X_DoorTextureLayer.Door], movePosition, spriteBatch, false);
-                if (_currentDoorOpenOffset % 2 == 0)
-                    draw(_tileTextures[X_DoorTextureLayer.Mechanism1], position, spriteBatch, false);
-                else
-                    draw(_tileTextures[X_DoorTextureLayer.Mechanism2], position, spriteBatch, false);
+
+                spriteBatch.Draw(
+                    _roofDoor.Roof, movePosition,
+                    new Rectangle(0, 0, _roofDoor.Roof.Width, _roofDoor.Roof.Height),
+                    Color.White, 0, Vector2.Zero, Scale, SpriteEffects.None, 0);
+
+                for(int i=0; i<_roofDoor.Mechanism1Positions.Count(); ++i)
+                {
+                    if (_currentDoorOpenOffset % 2 == 0)
+                    {
+                        spriteBatch.Draw(
+                            _roofDoor.Mechanism1, position + _roofDoor.Mechanism1Positions[i],
+                            new Rectangle(0, 0, TextureTileSize, TextureTileSize),
+                            Color.White, 0, Vector2.Zero, Scale, SpriteEffects.None, 0);
+                    }
+                    else
+                    {
+                        spriteBatch.Draw(
+                            _roofDoor.Mechanism2, position + _roofDoor.Mechanism2Positions[i],
+                            new Rectangle(0, 0, TextureTileSize, TextureTileSize),
+                            Color.White, 0, Vector2.Zero, Scale, SpriteEffects.None, 0);
+                    }
+                }
+
+                //draw(_tileTextures[X_DoorTextureLayer.Door], movePosition, spriteBatch, false);
+                //if (_currentDoorOpenOffset % 2 == 0)
+                //    draw(_tileTextures[X_DoorTextureLayer.Mechanism1], position, spriteBatch, false);
+                //else
+                //    draw(_tileTextures[X_DoorTextureLayer.Mechanism2], position, spriteBatch, false);
 
                 spriteBatch.Draw(
                     _roof, Rect.Location.ToVector2(),
