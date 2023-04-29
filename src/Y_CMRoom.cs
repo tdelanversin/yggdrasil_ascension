@@ -983,6 +983,12 @@ namespace YGR
                 if(powerUp.Active)
                     powerUp.Item.Update(gameTime);
             }
+
+            foreach (var powerUp in _multiPowerups)
+            {
+                if (powerUp.Active)
+                    powerUp.Item.Update(gameTime);
+            }
         }
 
         /// <summary>

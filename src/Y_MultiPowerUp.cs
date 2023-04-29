@@ -98,11 +98,11 @@ namespace YGR
             var c = _finalColor;
             if(_animIntervalCounterMs > _colorTimeMs)
             {
-                c.A = 128;
+                c.A = 45;
             }
             else
             {
-                c.A = (byte)(128.0f / (float)_colorTimeMs * (float)_animIntervalCounterMs);
+                c.A = (byte)(45.0f / (float)_colorTimeMs * (float)_animIntervalCounterMs);
             }
             spriteBatch.Draw(
                     _whiteBackground, Rect.Location.ToVector2(),
