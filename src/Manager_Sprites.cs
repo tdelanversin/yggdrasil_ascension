@@ -11,6 +11,7 @@ namespace YGR
         // Players
         public static Texture2D Player_Ninja { get; private set; }
         public static Texture2D Player_Simple { get; private set; }
+        public static Texture2D Player_NerdyGirl { get; private set; }
         public static Texture2D Player_Ghost { get; private set; }
         public static IList<Texture2D> AimIndicator { get; private set; }
 
@@ -27,6 +28,8 @@ namespace YGR
             Player_Ninja = contentManager.Load<Texture2D>("SpritesCharacters/charaset");
             Player_Simple = contentManager.Load<Texture2D>("SpritesCharacters/tester_60");
             Player_Ghost = contentManager.Load<Texture2D>("SpritesCharacters/ghosty");
+            Player_NerdyGirl = contentManager.Load<Texture2D>("SpritesCharacters/NerdyGirl");
+
             AimIndicator = new List<Texture2D> {
                 contentManager.Load<Texture2D>("SpritesOther/target_indicator_red"),
                 contentManager.Load<Texture2D>("SpritesOther/target_indicator_blue"),
@@ -41,7 +44,8 @@ namespace YGR
             SpinningPlus = contentManager.Load<Texture2D>("SpritesOther/SpinningPlus");
         }
 
-        public static AnimatedSprite NewAnimatedSprite_SpinningHeart(){
+        public static AnimatedSprite NewAnimatedSprite_SpinningHeart()
+        {
             return new AnimatedSprite(
                 texture: SpinningHeart,
                 spriteDimension: new Vector2(638, 987),
@@ -52,7 +56,8 @@ namespace YGR
             );
         }
 
-        public static AnimatedSprite NewAnimatedSprite_SpinningPlus(){
+        public static AnimatedSprite NewAnimatedSprite_SpinningPlus()
+        {
             return new AnimatedSprite(
                 texture: SpinningPlus,
                 spriteDimension: new Vector2(1811, 1938),
