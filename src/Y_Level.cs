@@ -184,10 +184,17 @@ namespace YGR
                 p.X = p.X + (TileWidth - p.X % TileWidth);
                 p.Y = p.Y + (TileHeight - p.Y % TileHeight);
                 room.MoveTo(p);
+                room.InitRoomClosed();
                 Rooms.Add(node.Index, room);
 
-                if (node.Type == "Start") _startRoom = room;
-                else if (node.Type == "Gold") _goldRoom = room;
+                if (node.Type == "Start")
+                {
+                    _startRoom = room;
+                }
+                else if (node.Type == "Gold")
+                {
+                    _goldRoom = room;
+                }
             }
             Logger.Info("Loaded random rooms: " + watch.ElapsedMilliseconds.ToString());
 
@@ -253,8 +260,10 @@ namespace YGR
                 }
             }
 
-            _startRoom.State = X_RoomState.LockedOpen;
-            _goldRoom.State = X_RoomState.LockedOpen;
+            _startRoom.OpenUnlockedRoom();
+            _goldRoom.OpenUnlockedRoom();
+            _startRoom.LockRoomOpen();
+            _goldRoom.LockRoomOpen();
 
             Manager_Players.ClearPlayers();
 
@@ -315,13 +324,10 @@ namespace YGR
                 }
             }
 
-            Manager_Light.CreateModel(this);
-
-            foreach (var room in Rooms.Values)
-            {
-                room.Illuminate();
-            }
-
+            _startRoom.InitRoomLocked(open: true);
+            _goldRoom.InitRoomLocked(open: true);
+            _startRoom.Illuminate();
+            _goldRoom.Illuminate();
             Manager_Sound.PlayFreeRoamMusic();
         }
 
@@ -342,6 +348,50 @@ namespace YGR
             }
 
             return currentRoom;
+        }
+
+        public void SuppliedRoomFunctions()
+        {
+            if (Input.IsKeyTriggered(Keybinds.OpenAllDoors))
+            {
+                foreach(var room in Rooms)
+                {
+                    if(room.Value.WhatAreYou() == X_LevelElements.Room)
+                    {
+                        ((Y_CMRoom)room.Value).OpenAllUnlockedRoomDoors();
+                    }
+                }
+            }
+            else if (Input.IsKeyTriggered(Keybinds.CloseAllDoors))
+            {
+                foreach (var room in Rooms)
+                {
+                    if (room.Value.WhatAreYou() == X_LevelElements.Room)
+                    {
+                        ((Y_CMRoom)room.Value).CloseAllUnlockedRoomDoors();
+                    }
+                }
+            }
+            else if (Input.IsKeyTriggered(Keybinds.LockAllDoors))
+            {
+                foreach (var room in Rooms)
+                {
+                    if (room.Value.WhatAreYou() == X_LevelElements.Room)
+                    {
+                        ((Y_CMRoom)room.Value).LockAllDoors();
+                    }
+                }
+            }
+            else if (Input.IsKeyTriggered(Keybinds.UnlockAllDoors))
+            {
+                foreach (var room in Rooms)
+                {
+                    if (room.Value.WhatAreYou() == X_LevelElements.Room)
+                    {
+                        ((Y_CMRoom)room.Value).LockAllDoors(unlock: true);
+                    }
+                }
+            }
         }
 
         public void Update(GameTime gameTime)
@@ -391,13 +441,13 @@ namespace YGR
                     {
                         // Room does not contain any enemies, so just mark as cleared an move on
                         cmroom.Cleared = true;
-                        cmroom.OpenDoorsAndAdjacentRooms();
+                        cmroom.OpenAllUnlockedRoomDoors();
                         break;
                     }
 
                     // At this point we have all players inside a room with
                     // enemies. Time to go in lock down and let the battle begin
-                    cmroom.LockRoom();
+                    cmroom.CloseAllUnlockedRoomDoors();
                     Camera.SetFocusRoom(cmroom);
                     foreach (var enemy in cmroom.GetEnemiesInside())
                     {
@@ -437,7 +487,7 @@ namespace YGR
                         break; // let players fight
                     }
                     encounterRoom.Cleared = true;
-                    encounterRoom.OpenDoorsAndAdjacentRooms();
+                    encounterRoom.OpenAllUnlockedRoomDoors();
                     Camera.SetFocusPlayers();
 
                     Manager_Sound.PlayFreeRoamMusic();

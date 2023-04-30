@@ -27,6 +27,12 @@
 /processorParam:TextureFormat=Compressed
 /build:Fonts/font_normal.spritefont
 
+#begin Shader/Illuminator.fx
+/importer:EffectImporter
+/processor:EffectProcessor
+/processorParam:DebugMode=Auto
+/build:Shader/Illuminator.fx
+
 #begin Sounds/better_fireball.wav
 /importer:WavImporter
 /processor:SoundEffectProcessor

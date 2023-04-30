@@ -9,6 +9,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using static YGR.X_AutoTiler;
 
 namespace YGR
 {
@@ -133,7 +134,9 @@ namespace YGR
         Closing,
         Closed,
         LockedClosed,
+        LockedClosing,
         LockedOpen,
+        LockedOpening,
         Finished
     }
 
@@ -219,10 +222,10 @@ namespace YGR
         public int TextureTileSize { get; }
         public string ResourceFolder { get; }
         public Color RegionColor { get; }
-        public List<X_Light> Lights;
-        public X_RoomState State { get; set; }
+        public List<X_Light> Lights { get; set; }
+        private X_RoomState State { get; set; }
         public string Category { get; set; }
-
+        public Manager_Light2.X_Vector3[] ShadeCoords { get; set; }
         public List<Rectangle> ResetRects { get; }
 
         private Dictionary<string, string> _ldtkRoomTypeProperties;
@@ -233,8 +236,7 @@ namespace YGR
         private byte[] _roofData;
         private Texture2D _roof;
         private byte[] _wallData;
-        private bool[] _illuminatedOpened;
-        private bool[] _illuminatedClosed;
+        bool[] _illumination = null;
 
         private int _currentDoorOpenOffset = 0;
         private float _doorOpeningTime = 2000.0f;
@@ -500,8 +502,6 @@ namespace YGR
 #endif
 
             State = X_RoomState.Closed;
-            _illuminatedOpened = null;
-            _illuminatedClosed = null;
 
             Lights = new List<X_Light>() {
             new X_Light(
@@ -574,7 +574,14 @@ namespace YGR
             _roofDoor.Mechanism1.SetData<Color>(_roofDoor.Mechanism1Data);
             _roofDoor.Mechanism2 = new Texture2D(graphicsDevice, TextureTileSize, TextureTileSize);
             _roofDoor.Mechanism2.SetData<Color>(_roofDoor.Mechanism2Data);
-            _roofDoor.Roof = _roof;
+            _roofDoor.Roof = new Texture2D(graphicsDevice, _roof.Width, _roof.Height);
+            _roofDoor.Roof.SetData<Color>(_roofDoor.RoofData);
+
+            // if the room is initially open, we need to illuminate it
+            if (State == X_RoomState.Open || State == X_RoomState.LockedOpen)
+            {
+                Illuminate();
+            }
         }
 
         public void ResetRoom()
@@ -619,8 +626,103 @@ namespace YGR
             }
         }
 
-        // One player has COVID -> Lockdown
-        public void LockRoom()
+        public void InitRoomOpen()
+        {
+            State = X_RoomState.Open;
+        }
+
+        public void InitRoomClosed()
+        {
+            State = X_RoomState.Closed;
+        }
+
+        public void InitRoomLocked(bool open = false)
+        {
+            if (open) State = X_RoomState.LockedOpen;
+            else State = X_RoomState.LockedClosed;
+        }
+
+        public bool IsRoomOpen()
+        {
+            return State == X_RoomState.Open;
+        }
+
+        public bool IsRoomClosed()
+        {
+            return State == X_RoomState.Closed;
+        }
+
+        public bool IsRoomLocked()
+        {
+            return State == X_RoomState.LockedOpen || State == X_RoomState.LockedClosed;
+        }
+
+        public bool LockRoomOpen()
+        {
+            if(State == X_RoomState.Open)
+            {
+                State = X_RoomState.LockedOpen;
+                return true;
+            }
+            else if(State == X_RoomState.Closed)
+            {
+                State = X_RoomState.LockedClosing;
+                return true;
+            }
+            return false;
+        }
+
+        public bool LockRoomClosed()
+        {
+            if (State == X_RoomState.Closed)
+            {
+                State = X_RoomState.LockedClosed;
+                return true;
+            }
+            else if(State == X_RoomState.Open)
+            {
+                State = X_RoomState.LockedClosing;
+                return true;
+            }
+            return false;
+        }
+
+        public bool UnlockRoom()
+        {
+            if (State == X_RoomState.LockedOpen)
+            {
+                State = X_RoomState.Open;
+                return true;
+            }
+            if (State == X_RoomState.LockedClosed)
+            {
+                State = X_RoomState.Closed;
+                return true;
+            }
+            return false;
+        }
+
+        public bool OpenUnlockedRoom()
+        {
+            if (State == X_RoomState.Closed)
+            {
+                State = X_RoomState.Opening;
+                return true;
+            }
+            return false;
+        }
+
+        public bool CloseUnlockedRoom()
+        {
+            if(State == X_RoomState.Open)
+            {
+                State = X_RoomState.Closing;
+                return true;
+            }
+            return false;
+        }
+
+        public void LockAllDoors(bool unlock = false)
         {
             foreach (var side in DoorRooms)
             {
@@ -629,16 +731,33 @@ namespace YGR
                     if (walkable.WhatAreYou() == X_LevelElements.Door)
                     {
                         Y_Door door = (Y_Door)walkable;
-                        if (door.State == X_DoorState.Open)
+                        if (unlock) door.UnlockDoor();
+                        else door.LockDoor();
+                    }
+                }
+            }
+        }
+
+        public void LockAllClosedDoors(bool unlock = false)
+        {
+            foreach (var side in DoorRooms)
+            {
+                foreach (var walkable in side.Value)
+                {
+                    if (walkable.WhatAreYou() == X_LevelElements.Door)
+                    {
+                        Y_Door door = (Y_Door)walkable;
+                        if (door.IsDoorClosed())
                         {
-                            door.State = X_DoorState.Closing;
+                            if (unlock) door.UnlockDoor();
+                            else door.LockDoor();
                         }
                     }
                 }
             }
         }
 
-        public void OpenDoorsAndAdjacentRooms()
+        public void LockAllOpenedDoors(bool unlock = false)
         {
             foreach (var side in DoorRooms)
             {
@@ -647,24 +766,85 @@ namespace YGR
                     if (walkable.WhatAreYou() == X_LevelElements.Door)
                     {
                         Y_Door door = (Y_Door)walkable;
-                        if (door.State == X_DoorState.Closed)
+                        if (door.IsDoorOpen())
                         {
-                            door.State = X_DoorState.Opening;
+                            if (unlock) door.UnlockDoor();
+                            else door.LockDoor();
                         }
+                    }
+                }
+            }
+        }
 
-                        // Now the door hall is open, but the next room is not visible. so let's recurse...
-                        foreach (var con in door.DoorRooms)
-                        {
-                            foreach (var room in con.Value)
+        // One player has COVID -> Lockdown
+        public void CloseAllUnlockedRoomDoors(bool lockWhenFinished = false, bool doorsOnly = false)
+        {
+            foreach (var side in DoorRooms)
+            {
+                foreach (var walkable in side.Value)
+                {
+                    if (walkable.WhatAreYou() == X_LevelElements.Door)
+                    {
+                        Y_Door door = (Y_Door)walkable;
+                        if (door.CloseUnlockedDoor()){
+                            if (lockWhenFinished)
                             {
-                                if (room == this)
+                                door.LockDoor();
+                            }
+                            if (!doorsOnly)
+                            {
+                                foreach (var con in door.DoorRooms)
                                 {
-                                    continue; // We are already open
+                                    foreach (var room in con.Value)
+                                    {
+                                        if (room == this)
+                                        {
+                                            continue; // We are already open
+                                        }
+                                        Y_CMRoom cmroom = (Y_CMRoom)room;
+                                        cmroom.CloseUnlockedRoom();
+                                        if (lockWhenFinished)
+                                        {
+                                            cmroom.LockRoomClosed();
+                                        }
+                                    }
                                 }
-                                Y_CMRoom cmroom = (Y_CMRoom)room;
-                                if (cmroom.State == X_RoomState.Closed)
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        public void OpenAllUnlockedRoomDoors(bool lockWhenFinished = false)
+        {
+            foreach (var side in DoorRooms)
+            {
+                foreach (var walkable in side.Value)
+                {
+                    if (walkable.WhatAreYou() == X_LevelElements.Door)
+                    {
+                        Y_Door door = (Y_Door)walkable;
+                        if (door.OpenUnlockedDoor()){
+                            if (lockWhenFinished)
+                            {
+                                door.LockDoor();
+                            }
+                            // Now the door hall is open, but the next room is not visible. so let's recurse...
+                            foreach (var con in door.DoorRooms)
+                            {
+                                foreach (var room in con.Value)
                                 {
-                                    cmroom.State = X_RoomState.Opening;
+                                    if (room == this)
+                                    {
+                                        continue; // We are already open
+                                    }
+                                    Y_CMRoom cmroom = (Y_CMRoom)room;
+                                    cmroom.OpenUnlockedRoom();
+                                    if (lockWhenFinished)
+                                    {
+                                        cmroom.LockRoomOpen();
+                                    }
                                 }
                             }
                         }
@@ -695,78 +875,25 @@ namespace YGR
             return X_TileType.DontCare;
         }
 
-        public void PreloadIlluminations()
-        {
-            _illuminatedClosed = Manager_Light.LoadShadeFromFile(false, this, Lights);
-            //_illuminatedOpened = Manager_Light.LoadShadeFromFile(true, this, Lights);
-        }
-
         public void Illuminate()
         {
             if (!Settings.Lighting) return;
 
             if (_floorColorData == null)
             {
-                Vector3 offset = new Vector3(Rect.Location.X / Scale, Rect.Location.Y / Scale, 0);
-
-                if (_illuminatedClosed == null)
-                {
-                    //Logger.Info(" ...Recalculated closed illumination... ");
-                    _illuminatedClosed = Manager_Light.Illuminate(Lights, Collision.GetCollisionTemplate(), TextureTileSize, offset, false);
-                    Manager_Light.RemoveAllShadeFiles(this, false);
-                    Manager_Light.SaveShadeToFile(_illuminatedClosed, false, this, Lights);
-                }
-
-                //if (_illuminatedOpened == null)
-                //{
-                //    //Logger.Info(" ...Recalculated opened illumination... ");
-                //    _illuminatedOpened = Manager_Light.Illuminate(Lights, Collision.GetCollisionTemplate(), TextureTileSize, offset, true);
-                //    Manager_Light.RemoveAllShadeFiles(this, true);
-                //    Manager_Light.SaveShadeToFile(_illuminatedOpened, true, this, Lights);
-                //}
-
-                _illuminatedOpened = _illuminatedClosed.Clone() as bool[];
-                foreach (var d in DoorRooms)
-                {
-                    var door = (Y_Door)d.Value.First(); //DoorRooms[mask.Key].First();
-                    var room = door.GetOtherDoor(this);
-                    var template = _doorMasks[room.Item1].First().GetTemplate();
-
-                    var illumination = Manager_Light.Illuminate(room.Item2.Lights, template /*Collision.GetCollisionTemplate()*/, TextureTileSize, offset, true);//, Manager_Light.Caster.Light);
-
-                    Parallel.For(0, illumination.Length, i =>
-                    //for (int i = 0; i < illumination.Length; ++i)
-                    {
-                        if (illumination[i] && _doorMasks[room.Item1].First().Check(i))
-                            _illuminatedOpened[i] = illumination[i];
-                    });
-                }
-
                 _floorColorData = new Color[_floor.Width * _floor.Height];
-                _floor.GetData<Color>(_floorColorData);
+                _floor.GetData<Color>(_floorColorData);                
             }
+            
+            Vector3 offset = new Vector3(Rect.Location.X / Scale, Rect.Location.Y / Scale, 0);
+            _illumination = Manager_Light2.Illuminate(this, offset);
 
-            var rooms = DoorRooms.Select(x => (Y_Door)x.Value.First()).ToArray();
-            var keys = DoorRooms.Select(x => x.Key).ToArray();
 
             Color[] data = new Color[_floor.Width * _floor.Height];
-
-
-            Parallel.For(0, _illuminatedClosed.Length, i =>
+            Parallel.For(0, _illumination.Length, i =>
             //for (int i = 0; i < _illuminatedClosed.Length; ++i)
             {
-                bool illuminated = _illuminatedClosed[i];
-                if (!illuminated)
-                {
-                    for (int r = 0; r < rooms.Length; ++r)
-                    {
-                        if (rooms[r].DoorIsOpen())
-                        {
-                            var check = _doorMasks[keys[r]].First().Check(i);
-                            illuminated = illuminated || (check && _illuminatedOpened[i]);
-                        }
-                    }
-                }
+                bool illuminated = _illumination[i];
 
                 if (!illuminated)
                 {
@@ -783,6 +910,17 @@ namespace YGR
                 }
             });
             _floor.SetData<Color>(data);
+        }
+
+        private void drawFloor(SpriteBatch spriteBatch)
+        {
+            lock (this)
+            {
+                spriteBatch.Draw(
+                _floor, Rect.Location.ToVector2(),
+                new Rectangle(0, 0, _floor.Width, _floor.Height),
+                Color.White, 0, Vector2.Zero, Scale, SpriteEffects.None, 0);
+            }
         }
 
         public X_ConnectorPoint GetConnectorPoint(X_ConnectorSide side, string name = "")
@@ -1010,6 +1148,26 @@ namespace YGR
             return Manager_Enemies.GetEnemies().ToList().FindAll(e => e.Room == this);
         }
 
+        public void SuppliedRoomFunctions()
+        {
+            if (Input.IsKeyTriggered(Keybinds.OpenAllAdjacentDoors))
+            {
+                this.OpenAllUnlockedRoomDoors();
+            }
+            else if (Input.IsKeyTriggered(Keybinds.CloseAllAdjacentDoors))
+            {
+                this.CloseAllUnlockedRoomDoors();
+            }
+            else if (Input.IsKeyTriggered(Keybinds.LockAllAdjacentDoors))
+            {
+                this.LockAllDoors();
+            }
+            else if (Input.IsKeyTriggered(Keybinds.UnlockAllAdjacentDoors))
+            {
+                this.LockAllDoors(unlock: true);
+            }
+        }
+
         /// <summary>
         /// Regular Monogame Update method
         /// </summary>
@@ -1045,35 +1203,53 @@ namespace YGR
 
 
 
-            bool keyPressed = Input.IsKeyTriggered(Keybinds.ToggleConnectors);
+            //bool keyPressed = Input.IsKeyTriggered(Keybinds.ToggleConnectors);
             float dt = gameTime.ElapsedGameTime.Milliseconds;
             switch (State)
             {
                 case X_RoomState.Closed:
-                    if (keyPressed)
+                    //if (keyPressed)
+                    //{
+                    //    State = X_RoomState.Opening;
+                    //}
+                    break;
+                case X_RoomState.LockedOpening:
+                    if (!doorAnimation(dt, true))
                     {
-                        State = X_RoomState.Opening;
+                        State = X_RoomState.LockedOpen;
+                        Illuminate();
                     }
+                    break;
+                case X_RoomState.LockedOpen:
                     break;
                 case X_RoomState.Opening:
                     if (!doorAnimation(dt, true))
                     {
                         State = X_RoomState.Open;
-                        foreach (var room in DoorRooms.Values) room.First().Illuminate();
+                        Illuminate();
                     }
                     break;
                 case X_RoomState.Open:
-                    if (keyPressed)
-                    {
-                        State = X_RoomState.Closing;
-                    }
+                    //if (keyPressed)
+                    //{
+                    //    State = X_RoomState.Closing;
+                    //}
                     break;
                 case X_RoomState.Closing:
                     if (!doorAnimation(dt, false))
                     {
                         State = X_RoomState.Closed;
-                        foreach (var room in DoorRooms.Values) room.First().Illuminate();
+                        Illuminate();
                     }
+                    break;
+                case X_RoomState.LockedClosing:
+                    if (!doorAnimation(dt, false))
+                    {
+                        State = X_RoomState.LockedClosed;
+                        Illuminate();
+                    }
+                    break;
+                case X_RoomState.LockedClosed:
                     break;
             }
 
@@ -1168,7 +1344,12 @@ namespace YGR
                 //    new Rectangle(0, 0, _floor.Width, _floor.Height),
                 //    Color.White, 0, Vector2.Zero, Scale, SpriteEffects.None, 0);
             }
-            else if (State == X_RoomState.Opening || State == X_RoomState.Closing)
+            else if (
+                State == X_RoomState.Opening || 
+                State == X_RoomState.Closing ||
+                State == X_RoomState.LockedClosing ||
+                State == X_RoomState.LockedOpening
+            )
             {
                 spriteBatch.Draw(
                     _floor, Rect.Location.ToVector2(),
@@ -1218,7 +1399,7 @@ namespace YGR
                     new Rectangle(0, 0, _floor.Width, _floor.Height),
                     Color.White, 0, Vector2.Zero, Scale, SpriteEffects.None, 0);
 
-                foreach(var powerUp in _powerUps)
+                foreach (var powerUp in _powerUps)
                 {
                     if(powerUp.Active == true)
                     {

@@ -476,7 +476,7 @@ namespace YGR
 
             if (Room.WhatAreYou() == X_LevelElements.Room)
             {
-                if (((Y_CMRoom)Room).State == X_RoomState.Closed)
+                if (((Y_CMRoom)Room).IsRoomClosed())
                 {
                     return;
                 }
@@ -484,7 +484,7 @@ namespace YGR
             }
             else if (Room.WhatAreYou() == X_LevelElements.Door)
             {
-                if (((Y_Door)Room).State == X_DoorState.Closed)
+                if (((Y_Door)Room).IsDoorClosed())
                 {
                     return;
                 }

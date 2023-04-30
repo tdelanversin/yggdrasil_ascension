@@ -63,7 +63,9 @@
   <ItemGroup>
     <PackageReference Include="LDtkMonogame" Version="1.0.1" />
     <PackageReference Include="LDtkMonogame.ContentPipeline" Version="1.0.1" />
+    <PackageReference Include="MonoGame.Content.Builder.Task.Compute" Version="3.8.2" />
     <PackageReference Include="MonoGame.Extended.Particles" Version="3.8.0" />
+    <PackageReference Include="MonoGame.Framework.Compute.DesktopGL" Version="3.8.2" />
     <PackageReference Include="MonoGame.Framework.DesktopGL" Version="3.8.1.303" />
     <PackageReference Include="MonoGame.Content.Builder.Task" Version="3.8.1.303" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
@@ -90,6 +92,9 @@
     <Content Include="Doors\**">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Content\Shader\" />
   </ItemGroup>
   <Target Name="RestoreDotnetTools" BeforeTargets="Restore">
     <Message Text="Restoring dotnet tools" Importance="High" />

@@ -44,7 +44,7 @@ namespace YGR
             Manager_Projectile.Initialize(Content);
             Manager_Players.Initialize();
             Manager_Particles.Initialize();
-            Manager_Light.Initialize("./Levels/" + level + "/simplified");
+            Manager_Light2.Initialize("./Levels/" + level + "/simplified", Content, GraphicsDevice);
             X_AutoTiler.Initialize("./Doors/", "data.json", GraphicsDevice, Y_Door.MapJsonName);
             X_AutoTiler.Initialize("./Levels/", "doors.json", GraphicsDevice, Y_CMRoom.MapJsonName);
             Y_MultiPowerUp.Initialize(Content);
@@ -78,6 +78,7 @@ namespace YGR
 
             Notifications.Clear();
 
+            Manager_Light2.Platform = Manager_Light2.Type.GPU;
             _level.Create(GraphicsDevice);
 
             // Once everything is in place, inform Update() of the new desired state
