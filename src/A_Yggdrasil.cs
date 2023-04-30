@@ -103,6 +103,7 @@ namespace YGR
               for a smooth transition.
             */
 
+            Manager_Light2.Platform = Manager_Light2.Type.GPU;
             _level.Create(GraphicsDevice);
 
             // Once everything is in place, inform Update() of the new desired state

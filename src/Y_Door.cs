@@ -57,10 +57,11 @@ namespace YGR
         public string ResourceFolder { get; }
         public Manager_Light2.X_Point3[] IlluminationModel { get; set; }
         public List<X_Light> Lights { get; set; }
+        public Manager_Light2.X_Vector3[] ShadeCoords { get; set; }
 
         private new Dictionary<X_DoorState, List<Rectangle>> _doorCollisionRectangles;
 
-        public X_DoorState State { get; set; }
+        private X_DoorState State { get; set; }
 
         private X_DoorDirection _direction;
         //private Texture2D _floor;
@@ -103,7 +104,7 @@ namespace YGR
             int[][] collision = createDoorTemplate(numTilesLength, tileOffset);
             collision = flipToPosition(collision, direction, tileOffset);
             collision = getDoorPoints(collision, tileWidth, tileHeight);
-            _illuminated = null;
+            //_illuminated = null;
 
             Collision = new X_CollisionModel_Room(collision, tileWidth, tileHeight, isRoomCollisionModel: false);
 
@@ -111,6 +112,7 @@ namespace YGR
             Scale = 1.0f;
             _doorCollisionRectangles = new Dictionary<X_DoorState, List<Rectangle>>();
             ResourceFolder = Util.PathOsNormalization(resourceFolder);
+            Lights = new List<X_Light>();
 
             X_AutoTiler.Resolve<X_DoorTextureLayer>(
                 ResourceFolder, tileJsonFile, 
@@ -272,48 +274,51 @@ namespace YGR
         {
             if (!Settings.Lighting) return;
 
-            var lights = new List<X_Light>();
-            foreach (var room in DoorRooms)
-            {
-                var r = (Y_CMRoom)room.Value.First();
-                lights.AddRange(r.Lights);
-            }
+            //var lights = new List<X_Light>();
+            //foreach (var room in DoorRooms)
+            //{
+            //    var r = (Y_CMRoom)room.Value.First();
+            //    lights.AddRange(r.Lights);
+            //}
 
-            Vector3 offset = new Vector3(Rect.Location.X / Scale, Rect.Location.Y / Scale, 0);
-            _illuminated = Manager_Light2.Illuminate(this, offset);
-
-            Color[] red = Enumerable.Repeat<Color>(Color.Green, _tileSize * _tileSize).ToArray();
-            foreach (var tile in _tileColors)
+            if(_illuminated == null)
             {
-                if (tile.Key != X_DoorTextureLayer.Floor) continue;
-                for(int t=0; t<tile.Value.Count; ++t) // (var t in tile.Value)
+                Vector3 offset = new Vector3(Rect.Location.X / Scale, Rect.Location.Y / Scale, 0);
+                _illuminated = Manager_Light2.Illuminate(this, offset);
+
+                Color[] red = Enumerable.Repeat<Color>(Color.Green, _tileSize * _tileSize).ToArray();
+                foreach (var tile in _tileColors)
                 {
-
-                    var location = tile.Value[t].Location();
-                    Rectangle rect = new Rectangle(location.X * _tileSize, location.Y * _tileSize, _tileSize, _tileSize);
-
-                    var light = getRectFromArray(_illuminated, rect);
-                    for (int i = 0; i < tile.Value[t].Color().Length; ++i)
+                    if (tile.Key != X_DoorTextureLayer.Floor) continue;
+                    for (int t = 0; t < tile.Value.Count; ++t) // (var t in tile.Value)
                     {
-                        var col = tile.Value[t].Color()[i];
-                        if (!light[i])
+
+                        var location = tile.Value[t].Location();
+                        Rectangle rect = new Rectangle(location.X * _tileSize, location.Y * _tileSize, _tileSize, _tileSize);
+
+                        var light = getRectFromArray(_illuminated, rect);
+                        for (int i = 0; i < tile.Value[t].Color().Length; ++i)
                         {
-                            Color nCol = Color.White;
-                            nCol.R = (byte)((1 - 0.4f) * col.R + 0.4f * Color.Black.R);
-                            nCol.G = (byte)((1 - 0.4f) * col.G + 0.4f * Color.Black.G);
-                            nCol.B = (byte)((1 - 0.4f) * col.B + 0.4f * Color.Black.B);
-                            tile.Value[t].Color()[i] = nCol;
+                            var col = tile.Value[t].Color()[i];
+                            if (!light[i])
+                            {
+                                Color nCol = Color.White;
+                                nCol.R = (byte)((1 - 0.4f) * col.R + 0.4f * Color.Black.R);
+                                nCol.G = (byte)((1 - 0.4f) * col.G + 0.4f * Color.Black.G);
+                                nCol.B = (byte)((1 - 0.4f) * col.B + 0.4f * Color.Black.B);
+                                tile.Value[t].Color()[i] = nCol;
+                            }
                         }
                     }
                 }
-            }
 
-            var colors = _tileColors.Where(x => x.Key == X_DoorTextureLayer.Floor).Select(x => x.Value).First();
-            var textures = _tileTextures.Where(x => x.Key == X_DoorTextureLayer.Floor).Select(x => x.Value).First();
-            for (int t = 0; t < colors.Count(); ++t)
-            {
-                textures[t].Texture().SetData<Color>(colors[t].Color());
-            };
+                var colors = _tileColors.Where(x => x.Key == X_DoorTextureLayer.Floor).Select(x => x.Value).First();
+                var textures = _tileTextures.Where(x => x.Key == X_DoorTextureLayer.Floor).Select(x => x.Value).First();
+                for (int t = 0; t < colors.Count(); ++t)
+                {
+                    textures[t].Texture().SetData<Color>(colors[t].Color());
+                };
+            }
         }
 
         private bool[] getRectFromArray(bool[] lighted, Rectangle rect)
@@ -920,54 +925,115 @@ namespace YGR
                 Collision.UpdateCollisionRectangles(_doorCollisionRectangles[X_DoorState.Closed]);
         }
 
+        public bool IsDoorOpen()
+        {
+            return State == X_DoorState.Open || State == X_DoorState.LockedOpen;
+        }
+
+        public bool IsDoorClosed()
+        {
+            return 
+                State == X_DoorState.Closed || 
+                State == X_DoorState.LockedClosed ||
+                State == X_DoorState.Closing || 
+                State == X_DoorState.Opening;
+        }
+
+        public bool IsDoorLocked()
+        {
+            return State == X_DoorState.LockedClosed || State == X_DoorState.LockedOpen;
+        }
+
         public bool LockDoor()
         {
-            if (!(State == X_DoorState.Open || State == X_DoorState.Closed)) return false;
             if(State == X_DoorState.Open)
+            {
                 State = X_DoorState.LockedOpen;
+                return true;
+            }
             if(State == X_DoorState.Closed)
+            {
                 State = X_DoorState.LockedClosed;
+                return true;
+            }
 
-            return true;
+            return false;
+        }
+
+        public bool UnlockDoor()
+        {
+            if(State == X_DoorState.LockedOpen)
+            {
+                State = X_DoorState.Open;
+                return true;
+            }
+            if(State == X_DoorState.LockedClosed)
+            {
+                State = X_DoorState.Closed;
+                return true;
+            }
+            return false;
+        }
+
+        public bool OpenUnlockedDoor()
+        {
+            if(State == X_DoorState.Closed)
+            {
+                State = X_DoorState.Opening;
+                return true;
+            }
+            return false;
+        }
+
+        public bool CloseUnlockedDoor()
+        {
+            if (State == X_DoorState.Open)
+            {
+                State = X_DoorState.Closing;
+                return true;
+            }
+            return false;
         }
 
         public void Update(GameTime gameTime)
         {
-            bool keyPressed = Input.IsKeyTriggered(Keybinds.ToggleConnectors);
             float dt = gameTime.ElapsedGameTime.Milliseconds;
             switch (State)
             {
                 case X_DoorState.Closed:
-                    if (keyPressed)
-                    {
-                        State = X_DoorState.Opening;
-                    }
+                    //if (keyPressed)
+                    //{
+                    //    State = X_DoorState.Opening;
+                    //}
+                    break;
+                case X_DoorState.LockedOpen:
+                    Illuminate(); // only happens once no matter where it is!!
                     break;
                 case X_DoorState.Opening:
+                    Illuminate(); // only happens once no matter where it is!!
                     if (!doorAnimation(dt, true))
                     {
                         State = X_DoorState.Open;
-                        OpenDoor();
-                        foreach (var room in DoorRooms.Values) room.First().Illuminate();
+                        openDoor();
                     }
                     break;
                 case X_DoorState.Open:
-                    if (keyPressed)
-                    {
-                        State = X_DoorState.Closing;
-                    }
+                    Illuminate(); // only happens once no matter where it is!!
+                    //if (keyPressed)
+                    //{
+                    //    State = X_DoorState.Closing;
+                    //}
                     break;
                 case X_DoorState.Closing:
                     if (!_closingTheDoor)
                     {
-                        CloseDoor();
+                        closeDoor();
                         _closingTheDoor = true;
                     }
                     if (!doorAnimation(dt, false))
                     {
                         _closingTheDoor = false;
                         State = X_DoorState.Closed;
-                        foreach (var room in DoorRooms.Values) room.First().Illuminate();
                     }
                     break;
             }
@@ -983,13 +1049,13 @@ namespace YGR
             return _doorCollisionRectangles[X_DoorState.Closed];
         }
 
-        public void OpenDoor()
+        private void openDoor()
         {
             if (_doorCollisionRectangles.ContainsKey(X_DoorState.Open))
                 Collision.UpdateCollisionRectangles(_doorCollisionRectangles[X_DoorState.Open]);
         }
 
-        public void CloseDoor()
+        private void closeDoor()
         {
             if (_doorCollisionRectangles.ContainsKey(X_DoorState.Closed))
                 Collision.UpdateCollisionRectangles(_doorCollisionRectangles[X_DoorState.Closed]);
