@@ -1,7 +1,6 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
-using Microsoft.Xna.Framework.Media;
 
 namespace YGR
 {
@@ -55,7 +54,7 @@ namespace YGR
             Y_PowerUp.Initialize(Content);
             Y_MultiPowerUp.Initialize(Content);
 
-            _level = new Y_Level(level, 32, "./Levels/", "./Doors", GraphicsDevice);
+            _level = new Y_Level(level, 32, 32, "./Levels/", "./Doors");
 
             base.Initialize();
         }
