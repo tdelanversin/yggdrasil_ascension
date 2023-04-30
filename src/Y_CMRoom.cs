@@ -1,4 +1,5 @@
-﻿using Assimp.Configs;
+﻿//#define PARALLEL_DEBUG_ROOM
+
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Newtonsoft.Json;
@@ -8,10 +9,39 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using static YGR.X_AutoTiler;
 
 namespace YGR
 {
+    public class X_RoomStump
+    {
+        public string Category;
+        public string Name;
+        public int TileWidth;
+        public int TileHeight;
+        public int TextureTileSize;
+        public string ResourceFolder;
+        public Dictionary<string, string> LdtkRoomTypeProperties;
+
+        public X_RoomStump(
+            string category,
+            string name,
+            int tileWidth,
+            int tileHeight,
+            int textureTileSize,
+            string resourceFolder,
+            Dictionary<string, string> ldtkRoomTypeProperties
+        )
+        {
+            Category = category;
+            Name = name;
+            TileWidth = tileWidth;
+            TileHeight = tileHeight;
+            TextureTileSize = textureTileSize;
+            ResourceFolder = resourceFolder;
+            LdtkRoomTypeProperties = ldtkRoomTypeProperties;
+        }
+    }
+
     internal sealed class Door
     {
         public string id;
@@ -208,9 +238,12 @@ namespace YGR
 
         private Dictionary<string, string> _ldtkRoomTypeProperties;
 
+        private byte[] _floorData;
         private Texture2D _floor;
+        private Color[] _floorColorData;
+        private byte[] _roofData;
         private Texture2D _roof;
-        private Color[] _floorData;
+        private byte[] _wallData;
         private bool[] _illuminatedOpened;
         private bool[] _illuminatedClosed;
 
@@ -221,7 +254,7 @@ namespace YGR
         //Dictionary<X_DoorTextureLayer, List<X_AutoTiler.X_AutoTileTexture>> _tileTextures;
         //Dictionary<X_DoorTextureLayer, List<X_AutoTiler.X_AutoTileColor>> _tileColors;
 
-        X_RoofDoor _roofDoor;
+        X_AutoTiler.X_RoofDoor _roofDoor;
 
         List<Point> _spawner;
         List<Point> _bossSpawner;
@@ -232,91 +265,86 @@ namespace YGR
 
         public bool Cleared;
 
+#if PARALLEL_DEBUG_ROOM
+        public static ConcurrentDictionary<string, int> dbag = new ConcurrentDictionary<string, int>();
+#endif
+
         public Y_CMRoom(
-            string name,
-            int tileWidth,
-            int tileHeight,
-            string resourceFolder,
-            Dictionary<string, string> ldtkRoomTypeProperties,
-            GraphicsDevice graphicsDevice
+            X_RoomStump initiator
         )
         {
-            ResourceFolder = Util.PathOsNormalization(resourceFolder);
+            Name = initiator.Name;
+            Category = initiator.Category;
+            TextureTileSize = initiator.TextureTileSize;
+            ResourceFolder = Util.PathOsNormalization(initiator.ResourceFolder);
             var files = Directory.GetFiles(ResourceFolder);
             string dataFileName = Path.GetFileName(files.Where(x => Path.GetFileName(x).Contains("data") && Path.GetFileName(x).EndsWith(".json")).First());
-            
             string collisionsFileName = Path.GetFileName(files.Where(x => Path.GetFileName(x).Contains("Collision") && Path.GetFileName(x).EndsWith(".csv")).First());
-            string[] lines = File.ReadAllLines(ResourceFolder + collisionsFileName);
-            int[][] collisions = new int[lines.Length][];
+            var lines = File.ReadAllLinesAsync(ResourceFolder + collisionsFileName);
+
+#if PARALLEL_DEBUG_ROOM
+            dbag.AddOrUpdate(name, 0, (n, v) => v+1);
+#endif
+
+            _ldtkRoomTypeProperties = initiator.LdtkRoomTypeProperties;
+
+            var readFloor = File.ReadAllBytesAsync(ResourceFolder + _ldtkRoomTypeProperties["Floor"]);
+            var readWall = File.ReadAllBytesAsync(ResourceFolder + _ldtkRoomTypeProperties["Wall"]);
+            var readRoof = File.ReadAllBytesAsync(ResourceFolder + _ldtkRoomTypeProperties["Roof"]);
+
+#if PARALLEL_DEBUG_ROOM
+            dbag.AddOrUpdate(name, 0, (n, v) => v + 1);
+#endif
+
+            lines.Wait();
+            int[][] collisions = new int[lines.Result.Length][];
             int counter = 0;
-            foreach (var line in lines)
+            foreach (var line in lines.Result)
             {
                 collisions[counter] = line.Split(',').Where(i => i != "").Select(int.Parse).ToArray();
                 counter++;
             }
-            
+
+#if PARALLEL_DEBUG_ROOM
+            dbag.AddOrUpdate(name, 0, (n, v) => v + 1);
+#endif
+
             collisions = paddOutline(collisions);
-            Collision = new X_CollisionModel_Room(collisions, tileWidth, tileHeight);
-            Graph = new X_RoomGraph(this, collisions, tileWidth, tileHeight);
+            Collision = new X_CollisionModel_Room(collisions, initiator.TileWidth, initiator.TileHeight);
+            Graph = new X_RoomGraph(this, collisions, initiator.TileWidth, initiator.TileHeight);
             Rect = new Rectangle(0, 0, collisions[0].Length * Collision.TileWidth, collisions.Length * Collision.TileHeight);
             ResetRects = new List<Rectangle>();
-            
+
+#if PARALLEL_DEBUG_ROOM
+            dbag.AddOrUpdate(name, 0, (n, v) => v + 1);
+#endif
+
             Doors = new Dictionary<X_ConnectorSide, IList<X_ConnectorPoint>>();
             DoorRooms = new Dictionary<X_ConnectorSide, IList<IWalkable>>();
             _doorMasks = new Dictionary<X_ConnectorSide, IList<X_DoorMask>>();
-            _ldtkRoomTypeProperties = ldtkRoomTypeProperties;
 
-            //X_AutoTiler.Resolve<X_DoorTextureLayer>(
-            //    Util.PathOsNormalization("./Levels/"), "doors.json",
-            //    graphicsDevice,
-            //    Collision.GetCollisionTemplate(),
-            //    MapTexture,
-            //    out _tileTextures, out _tileColors);
+            _roofDoor = X_AutoTiler.RoomCoverTexture(
+                initiator.Name,
+                Util.PathOsNormalization("./Levels/"), 
+                "doors.json", Collision.GetCollisionTemplate());
 
-            _roofDoor = X_AutoTiler.RoomCoverTexture(Util.PathOsNormalization("./Levels/"), "doors.json", graphicsDevice, Collision.GetCollisionTemplate());
+#if PARALLEL_DEBUG_ROOM
+            dbag.AddOrUpdate(name, 0, (n, v) => v + 1);
+#endif
 
-            Name = name;
-            Color[] target = null;
-            using (FileStream fileStream = new FileStream(ResourceFolder + _ldtkRoomTypeProperties["Floor"], FileMode.Open))
-            {
-                _floor = Texture2D.FromStream(graphicsDevice, fileStream);
-                target = new Color[_floor.Width * _floor.Height];
-                _floor.GetData<Color>(target);
-            }
-
-            using (FileStream fileStream = new FileStream(ResourceFolder + _ldtkRoomTypeProperties["Wall"], FileMode.Open))
-            {
-                var t = Texture2D.FromStream(graphicsDevice, fileStream);
-                Color[] source = new Color[_floor.Width * _floor.Height];
-                Texture2D.FromStream(graphicsDevice, fileStream).GetData<Color>(source);
-
-                for (int h = 0; h < _floor.Height; ++h)
-                {
-                    for (int w = 0; w < _floor.Width; ++w)
-                    {
-                        var c = source[h * _floor.Width + w];
-                        if (c.A != 0)
-                            target[h * _floor.Width + w] = source[h * _floor.Width + w];
-                    }
-                }
-            }
-
-            _floor.SetData<Color>(target);
-
-            using (FileStream fileStream = new FileStream(ResourceFolder + _ldtkRoomTypeProperties["Roof"], FileMode.Open))
-            {
-                _roof = Texture2D.FromStream(graphicsDevice, fileStream);
-            }
-
-            TextureTileSize = _floor.Height / collisions.Length;
-            Scale = (float)tileHeight / TextureTileSize;
+            Scale = (float)initiator.TileHeight / TextureTileSize;
 
             List<string> layers;
-            using (StreamReader stream = new StreamReader(ResourceFolder + dataFileName))
+            //using (StreamReader stream = new StreamReader(ResourceFolder + dataFileName))
+            //{
+
+            var json = File.ReadAllTextAsync(ResourceFolder + dataFileName);
+            json.Wait();
+            dynamic array = JsonConvert.DeserializeObject(json.Result);
+            layers = JsonConvert.DeserializeObject<List<string>>(array.layers.ToString());
+
+            var t1 = Task.Run(() =>
             {
-                string json = stream.ReadToEnd();
-                dynamic array = JsonConvert.DeserializeObject(json);
-                layers = JsonConvert.DeserializeObject<List<string>>(array.layers.ToString());
                 if (array.entities.Door != null)
                 {
                     IList<Door> doors = JsonConvert.DeserializeObject<List<Door>>(array.entities.Door.ToString());
@@ -333,36 +361,55 @@ namespace YGR
                         }
                     }
                 }
-                // assign power ups
+            });
+
+            _spawner = new List<Point>();
+            // assign power ups
+            var t2 = Task.Run(() =>
+            {
                 if (array.entities.Spawner != null)
                 {
                     var spawner = JsonConvert.DeserializeObject<List<Spawner>>(array.entities.Spawner.ToString());
-                    _spawner = new List<Point>();
                     foreach (var s in spawner)
                     {
                         _spawner.Add(new Point(s.x + Rect.X, s.y + Rect.Y));
                     }
                 }
-                if (array.entities.BossSpawner != null)
+            });
+
+            _bossSpawner = new List<Point>();
+            var t3 = Task.Run(() =>
+            {
+                    if (array.entities.BossSpawner != null)
                 {
                     var bossSpawner = JsonConvert.DeserializeObject<List<BossSpawner>>(array.entities.BossSpawner.ToString());
-                    _bossSpawner = new List<Point>();
                     foreach (var s in bossSpawner)
                     {
                         _bossSpawner.Add(new Point(s.x + Rect.X, s.y + Rect.Y));
                     }
                 }
+            });
+
+            _playerSpawner = new List<Point>();
+            var t4 = Task.Run(() =>
+            {
                 if (array.entities.Player != null)
                 {
                     var playerSpawner = JsonConvert.DeserializeObject<List<PlayerSpawner>>(array.entities.Player.ToString());
-                    _playerSpawner = new List<Point>();
                     foreach (var s in playerSpawner)
                     {
                         _playerSpawner.Add(new Point(s.x + Rect.X, s.y + Rect.Y));
                     }
                 }
+            });
 
-                _powerUps = new List<PowerUpItem>();
+#if PARALLEL_DEBUG_ROOM
+            dbag.AddOrUpdate(name, 0, (n, v) => v + 1);
+#endif
+
+            _powerUps = new List<PowerUpItem>();
+            var t5 = Task.Run(() =>
+            {
                 if (array.entities.Life != null)
                 {
                     var life = JsonConvert.DeserializeObject<List<Life>>(array.entities.Life.ToString());
@@ -372,6 +419,7 @@ namespace YGR
                         _powerUps.Add(new PowerUpItem(Y_PowerUp.Factory(Y_PowerUps.Life, location, s.width, s.height, TextureTileSize, Scale, null)));
                     }
                 }
+
                 if (array.entities.Revive != null)
                 {
                     var revive = JsonConvert.DeserializeObject<List<Revive>>(array.entities.Revive.ToString());
@@ -381,8 +429,11 @@ namespace YGR
                         _powerUps.Add(new PowerUpItem(Y_PowerUp.Factory(Y_PowerUps.Revive, location, s.width, s.height, TextureTileSize, Scale, null)));
                     }
                 }
+            });
 
-                _multiPowerups = new List<MultiPowerUpItem>();
+            _multiPowerups = new List<MultiPowerUpItem>();
+            var t6 = Task.Run(() =>
+            {
                 if (array.entities.MultiPowerUp != null)
                 {
                     var multiPowerUp = JsonConvert.DeserializeObject<List<MultiPowerUp>>(array.entities.MultiPowerUp.ToString());
@@ -394,20 +445,13 @@ namespace YGR
                         _multiPowerups.Add(new MultiPowerUpItem(Y_MultiPowerUp.Factory(Y_MultiPowerUps.Radio, location, width, height, TextureTileSize, Scale, null)));
                     }
                 }
-            }
+            });
 
-            // check which power ups are inside multi power ups
-            foreach(var mpu in _multiPowerups) { 
+#if PARALLEL_DEBUG_ROOM
+            dbag.AddOrUpdate(name, 0, (n, v) => v + 1);
+#endif
 
-                foreach (var pu in _powerUps)
-                {
-                    if (pu.Item.Rect.Intersects(mpu.Item.Rect))
-                    {
-                        pu.MultiPowerUp = mpu;
-                    }
-                }
-            }
-
+            Task.WaitAll(t1);
             foreach (var door in Doors)
             {
                 float sf = 1.5f;
@@ -461,7 +505,11 @@ namespace YGR
                         });
                 }
             }
-            
+
+#if PARALLEL_DEBUG_ROOM
+            dbag.AddOrUpdate(name, 0, (n, v) => v + 1);
+#endif
+
             State = X_RoomState.Closed;
             _illuminatedOpened = null;
             _illuminatedClosed = null;
@@ -473,7 +521,73 @@ namespace YGR
                 10 * TextureTileSize),
                 Rect, Scale)
             };
+
+            Task.WaitAll(readFloor, readWall, readRoof);
+            _floorData = readFloor.Result;
+            _wallData = readWall.Result;
+            _roofData = readRoof.Result;
+
+#if PARALLEL_DEBUG_ROOM
+            dbag.AddOrUpdate(name, 0, (n, v) => v + 1);
+#endif
+
+            Task.WaitAll(t2, t3, t4, t5, t6);
+
+            // check which power ups are inside multi power ups
+            foreach (var mpu in _multiPowerups)
+            {
+
+                foreach (var pu in _powerUps)
+                {
+                    if (pu.Item.Rect.Intersects(mpu.Item.Rect))
+                    {
+                        pu.MultiPowerUp = mpu;
+                    }
+                }
+            }
+
+#if PARALLEL_DEBUG_ROOM
+            dbag.AddOrUpdate(name, 0, (n, v) => v + 1);
+            Debug.WriteLine(string.Join(", ", dbag.OrderBy(kvp => kvp.Value).Select(kvp => kvp.ToString())));
+#endif
         }
+
+        public void FinalizeItem(GraphicsDevice graphicsDevice)
+        {
+            var watch = new Stopwatch();
+            watch.Start();
+            MemoryStream floor = new MemoryStream(_floorData);
+            MemoryStream wall = new MemoryStream(_wallData);
+            MemoryStream roof = new MemoryStream(_roofData);
+
+            _floor = Texture2D.FromStream(graphicsDevice, floor, DefaultColorProcessors.ZeroTransparentPixels);
+            Texture2D txWall = Texture2D.FromStream(graphicsDevice, wall, DefaultColorProcessors.ZeroTransparentPixels);
+            _roof = Texture2D.FromStream(graphicsDevice, roof, DefaultColorProcessors.ZeroTransparentPixels);
+
+            Color[] target = new Color[_floor.Width * _floor.Height];
+            Color[] source = new Color[txWall.Width * txWall.Height];
+
+            _floor.GetData<Color>(target);
+            txWall.GetData<Color>(source);
+
+            for (int h = 0; h < _floor.Height; ++h)
+            {
+                for (int w = 0; w < _floor.Width; ++w)
+                {
+                    var c = source[h * _floor.Width + w];
+                    if (c.A != 0)
+                        target[h * _floor.Width + w] = source[h * _floor.Width + w];
+                }
+            }
+
+            _floor.SetData<Color>(target);
+            _roofDoor.Mechanism1 = new Texture2D(graphicsDevice, TextureTileSize, TextureTileSize);
+            _roofDoor.Mechanism1.SetData<Color>(_roofDoor.Mechanism1Data);
+            _roofDoor.Mechanism2 = new Texture2D(graphicsDevice, TextureTileSize, TextureTileSize);
+            _roofDoor.Mechanism2.SetData<Color>(_roofDoor.Mechanism2Data);
+            _roofDoor.Roof = _roof;
+        }
+
         private void output(int[][] pattern, string name)
         {
             string s = "";
@@ -493,6 +607,8 @@ namespace YGR
             DoorRooms.Clear();
             ResetRects.Clear();
             Cleared = false;
+            State = X_RoomState.Closed;
+            MoveTo(new Point(0, 0));
 
             for (int i = 0; i < _powerUps.Count(); ++i)
             {
@@ -611,7 +727,7 @@ namespace YGR
         {
             if (!Settings.Lighting) return;
 
-            if (_floorData == null)
+            if (_floorColorData == null)
             {
                 Vector3 offset = new Vector3(Rect.Location.X / Scale, Rect.Location.Y / Scale, 0);
 
@@ -648,8 +764,8 @@ namespace YGR
                     });
                 }
 
-                _floorData = new Color[_floor.Width * _floor.Height];
-                _floor.GetData<Color>(_floorData);
+                _floorColorData = new Color[_floor.Width * _floor.Height];
+                _floor.GetData<Color>(_floorColorData);
             }
 
             var rooms = DoorRooms.Select(x => (Y_Door)x.Value.First()).ToArray();
@@ -676,7 +792,7 @@ namespace YGR
 
                 if (!illuminated)
                 {
-                    var col = _floorData[i];
+                    var col = _floorColorData[i];
                     Color nCol = Color.White;
                     nCol.R = (byte)((1 - 0.4f) * col.R + 0.4f * Color.Black.R);
                     nCol.G = (byte)((1 - 0.4f) * col.G + 0.4f * Color.Black.G);
@@ -685,7 +801,7 @@ namespace YGR
                 }
                 else
                 {
-                    data[i] = _floorData[i];
+                    data[i] = _floorColorData[i];
                 }
             });
             _floor.SetData<Color>(data);
@@ -1045,25 +1161,6 @@ namespace YGR
             }
         }
 
-        //private void draw(
-        //    List<X_AutoTiler.X_AutoTileTexture> textures,
-        //    Vector2 position,
-        //    SpriteBatch spriteBatch,
-        //    bool partial)
-        //{
-        //    foreach (var t in textures)
-        //    {
-        //        int height = t.Texture().Height;
-        //        int width = t.Texture().Width;
-        //        Vector2 pos = position + t.Location().ToVector2() * TextureTileSize;
-
-        //        spriteBatch.Draw(
-        //            t.Texture(), pos,
-        //            new Rectangle(0, 0, width, height),
-        //            Color.White, 0, Vector2.Zero, Scale, SpriteEffects.None, 0);
-        //    }
-        //}
-
         /// <summary>
         /// Regular Draw method for all drawable objects
         /// </summary>
@@ -1126,12 +1223,6 @@ namespace YGR
                             Color.White, 0, Vector2.Zero, Scale, SpriteEffects.None, 0);
                     }
                 }
-
-                //draw(_tileTextures[X_DoorTextureLayer.Door], movePosition, spriteBatch, false);
-                //if (_currentDoorOpenOffset % 2 == 0)
-                //    draw(_tileTextures[X_DoorTextureLayer.Mechanism1], position, spriteBatch, false);
-                //else
-                //    draw(_tileTextures[X_DoorTextureLayer.Mechanism2], position, spriteBatch, false);
 
                 spriteBatch.Draw(
                     _roof, Rect.Location.ToVector2(),
