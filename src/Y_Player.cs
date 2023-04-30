@@ -123,7 +123,7 @@ namespace YGR
 
             // Character related
             _isAiming = false;
-            _aimDirection = Vector2.Zero;
+            _aimDirection = new Vector2(1, 0);
             _invincible = false;
             _invincibleDuration = 1250;
 
