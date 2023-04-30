@@ -31,6 +31,12 @@
       "commands": [
         "mgcb-editor-mac"
       ]
+    },
+    "dotnet-mgcb-compute": {
+      "version": "3.8.2.3",
+      "commands": [
+        "mgcb-compute"
+      ]
     }
   }
 }
