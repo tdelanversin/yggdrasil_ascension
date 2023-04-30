@@ -657,7 +657,7 @@ namespace YGR
 
         public bool LockRoomOpen()
         {
-            if(State == X_RoomState.Open)
+            if(State == X_RoomState.Open || State == X_RoomState.Open)
             {
                 State = X_RoomState.LockedOpen;
                 return true;
@@ -667,7 +667,7 @@ namespace YGR
 
         public bool LockRoomClosed()
         {
-            if (State == X_RoomState.Closed)
+            if (State == X_RoomState.Closed || State == X_RoomState.Open)
             {
                 State = X_RoomState.LockedClosed;
                 return true;
@@ -765,7 +765,7 @@ namespace YGR
         }
 
         // One player has COVID -> Lockdown
-        public void CloseAllUnlockedRoomDoors(bool lockWhenFinished = false)
+        public void CloseAllUnlockedRoomDoors(bool lockWhenFinished = false, bool doorsOnly = false)
         {
             foreach (var side in DoorRooms)
             {
@@ -779,19 +779,22 @@ namespace YGR
                             {
                                 door.LockDoor();
                             }
-                            foreach (var con in door.DoorRooms)
+                            if (!doorsOnly)
                             {
-                                foreach (var room in con.Value)
+                                foreach (var con in door.DoorRooms)
                                 {
-                                    if (room == this)
+                                    foreach (var room in con.Value)
                                     {
-                                        continue; // We are already open
-                                    }
-                                    Y_CMRoom cmroom = (Y_CMRoom)room;
-                                    cmroom.CloseUnlockedRoom();
-                                    if (lockWhenFinished)
-                                    {
-                                        cmroom.LockRoomClosed();
+                                        if (room == this)
+                                        {
+                                            continue; // We are already open
+                                        }
+                                        Y_CMRoom cmroom = (Y_CMRoom)room;
+                                        cmroom.CloseUnlockedRoom();
+                                        if (lockWhenFinished)
+                                        {
+                                            cmroom.LockRoomClosed();
+                                        }
                                     }
                                 }
                             }
@@ -1199,6 +1202,10 @@ namespace YGR
                     //}
                     break;
                 case X_RoomState.LockedOpen:
+                    if (!doorAnimation(dt, true))
+                    {
+                        Illuminate();
+                    }
                     break;
                 case X_RoomState.Opening:
                     if (!doorAnimation(dt, true))
@@ -1217,6 +1224,12 @@ namespace YGR
                     if (!doorAnimation(dt, false))
                     {
                         State = X_RoomState.Closed;
+                        Illuminate();
+                    }
+                    break;
+                case X_RoomState.LockedClosed:
+                    if (!doorAnimation(dt, false))
+                    {
                         Illuminate();
                     }
                     break;

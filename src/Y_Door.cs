@@ -1008,6 +1008,10 @@ namespace YGR
                     break;
                 case X_DoorState.LockedOpen:
                     Illuminate(); // only happens once no matter where it is!!
+                    if (!doorAnimation(dt, true))
+                    {
+                        openDoor();
+                    }
                     break;
                 case X_DoorState.Opening:
                     Illuminate(); // only happens once no matter where it is!!
@@ -1034,6 +1038,17 @@ namespace YGR
                     {
                         _closingTheDoor = false;
                         State = X_DoorState.Closed;
+                    }
+                    break;
+                case X_DoorState.LockedClosed:
+                    if (!_closingTheDoor)
+                    {
+                        closeDoor();
+                        _closingTheDoor = true;
+                    }
+                    if (!doorAnimation(dt, false))
+                    {
+                        _closingTheDoor = false;
                     }
                     break;
             }

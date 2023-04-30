@@ -441,13 +441,13 @@ namespace YGR
                     {
                         // Room does not contain any enemies, so just mark as cleared an move on
                         cmroom.Cleared = true;
-                        cmroom.OpenDoorsAndAdjacentRooms();
+                        cmroom.OpenAllUnlockedRoomDoors();
                         break;
                     }
 
                     // At this point we have all players inside a room with
                     // enemies. Time to go in lock down and let the battle begin
-                    cmroom.LockRoom();
+                    cmroom.CloseAllUnlockedRoomDoors();
                     Camera.SetFocusRoom(cmroom);
                     foreach (var enemy in cmroom.GetEnemiesInside())
                     {
@@ -487,7 +487,7 @@ namespace YGR
                         break; // let players fight
                     }
                     encounterRoom.Cleared = true;
-                    encounterRoom.OpenDoorsAndAdjacentRooms();
+                    encounterRoom.OpenAllUnlockedRoomDoors();
                     Camera.SetFocusPlayers();
 
                     Manager_Sound.PlayFreeRoamMusic();
