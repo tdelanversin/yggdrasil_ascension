@@ -47,7 +47,9 @@ namespace YGR
         public Y_PowerUp(Y_PowerUps type, Point location, int width, int height, float scale, AnimatedSprite sprite, Action<IVictim> action)
         {
             Scale = scale;
-            Rect = new Rectangle((int)(location.X * scale), (int)(location.Y * scale), (int)(scale * width), (int)(scale * height));
+            float heightNew = (int)(height * 1.75);
+            float widthNew = (int)((heightNew * sprite.SpriteDimension.X / sprite.SpriteDimension.Y));
+            Rect = new Rectangle((int)(location.X * scale - (widthNew - width) / 2.0), (int)(location.Y * scale - (heightNew - height) - 10), (int)(scale * widthNew), (int)(scale * heightNew));
             Action = action;
             _sprite = sprite;
             _spriteScale = Scale * Util.GetSpriteScale(Rect, _sprite.SpriteDimension);
