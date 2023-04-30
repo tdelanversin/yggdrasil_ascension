@@ -1,11 +1,9 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using System.Collections.Generic;
 using System;
-using System.Linq;
+using System.Collections.Generic;
 using System.IO;
-using System.Diagnostics;
-using System.Threading.Tasks;
+using System.Linq;
 
 namespace YGR
 {
@@ -351,29 +349,6 @@ namespace YGR
             return X_TileType.DontCare;
         }
 
-        private void output(int[][] pattern, string name)
-        {
-            string s = "";
-            for (int x = 0; x < pattern.GetLength(0); ++x)
-            {
-                s += string.Join("\t", pattern[x]) + "\n";
-            }
-
-            File.WriteAllText(name, s);
-        }
-
-        private void output(bool[] pattern, int sideLen, string name)
-        {
-            string s = "";
-            for (int x = 0; x < pattern.Length; ++x)
-            {
-                if (x > 0 && x % sideLen == 0) s += "\n";
-                s += "\t" + (pattern[x] ? "1" : "0");                
-            }
-
-            File.WriteAllText(name, s);
-        }
-
         private IList<Tuple<int, int>> findMatch(int[,] match, int[][] pattern, int ox, int oy)
         {
             int lx = match.GetLength(0);
@@ -683,7 +658,7 @@ namespace YGR
                     collision[height - NumTilesDoorWidth][0] = -1;
                 }
 
-                output(collision, "./logs/pattern.csv");
+                //output(collision, "./logs/pattern.csv");
 
                 return collision;
             }

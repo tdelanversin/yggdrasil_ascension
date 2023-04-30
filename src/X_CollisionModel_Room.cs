@@ -73,7 +73,6 @@ namespace YGR
 
             if (index >= col.Count())
             {
-                Logger.Info("hello");
                 return new Dictionary<X_DoorState, List<Rectangle>>();
             }                
 
@@ -586,18 +585,6 @@ namespace YGR
 
             _collisionRectangles = rects.ToArray();
             _collisionRectanglesHit = Enumerable.Repeat<bool>(false, _collisionRectangles.Count()).ToArray();
-        }
-
-        private void output(int[][] pattern, string name)
-        {
-            string s = "";
-            for (int x = 0; x < pattern.GetLength(0); ++x)
-            {
-                s += string.Join("\t", pattern[x]);
-                s += "\n";
-            }
-
-            File.WriteAllText(name, s);
         }
 
         public void DrawOutline(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)

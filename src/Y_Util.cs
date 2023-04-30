@@ -135,5 +135,29 @@ namespace YGR
                     "_" +
                     random.Next().ToString();
         }
+
+        public static void output(int[][] pattern, string name)
+        {
+            string s = "";
+            for (int x = 0; x < pattern.GetLength(0); ++x)
+            {
+                s += string.Join("\t", pattern[x]);
+                s += "\n";
+            }
+
+            File.WriteAllText(name, s);
+        }
+
+        public static void output(bool[] pattern, int sideLen, string name)
+        {
+            string s = "";
+            for (int x = 0; x < pattern.Length; ++x)
+            {
+                if (x > 0 && x % sideLen == 0) s += "\n";
+                s += "\t" + (pattern[x] ? "1" : "0");
+            }
+
+            File.WriteAllText(name, s);
+        }
     }
 }
