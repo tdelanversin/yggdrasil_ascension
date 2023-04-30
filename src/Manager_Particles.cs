@@ -83,7 +83,7 @@ namespace YGR
                     {
                         Parameters = new ParticleReleaseParameters
                         {
-                            Speed = new Range<float>(0f, 20f),
+                            Speed = new Range<float>(0f, 40f),
                             Quantity = 30,
                             Rotation = new Range<float>(-1f, 1f),
                             Scale = new Range<float>(0.05f, 0.1f),
