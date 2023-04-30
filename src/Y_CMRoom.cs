@@ -219,7 +219,7 @@ namespace YGR
         public int TextureTileSize { get; }
         public string ResourceFolder { get; }
         public Color RegionColor { get; }
-        public List<X_Light> Lights;
+        public List<X_Light> Lights { get; set; }
         public X_RoomState State { get; set; }
         public string Category { get; set; }
 
@@ -697,7 +697,7 @@ namespace YGR
 
         public void PreloadIlluminations()
         {
-            _illuminatedClosed = Manager_Light.LoadShadeFromFile(false, this, Lights);
+            //_illuminatedClosed = Manager_Light.LoadShadeFromFile(false, this, Lights);
             //_illuminatedOpened = Manager_Light.LoadShadeFromFile(true, this, Lights);
         }
 
@@ -712,9 +712,9 @@ namespace YGR
                 if (_illuminatedClosed == null)
                 {
                     //Logger.Info(" ...Recalculated closed illumination... ");
-                    _illuminatedClosed = Manager_Light.Illuminate(Lights, Collision.GetCollisionTemplate(), TextureTileSize, offset, false);
-                    Manager_Light.RemoveAllShadeFiles(this, false);
-                    Manager_Light.SaveShadeToFile(_illuminatedClosed, false, this, Lights);
+                    _illuminatedClosed = Manager_Light2.Illuminate(this, offset);
+                    //Manager_Light.RemoveAllShadeFiles(this, false);
+                    //Manager_Light.SaveShadeToFile(_illuminatedClosed, false, this, Lights);
                 }
 
                 //if (_illuminatedOpened == null)
@@ -732,7 +732,7 @@ namespace YGR
                     var room = door.GetOtherDoor(this);
                     var template = _doorMasks[room.Item1].First().GetTemplate();
 
-                    var illumination = Manager_Light.Illuminate(room.Item2.Lights, template /*Collision.GetCollisionTemplate()*/, TextureTileSize, offset, true);//, Manager_Light.Caster.Light);
+                    var illumination = Manager_Light2.Illuminate(this, offset);//, Manager_Light.Caster.Light);
 
                     Parallel.For(0, illumination.Length, i =>
                     //for (int i = 0; i < illumination.Length; ++i)

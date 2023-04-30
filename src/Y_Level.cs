@@ -318,10 +318,9 @@ namespace YGR
                 }
             }
 
-            Manager_Light.CreateModel(this);
-
             foreach (var room in Rooms.Values)
             {
+                Manager_Light2.CreateModel(room);
                 room.Illuminate();
             }
 

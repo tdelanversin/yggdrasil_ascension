@@ -55,6 +55,8 @@ namespace YGR
         public Dictionary<X_ConnectorSide, IList<IWalkable>> DoorRooms { get; set; }
         public int TextureTileSize { get; }
         public string ResourceFolder { get; }
+        public Manager_Light2.X_Point3[] IlluminationModel { get; set; }
+        public List<X_Light> Lights { get; set; }
 
         private new Dictionary<X_DoorState, List<Rectangle>> _doorCollisionRectangles;
 
@@ -278,7 +280,7 @@ namespace YGR
             }
 
             Vector3 offset = new Vector3(Rect.Location.X / Scale, Rect.Location.Y / Scale, 0);
-            _illuminated = Manager_Light.Illuminate(lights, Collision.GetCollisionTemplate(), TextureTileSize, offset, true);
+            _illuminated = Manager_Light2.Illuminate(this, offset);
 
             Color[] red = Enumerable.Repeat<Color>(Color.Green, _tileSize * _tileSize).ToArray();
             foreach (var tile in _tileColors)
@@ -809,6 +811,8 @@ namespace YGR
             DoorRooms.Add(roomConnectorPoint1.ConnectorSide, new List<IWalkable> { room2 });
             room1.DoorRooms.Add(roomConnectorPoint1.ConnectorSide, new List<IWalkable> { this });
             room2.DoorRooms.Add(roomConnectorPoint2.ConnectorSide, new List<IWalkable> { this });
+            Lights.AddRange(room1.Lights);
+            Lights.AddRange(room2.Lights);
 
             return this;
         }
@@ -853,6 +857,8 @@ namespace YGR
                 var deltaPC = Rect.Location - Doors[connectorSide1].First().Point;
                 MoveTo(roomConnectorPoint1.Point + deltaPC);
             }
+            Lights.AddRange(room1.Lights);
+            Lights.AddRange(room2.Lights);
 
             return this;
         }
@@ -965,6 +971,16 @@ namespace YGR
                     }
                     break;
             }
+        }
+
+        public List<Rectangle> GetOpenDoorCollisionRects()
+        {
+            return _doorCollisionRectangles[X_DoorState.Open];
+        }
+
+        public List<Rectangle> GetClosedDoorCollisionRects()
+        {
+            return _doorCollisionRectangles[X_DoorState.Closed];
         }
 
         public void OpenDoor()
