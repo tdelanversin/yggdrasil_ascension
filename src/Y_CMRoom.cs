@@ -134,7 +134,9 @@ namespace YGR
         Closing,
         Closed,
         LockedClosed,
+        LockedClosing,
         LockedOpen,
+        LockedOpening,
         Finished
     }
 
@@ -657,9 +659,14 @@ namespace YGR
 
         public bool LockRoomOpen()
         {
-            if(State == X_RoomState.Open || State == X_RoomState.Open)
+            if(State == X_RoomState.Open)
             {
                 State = X_RoomState.LockedOpen;
+                return true;
+            }
+            else if(State == X_RoomState.Closed)
+            {
+                State = X_RoomState.LockedClosing;
                 return true;
             }
             return false;
@@ -667,9 +674,14 @@ namespace YGR
 
         public bool LockRoomClosed()
         {
-            if (State == X_RoomState.Closed || State == X_RoomState.Open)
+            if (State == X_RoomState.Closed)
             {
                 State = X_RoomState.LockedClosed;
+                return true;
+            }
+            else if(State == X_RoomState.Open)
+            {
+                State = X_RoomState.LockedClosing;
                 return true;
             }
             return false;
@@ -866,8 +878,6 @@ namespace YGR
         public void Illuminate()
         {
             if (!Settings.Lighting) return;
-
-            Logger.Info("Shader running for room");
 
             if (_floorColorData == null)
             {
@@ -1203,11 +1213,14 @@ namespace YGR
                     //    State = X_RoomState.Opening;
                     //}
                     break;
-                case X_RoomState.LockedOpen:
+                case X_RoomState.LockedOpening:
                     if (!doorAnimation(dt, true))
                     {
+                        State = X_RoomState.LockedOpen;
                         Illuminate();
                     }
+                    break;
+                case X_RoomState.LockedOpen:
                     break;
                 case X_RoomState.Opening:
                     if (!doorAnimation(dt, true))
@@ -1229,11 +1242,14 @@ namespace YGR
                         Illuminate();
                     }
                     break;
-                case X_RoomState.LockedClosed:
+                case X_RoomState.LockedClosing:
                     if (!doorAnimation(dt, false))
                     {
+                        State = X_RoomState.LockedClosed;
                         Illuminate();
                     }
+                    break;
+                case X_RoomState.LockedClosed:
                     break;
             }
 
@@ -1328,7 +1344,12 @@ namespace YGR
                 //    new Rectangle(0, 0, _floor.Width, _floor.Height),
                 //    Color.White, 0, Vector2.Zero, Scale, SpriteEffects.None, 0);
             }
-            else if (State == X_RoomState.Opening || State == X_RoomState.Closing)
+            else if (
+                State == X_RoomState.Opening || 
+                State == X_RoomState.Closing ||
+                State == X_RoomState.LockedClosing ||
+                State == X_RoomState.LockedOpening
+            )
             {
                 spriteBatch.Draw(
                     _floor, Rect.Location.ToVector2(),
