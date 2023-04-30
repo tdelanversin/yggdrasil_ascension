@@ -22,44 +22,82 @@ namespace YGR
         public Vector2 SpriteDimension { get; }
         public Rectangle SourceRectangle { get; private set; }
         public AnimationState Direction { get; private set; }
-        public Dictionary<AnimationState, int[]> Animations { get; }
-        public float AnimationDuration { get; }
-        public int AnimationIndex { get; private set; }
 
-        int[] CurrentAnimationSet;
+        public Dictionary<AnimationState, Rectangle[]> AnimationSourceRects { get; private set; }
+        public float AnimationDuration { get; }
+
         int DirectionalIndex;
         float AnimationTimer;
         float AnimationTreshold;
         Vector2 LastMovement;
+        const float DefaultAnimationDuration = 1000;
 
-        public AnimatedSprite(Texture2D texture, Vector2 spriteDimension, Dictionary<AnimationState, int[]> animations)
+        public AnimatedSprite(Texture2D texture, Vector2 spriteDimension, Dictionary<AnimationState, Rectangle[]> animationSourceRects, float animationDuration = DefaultAnimationDuration)
         {
-            if (animations.Keys.Count < 1)
+            if (animationSourceRects.Keys.Count < 1)
             {
                 throw new System.Exception("Animation dictionary cannot be empty");
             }
-            Animations = animations;
+            AnimationSourceRects = animationSourceRects;
             Texture = texture;
             SpriteDimension = spriteDimension;
             AnimationTimer = 0;
-            AnimationDuration = 1000;
+            AnimationDuration = animationDuration;
             SourceRectangle = new Rectangle(0, 0, (int)SpriteDimension.X, (int)SpriteDimension.Y);
             LastMovement = new Vector2(1, 0);
         }
 
-        public AnimatedSprite(Texture2D texture, Vector2 spriteDimension, Dictionary<AnimationState, int[]> animations, float animationDuration)
-        : this(texture, spriteDimension, animations)
+        public AnimatedSprite(Texture2D texture, Vector2 spriteDimension, Dictionary<AnimationState, int[,]> animations, float animationDuration = DefaultAnimationDuration)
+        : this(texture, spriteDimension, BuildAnimationSourceRects(animations, spriteDimension), animationDuration) { }
+
+        public AnimatedSprite(Texture2D texture, Vector2 spriteDimension, Dictionary<AnimationState, int[]> animations, float animationDuration = DefaultAnimationDuration)
+        : this(texture, spriteDimension, BuildAnimationSourceRects(animations, spriteDimension), animationDuration) { }
+
+        static Dictionary<AnimationState, Rectangle[]> BuildAnimationSourceRects(Dictionary<AnimationState, int[,]> animations, Vector2 spriteDimension)
         {
-            AnimationDuration = animationDuration;
+            Dictionary<AnimationState, Rectangle[]> animationSourceRects = new Dictionary<AnimationState, Rectangle[]>();
+            foreach (var animationSet in animations)
+            {
+                AnimationState state = animationSet.Key;
+                int[,] indeces = animationSet.Value;
+                animationSourceRects[state] = new Rectangle[indeces.Length / 2];
+                for (int i = 0; i < indeces.Length / 2; i++)
+                {
+                    int x = indeces[i, 1];
+                    int y = indeces[i, 0];
+                    animationSourceRects[state][i] =
+                        new Rectangle((int)(x * spriteDimension.X), (int)(y * spriteDimension.Y), (int)(spriteDimension.X), (int)(spriteDimension.Y));
+
+                }
+            }
+            return animationSourceRects;
+        }
+
+        static Dictionary<AnimationState, Rectangle[]> BuildAnimationSourceRects(Dictionary<AnimationState, int[]> animations, Vector2 spriteDimension)
+        {
+            Dictionary<AnimationState, Rectangle[]> animationSourceRects = new Dictionary<AnimationState, Rectangle[]>();
+            foreach (var animationSet in animations)
+            {
+                AnimationState state = animationSet.Key;
+                int[] indeces = animationSet.Value;
+                animationSourceRects[state] = new Rectangle[indeces.Length];
+                for (int i = 0; i < indeces.Length; i++)
+                {
+                    int x = indeces[i];
+                    animationSourceRects[state][i] =
+                        new Rectangle((int)(x * spriteDimension.X), 0, (int)(spriteDimension.X), (int)(spriteDimension.Y));
+
+                }
+            }
+            return animationSourceRects;
         }
 
         private void ResetAnimation()
         {
             AnimationTimer = 0;
-            AnimationTreshold = AnimationDuration / CurrentAnimationSet.Length;
+            AnimationTreshold = AnimationDuration / AnimationSourceRects[Direction].Length;
             DirectionalIndex = 0;
-            AnimationIndex = CurrentAnimationSet[DirectionalIndex];
-            SourceRectangle = new Rectangle(AnimationIndex * (int)SpriteDimension.X, 0, (int)SpriteDimension.X, (int)SpriteDimension.Y);
+            SourceRectangle = AnimationSourceRects[Direction][DirectionalIndex];
         }
 
         private void UpdateAnimation(GameTime gameTime)
@@ -68,10 +106,9 @@ namespace YGR
 
             if (AnimationTimer > AnimationTreshold)
             {
-                DirectionalIndex = (DirectionalIndex + 1) % CurrentAnimationSet.Length;
-                AnimationIndex = CurrentAnimationSet[DirectionalIndex];
+                DirectionalIndex = (DirectionalIndex + 1) % AnimationSourceRects[Direction].Length;
                 AnimationTimer = 0;
-                SourceRectangle = new Rectangle(AnimationIndex * (int)SpriteDimension.X, 0, (int)SpriteDimension.X, (int)SpriteDimension.Y);
+                SourceRectangle = AnimationSourceRects[Direction][DirectionalIndex];
             }
         }
 
@@ -95,45 +132,44 @@ namespace YGR
             switch (direction)
             {
                 case AnimationState.Idle:
-                    if (Animations.ContainsKey(AnimationState.IdleRight)) { return AnimationState.IdleRight; }
-                    if (Animations.ContainsKey(AnimationState.IdleLeft)) { return AnimationState.IdleLeft; }
+                    if (AnimationSourceRects.ContainsKey(AnimationState.IdleRight)) { return AnimationState.IdleRight; }
+                    if (AnimationSourceRects.ContainsKey(AnimationState.IdleLeft)) { return AnimationState.IdleLeft; }
                     break;
                 case AnimationState.WalkLeft:
-                    if (Animations.ContainsKey(AnimationState.IdleLeft)) { return AnimationState.IdleLeft; }
+                    if (AnimationSourceRects.ContainsKey(AnimationState.IdleLeft)) { return AnimationState.IdleLeft; }
                     break;
                 case AnimationState.WalkRight:
-                    if (Animations.ContainsKey(AnimationState.IdleRight)) { return AnimationState.IdleRight; }
+                    if (AnimationSourceRects.ContainsKey(AnimationState.IdleRight)) { return AnimationState.IdleRight; }
                     break;
                 case AnimationState.IdleLeft:
-                    if (Animations.ContainsKey(AnimationState.Idle)) { return AnimationState.Idle; }
+                    if (AnimationSourceRects.ContainsKey(AnimationState.Idle)) { return AnimationState.Idle; }
                     break;
                 case AnimationState.IdleRight:
-                    if (Animations.ContainsKey(AnimationState.Idle)) { return AnimationState.Idle; }
+                    if (AnimationSourceRects.ContainsKey(AnimationState.Idle)) { return AnimationState.Idle; }
                     break;
                 case AnimationState.WalkUp:
-                    if (Animations.ContainsKey(AnimationState.WalkRight)) { return AnimationState.WalkRight; }
-                    if (Animations.ContainsKey(AnimationState.WalkLeft)) { return AnimationState.WalkLeft; }
+                    if (AnimationSourceRects.ContainsKey(AnimationState.WalkRight)) { return AnimationState.WalkRight; }
+                    if (AnimationSourceRects.ContainsKey(AnimationState.WalkLeft)) { return AnimationState.WalkLeft; }
                     break;
                 case AnimationState.WalkDown:
-                    if (Animations.ContainsKey(AnimationState.WalkLeft)) { return AnimationState.WalkLeft; }
-                    if (Animations.ContainsKey(AnimationState.WalkRight)) { return AnimationState.WalkRight; }
+                    if (AnimationSourceRects.ContainsKey(AnimationState.WalkLeft)) { return AnimationState.WalkLeft; }
+                    if (AnimationSourceRects.ContainsKey(AnimationState.WalkRight)) { return AnimationState.WalkRight; }
                     break;
                 default:
                     break;
             }
             // Last resort
-            return Animations.Keys.First();
+            return AnimationSourceRects.Keys.First();
         }
 
         private void UpdateDirection(AnimationState direction)
         {
-            if (!Animations.ContainsKey(direction))
+            if (!AnimationSourceRects.ContainsKey(direction))
             {
                 direction = GetFallbackDirection(direction);
             }
 
             Direction = direction;
-            CurrentAnimationSet = Animations[Direction];
         }
 
         public void Update(GameTime gameTime, AnimationState direction)
@@ -174,12 +210,12 @@ namespace YGR
                 Update(gameTime, AnimationState.WalkLeft);
                 LastMovement.X = movement.X;
             }
-            else if (movement.Y > 0 && Animations.ContainsKey(AnimationState.WalkDown))
+            else if (movement.Y > 0 && AnimationSourceRects.ContainsKey(AnimationState.WalkDown))
             {
                 Update(gameTime, AnimationState.WalkDown);
                 LastMovement.Y = movement.Y;
             }
-            else if (movement.Y < 0 && Animations.ContainsKey(AnimationState.WalkUp))
+            else if (movement.Y < 0 && AnimationSourceRects.ContainsKey(AnimationState.WalkUp))
             {
                 Update(gameTime, AnimationState.WalkUp);
                 LastMovement.Y = movement.Y;

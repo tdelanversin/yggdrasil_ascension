@@ -237,10 +237,10 @@ namespace YGR
         {
             if (ControlLayout > 0)
             {
-                if(Room.WhatAreYou() == X_LevelElements.Room)
+                if (Room.WhatAreYou() == X_LevelElements.Room)
                 {
                     ((Y_CMRoom)Room).SuppliedRoomFunctions();
-                    
+
                 }
                 Level.SuppliedRoomFunctions();
                 if (ControlLayout == ControlLayout.KeyboardWASD)
@@ -346,23 +346,6 @@ namespace YGR
         // Render ghosty 👻
         protected virtual void DrawGhost(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)
         {
-            // int width = _spriteGhost.Width / 4;
-            // int height = _spriteGhost.Height;
-            // float scale = (float)Rect.Width / width;
-            // // TODO: use the proper animation framework to pingpong through the frames
-            // int totalMS = gameTime.TotalGameTime.Milliseconds / 200;
-            // int step = totalMS % 6;
-            // int animationIndex = 3 - Math.Abs(3 - step);
-            // spriteBatch.Draw(
-            //     texture: _spriteGhost,
-            //     position: _rect.Location.ToVector2() - new Vector2(0, height * scale - _rect.Height),
-            //     sourceRectangle: new Rectangle(width * animationIndex, 0, width, height),
-            //     color: Color.White,
-            //     rotation: 0,
-            //     origin: Vector2.Zero,
-            //     scale: scale,
-            //     effects: Velocity.X >= 0 ? SpriteEffects.None : SpriteEffects.FlipHorizontally,
-            //     layerDepth: 0);
             Vector2 ghostOffset = new Vector2(0, -GhostSpriteDimension.Y * GhostScale + _rect.Height);
             spriteBatch.Draw(
                 texture: GhostSprite.Texture,
@@ -447,17 +430,6 @@ namespace YGR
         private int _dashCooldown;
         private int _dashCooldownTimer;
 
-        // A timer that stores milliseconds.
-        float timer;
-        // An int that is the threshold for the timer.
-        int threshold;
-        // A Rectangle array that stores sourceRectangles for animations.
-        Rectangle[] sourceRectangles;
-        Dictionary<string, Rectangle[]> directionSourceRectangles;
-        // These bytes tell the spriteBatch.Draw() what sourceRectangle to display.
-        byte previousAnimationIndex;
-        byte currentAnimationIndex;
-
         public Ninja(
             PlayerIndex playerIndex,
             Vector2 initialPosition,
@@ -479,62 +451,55 @@ namespace YGR
             _dashCooldown = 1000; // Dash cooldown in ms
             _dashCooldownTimer = _dashCooldown;
 
-            // Set a default timer value.
-            timer = 0;
-            // Set an initial threshold of 250ms, you can change this to alter the speed of the animation (lower number = faster animation).
-            threshold = 250;
-            // Three sourceRectangles contain the coordinates of Alex's three down-facing sprites on the charaset.
-            directionSourceRectangles = new Dictionary<string, Rectangle[]>
-            {
-                {
-                    "down", new Rectangle[]
-                    {
-                        new Rectangle(0, 128, 48, 64),
-                        new Rectangle(48, 128, 48, 64),
-                        new Rectangle(96, 128, 48, 64)
-                    }
-                },
-                {
-                    "up", new Rectangle[]
-                    {
-                        new Rectangle(0, 0, 48, 64),
-                        new Rectangle(48, 0, 48, 64),
-                        new Rectangle(96, 0, 48, 64)
-                    }
-                },
-                {
-                    "right", new Rectangle[]
-                    {
-                        new Rectangle(0, 64, 48, 64),
-                        new Rectangle(48, 64, 48, 64),
-                        new Rectangle(96, 64, 48, 64)
-                    }
-                },
-                {
-                    "left", new Rectangle[]
-                    {
-                        new Rectangle(0, 192, 48, 64),
-                        new Rectangle(48, 192, 48, 64),
-                        new Rectangle(96, 192, 48, 64)
-                    }
-                },
-                {
-                    "idle", new Rectangle[]
-                    {
-                        new Rectangle(0, 128, 48, 64),
-                        new Rectangle(0, 128, 48, 64),
-                        new Rectangle(0, 128, 48, 64)
-                    }
-                }
-            };
-
-            Rectangle rr = directionSourceRectangles["down"][0];
-            CharacterSpriteDimension = new Vector2(rr.Width, rr.Height);
+            CharacterSpriteDimension = new Vector2(48, 64);
             CharacterScale = Scale * Util.GetSpriteScale(_rect, CharacterSpriteDimension);
-
-            // This tells the animation to start on the left-side sprite.
-            previousAnimationIndex = 2;
-            currentAnimationIndex = 1;
+            CharacterSprite = new AnimatedSprite(
+                texture: Manager_Sprites.Player_Ninja,
+                spriteDimension: CharacterSpriteDimension,
+                animationSourceRects: new Dictionary<AnimationState, Rectangle[]> {
+                    {
+                        AnimationState.WalkDown, new Rectangle[]
+                        {
+                            new Rectangle(0, 128, 48, 64),
+                            new Rectangle(48, 128, 48, 64),
+                            new Rectangle(96, 128, 48, 64)
+                        }
+                    },
+                    {
+                        AnimationState.WalkUp, new Rectangle[]
+                        {
+                            new Rectangle(0, 0, 48, 64),
+                            new Rectangle(48, 0, 48, 64),
+                            new Rectangle(96, 0, 48, 64)
+                        }
+                    },
+                    {
+                        AnimationState.WalkRight, new Rectangle[]
+                        {
+                            new Rectangle(0, 64, 48, 64),
+                            new Rectangle(48, 64, 48, 64),
+                            new Rectangle(96, 64, 48, 64)
+                        }
+                    },
+                    {
+                        AnimationState.WalkLeft, new Rectangle[]
+                        {
+                            new Rectangle(0, 192, 48, 64),
+                            new Rectangle(48, 192, 48, 64),
+                            new Rectangle(96, 192, 48, 64)
+                        }
+                    },
+                        {
+                        AnimationState.Idle, new Rectangle[]
+                        {
+                            new Rectangle(0, 128, 48, 64),
+                            new Rectangle(0, 128, 48, 64),
+                            new Rectangle(0, 128, 48, 64)
+                        }
+                    }
+                },
+                animationDuration: 750
+            );
         }
 
         private void UpdateDash(GameTime gameTime)
@@ -583,68 +548,8 @@ namespace YGR
 
             _gun.Update(gameTime);
 
-
-
             if (IsAlive())
-            {
-                string direction = "down";
-                if (input.X > 0)
-                {
-                    direction = "right";
-                }
-                else if (input.X < 0)
-                {
-                    direction = "left";
-                }
-                else if (input.Y > 0)
-                {
-                    direction = "down";
-                }
-                else if (input.Y < 0)
-                {
-                    direction = "up";
-                }
-                else
-                {
-                    direction = "idle";
-                }
-                // Update the sourceRectangles array based on direction
-                sourceRectangles = directionSourceRectangles[direction];
-
-
-                // Check if the timer has exceeded the threshold.
-                if (timer > threshold)
-                {
-                    // If Alex is in the middle sprite of the animation.
-                    if (currentAnimationIndex == 1)
-                    {
-                        // If the previous animation was the left-side sprite, then the next animation should be the right-side sprite.
-                        if (previousAnimationIndex == 0)
-                        {
-                            currentAnimationIndex = 2;
-                        }
-                        else
-                        // If not, then the next animation should be the left-side sprite.
-                        {
-                            currentAnimationIndex = 0;
-                        }
-                        // Track the animation.
-                        previousAnimationIndex = currentAnimationIndex;
-                    }
-                    // If Alex was not in the middle sprite of the animation, he should return to the middle sprite.
-                    else
-                    {
-                        currentAnimationIndex = 1;
-                    }
-                    // Reset the timer.
-                    timer = 0;
-                }
-                // If the timer has not reached the threshold, then add the milliseconds that have past since the last Update() to the timer.
-                else
-                {
-                    timer += (float)gameTime.ElapsedGameTime.TotalMilliseconds;
-                }
-            }
+            { CharacterSprite.Update(gameTime, input); }
             else { GhostSprite.Update(gameTime, input); }
 
         }
@@ -654,7 +559,7 @@ namespace YGR
             spriteBatch.Draw(
                 texture: Manager_Sprites.Player_Ninja,
                 position: _rect.Location.ToVector2(),
-                sourceRectangle: sourceRectangles[currentAnimationIndex],
+                sourceRectangle: CharacterSprite.SourceRectangle,
                 color: _color,
                 rotation: 0,
                 origin: Vector2.Zero,
