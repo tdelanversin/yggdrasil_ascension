@@ -283,6 +283,7 @@ namespace YGR
 
             if(_illuminated == null)
             {
+                Logger.Info("Running shader in door");
                 Vector3 offset = new Vector3(Rect.Location.X / Scale, Rect.Location.Y / Scale, 0);
                 _illuminated = Manager_Light2.Illuminate(this, offset);
 

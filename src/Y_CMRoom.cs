@@ -867,6 +867,8 @@ namespace YGR
         {
             if (!Settings.Lighting) return;
 
+            Logger.Info("Shader running for room");
+
             if (_floorColorData == null)
             {
                 _floorColorData = new Color[_floor.Width * _floor.Height];
