@@ -73,7 +73,7 @@ namespace YGR
 
             safetyDistance = 150f;
             FacingDirection = new Vector2(1, 0);
-            Sprite = Manager_Enemies.enemy_textures["default_enemy"];
+            Sprite = Manager_Sprites.Enemy_Basic;
             Collision = new X_CollisionModel_Victim(1.0f, 0.0f);
             _position = position;
 
@@ -438,9 +438,9 @@ namespace YGR
 
             var angle = Math.Atan2(FacingDirection.Y, FacingDirection.X) + Math.PI / 2;
             spriteBatch.Draw(
-                Manager_Players.SpriteAimIndicator[3], _rect.Center.ToVector2() + FacingDirection * _rect.Height,
+                Manager_Sprites.AimIndicator[3], _rect.Center.ToVector2() + FacingDirection * _rect.Height,
                 null,
-                Color.White, (float)angle, new Vector2(Manager_Players.SpriteAimIndicator[3].Width / 2, 0), 0.03f, SpriteEffects.None, 0);
+                Color.White, (float)angle, new Vector2(Manager_Sprites.AimIndicator[3].Width / 2, 0), 0.03f, SpriteEffects.None, 0);
 
         }
 

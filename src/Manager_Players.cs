@@ -14,25 +14,6 @@ namespace YGR
         // Player list
         public static List<IVictim> Players { get; private set; }
 
-        // Sprites
-        public static Texture2D SpriteNinja { get; private set; }
-        public static Texture2D SpriteBasic { get; private set; }
-        public static Texture2D SpriteGhost { get; private set; }
-        public static IList<Texture2D> SpriteAimIndicator { get; private set; }
-
-        public static void LoadContent(ContentManager contentManager)
-        {
-            SpriteNinja = contentManager.Load<Texture2D>("SpritesCharacters/charaset");
-            SpriteBasic = contentManager.Load<Texture2D>("SpritesCharacters/tester_60");
-            SpriteGhost = contentManager.Load<Texture2D>("SpritesCharacters/ghosty");
-            SpriteAimIndicator = new List<Texture2D> {
-                contentManager.Load<Texture2D>("SpritesOther/target_indicator_red"),
-                contentManager.Load<Texture2D>("SpritesOther/target_indicator_blue"),
-                contentManager.Load<Texture2D>("SpritesOther/target_indicator_green"),
-                contentManager.Load<Texture2D>("SpritesOther/target_indicator_yellow"),
-            };
-        }
-
         public static void Initialize()
         {
             Players = new List<IVictim>();

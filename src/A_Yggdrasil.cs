@@ -42,7 +42,6 @@ namespace YGR
             string level = "Level_3";
             Factory_Debug.Initialize(Content);
             Manager_Projectile.Initialize(Content);
-            Manager_Enemies.Initialize(Content);
             Manager_Players.Initialize();
             Manager_Particles.Initialize();
             Manager_Light.Initialize("./Levels/" + level + "/simplified");
@@ -61,7 +60,7 @@ namespace YGR
             Fonts.LoadContent(Content);
             Menu.LoadContent(Content);
             Manager_Sound.LoadContent(Content);
-            Manager_Players.LoadContent(Content);
+            Manager_Sprites.LoadContent(Content);
             _spriteBatch = new SpriteBatch(GraphicsDevice);
             Manager_Particles.LoadContent(Content);
             Manager_Sound.PlayMainMenuMusic();

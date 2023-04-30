@@ -82,7 +82,7 @@ namespace YGR
             Scale = scale;
 
             // Set up sprites
-            _spriteAimIndicator = Manager_Players.SpriteAimIndicator[(int)playerIndex];
+            _spriteAimIndicator = Manager_Sprites.AimIndicator[(int)playerIndex];
             _color = Color.White;
 
             _rect = new Rectangle(
@@ -94,7 +94,7 @@ namespace YGR
             CharacterSpriteDimension = new Vector2(44, 62);
             CharacterScale = Scale * Util.GetSpriteScale(_rect, CharacterSpriteDimension);
             CharacterSprite = new AnimatedSprite(
-                texture: Manager_Players.SpriteBasic,
+                texture: Manager_Sprites.Player_Simple,
                 spriteDimension: CharacterSpriteDimension,
                 animations: new Dictionary<AnimationState, int[]> {
                     { AnimationState.WalkLeft, new int[] { 1, 2 } },
@@ -104,10 +104,10 @@ namespace YGR
                 }
             );
 
-            GhostSpriteDimension = new Vector2(Manager_Players.SpriteGhost.Width / 8, Manager_Players.SpriteGhost.Height);
-            GhostScale = Scale * Util.GetSpriteScale(_rect, GhostSpriteDimension);
+            GhostSpriteDimension = new Vector2(Manager_Sprites.Player_Ghost.Width / 8, Manager_Sprites.Player_Ghost.Height);
+            GhostScale = Scale * _rect.Width / GhostSpriteDimension.X; // Ghost will be slightly higher than players, due to floating and shadows
             GhostSprite = new AnimatedSprite(
-                texture: Manager_Players.SpriteGhost,
+                texture: Manager_Sprites.Player_Ghost,
                 spriteDimension: GhostSpriteDimension,
                 animations: new Dictionary<AnimationState, int[]> {
                     { AnimationState.WalkRight, new int[] { 0, 1, 2, 3, 2, 1 } },
@@ -357,7 +357,7 @@ namespace YGR
             //     scale: scale,
             //     effects: Velocity.X >= 0 ? SpriteEffects.None : SpriteEffects.FlipHorizontally,
             //     layerDepth: 0);
-            Vector2 ghostOffset = new Vector2(0,  - GhostSpriteDimension.Y * GhostScale + _rect.Height);
+            Vector2 ghostOffset = new Vector2(0, -GhostSpriteDimension.Y * GhostScale + _rect.Height);
             spriteBatch.Draw(
                 texture: GhostSprite.Texture,
                 position: _rect.Location.ToVector2() + ghostOffset,
@@ -434,7 +434,6 @@ namespace YGR
     }
     public class Ninja : SimplePlayer // Y_Sprite
     {
-        Texture2D _spritePlayer;
         private bool _isDashing;
         private int _dashDuration;
         private float _dashSpeed;
@@ -463,8 +462,6 @@ namespace YGR
             ) : base(playerIndex, initialPosition, level, gun, controlLayout, scale)
         {
             /* Overrides from base class */
-            _spritePlayer = Manager_Players.SpriteNinja;
-            
             LifePointsMax = 20;
             LifePoints = LifePointsMax;
 
@@ -649,7 +646,7 @@ namespace YGR
         override protected void DrawCharacterSprite(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)
         {
             spriteBatch.Draw(
-                texture: _spritePlayer,
+                texture: Manager_Sprites.Player_Ninja,
                 position: _rect.Location.ToVector2(),
                 sourceRectangle: sourceRectangles[currentAnimationIndex],
                 color: _color,
