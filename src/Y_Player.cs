@@ -271,6 +271,12 @@ namespace YGR
         {
             if (ControlLayout > 0)
             {
+                if(Room.WhatAreYou() == X_LevelElements.Room)
+                {
+                    ((Y_CMRoom)Room).SuppliedRoomFunctions();
+                    
+                }
+                Level.SuppliedRoomFunctions();
                 if (ControlLayout == ControlLayout.KeyboardWASD)
                 {
                     if (Input.IsKeyDown(Keybinds.P1Right)) input.X += 1;

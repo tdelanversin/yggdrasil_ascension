@@ -125,7 +125,7 @@ namespace YGR
             if (selectedPlayers.Count < 1) { return; }
 
             Manager_Players.Players.RemoveAll(p => !selectedPlayers.Contains(p));
-            Room.OpenDoorsAndAdjacentRooms();
+            Room.OpenAllUnlockedRoomDoors();
             Label = "Go get 'em! :)";
             Color = Color.SpringGreen;
             Manager_Sound.Sound_PlatformActivate.Play(1, 0, 0);

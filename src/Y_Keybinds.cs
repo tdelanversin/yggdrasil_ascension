@@ -27,6 +27,15 @@ namespace YGR
 
         public static Keys CycleCameraMode = Keys.F10;
         public static Keys ToggleFullscreen = Keys.F11;
-        public static Keys ToggleConnectors = Keys.O;
+
+        public static Keys OpenAllDoors = Keys.F1;
+        public static Keys CloseAllDoors = Keys.F2;
+        public static Keys LockAllDoors = Keys.F3;
+        public static Keys UnlockAllDoors = Keys.F4;
+
+        public static Keys OpenAllAdjacentDoors = Keys.F5;
+        public static Keys CloseAllAdjacentDoors = Keys.F6;
+        public static Keys LockAllAdjacentDoors = Keys.F7;
+        public static Keys UnlockAllAdjacentDoors = Keys.F8;
     }
 }
