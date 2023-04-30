@@ -15,7 +15,8 @@ namespace YGR
             IList<IVictim> players
         ) : base(position, level, players)
         {
-            LifePoints = 999;
+            LifePointsMax = 999;
+            LifePoints = LifePointsMax;
             fleeingHPTreshold = 0; // Gigachad never flees
             Sprite = Manager_Enemies.enemy_textures["gigachad"];
             SpriteRect = Sprite.Bounds;

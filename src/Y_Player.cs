@@ -22,6 +22,7 @@ namespace YGR
 
         // IVictim fields
         public int LifePoints { get; set; }
+        public int LifePointsMax { get; set; }
         public X_CollisionModel_Victim Collision { get; }
         public Vector2 Velocity { get; set; }
         public Y_Level Level { get; set; }
@@ -59,8 +60,6 @@ namespace YGR
         protected int _animationIndex;
         protected float _animationTimer;
         protected float _animationTreshold;
-
-        protected int _allLifePoints;
 
         protected enum InputType
         {
@@ -127,8 +126,8 @@ namespace YGR
             _invincible = false;
             _invincibleDuration = 1250;
 
-            LifePoints = 30;
-            _allLifePoints = LifePoints;
+            LifePointsMax = 30;
+            LifePoints = LifePointsMax;
 
             Room = Level.GetRoom(this, Room);
         }
@@ -156,7 +155,7 @@ namespace YGR
 
         public void Revive()
         {
-            LifePoints = _allLifePoints;
+            LifePoints = LifePointsMax;
         }
 
         /* Deal with being hit by projectile, basically physical therapy */
@@ -483,7 +482,9 @@ namespace YGR
         {
             /* Overrides from base class */
             _spritePlayer = Manager_Players.SpriteNinja;
-            LifePoints = 20;
+            
+            LifePointsMax = 20;
+            LifePoints = LifePointsMax;
 
             /* Class specifics */
             _isDashing = false;
