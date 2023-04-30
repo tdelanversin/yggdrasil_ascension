@@ -206,17 +206,6 @@ namespace YGR
                 //output(template, "./logs/illumination.csv");
                 return template;
             }
-
-            private void output(int[][] pattern, string name)
-            {
-                string s = "";
-                for (int x = 0; x < pattern.GetLength(0); ++x)
-                {
-                    s += string.Join("\t", pattern[x]) + "\n";
-                }
-
-                File.WriteAllText(name, s);
-            }
         }
 
         public float Scale { get; private set; }
@@ -586,17 +575,6 @@ namespace YGR
             _roofDoor.Mechanism2 = new Texture2D(graphicsDevice, TextureTileSize, TextureTileSize);
             _roofDoor.Mechanism2.SetData<Color>(_roofDoor.Mechanism2Data);
             _roofDoor.Roof = _roof;
-        }
-
-        private void output(int[][] pattern, string name)
-        {
-            string s = "";
-            for (int x = 0; x < pattern.GetLength(0); ++x)
-            {
-                s += string.Join("\t", pattern[x]) + "\n";
-            }
-
-            File.WriteAllText(name, s);
         }
 
         public void ResetRoom()
