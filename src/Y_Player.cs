@@ -126,7 +126,7 @@ namespace YGR
             _invincible = false;
             _invincibleDuration = 1250;
 
-            LifePointsMax = 2000;
+            LifePointsMax = 30;
             LifePoints = LifePointsMax;
 
             Room = Level.GetRoom(this, Room);
@@ -489,7 +489,7 @@ namespace YGR
             /* Overrides from base class */
             _spritePlayer = Manager_Players.SpriteNinja;
             
-            LifePointsMax = 2000;
+            LifePointsMax = 30;
             LifePoints = LifePointsMax;
 
             /* Class specifics */
