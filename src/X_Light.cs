@@ -12,8 +12,8 @@ namespace YGR
 
         private Rectangle _illuminationRect;
         private Rectangle _scaledIlluminationRect;
-        private Vector3 _position;
-        private Vector3 _scaledPosition;
+        private Manager_Light2.X_Point3 _position;
+        private Manager_Light2.X_Point3 _scaledPosition;
 
         public X_Light(Vector3 position, Rectangle illuminationRect, float scale)
         {
@@ -29,12 +29,12 @@ namespace YGR
             _scaledIlluminationRect = illuminationRect;
         }
 
-        public Vector3 GetScaledPosition()
+        public Manager_Light2.X_Point3 GetScaledPosition()
         {
             return _scaledPosition;
         }
 
-        public Vector3 GetUnscaledPosition()
+        public Manager_Light2.X_Point3 GetUnscaledPosition()
         {
             return _position;
         }
@@ -81,8 +81,10 @@ namespace YGR
             var dp3 = new Vector3(dp.X, dp.Y, 0);
             var dp3s = dp3 / Scale;
             var dp2s = new Point((int)(dp.X / Scale), (int)(dp.Y / Scale));
-            _position += dp3s;
-            _scaledPosition += dp3;
+
+            _position = new Vector3(_position.X, _position.Y, _position.Z) + dp3s;
+            _scaledPosition = new Vector3(_scaledPosition.X, _scaledPosition.Y, _scaledPosition.Z) + dp3;
+
             _illuminationRect.Offset(dp2s);
             _scaledIlluminationRect.Offset(dp);
         }

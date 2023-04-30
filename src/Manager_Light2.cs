@@ -1,5 +1,4 @@
 ﻿using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using System;
@@ -13,71 +12,14 @@ using System.Threading.Tasks;
 
 namespace YGR
 {
-    //public struct Cubes
-    //{
-    //    public Vector3[] Vertices;
-    //}
-
-    //public class X_Cube
-    //{
-    //    private Vector3[] _vertices;
-    //    private int[,] _triangles;
-    //    public bool IsWall { get; }
-    //    public X_Cube(Vector3[] vertices, int[,] triangles, bool isWall)
-    //    {
-    //        _vertices = vertices;
-    //        _triangles = triangles;
-    //        IsWall = isWall;
-    //    }
-
-    //    public Vector3[] GetVertices()
-    //    {
-    //        return _vertices;
-    //    }
-
-    //    public int VertexCount()
-    //    {
-    //        return _vertices.Length;
-    //    }
-
-    //    public int TriangleCount()
-    //    {
-    //        return _triangles.GetLength(0);
-    //    }
-
-    //    public string toWavefrontObj(int offset)
-    //    {
-    //        string s = "";
-    //        foreach (var v in _vertices)
-    //        {
-    //            s += ("v " + v.X + " " + v.Y + " " + v.Z + "\n");
-    //        }
-    //        s += "\n";
-    //        for (int i = 0; i < _triangles.GetLength(0); ++i)
-    //        {
-    //            s += ("f " + (_triangles[i, 0] + 1 + offset) + " " + (_triangles[i, 1] + 1 + offset) + " " + (_triangles[i, 2] + 1 + offset) + "\n");
-    //        }
-    //        s += "\n";
-
-    //        return s;
-    //    }
-    //}
-
     public static class Manager_Light2
     {
-        public enum Caster
+        public enum Type
         {
-            Light = 0,
-            Shadow
+            Tiles = 0,
+            CPU,
+            GPU
         }
-
-        //public struct Coordinate
-        //{
-        //    public Vector3 Position;
-        //    public int Index;
-        //    public int Lighted;
-        //    public int GlobalID;
-        //}
 
         public struct X_Vector3
         {
@@ -106,9 +48,6 @@ namespace YGR
             }
         }
 
-        //public static List<X_Cube> IlluminationModelOpened { get; private set; }
-        //public static List<X_Cube> IlluminationModelClosed { get; private set; }
-
         public static Vector3[] IlluminationModelOpened { get; private set; }
         public static Vector3[] IlluminationModelClosed { get; private set; }
 
@@ -116,13 +55,14 @@ namespace YGR
         public static string ShadeVersion { get { return "V3"; } }
         public static GraphicsDevice GraphicsDevice_ { get; set; }
 
-        //private static StructuredBuffer IlluminationBufferOpened { get; set; }
-        //private static StructuredBuffer IlluminationBufferClosed { get; set; }
-        //private static StructuredBuffer LightsBuffer { get; set; }
-        //private static StructuredBuffer LightedBuffer { get; set; }
-        //private static StructuredBuffer CoordsBuffer { get; set; }
-        //private static Effect IlluminationShaderOpened { get; set; }
-        //private static Effect IlluminationShaderClosed { get; set; }
+        public static Type Platform { get; set; }
+
+        private static int LightsBufferSize = 5;
+        private static int VerticesBufferSize = 5000;
+        private static int CoordsBufferSize = 2500000;
+        private static StructuredBuffer LightsBuffer;
+        private static StructuredBuffer VerticesBuffer;
+        private static StructuredBuffer CoordsBuffer;
 
         private static Effect IlluminationShader { get; set; }
 
@@ -136,11 +76,13 @@ namespace YGR
             /* top    */ 5, 4, 6,   6, 4, 7
         };
 
+        static public X_Vector3[] Coords;
         static public X_Point3[] Vertices;
         static public int NumVerts;
         static public int NumLights;
         static public int NumCoords;
-        static public X_Point3[] TestVals;
+        static public X_Point3[] Lights;
+
         static public float eps = 1.0e-7f;
 
         static public bool RayIntersect(Vector3 origin, Vector3 direction, int globalIDx)
@@ -150,7 +92,7 @@ namespace YGR
 
             for (int ind = 0; ind < NumVerts; ind += 8)
             {
-                int index = 0;
+                //int index = 0;
                 for (int i = 0; i < 36; i += 3)
                 {
                     var p00 = Vertices[ind + indices[i]];
@@ -178,7 +120,6 @@ namespace YGR
 
                     if (det > -float.Epsilon && det < eps)
                         continue;
-                    //return false;
                     float invDet = 1.0f / det;
 
                     // Calculate distance from v[0] to ray origin
@@ -188,7 +129,6 @@ namespace YGR
                     float u = Manager_Light2.Dot(tvec, pvec) * invDet;
                     if (u < 0.0 || u > 1.0)
                         continue;
-                    //return false;
 
                     // Prepare to test V parameter
                     Vector3 qvec = Manager_Light2.CrossProduct(tvec, edge1);
@@ -197,7 +137,6 @@ namespace YGR
                     float v = Manager_Light2.Dot(direction, qvec) * invDet;
                     if (v < 0.0 || u + v > 1.0)
                         continue;
-                    //return false;
 
                     // Ray intersects triangle -> compute t
                     float t = Manager_Light2.Dot(edge2, qvec) * invDet;
@@ -218,7 +157,6 @@ namespace YGR
                         return true;
                     }
                 }
-                //hitPoint = new Vector3(0, 0, 0);
             }
             return false;
         }
@@ -239,51 +177,19 @@ namespace YGR
 
         public static void Initialize(string resourceFolder, ContentManager content, GraphicsDevice graphicsDevice)
         {
-            //LoadedIlluminationTemplates = new Dictionary<string, bool[]>();
             GraphicsDevice_ = graphicsDevice;
             IlluminationShader = content.Load<Effect>("Shader/Illuminator");
-
-            //IlluminationShaderClosed = content.Load<Effect>("Illuminator");
-            //IlluminationShaderOpened = content.Load<Effect>("Illuminator");
-
-            //var files = Directory.GetDirectories(resourceFolder);
-            //foreach(var f in files)
-            //{
-            //    var roomName = f.Split(Path.DirectorySeparatorChar).Last();
-            //    //var name = Path.GetDirectoryName(f);
-            //}
-            ////string dataFileName = Path.GetFileName(files
-            ////    .Where(x => Path.GetFileName(x).Contains(fileName) && Path.GetFileName(x).EndsWith(".shade"))
-            ////    .FirstOrDefault());
         }
-
-        //public struct LightedState
-        //{
-        //    public int IsLighted;
-        //}
 
         public static bool[] Illuminate(
             IWalkable room,
             Vector3 unscaledOffset
         )
         {
-            //if ((open && IlluminationModelOpened == null) || (!open && IlluminationModelClosed == null))
-            //{
-            //    Logger.Error("Trying to illuminate a room without illumination model for the " + (open ? "opened" : "closed") + " state of the level!");
-            //}
-
             var watch = new Stopwatch();
             watch.Start();
 
-            // if we cast shadow type, then the shadowed part will contain the value false
-            // if we cast light type then the shadowed part will contain the value true
-            //bool sign = (casterType == Caster.Shadow ? false : true);
-            bool light = true; // (casterType == Caster.Shadow ? true : false);
-
-            //var model = (open ? IlluminationModelOpened : IlluminationModelClosed);
-            Vertices = CreateModel(room); /* (open ? IlluminationModelOpened : IlluminationModelClosed);*/
-            NumLights = lights.Count();
-            NumVerts = Vertices.Count();
+            bool light = true;
 
             var tileSize = room.TextureTileSize;
             var template = room.Collision.GetCollisionTemplate();
@@ -293,7 +199,37 @@ namespace YGR
             bool[] lighted = Enumerable.Repeat<bool>(!light, length).ToArray();
 
             Vector3 offset = unscaledOffset;
-            X_Vector3[] coords = new X_Vector3[length]; // Enumerable.Repeat<Vector3>(Vector3.Zero, length).ToArray();
+            Coords = new X_Vector3[length]; // Enumerable.Repeat<Vector3>(Vector3.Zero, length).ToArray();
+            Lights = room.Lights.Select(x => x.GetUnscaledPosition()).ToArray();
+            Vertices = CreateModel(room); /* (open ? IlluminationModelOpened : IlluminationModelClosed);*/
+            NumLights = Lights.Count();
+            NumVerts = Vertices.Count();
+            NumCoords = 0;
+
+            if (Platform == Type.GPU)
+            {
+
+                if (LightsBuffer == null || NumLights > LightsBufferSize)
+                {
+                    LightsBufferSize = Lights.Count();
+                    LightsBuffer = new StructuredBuffer(
+                        GraphicsDevice_, typeof(X_Point3), LightsBufferSize, BufferUsage.None, ShaderAccess.Read);
+                }
+
+                if (CoordsBuffer == null || Coords.Length > CoordsBufferSize)
+                {
+                    CoordsBufferSize = Coords.Length;
+                    CoordsBuffer = new StructuredBuffer(
+                        GraphicsDevice_, typeof(X_Vector3), CoordsBufferSize, BufferUsage.None, ShaderAccess.ReadWrite);
+                }
+
+                if (VerticesBuffer == null || NumVerts > VerticesBufferSize)
+                {
+                    VerticesBufferSize = NumVerts;
+                    VerticesBuffer = new StructuredBuffer(
+                        GraphicsDevice_, typeof(X_Point3), VerticesBufferSize, BufferUsage.None, ShaderAccess.Read);
+                }
+            }
 
             int shadowSpotSize = 1;
             float tto = 0.001f;
@@ -315,7 +251,6 @@ namespace YGR
                     if (template[h][w] == (int)X_TileType.Roof || template[h][w] == (int)X_TileType.Outside)
                     {
                         continue;
-                        //shadowMap[y * width + x] = false;
                     }
 
                     // pretest if any part of the tile is not visible. If any edge is not visible from the light
@@ -335,22 +270,16 @@ namespace YGR
                         pts.Add(new Vector3(fromX + tto, fromY - tto + tileSize + 0.001f, -(tileSize)) + offset);
                         pts.Add(new Vector3(fromX - tto + tileSize - tto, fromY + 0.001f, -(tileSize)) + offset);
                     }
-                    foreach (var lightSource in lights)
+                    foreach (var lightSource in Lights)
                     {
-                        Vector3 orig = lightSource.GetUnscaledPosition();
+                        Vector3 orig = new Vector3(lightSource.X, lightSource.Y, lightSource.Z);
                         foreach (var p in pts)
                         {
-                            //if (light.GetUnscaledIlluminationRect().Contains(new Point((int)p.X, (int)p.Y)))
-                            //{
-                            //foreach (var cube in model)
-                            //{
                             var intersects = Manager_Light2.RayIntersect(orig, p - orig, -1);
                             if (intersects)
                             {
                                 goto add_tile;
                             }
-                            //}
-                            //}
                         }
                     }
 
@@ -372,139 +301,95 @@ namespace YGR
                     {
                         for (int y = fromY; y < toY; y += shadowSpotSize)
                         {
-                            //if (template[h][w] == (int)X_TileType.Roof || template[h][w] == (int)X_TileType.Outside)
-                            //{
-                            //    continue;
-                            //    //shadowMap[y * width + x] = false;
-                            //}
-                            //tileType[y * width + x] = (X_TileType)template[h][w];
                             if (template[h][w] == (int)X_TileType.Floor || template[h][w] == (int)X_TileType.Roof)
                             {
                                 X_Vector3 s = new Vector4(x + offset.X, y - tileSize + offset.Y, -tileSize - 0.001f + offset.Z, (y) * width + x);
-
-                                //var s = new X_Vector3();
-                                //s.Index = (y) * width + x;
-                                //var temp = new Vector4(x + offset.X, y - tileSize + offset.Y, -tileSize - 0.001f + offset.Z, (y) * width + x);
-                                //s.X = temp.X;
-                                //s.Y = temp.Y;
-                                //s.Z = temp.Z;
-                                //s.GlobalID = -1;
-                                //s.Lighted = 0;
-
-                                coords[index] = s;
+                                Coords[index] = s;
                                 index++;
-                                //coords[y * width + x] = new Vector3(x, y - tileSize, -tileSize - 0.001f) + offset;
-                                //textureMap[y * width + x] = (y) * width + x;
                             }
                             else if (template[h][w] == (int)X_TileType.Wall)
                             {
 
                                 X_Vector3 s = new Vector4(x + offset.X, fromY + 0.001f + offset.Y, -(y - fromY) + offset.Z, (y) * width + x);
-                                //var s = new X_Vector3();
-                                //s.Index = (y) * width + x;
-                                //var temp = new Vector3(x, fromY + 0.001f, -(y - fromY)) + offset;
-                                //s.X = temp.X;
-                                //s.Y = temp.Y;
-                                //s.Z = temp.Z;
-                                //s.GlobalID = -1;
-                                //s.Lighted = 0;
-
-                                coords[index] = s;
+                                Coords[index] = s;
                                 index++;
-                                //coords[y * width + x] = new Vector3(x, fromY + 0.001f, -(y - fromY)) + offset;
-                                //textureMap[y * width + x] = (y) * width + x;
                             }
                         }
                     }
                 }
             });
 
-            Logger.Info("Precompute tiles: " + watch.ElapsedMilliseconds.ToString() + " containing " + coords.Length.ToString() + " coordinates");
+            NumCoords = baseIndex;
 
-            //TestVals = Enumerable.Repeat<X_Point3>(new X_Point3(), baseIndex).ToArray();
-            bool cpu = false;
-            X_Vector3[] result;
-            if (cpu)
+            Logger.Info("Precompute tiles: " + watch.ElapsedMilliseconds.ToString() + " containing " + Coords.Length.ToString() + " coordinates");
+
+            if (Platform == Type.CPU)
             {
-                Vector3[] Lights = lights.Select(x => x.GetUnscaledPosition()).ToArray();
                 //float scale = room.Scale;
-                Parallel.For(0, baseIndex, i =>
+                Parallel.For(0, NumCoords, i =>
                 //for (int i = 0; i < baseIndex; ++i)
                 {
-                    ref var p = ref coords[i];
-                    //bool intersected = false;
-                    //int l = 0;
+                    ref var p = ref Coords[i];
                     for (int l = 0; l < Lights.Length; ++l)
                     {
-                        //Vector3 lightPos = lightSource.GetUnscaledPosition();
-                        //if (p.Lighted == 1) return;
-                        if (lighted[p.Index] == light) return;
+                        if (p.Lighted == 1) return;
+                        Vector3 lightPos = new Vector3(Lights[l].X, Lights[l].Y, Lights[l].Z);
                         Vector3 pos = new Vector3(p.X, p.Y, p.Z);
-                        Vector3 direction = pos - Lights[l];
-                        if (!Manager_Light2.RayIntersect(Lights[l], direction, i))
+                        Vector3 direction = pos - lightPos;
+                        if (!Manager_Light2.RayIntersect(lightPos, direction, i))
                         {
-                            //p.Lighted = 1;
-                            lighted[p.Index] = light;
-                            return;
-                            //intersected = true;
-                            //break;
+                            p.Lighted = 1;
+                            //lighted[p.Index] = light;
+                            return;;
                         }
                     }
                 });
-
-                result = coords;
             }
 
             // =============================================================================
 
-            else if (baseIndex > 0)
+            else if(Platform == Type.GPU && NumCoords > 0)
             {
 
-                //// =============================================================================
-                //// fucking set input coordinates buffer
-                //CoordsBuffer.SetData<X_Vector3>(coords);
-                //if (shaderModel.Parameters["Coords"] != null)
-                //    shaderModel.Parameters["Coords"].SetValue(CoordsBuffer);
+                VerticesBuffer.SetData(Vertices, 0, NumVerts);
+                CoordsBuffer.SetData(Coords, 0, NumCoords);
+                LightsBuffer.SetData(Lights, 0, NumLights);
 
-                ////// fucking set light positions
-                //var lightsPos = lights.Select(x => x.GetUnscaledPosition()).ToArray();
-                //X_Point3[] lightsVec = new X_Point3[lightsPos.Length];
-                //for (int i = 0; i < lightsPos.Length; ++i)
-                //{
-                //    lightsVec[i].X = lightsPos[i].X;
-                //    lightsVec[i].Y = lightsPos[i].Y;
-                //    lightsVec[i].Z = lightsPos[i].Z;
-                //}
-                //LightsBuffer.SetData<X_Point3>(lightsVec);
-                //if (shaderModel.Parameters["Lights"] != null)
-                //    shaderModel.Parameters["Lights"].SetValue(LightsBuffer);
+                if (IlluminationShader.Parameters["Vertices"] != null)
+                    IlluminationShader.Parameters["Vertices"].SetValue(VerticesBuffer);
 
-                //foreach (var pass in shaderModel.CurrentTechnique.Passes)
-                //{
-                //    pass.ApplyCompute();
-                //    int dispatchCount = (int)Math.Ceiling((double)baseIndex / 64.0);
-                //    GraphicsDevice_.DispatchCompute(dispatchCount, 1, 1);
-                //}
+                if (IlluminationShader.Parameters["Coords"] != null)
+                    IlluminationShader.Parameters["Coords"].SetValue(CoordsBuffer);
 
-                //X_Vector3[] backCoords = new X_Vector3[baseIndex];
-                //CoordsBuffer.GetData<X_Vector3>(backCoords, 0, baseIndex);
+                if (IlluminationShader.Parameters["Lights"] != null)
+                    IlluminationShader.Parameters["Lights"].SetValue(LightsBuffer);
 
-                //result = backCoords;
-                result = new X_Vector3[0];
+                if (IlluminationShader.Parameters["NumLights"] != null)
+                    IlluminationShader.Parameters["NumLights"].SetValue(NumLights);
+
+                if (IlluminationShader.Parameters["NumCoords"] != null)
+                    IlluminationShader.Parameters["NumCoords"].SetValue(NumCoords);
+
+                if (IlluminationShader.Parameters["NumVerts"] != null)
+                    IlluminationShader.Parameters["NumVerts"].SetValue(NumVerts);
+
+                foreach (var pass in IlluminationShader.CurrentTechnique.Passes)
+                {
+                    pass.ApplyCompute();
+                    int dispatchCount = (int)Math.Ceiling((double)baseIndex / 64.0);
+                    GraphicsDevice_.DispatchCompute(dispatchCount, 1, 1);
+                }
+                CoordsBuffer.GetData<X_Vector3>(Coords, 0, NumCoords);
             }
-            else
+
+            Parallel.For(0, NumCoords, i =>
+            //for (int i = 0; i < baseIndex; ++i)
             {
-                result = new X_Vector3[0];
-            }
-
-            //Parallel.For(0, baseIndex, i =>
-            ////for (int i = 0; i < baseIndex; ++i)
-            //{
-            //    if (result[i].Lighted == 1)
-            //    {
-            //        lighted[result[i].Index] = true;
-            //    }
-            //});
+                if (Coords[i].Lighted == 1)
+                {
+                    lighted[Coords[i].Index] = true;
+                }
+            });
 
             return lighted;
             //saveShadeToFile(lighted, room, lights);
@@ -661,156 +546,11 @@ namespace YGR
                 };
 
                 points.AddRange(vertices);
-                //cubes.Add(new X_Cube(vertices, indicesRoof, false));
             }
-
-            room.IlluminationModel = points.ToArray();
 
             Logger.Info("Calcualte light model for room " + room.Name + ": " + watch.ElapsedMilliseconds.ToString());
 
             return points.ToArray();
-            //Func<Y_Level, bool, List<X_Cube>> elevate = (level, open) => {
-            //    List<X_Cube> cubes = new List<X_Cube>();
-
-            //    foreach (var room in level.Rooms.Values)
-            //    {
-            //        // make sure that we open the door first because
-            //        // we want that state of the door to be shaded
-            //        if (open && room.WhatAreYou() == X_LevelElements.Door)
-            //        {
-            //            ((Y_Door)room).OpenDoor();
-            //        }
-            //        var rects = room.Collision.GetCollisionRectangles().Clone() as Rectangle[];
-
-            //        if (open && room.WhatAreYou() == X_LevelElements.Door)
-            //        {
-            //            ((Y_Door)room).CloseDoor();
-            //        }
-
-            //        int[,] indicesRoof = new int[,]
-            //        {
-            //    /* bottom */ {0,1,2}, {0,2,3},
-            //    /* right  */ {2,6,3}, {3,6,7},
-            //    /* front  */ {1,5,2}, {2,5,6},
-            //    /* left   */ {0,4,1}, {1,4,5},
-            //    /* back   */ {0,3,7}, {0,7,4},
-            //    /* top    */ {5,4,6}, {6,4,7}
-            //        };
-
-            //        float scale = room.Scale;
-            //        float elev = room.Collision.TileHeight / scale;
-            //        int shift = 5;
-            //        foreach (var rect in rects)
-            //        {
-            //            float x = (rect.X - shift + 0.5f) / scale;
-            //            float y = (rect.Y - shift) / scale;
-            //            float h = (rect.Height + shift) / scale;
-            //            float w = (rect.Width + shift) / scale;
-            //            float e = elev + 1;
-            //            Vector3[] vertices = new Vector3[] {
-            //                new Vector3(x, y, -e),
-            //                new Vector3(x, y+h, -e),
-            //                new Vector3(x+w, y+h, -e),
-            //                new Vector3(x+w, y, -e),
-            //                new Vector3(x, y, shift),
-            //                new Vector3(x, y+h, shift),
-            //                new Vector3(x+w, y+h, shift),
-            //                new Vector3(x+w, y, shift)
-            //            };
-
-            //            cubes.Add(new X_Cube(vertices, indicesRoof, false));
-            //        }
-            //    }
-            //    return cubes;
-            //};
-
-            //var illuminationModelOpened = elevate(level, true);
-            //var list = new List<Vector3>();
-            //foreach (var cube in illuminationModelOpened)
-            //{
-            //    list.AddRange(cube.GetVertices());
-            //}
-            //IlluminationModelOpened = list.ToArray();
-
-            //var illuminationModelClosed = elevate(level, false);
-            //list.Clear();
-            //foreach (var cube in illuminationModelClosed)
-            //{
-            //    list.AddRange(cube.GetVertices());
-            //}
-            //IlluminationModelClosed = list.ToArray();
-
-            // =====================================================================================
-
-            //IlluminationBufferClosed = new StructuredBuffer(
-            //    GraphicsDevice_,
-            //    typeof(X_Point3), IlluminationModelClosed.Length,
-            //    BufferUsage.None, ShaderAccess.Read);
-
-            //IlluminationBufferOpened = new StructuredBuffer(
-            //    GraphicsDevice_,
-            //    typeof(X_Point3), IlluminationModelOpened.Length,
-            //    BufferUsage.None, ShaderAccess.Read);
-
-            //var illuminationModelClosedX = new X_Point3[IlluminationModelClosed.Count()];
-            //for (int i = 0; i < illuminationModelClosedX.Length; ++i)
-            //{
-            //    illuminationModelClosedX[i] = new X_Point3();
-            //    illuminationModelClosedX[i].X = IlluminationModelClosed[i].X;
-            //    illuminationModelClosedX[i].Y = IlluminationModelClosed[i].Y;
-            //    illuminationModelClosedX[i].Z = IlluminationModelClosed[i].Z;
-            //}
-
-            //var illuminationModelOpenedX = new X_Point3[IlluminationModelOpened.Count()];
-            //for (int i = 0; i < illuminationModelOpenedX.Length; ++i)
-            //{
-            //    illuminationModelOpenedX[i] = new X_Point3();
-            //    illuminationModelOpenedX[i].X = IlluminationModelOpened[i].X;
-            //    illuminationModelOpenedX[i].Y = IlluminationModelOpened[i].Y;
-            //    illuminationModelOpenedX[i].Z = IlluminationModelOpened[i].Z;
-            //}
-
-            //IlluminationBufferClosed.SetData(illuminationModelClosedX, 0, illuminationModelClosedX.Length);
-            //IlluminationBufferOpened.SetData(illuminationModelOpenedX, 0, illuminationModelOpenedX.Length);
-
-            //if (IlluminationShaderClosed.Parameters["Vertices"] != null)
-            //    IlluminationShaderClosed.Parameters["Vertices"].SetValue(IlluminationBufferClosed);
-            //if (IlluminationShaderOpened.Parameters["Vertices"] != null)
-            //    IlluminationShaderOpened.Parameters["Vertices"].SetValue(IlluminationBufferOpened);
-
-            //if (IlluminationShaderClosed.Parameters["NumVerts"] != null)
-            //    IlluminationShaderClosed.Parameters["NumVerts"].SetValue(illuminationModelClosedX.Length);
-            //if (IlluminationShaderOpened.Parameters["NumVerts"] != null)
-            //    IlluminationShaderOpened.Parameters["NumVerts"].SetValue(illuminationModelOpenedX.Length);
-
-            //if (IlluminationShaderClosed.Parameters["NumVerts"] != null)
-            //    IlluminationShaderClosed.Parameters["NumVerts"].SetValue(illuminationModelClosedX.Length);
-            //if (IlluminationShaderOpened.Parameters["NumVerts"] != null)
-            //    IlluminationShaderOpened.Parameters["NumVerts"].SetValue(illuminationModelOpenedX.Length);
-            //// =====================================================================================
-
-            //Vector3[] retv1 = new Vector3[32];
-            //Vector3[] retv2 = new Vector3[32];
-            //IlluminationBufferClosed.GetData(retv1, 0, 32);
-            //IlluminationBufferOpened.GetData(retv2, 0, 32);
-
-            // get the largest room dimensions
-            //int maxLen = int.MinValue;
-            //foreach (var room in level.Rooms)
-            //{
-            //    int width = room.Value.Collision.GetCollisionTemplate()[0].Length * room.Value.TextureTileSize;
-            //    int length = width * room.Value.Collision.GetCollisionTemplate().Length * room.Value.TextureTileSize;
-            //    if (length > maxLen) maxLen = length;
-            //}
-
-            //LightsBuffer = new StructuredBuffer(
-            //    GraphicsDevice_, typeof(X_Vector3), 5, BufferUsage.None, ShaderAccess.Read);
-
-            //CoordsBuffer = new StructuredBuffer(
-            //    GraphicsDevice_, typeof(X_Vector3), maxLen, BufferUsage.None, ShaderAccess.ReadWrite);
-
-            //toWavefrontObj(cubes, "./logs/cubes.obj");
-            //return cubes;
         }
 
         //private static void toWavefrontObj(List<X_Cube> cubes, string name)

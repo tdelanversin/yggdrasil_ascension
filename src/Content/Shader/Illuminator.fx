@@ -22,8 +22,7 @@ struct Point3
 
 static const int indices[36] =
 {
-    /* bottom */
-    0, 1, 2, 0, 2, 3,
+    /* bottom */ 0, 1, 2, 0, 2, 3,
     /* right  */ 2, 6, 3, 3, 6, 7,
     /* front  */ 1, 5, 2, 2, 5, 6,
     /* left   */ 0, 4, 1, 1, 4, 5,
@@ -35,6 +34,9 @@ StructuredBuffer<Point3> Vertices;
 //StructuredBuffer<Input> Inputs;
 RWStructuredBuffer<X_Vector3> Coords;
 StructuredBuffer<Point3> Lights;
+
+//RWStructuredBuffer<float> Output;
+
 //RWStructuredBuffer<Coordinate> Lighted;
 
 //RWStructuredBuffer<Point3> TestVals;
@@ -51,12 +53,7 @@ int RayIntersect(float3 origin, float3 direction, uint globalIDx)
 {
     float len = length(direction);
     float3 dir = normalize(direction);
-
-    //uint numStructs;
-    //uint stride;
-    //NumStructs[0] = numStructs;
-    //Vertices.GetDimensions(numStructs, stride);
-    //NumStructs[0] = NumVerts;
+    
     for (int ind = 0; ind < NumVerts; ind += 8)
     {
         int index = 0;
@@ -85,7 +82,7 @@ int RayIntersect(float3 origin, float3 direction, uint globalIDx)
             
             // If determinant is near zero, ray lies in plane of triangle
             float det = dot(edge1, pvec);
-
+        
             if (det > -eps && det < eps)
                 continue;
             
@@ -99,18 +96,18 @@ int RayIntersect(float3 origin, float3 direction, uint globalIDx)
             float u = dot(tvec, pvec) * invDet;
             if (u < 0.0 || u > 1.0)
                 continue;
-
+        
             // Prepare to test V parameter
             float3 qvec = cross(tvec, edge1);
-
+        
             // Calculate V parameter and test bounds
             float v = dot(dir, qvec) * invDet;
             if (v < 0.0 || u + v > 1.0)
                 continue;
-
+        
             // Ray intersects triangle -> compute t
             float t = dot(edge2, qvec) * invDet;
-
+        
             if (t >= eps && t <= len)
             {
                 //hitPoint = origin + t * direction;
@@ -154,22 +151,19 @@ void CS(uint3 localID : SV_GroupThreadID, uint3 groupID : SV_GroupID,
     
     //int intersect = 0;
     uint c = globalID.x;
-    //Coords[c].GlobalID = c;
-    //int l = 0;
+    //Output[c] = 1;
+
     for (int l = 0; l < NumLights; l++)
     {
+        if (Coords[c].Lighted == 1) return;
         float3 lightPos = float3(Lights[l].X, Lights[l].Y, Lights[l].Z);
-        
-        if (Coords[c].Lighted == 1)
-            return;
         float3 pos = float3(Coords[c].X, Coords[c].Y, Coords[c].Z);
         float3 direction = pos - lightPos;
         if (RayIntersect(lightPos, direction, c) == 0)
         {
             Coords[c].Lighted = 1;
+            //Output[c] == 1;
             return;
-            //intersect = 1;
-            //break;
         }
     }
     
