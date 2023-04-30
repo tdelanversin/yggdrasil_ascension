@@ -77,17 +77,17 @@ namespace YGR
                 //Position = pos,
                 Emitters = new List<ParticleEmitter>
                 {
-                    new ParticleEmitter(textureRegion, 10000, TimeSpan.FromSeconds(0.7f),
-                        Profile.Spray(new Vector2(0,0), 10f ))
-                        //Profile.BoxFill(150,150))
+                    new ParticleEmitter(textureRegion, 1000, TimeSpan.FromSeconds(0.5f),
+                        Profile.Point())
+                        //Profile.BoxFill(15,15))
                     {
                         Parameters = new ParticleReleaseParameters
                         {
-                            Speed = new Range<float>(0f, 50f),
-                            Quantity = 20,
+                            Speed = new Range<float>(0f, 20f),
+                            Quantity = 30,
                             Rotation = new Range<float>(-1f, 1f),
-                            Scale = new Range<float>(0.1f, 0.2f),
-                            Opacity = 0.3f
+                            Scale = new Range<float>(0.05f, 0.1f),
+                            Opacity = 0.2f
                         },
                         Modifiers =
                         {
