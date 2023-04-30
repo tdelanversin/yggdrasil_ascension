@@ -152,6 +152,7 @@ namespace YGR
 
             // Don't leave the 'Restart' item selected
             SelectMenu(0);
+            SelectableItems[0].IsSelected = true;
 
             RepositionMenuItems();
 
@@ -225,7 +226,7 @@ namespace YGR
                 SelectMenuPrev();
             }
 
-            if (Input.IsKeyTriggered(Keybinds.Enter) || Input.IsButtonTriggered(0, Buttons.A))
+            if (Input.IsKeyTriggered(Keybinds.Enter) || Input.IsKeyTriggered(Keys.Space) || Input.IsButtonTriggered(0, Buttons.A))
             {
                 SelectableItems[SelectedMenu].Dispatch();
             }
@@ -233,17 +234,16 @@ namespace YGR
             // Select item based on mouse hover only if it was moved
             if (Input.HasMouseMoved() || Input.IsLeftMouseClick())
             {
-                Point mousePos = Mouse.GetState().Position;
                 for (int i = 0; i < SelectableItems.Count; i++)
                 {
-                    if (SelectableItems[i].Bounds().Contains(mousePos))
+                    if (SelectableItems[i].Bounds().Contains(Input.GetMousePosition()))
                     {
                         SelectMenu(i);
                         break;
                     }
                 }
             }
-            if (Input.IsLeftMouseClick())
+            if (Input.IsLeftMouseClick() && SelectableItems[SelectedMenu].Bounds().Contains(Input.GetMousePosition()))
             {
                 SelectableItems[SelectedMenu].Dispatch();
             }

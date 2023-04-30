@@ -33,14 +33,11 @@ namespace YGR
         {
             State = GameState.PreGame;
             Settings.Initialize(this);
-            Input.Initialize();
+            Input.Initialize(this);
             Util.Initialize(this);
             Menu.Initialize(this);
             Settings.ApplyScreenConfiguration();
-
-            var res_x = _graphics.PreferredBackBufferWidth;
-            var res_y = _graphics.PreferredBackBufferHeight;
-            Camera.Initialize(new Vector2(res_x / 2, res_y / 2), _graphics.GraphicsDevice.Viewport, CameraMode.Follow);
+            Camera.Initialize(_graphics, CameraMode.Follow);
 
             string level = "Level_3";
             Factory_Debug.Initialize(Content);
@@ -74,34 +71,14 @@ namespace YGR
         {
             Manager_Particles.Dispose();
         }
+
         internal void StartNewGame()
         {
-            /*
-            # PLAN
+            // Stop any playing songs and play a viking horn, just because
+            Manager_Sound.StopMusic();
+            Manager_Sound.Sound_VikingHorn.Play();
 
-            ## Basics
-            - Setup a small starting/tutorial room
-            - Initialize 4 (random) players, place them nicely spaced out
-            - Have a starting room section (marked rectangle)
-                - Every player that wants to play moves their character into the
-                  rectangle
-            - To start the game, all players shoot a start button / pillar
-                - Needs to be hit by >= X different players, where X is the
-                  amount of players standing in the marked rectangle
-
-            ## Further points
-            - Have either a pillar to shoot that switches a players character to
-              a different one, either random, or cycle through, or possibly have
-              different pillars to shoot at to select the character
-            - WASD+Mouse could either be
-                - Always the secondary controls for Player 1, alongside the
-                  first controller
-                - Configurable, so that if you have for example only a single
-                  controller, one can play with keyboard+mouse and the other
-                  with controller
-            - Start level generation directly from and with this initial room,
-              for a smooth transition.
-            */
+            Notifications.Clear();
 
             Manager_Light2.Platform = Manager_Light2.Type.GPU;
             _level.Create(GraphicsDevice);
@@ -115,7 +92,8 @@ namespace YGR
             Input.Update();
             Notifications.Update(gameTime);
 
-            if (Input.IsKeyTriggered(Keys.Escape) || Input.IsButtonTriggered(0, Buttons.Back))
+            // Keybind to switch in and out of the menu screen
+            if (Input.IsKeyTriggered(Keys.Escape) || Input.IsButtonTriggered(0, Buttons.Start))
             {
                 if (State == GameState.InGame)
                 {
@@ -130,14 +108,24 @@ namespace YGR
                     // Nothing for now
                 }
             }
+
             // Only switch actual state during Update(), otherwise you can mess up the Draw call
             State = DesiredState;
 
+            // Keybind to toggle fullscreen
             if (Input.IsKeyTriggered(Keybinds.ToggleFullscreen))
             {
                 Settings.ToggleFullscreen();
             }
 
+            // Keybind to cycle camera mode
+            if (Input.IsKeyTriggered(Keybinds.CycleCameraMode))
+            {
+                Camera.CycleCameraMode();
+                Notifications.New("Camera mode switched to " + Camera.Mode);
+            }
+
+            // Update all entities in current game state
             switch (State)
             {
                 case GameState.PreGame:
@@ -154,12 +142,12 @@ namespace YGR
                     Menu.Update();
                     break;
             }
+
             base.Update(gameTime);
         }
 
         protected override void Draw(GameTime gameTime)
         {
-
             float deltaTime = (float)gameTime.ElapsedGameTime.TotalMilliseconds;
             Vector2 zero = Vector2.Zero;
 
@@ -173,9 +161,9 @@ namespace YGR
                     Menu.Draw(_spriteBatch);
                     _spriteBatch.End();
                     break;
+
                 case GameState.InGame:
                     GraphicsDevice.Clear(_level.OutsideColor);
-
                     _spriteBatch.Begin(
                         SpriteSortMode.Immediate, null, null, null, null, null,
                         Camera.Transform);
@@ -195,9 +183,9 @@ namespace YGR
                         Manager_Players.DrawOutline(gameTime, zero, _spriteBatch);
                         Manager_Enemies.DrawOutline(gameTime, zero, _spriteBatch);
                     }
-
                     _spriteBatch.End();
                     break;
+
                 case GameState.Menu:
                     GraphicsDevice.Clear(Color.CornflowerBlue);
                     _spriteBatch.Begin(

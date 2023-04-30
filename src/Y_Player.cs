@@ -22,6 +22,7 @@ namespace YGR
 
         // IVictim fields
         public int LifePoints { get; set; }
+        public int LifePointsMax { get; set; }
         public X_CollisionModel_Victim Collision { get; }
         public Vector2 Velocity { get; set; }
         public Y_Level Level { get; set; }
@@ -59,8 +60,6 @@ namespace YGR
         protected int _animationIndex;
         protected float _animationTimer;
         protected float _animationTreshold;
-
-        protected int _allLifePoints;
 
         protected enum InputType
         {
@@ -123,12 +122,12 @@ namespace YGR
 
             // Character related
             _isAiming = false;
-            _aimDirection = Vector2.Zero;
+            _aimDirection = new Vector2(1, 0);
             _invincible = false;
             _invincibleDuration = 1250;
 
-            LifePoints = 30;
-            _allLifePoints = LifePoints;
+            LifePointsMax = 30;
+            LifePoints = LifePointsMax;
 
             Room = Level.GetRoom(this, Room);
         }
@@ -156,7 +155,7 @@ namespace YGR
 
         public void Revive()
         {
-            LifePoints = _allLifePoints;
+            LifePoints = LifePointsMax;
         }
 
         /* Deal with being hit by projectile, basically physical therapy */
@@ -293,14 +292,14 @@ namespace YGR
                 }
                 MouseState mouse = Mouse.GetState();
                 Vector2 playerCenter = Rect.Center.ToVector2();
-                if (Input.HasMouseMoved() && !_isAiming) // Skip if controller is already aiming
+                if ((Input.HasMouseMoved() || Input.IsLeftMousePressed()) && !_isAiming) // Skip if controller is already aiming
                 {
-                    Vector2 mouseInGamePosition = mouse.Position.ToVector2() / Camera.Zoom + Camera.VisibleArea.Location.ToVector2();
+                    Vector2 mouseInGamePosition = Input.GetMousePosition().ToVector2() / Camera.Zoom + Camera.VisibleArea.Location.ToVector2();
                     Vector2 newAimDirection = mouseInGamePosition - playerCenter;
                     newAimDirection.Normalize();
                     _aimDirection = newAimDirection;
                 }
-                if (mouse.LeftButton == ButtonState.Pressed && IsAlive() && !_invincible)
+                if (Input.IsLeftMousePressed() && IsAlive() && !_invincible)
                 {
                     _gun.Shoot(gameTime, playerCenter, _aimDirection, Level, this);
                 }
@@ -379,18 +378,19 @@ namespace YGR
         {
             int width = _spriteGhost.Width / 4;
             int height = _spriteGhost.Height;
+            float scale = (float)Rect.Width / width;
             // TODO: use the proper animation framework to pingpong through the frames
             int totalMS = gameTime.TotalGameTime.Milliseconds / 200;
             int step = totalMS % 6;
             int animationIndex = 3 - Math.Abs(3 - step);
             spriteBatch.Draw(
                 texture: _spriteGhost,
-                position: _rect.Location.ToVector2(),
+                position: _rect.Location.ToVector2() - new Vector2(0, height * scale - _rect.Height),
                 sourceRectangle: new Rectangle(width * animationIndex, 0, width, height),
                 color: Color.White,
                 rotation: 0,
                 origin: Vector2.Zero,
-                scale: (float)Rect.Width / width,
+                scale: scale,
                 effects: Velocity.X >= 0 ? SpriteEffects.None : SpriteEffects.FlipHorizontally,
                 layerDepth: 0);
         }
@@ -488,7 +488,9 @@ namespace YGR
         {
             /* Overrides from base class */
             _spritePlayer = Manager_Players.SpriteNinja;
-            LifePoints = 20;
+            
+            LifePointsMax = 20;
+            LifePoints = LifePointsMax;
 
             /* Class specifics */
             _isDashing = false;

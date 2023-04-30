@@ -87,6 +87,9 @@ namespace YGR
                 (int)position.Y - (int)((float)_window.Height / 2.0f * Scale),
                 (int)(_window.Width * Scale),
                 (int)(_window.Height * Scale));
+            
+            // Offset the starting position to make it centered in the character center
+            _position -= new Vector2(_rect.Width, _rect.Height) / 2;
         }
 
         public virtual void Update(GameTime gameTime)
@@ -209,6 +212,9 @@ namespace YGR
                 (int)position.Y - (int)((float)_window.Height / 2.0f * Scale),
                 (int)(_window.Width * Scale),
                 (int)(_window.Height * Scale));
+            
+            // Offset the starting position to make it centered in the character center
+            _position -= new Vector2(_rect.Width, _rect.Height) / 2;
         }
     }
 }

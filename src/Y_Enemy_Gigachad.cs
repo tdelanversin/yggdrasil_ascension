@@ -15,7 +15,8 @@ namespace YGR
             IList<IVictim> players
         ) : base(position, level, players)
         {
-            LifePoints = 999;
+            LifePointsMax = 999;
+            LifePoints = LifePointsMax;
             fleeingHPTreshold = 0; // Gigachad never flees
             Sprite = Manager_Enemies.enemy_textures["gigachad"];
             SpriteRect = Sprite.Bounds;
@@ -85,7 +86,7 @@ namespace YGR
                 Gun.Shoot(gameTime, _rect.Center.ToVector2(), targetDirection, Level, this);
             }
 
-            var playersInSameRoom = ((List<IVictim>)Manager_Players.Players).FindAll(x => x.Room == Room);
+            var playersInSameRoom = ((List<IVictim>)Manager_Players.Players).FindAll(x => x.LifePoints > 0 && x.Room == Room);
             if (playersInSameRoom.Count < 1) return;
 
             // Gigachad shoot Big Gun no matter what (as long as there are players in the same room)
