@@ -1,17 +1,12 @@
 ﻿using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
-using Microsoft.Xna.Framework.Input;
-using Microsoft.Xna.Framework.Media;
 using Newtonsoft.Json;
-using SharpFont.Cache;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Threading.Tasks;
 
 namespace YGR
 {
@@ -55,20 +50,23 @@ namespace YGR
         private string _levelResourceFolder;
         private string _doorResourceFolder;
 
+        private Y_CMRoom _startRoom;
+        private Y_CMRoom _goldRoom;
+
         // Gameplay state objects
         public IWalkable ActiveRoom;
         public GamePlayState State;
         private List<Interactable_Basic> _interactables = new List<Interactable_Basic> { };
 
-        Dictionary<string, List<Y_CMRoom>> _availableRooms;
+        Dictionary<string, List<Tuple<X_RoomStump, Y_CMRoom>>> _availableRooms;
         Y_Level.Data _data;
 
         public Y_Level(
             string name,
             int tileSize,
+            int textureTileSize,
             string levelResourceFolder,
-            string doorResourceFolder,
-            GraphicsDevice graphicsDevice
+            string doorResourceFolder
         )
         {
             _name = Util.PathOsNormalization(name);
@@ -78,8 +76,6 @@ namespace YGR
             TileWidth = tileSize;
             TileHeight = tileSize;
             Scale = 1.0f;
-
-            _availableRooms = new Dictionary<string, List<Y_CMRoom>>();
 
             var dataFile = _name.Split(Path.DirectorySeparatorChar)[1];
             var dataFilePath = _levelResourceFolder + "data.json";
@@ -96,55 +92,45 @@ namespace YGR
             }
 
             var categoryFolders = Directory.GetDirectories(Util.PathOsNormalization(_levelResourceFolder + _name));
-            foreach (var folder in categoryFolders)
+            List<Tuple<string, string>> files = new List<Tuple<string, string>>();
+            foreach(var folder in categoryFolders)
             {
                 string category = folder.Split(Path.DirectorySeparatorChar).Last();
-                //if (category == "Start")
-                //{
-                var files = Directory.GetDirectories(Util.PathOsNormalization(folder + Path.DirectorySeparatorChar + category + Path.DirectorySeparatorChar + _data.LdtkSubfolderName));
-                List<Y_CMRoom> list = new List<Y_CMRoom>();
-                foreach (var f in files)
+                var fs = Directory.GetDirectories(Util.PathOsNormalization(folder + Path.DirectorySeparatorChar + category + Path.DirectorySeparatorChar + _data.LdtkSubfolderName));
+                foreach(var f in fs)
                 {
-
-                    var roomName = f.Split(Path.DirectorySeparatorChar).Last();
-                    //if (_availableRooms.ContainsKey(roomName))
-                    //    Logger.Error("Room with name " + roomName + " already added");
-                    var room = new Y_CMRoom(roomName, TileWidth, TileHeight, f, _data.LdtkRoomTypes[category], graphicsDevice);
-                    room.PreloadIlluminations();
-                    room.Category = category;
-                    if (category == "Start" || category == "Gold")
-                    {
-                        room.State = X_RoomState.LockedOpen;
-                    }
-                    list.Add(room);
+                    files.Add(new Tuple<string, string>(category, f));
                 }
-
-                _availableRooms.Add(category, list);
             }
-                //var name = Path.GetDirectoryName(f);
-            
-            //);
 
-            //foreach (var b in bag)
-            //{
-            //    if (_availableRooms.ContainsKey(b.Name))
-            //        Logger.Error("Room with name " + b.Name + " already added");
-            //    var key = b.Name.Split("_")[0];
-            //    if (key == "Start" || key == "Gold")
-            //    {
-            //        b.State = X_RoomState.LockedOpen;
-            //    }
+            ConcurrentBag<X_RoomStump> list = new ConcurrentBag<X_RoomStump>();
+            var watch = new Stopwatch();
+            watch.Start();
+            foreach (var f in files)
+            {
+                var roomName = f.Item2.Split(Path.DirectorySeparatorChar).Last();
+                var room = new X_RoomStump(f.Item1, roomName, TileWidth, TileHeight, textureTileSize, f.Item2, _data.LdtkRoomTypes[f.Item1]);
+                list.Add(room);
+            }
 
-            //    List<Y_CMRoom> rooms;
-            //    if (!_availableRooms.TryGetValue(key, out rooms))
-            //    {
-            //        _availableRooms.Add(key, new List<Y_CMRoom> { b });
-            //    }
-            //    else
-            //    {
-            //        rooms.Add(b);
-            //    }
-            //}
+            //Logger.Info("room load time " + watch.ElapsedMilliseconds.ToString());
+
+            _availableRooms = new Dictionary<string, List<Tuple<X_RoomStump, Y_CMRoom>>>();
+            foreach (var room in list)
+            {
+                //room.FinalizeItem(graphicsDevice);
+                List<Tuple<X_RoomStump, Y_CMRoom>> rlist;
+                if(!_availableRooms.TryGetValue(room.Category, out rlist))
+                {
+                    _availableRooms.Add(room.Category, new List<Tuple<X_RoomStump, Y_CMRoom>> { new Tuple<X_RoomStump, Y_CMRoom>(room, null) });
+                }
+                else
+                {
+                    rlist.Add(new Tuple<X_RoomStump, Y_CMRoom>(room, null));
+                }
+            }
+            float elapsed = (float)watch.ElapsedMilliseconds;
+            Logger.Info("room finalize time for " + list.Count() + " rooms: " + elapsed + " which is " + elapsed / list.Count() + " ms per room");
 
             Rooms = new Dictionary<int, IWalkable>();
         }
@@ -165,7 +151,7 @@ namespace YGR
                 {
                     var r = (Y_CMRoom)room.Value;
                     r.ResetRoom();
-                    _availableRooms[r.Category].Add(r);
+                    _availableRooms[r.Category].Add(new Tuple<X_RoomStump, Y_CMRoom>(null, r));
                 }
             }
 
@@ -178,23 +164,35 @@ namespace YGR
             var key = _data.Level.Keys.ToArray()[random.Next(0, _data.Level.Keys.Count)]; // [random.Next(0, _data.Level.Keys.Count)];
             var tree = _data.Level[key];
 
+            var watch = new Stopwatch();
+            watch.Start();
             float offset = 1024;
             foreach (var node in tree)
             {
                 var type = _availableRooms[node.Type];
                 int index = random.Next(0, type.Count);
                 var n = type[index];
+                if(n.Item2 == null)
+                {
+                    n = new Tuple<X_RoomStump,Y_CMRoom>(null, new Y_CMRoom(n.Item1));
+                    n.Item2.FinalizeItem(graphicsDevice);
+                }
                 type.RemoveAt(index);
+                var room = n.Item2;
                 float h = 1.0f;
-                float w = (float)n.Rect.Width / (float)n.Rect.Height;
+                float w = (float)room.Rect.Width / (float)room.Rect.Height;
                 Point p = new Point(
-                    (int)(node.X * w * offset - n.Rect.Width / 2),
-                    (int)(node.Y * h * offset - n.Rect.Height / 2));
+                    (int)(node.X * w * offset - room.Rect.Width / 2),
+                    (int)(node.Y * h * offset - room.Rect.Height / 2));
                 p.X = p.X + (TileWidth - p.X % TileWidth);
                 p.Y = p.Y + (TileHeight - p.Y % TileHeight);
-                n.MoveTo(p);
-                Rooms.Add(node.Index, n);
+                room.MoveTo(p);
+                Rooms.Add(node.Index, room);
+
+                if (node.Type == "Start") _startRoom = room;
+                else if (node.Type == "Gold") _goldRoom = room;
             }
+            Logger.Info("Loaded random rooms: " + watch.ElapsedMilliseconds.ToString());
 
             List<IWalkable> connectors = new List<IWalkable>();
             foreach (var room in Rooms)
@@ -240,6 +238,7 @@ namespace YGR
                     connectors.Add(connector.Connect(fromRoom, fromConnectorPoint, toRoom, toConnectorPoint, direction));
                 }
             }
+            Logger.Info("Created connectors: " + watch.ElapsedMilliseconds.ToString());
 
             int connectorIndex = Rooms.Count();
             foreach (var c in connectors)
@@ -257,10 +256,13 @@ namespace YGR
                 }
             }
 
+            _startRoom.State = X_RoomState.LockedOpen;
+            _goldRoom.State = X_RoomState.LockedOpen;
+
             Manager_Players.ClearPlayers();
 
             // Place all players, even if they're not going to play
-            var spawningPoints = ((Y_CMRoom)Rooms[0]).GetPlayerSpawningPoints();
+            var spawningPoints = ((Y_CMRoom)_startRoom).GetPlayerSpawningPoints();
             var sp = spawningPoints.First();
             for (int i = Manager_Players.Players.Count; i < 4; i++)
             {
@@ -274,19 +276,19 @@ namespace YGR
 
             // Useless box were all to be participating players should go in
             Interactable_PlayerField playerField = new Interactable_PlayerField(
-                new Rectangle(5, 5, 8, 8), this, (Y_CMRoom)Rooms[0]
+                new Rectangle(5, 5, 8, 8), this, (Y_CMRoom)_startRoom
             );
             _interactables.Add(playerField);
 
             // Room opener to start the game with all players standing in the field
             _interactables.Add(new Interactable_RoomOpener(
-                new Rectangle(29, 5, 8, 8), this, (Y_CMRoom)Rooms[0], playerField)
+                new Rectangle(29, 5, 8, 8), this, (Y_CMRoom)_startRoom, playerField)
             );
 
             // Gameplay state
             State = GamePlayState.Start;
-            ActiveRoom = Rooms[0];
-            //Camera.focusOnRoom(Rooms[0]);
+            ActiveRoom = _startRoom;
+            //Camera.focusOnRoom(_startRoom);
             Camera.focusManual();
 
             Camera.Players = Manager_Players.Players;
@@ -375,7 +377,7 @@ namespace YGR
                     }
                     var cmroom = (Y_CMRoom)ActiveRoom;
 
-                    if (cmroom == Rooms[0] || cmroom.Cleared)
+                    if (cmroom == _startRoom || cmroom.Cleared)
                     {
                         break;
                     }

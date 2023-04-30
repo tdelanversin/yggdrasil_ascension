@@ -28,13 +28,17 @@ namespace YGR
         private int _animSpriteOffsetX;
         private int _animSpriteOffsetY;
         private int _tileSize;
-        Texture2D _texture;
-
+        private Texture2D _texture;
+        
+        private static Dictionary<Y_PowerUps, Texture2D> _textures;
         private static ContentManager _content;
 
         public static void Initialize(ContentManager content)
         {
             _content = content;
+            _textures = new Dictionary<Y_PowerUps, Texture2D>();
+            _textures.Add(Y_PowerUps.Life, _content.Load<Texture2D>("SpritesOther/heart"));
+            _textures.Add(Y_PowerUps.Revive, _content.Load<Texture2D>("SpritesOther/star"));
         }
 
         public static Y_PowerUp Factory(Y_PowerUps type, Point location, int width, int height, int tileSize, float scale, Dictionary<string, dynamic> properties)
@@ -44,10 +48,10 @@ namespace YGR
             switch (type)
             {
                 case Y_PowerUps.Revive:
-                    return new Y_PowerUp(location, width, height, tileSize, scale, player => player.LifePoints = player.LifePoints + 15, _content.Load<Texture2D>("SpritesOther/heart"), 100, 5, 32, 32);
+                    return new Y_PowerUp(type, location, width, height, tileSize, scale, player => player.LifePoints = player.LifePoints + 15, 100, 5, 32, 32);
                 default:
                     return new Y_PowerUp(
-                        location, width, height, tileSize, scale, 
+                        type, location, width, height, tileSize, scale, 
                         (player) => {
                             var ghosts = Manager_Players.Players.Where(x => x != player && x.WhatAreYou() == X_LevelElements.Ghost && x.Room == player.Room).ToArray();
                             if(ghosts.Length > 0)
@@ -56,17 +60,15 @@ namespace YGR
                                 var g = ghosts[rand.Next(0, ghosts.Length)];
                                 ((SimplePlayer)g).Revive();
                             }
-                        }, 
-                        _content.Load<Texture2D>("SpritesOther/star"), 100, 7, 32, 32);
+                        }, 100, 7, 32, 32);
             }
         }
 
-        public Y_PowerUp(Point location, int width, int height, int tileSize, float scale, Action<IVictim> action, Texture2D texture, int animIntervalMs, int animSpriteCount, int animSpriteOffsetX, int animSpriteOffsetY)
+        public Y_PowerUp(Y_PowerUps type, Point location, int width, int height, int tileSize, float scale, Action<IVictim> action, int animIntervalMs, int animSpriteCount, int animSpriteOffsetX, int animSpriteOffsetY)
         {
             Scale = scale;
             Rect = new Rectangle((int)(location.X*scale), (int)(location.Y*scale), (int)(scale * width), (int)(scale * height));
             Action = action;
-            _texture = texture;
             _animIntervalMs = animIntervalMs;
             _animSpriteCount = animSpriteCount;
             _animSpriteOffsetX = animSpriteOffsetX;
@@ -74,6 +76,7 @@ namespace YGR
             _animCount = 0;
             _animIntervalCounterMs = 0;
             _tileSize = tileSize;
+            _texture = _textures[type];
         }
 
         public void Draw(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)
