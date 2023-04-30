@@ -15,6 +15,7 @@ namespace YGR
 
         // Power Ups
         public static Texture2D SpinningHeart { get; private set; }
+        public static Texture2D SpinningPlus { get; private set; }
 
         // Enemies
         public static Texture2D Enemy_Basic { get; private set; }
@@ -36,6 +37,7 @@ namespace YGR
             Enemy_Gigachad = contentManager.Load<Texture2D>("SpritesCharacters/gigachad");
 
             SpinningHeart = contentManager.Load<Texture2D>("SpritesOther/SpinningHeart");
+            SpinningHeart = contentManager.Load<Texture2D>("SpritesOther/SpinningPlus");
         }
     }
 }
