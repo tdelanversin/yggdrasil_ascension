@@ -28,25 +28,26 @@ namespace YGR
         public static void LoadContent(ContentManager contentManager)
         {
             _particleTexture = contentManager.Load<Texture2D>("SpritesEffects/dust_particle");
-            GenParticleEffect();
+            GenParticleEffect(new Vector2(0, 0));
         }
-        public static void GenParticleEffect( )
+        public static void GenParticleEffect(Vector2 pos )
         {
             TextureRegion2D textureRegion = new TextureRegion2D(_particleTexture);
             _particleEffect = new ParticleEffect(autoTrigger: true)
             {
-                //Position = pos,//new Vector2(400, 240),
+                Position = new Vector2(33330,3330),
                 Emitters = new List<ParticleEmitter>
                 {
-                    new ParticleEmitter(textureRegion, 500, TimeSpan.FromSeconds(0.7),
+                    new ParticleEmitter(textureRegion, 400, TimeSpan.FromSeconds(0.6),
                         Profile.Point())
                     {
                         Parameters = new ParticleReleaseParameters
                         {
                             Speed = new Range<float>(0f, 20f),
-                            Quantity = 10,
+                            Quantity = 20,
                             Rotation = new Range<float>(-1f, 1f),
-                            Scale = new Range<float>(0.03f, 0.04f)
+                            Scale = new Range<float>(0.03f, 0.04f),
+                            Opacity = 0.2f
                         },
                         Modifiers =
                         {
