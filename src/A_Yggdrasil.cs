@@ -42,13 +42,11 @@ namespace YGR
             string level = "Level_3";
             Factory_Debug.Initialize(Content);
             Manager_Projectile.Initialize(Content);
-            Manager_Enemies.Initialize(Content);
             Manager_Players.Initialize();
             Manager_Particles.Initialize();
             Manager_Light2.Initialize("./Levels/" + level + "/simplified", Content, GraphicsDevice);
             X_AutoTiler.Initialize("./Doors/", "data.json", GraphicsDevice, Y_Door.MapJsonName);
             X_AutoTiler.Initialize("./Levels/", "doors.json", GraphicsDevice, Y_CMRoom.MapJsonName);
-            Y_PowerUp.Initialize(Content);
             Y_MultiPowerUp.Initialize(Content);
 
             _level = new Y_Level(level, 32, 32, "./Levels/", "./Doors");
@@ -61,7 +59,7 @@ namespace YGR
             Fonts.LoadContent(Content);
             Menu.LoadContent(Content);
             Manager_Sound.LoadContent(Content);
-            Manager_Players.LoadContent(Content);
+            Manager_Sprites.LoadContent(Content);
             _spriteBatch = new SpriteBatch(GraphicsDevice);
             Manager_Particles.LoadContent(Content);
             Manager_Sound.PlayMainMenuMusic();

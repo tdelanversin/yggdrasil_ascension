@@ -405,7 +405,7 @@ namespace YGR
                     foreach (var s in life)
                     {
                         Point location = new Point(s.x + Rect.X, s.y + Rect.Y);
-                        _powerUps.Add(new PowerUpItem(Y_PowerUp.Factory(Y_PowerUps.Life, location, s.width, s.height, TextureTileSize, Scale, null)));
+                        _powerUps.Add(new PowerUpItem(Y_PowerUp.Factory(Y_PowerUps.Life, location, s.width, s.height, Scale)));
                     }
                 }
 
@@ -415,7 +415,7 @@ namespace YGR
                     foreach (var s in revive)
                     {
                         Point location = new Point(s.x + Rect.X, s.y + Rect.Y);
-                        _powerUps.Add(new PowerUpItem(Y_PowerUp.Factory(Y_PowerUps.Revive, location, s.width, s.height, TextureTileSize, Scale, null)));
+                        _powerUps.Add(new PowerUpItem(Y_PowerUp.Factory(Y_PowerUps.Revive, location, s.width, s.height, Scale)));
                     }
                 }
             });

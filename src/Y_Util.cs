@@ -159,5 +159,13 @@ namespace YGR
 
             File.WriteAllText(name, s);
         }
+
+        public static float GetSpriteScale(Rectangle rect, Vector2 spriteDimension)
+        {
+            return Math.Min(
+                rect.Width / spriteDimension.X,
+                rect.Height / spriteDimension.Y
+            );
+        }
     }
 }
