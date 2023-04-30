@@ -40,10 +40,13 @@ namespace YGR
         protected IShooter _gun;
         protected PlayerIndex _playerIndex;
         protected Rectangle _rect;
-        protected Rectangle _spriteDimensions;
+        protected Vector2 CharacterSpriteDimension;
+        protected Vector2 GhostSpriteDimension;
+        protected AnimatedSprite GhostSprite;
+        protected AnimatedSprite CharacterSprite;
+        protected float CharacterScale;
+        protected float GhostScale;
         protected Texture2D _spriteAimIndicator;
-        protected Texture2D _spriteGhost;
-        protected Texture2D _spritePlayer;
         protected float _acceleration;
         protected Vector2 _aimDirection;
         protected float _deceleration;
@@ -54,12 +57,6 @@ namespace YGR
 
         protected float _actionTimer;
         protected float _actionTreshold;
-
-        protected Dictionary<string, int[]> _animations;
-        protected string _animationDirection;
-        protected int _animationIndex;
-        protected float _animationTimer;
-        protected float _animationTreshold;
 
         protected enum InputType
         {
@@ -82,33 +79,44 @@ namespace YGR
             _position = initialPosition;
             _gun = gun;
             ControlLayout = controlLayout;
+            Scale = scale;
 
-            // Set all the sprites
-            _spritePlayer = Manager_Players.SpriteBasic;
-            _spriteGhost = Manager_Players.SpriteGhost;
-            _spriteAimIndicator = Manager_Players.SpriteAimIndicator[(int)playerIndex];
+            // Set up sprites
+            _spriteAimIndicator = Manager_Sprites.AimIndicator[(int)playerIndex];
             _color = Color.White;
 
-            _spriteDimensions = new Rectangle(0, 0, 44, 62);
-            _animationTimer = 0;
-            _animationTreshold = 250; // After how many ms to cycle through sprites
-            _animationIndex = 0;
-            _animations = new Dictionary<string, int[]> {
-                { "idle", new int[] { 0 } },
-                { "left", new int[] { 1, 2 } },
-                { "right", new int[] { 3, 4 } }};
-            _animationDirection = "idle";
-
             _rect = new Rectangle(
-                (int)_position.X - (int)(scale * _spriteDimensions.Width / 2),
-                (int)_position.Y - (int)(scale * _spriteDimensions.Height / 2),
-                (int)(scale * _spriteDimensions.Width), (int)(scale * _spriteDimensions.Height)
+                (int)_position.X,
+                (int)_position.Y,
+                40, 60
             );
 
-            Scale = Math.Min(
-                _rect.Width / (float)_spriteDimensions.Width,
-                _rect.Height / (float)_spriteDimensions.Height
+            CharacterSpriteDimension = new Vector2(44, 62);
+            CharacterScale = Scale * Util.GetSpriteScale(_rect, CharacterSpriteDimension);
+            CharacterSprite = new AnimatedSprite(
+                texture: Manager_Sprites.Player_Simple,
+                spriteDimension: CharacterSpriteDimension,
+                animations: new Dictionary<AnimationState, int[]> {
+                    { AnimationState.WalkLeft, new int[] { 1, 2 } },
+                    { AnimationState.IdleLeft, new int[] { 1 } },
+                    { AnimationState.WalkRight, new int[] { 3, 4 } },
+                    { AnimationState.IdleRight, new int[] { 3 } },
+                }
             );
+
+            GhostSpriteDimension = new Vector2(Manager_Sprites.Player_Ghost.Width / 8, Manager_Sprites.Player_Ghost.Height);
+            GhostScale = Scale * _rect.Width / GhostSpriteDimension.X; // Ghost will be slightly higher than players, due to floating and shadows
+            GhostSprite = new AnimatedSprite(
+                texture: Manager_Sprites.Player_Ghost,
+                spriteDimension: GhostSpriteDimension,
+                animations: new Dictionary<AnimationState, int[]> {
+                    { AnimationState.WalkRight, new int[] { 0, 1, 2, 3, 2, 1 } },
+                    { AnimationState.IdleRight, new int[] { 0, 1, 2, 3, 2, 1 } },
+                    { AnimationState.WalkLeft, new int[] { 7, 6, 5, 4, 5, 6 } },
+                    { AnimationState.IdleLeft, new int[] { 7, 6, 5, 4, 5, 6 } },
+                }
+            );
+
 
             // Movement related
             Velocity = Vector2.Zero;
@@ -182,47 +190,6 @@ namespace YGR
                 {
                     _color = Color.DimGray * (float)((Math.Sin(_invincibleTimeLeft / 50) + 1) / 2);
                 }
-            }
-        }
-
-        protected void UpdateAnimation(GameTime gameTime)
-        {
-            string newAnimationDirection = _animationDirection;
-            if (Velocity.X > 0 && _animations.ContainsKey("right"))
-            {
-                newAnimationDirection = "right";
-            }
-            else if (Velocity.X < 0 && _animations.ContainsKey("left"))
-            {
-                newAnimationDirection = "left";
-            }
-            else if (Velocity.Y > 0 && _animations.ContainsKey("up"))
-            {
-                newAnimationDirection = "up";
-            }
-            else if (Velocity.Y < 0 && _animations.ContainsKey("down"))
-            {
-                newAnimationDirection = "down";
-            }
-            else if (_animations.ContainsKey("idle"))
-            {
-                newAnimationDirection = "idle";
-            }
-
-            if (newAnimationDirection == _animationDirection)
-            {
-                _animationTimer += gameTime.ElapsedGameTime.Milliseconds;
-                if (_animationTimer > _animationTreshold)
-                {
-                    _animationTimer = 0;
-                    _animationIndex = (_animationIndex + 1) % _animations[_animationDirection].Length;
-                }
-            }
-            else
-            {
-                _animationTimer = 0;
-                _animationIndex = 0;
-                _animationDirection = newAnimationDirection;
             }
         }
 
@@ -360,9 +327,12 @@ namespace YGR
             Vector2 input = Vector2.Zero;
             HandleGamepadInput(gameTime, ref input);
             HandleMouseKeyboardInput(gameTime, ref input);
+
+            if (IsAlive()) { CharacterSprite.Update(gameTime, input); }
+            else { GhostSprite.Update(gameTime, input); }
+
             UpdateVelocity(input, gameTime);
             UpdateCollision(gameTime);
-            UpdateAnimation(gameTime);
             _gun.Update(gameTime);
 
         }
@@ -370,35 +340,46 @@ namespace YGR
         // Render ghosty 👻
         protected virtual void DrawGhost(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)
         {
-            int width = _spriteGhost.Width / 4;
-            int height = _spriteGhost.Height;
-            float scale = (float)Rect.Width / width;
-            // TODO: use the proper animation framework to pingpong through the frames
-            int totalMS = gameTime.TotalGameTime.Milliseconds / 200;
-            int step = totalMS % 6;
-            int animationIndex = 3 - Math.Abs(3 - step);
+            // int width = _spriteGhost.Width / 4;
+            // int height = _spriteGhost.Height;
+            // float scale = (float)Rect.Width / width;
+            // // TODO: use the proper animation framework to pingpong through the frames
+            // int totalMS = gameTime.TotalGameTime.Milliseconds / 200;
+            // int step = totalMS % 6;
+            // int animationIndex = 3 - Math.Abs(3 - step);
+            // spriteBatch.Draw(
+            //     texture: _spriteGhost,
+            //     position: _rect.Location.ToVector2() - new Vector2(0, height * scale - _rect.Height),
+            //     sourceRectangle: new Rectangle(width * animationIndex, 0, width, height),
+            //     color: Color.White,
+            //     rotation: 0,
+            //     origin: Vector2.Zero,
+            //     scale: scale,
+            //     effects: Velocity.X >= 0 ? SpriteEffects.None : SpriteEffects.FlipHorizontally,
+            //     layerDepth: 0);
+            Vector2 ghostOffset = new Vector2(0, -GhostSpriteDimension.Y * GhostScale + _rect.Height);
             spriteBatch.Draw(
-                texture: _spriteGhost,
-                position: _rect.Location.ToVector2() - new Vector2(0, height * scale - _rect.Height),
-                sourceRectangle: new Rectangle(width * animationIndex, 0, width, height),
+                texture: GhostSprite.Texture,
+                position: _rect.Location.ToVector2() + ghostOffset,
+                sourceRectangle: GhostSprite.SourceRectangle,
                 color: Color.White,
                 rotation: 0,
                 origin: Vector2.Zero,
-                scale: scale,
-                effects: Velocity.X >= 0 ? SpriteEffects.None : SpriteEffects.FlipHorizontally,
+                scale: GhostScale,
+                effects: SpriteEffects.None,
                 layerDepth: 0);
         }
 
         protected virtual void DrawCharacterSprite(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)
         {
             spriteBatch.Draw(
-                texture: _spritePlayer,
+                texture: CharacterSprite.Texture,
                 position: _rect.Location.ToVector2(),
-                sourceRectangle: new Rectangle(_animations[_animationDirection][_animationIndex] * (_spriteDimensions.Width), 0, _spriteDimensions.Width, _spriteDimensions.Height),
+                sourceRectangle: CharacterSprite.SourceRectangle,
                 color: _color,
                 rotation: 0,
                 origin: Vector2.Zero,
-                scale: Scale,
+                scale: CharacterScale,
                 effects: SpriteEffects.None,
                 layerDepth: 0);
         }
@@ -418,7 +399,7 @@ namespace YGR
             {
                 var angle = Math.Atan2(_aimDirection.Y, _aimDirection.X) + Math.PI / 2;
                 spriteBatch.Draw(
-                    _spriteAimIndicator, _rect.Location.ToVector2() + _spriteDimensions.Center.ToVector2() + _aimDirection * (int)(_rect.Height * 1.5),
+                    _spriteAimIndicator, _rect.Location.ToVector2() + CharacterSpriteDimension / 2f + _aimDirection * (int)(_rect.Height * 1.5),
                     null,
                     Color.White, (float)angle, new Vector2(_spriteAimIndicator.Width / 2, 0), 0.1f, SpriteEffects.None, 0);
             }
@@ -481,8 +462,6 @@ namespace YGR
             ) : base(playerIndex, initialPosition, level, gun, controlLayout, scale)
         {
             /* Overrides from base class */
-            _spritePlayer = Manager_Players.SpriteNinja;
-            
             LifePointsMax = 20;
             LifePoints = LifePointsMax;
 
@@ -544,14 +523,8 @@ namespace YGR
             };
 
             Rectangle rr = directionSourceRectangles["down"][0];
-            _spriteDimensions = new Rectangle(0, 0, rr.Width, rr.Height);
-            _rect = new Rectangle(
-                (int)_position.X - (int)(scale * _spriteDimensions.Width / 2),
-                (int)_position.Y - (int)(scale * _spriteDimensions.Height / 2),
-                (int)(scale * _spriteDimensions.Width), (int)(scale * _spriteDimensions.Height)
-            );
-
-            Scale = (float)Rect.Width / (float)_spriteDimensions.Width;
+            CharacterSpriteDimension = new Vector2(rr.Width, rr.Height);
+            CharacterScale = Scale * Util.GetSpriteScale(_rect, CharacterSpriteDimension);
 
             // This tells the animation to start on the left-side sprite.
             previousAnimationIndex = 2;
@@ -604,75 +577,84 @@ namespace YGR
 
             _gun.Update(gameTime);
 
-            // TODO: Improve sprite/animation stuff
-            string direction = "down";
-            if (input.X > 0)
-            {
-                direction = "right";
-            }
-            else if (input.X < 0)
-            {
-                direction = "left";
-            }
-            else if (input.Y > 0)
-            {
-                direction = "down";
-            }
-            else if (input.Y < 0)
-            {
-                direction = "up";
-            }
-            else
-            {
-                direction = "idle";
-            }
 
-            // Update the sourceRectangles array based on direction
-            sourceRectangles = directionSourceRectangles[direction];
 
-            // Check if the timer has exceeded the threshold.
-            if (timer > threshold)
+            if (IsAlive())
             {
-                // If Alex is in the middle sprite of the animation.
-                if (currentAnimationIndex == 1)
+                string direction = "down";
+                if (input.X > 0)
                 {
-                    // If the previous animation was the left-side sprite, then the next animation should be the right-side sprite.
-                    if (previousAnimationIndex == 0)
-                    {
-                        currentAnimationIndex = 2;
-                    }
-                    else
-                    // If not, then the next animation should be the left-side sprite.
-                    {
-                        currentAnimationIndex = 0;
-                    }
-                    // Track the animation.
-                    previousAnimationIndex = currentAnimationIndex;
+                    direction = "right";
                 }
-                // If Alex was not in the middle sprite of the animation, he should return to the middle sprite.
+                else if (input.X < 0)
+                {
+                    direction = "left";
+                }
+                else if (input.Y > 0)
+                {
+                    direction = "down";
+                }
+                else if (input.Y < 0)
+                {
+                    direction = "up";
+                }
                 else
                 {
-                    currentAnimationIndex = 1;
+                    direction = "idle";
                 }
-                // Reset the timer.
-                timer = 0;
+                // Update the sourceRectangles array based on direction
+                sourceRectangles = directionSourceRectangles[direction];
+
+
+                // Check if the timer has exceeded the threshold.
+                if (timer > threshold)
+                {
+                    // If Alex is in the middle sprite of the animation.
+                    if (currentAnimationIndex == 1)
+                    {
+                        // If the previous animation was the left-side sprite, then the next animation should be the right-side sprite.
+                        if (previousAnimationIndex == 0)
+                        {
+                            currentAnimationIndex = 2;
+                        }
+                        else
+                        // If not, then the next animation should be the left-side sprite.
+                        {
+                            currentAnimationIndex = 0;
+                        }
+                        // Track the animation.
+                        previousAnimationIndex = currentAnimationIndex;
+                    }
+                    // If Alex was not in the middle sprite of the animation, he should return to the middle sprite.
+                    else
+                    {
+                        currentAnimationIndex = 1;
+                    }
+                    // Reset the timer.
+                    timer = 0;
+                }
+                // If the timer has not reached the threshold, then add the milliseconds that have past since the last Update() to the timer.
+                else
+                {
+                    timer += (float)gameTime.ElapsedGameTime.TotalMilliseconds;
+                }
             }
-            // If the timer has not reached the threshold, then add the milliseconds that have past since the last Update() to the timer.
-            else
-            {
-                timer += (float)gameTime.ElapsedGameTime.TotalMilliseconds;
-            }
+            else { GhostSprite.Update(gameTime, input); }
 
         }
 
         override protected void DrawCharacterSprite(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)
         {
-
             spriteBatch.Draw(
-                    _spritePlayer,
-                    new Rectangle(
-                        _rect.X, _rect.Y, _rect.Width, _rect.Height),
-                        sourceRectangles[currentAnimationIndex], _color);
+                texture: Manager_Sprites.Player_Ninja,
+                position: _rect.Location.ToVector2(),
+                sourceRectangle: sourceRectangles[currentAnimationIndex],
+                color: _color,
+                rotation: 0,
+                origin: Vector2.Zero,
+                scale: CharacterScale,
+                effects: SpriteEffects.None,
+                layerDepth: 0);
         }
     }
 }

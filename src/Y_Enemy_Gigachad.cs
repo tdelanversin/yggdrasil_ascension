@@ -18,7 +18,7 @@ namespace YGR
             LifePointsMax = 999;
             LifePoints = LifePointsMax;
             fleeingHPTreshold = 0; // Gigachad never flees
-            Sprite = Manager_Enemies.enemy_textures["gigachad"];
+            Sprite = Manager_Sprites.Enemy_Gigachad;
             SpriteRect = Sprite.Bounds;
 
             Name = "Gigachad";
