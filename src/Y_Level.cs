@@ -140,11 +140,6 @@ namespace YGR
         public void Create(GraphicsDevice graphicsDevice)
         {
             //var room = new Y_CMRoom(roomName, TileWidth, TileHeight, f, graphicsDevice);
-            // Stop any songs that are playing
-            Manager_Sound.StopMusic();
-            Notifications.Clear();
-
-            Manager_Sound.Sound_VikingHorn.Play();
 
             // put everything back
             foreach (var room in Rooms)

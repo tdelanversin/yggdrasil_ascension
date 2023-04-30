@@ -39,13 +39,15 @@ namespace YGR
 
         private static float currentMouseWheelValue, previousMouseWheelValue;
 
-        public static void Initialize(Vector2 position, Viewport bounds, CameraMode mode)
+        public static void Initialize(GraphicsDeviceManager gdm, CameraMode mode)
         {
-            Position = position;
+            var res_x = gdm.PreferredBackBufferWidth;
+            var res_y = gdm.PreferredBackBufferHeight;
+            Position = new Vector2(res_x / 2, res_y / 2);
             _transitionalPosition = Position;
             Zoom = 1f;
             _transitionalZoom = Zoom;
-            Bounds = bounds.Bounds;
+            Bounds = gdm.GraphicsDevice.Viewport.Bounds;
             Mode = mode;
         }
 
@@ -159,7 +161,7 @@ namespace YGR
             UpdateZoom(.95f / stretch);
         }
 
-        private static void CycleCameraMode()
+        public static void CycleCameraMode()
         {
             switch (Mode)
             {
@@ -221,12 +223,6 @@ namespace YGR
 
         public static void Update(Viewport bounds, GameTime gameTime)
         {
-            if (Input.IsKeyTriggered(Keys.F10))
-            {
-                CycleCameraMode();
-                Notifications.New("Camera mode switched to " + Mode);
-            }
-
             switch (Mode)
             {
                 case CameraMode.Manual:
