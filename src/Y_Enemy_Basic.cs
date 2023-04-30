@@ -10,6 +10,7 @@ namespace YGR
     {
         public string Name { get; set; }
         public int LifePoints { get; set; }
+        public int LifePointsMax { get; set; }
 
         public EnemyState State { get; set; } = EnemyState.Inactive;
         protected int fleeingHPTreshold = 2; // Flee if at this treshold or lower
@@ -62,7 +63,8 @@ namespace YGR
         )
         {
             Name = "Mob";
-            LifePoints = 8;
+            LifePointsMax = 8;
+            LifePoints = LifePointsMax;
 
             Velocity = Vector2.Zero;
             _acceleration = 0.006f;

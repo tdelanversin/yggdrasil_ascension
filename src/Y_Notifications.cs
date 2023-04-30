@@ -14,11 +14,13 @@ namespace YGR
             internal string Message = "";
             internal Color Color = Color.BlanchedAlmond;
             internal Vector2 Size;
+            internal SpriteFont Font;
 
             internal Notification(string message)
             {
                 Message = message;
-                Size = Fonts.Normal.MeasureString(message);
+                Font = Fonts.Normal;
+                Size = Font.MeasureString(message);
             }
 
             internal Notification(
@@ -30,6 +32,18 @@ namespace YGR
                 AgeMax = ageMax;
                 Color = color;
             }
+
+            internal Notification(
+                string message,
+                Color color,
+                int ageMax,
+                SpriteFont font
+            ) : this(message, color, ageMax)
+            {
+                Font = font;
+                Size = Font.MeasureString(message);
+            }
+            
         }
 
         internal static List<Notification> _notifications { get; private set; } = new List<Notification> { };
@@ -47,6 +61,11 @@ namespace YGR
         public static void New(string message, Color color, int ageMax)
         {
             _notifications.Add(new Notification(message, color, ageMax));
+        }
+
+        public static void New(string message, Color color, int ageMax, SpriteFont font)
+        {
+            _notifications.Add(new Notification(message, color, ageMax, font));
         }
 
         public static void Update(GameTime gameTime)
@@ -73,7 +92,7 @@ namespace YGR
                 {   // Fade out
                     color *= timeLeft / fadeTime;
                 }
-                spriteBatch.DrawString(Fonts.Normal, n.Message, pos, color);
+                spriteBatch.DrawString(n.Font, n.Message, pos, color);
                 y += (int)(n.Size.Y * 1.5);
             }
         }

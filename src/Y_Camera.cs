@@ -17,8 +17,8 @@ namespace YGR
         public static float Zoom { get; set; }
         public static Vector2 Position { get; set; }
         public static Rectangle Bounds { get; set; }
-        public static Rectangle VisibleArea { get; set; }
-        public static Matrix Transform { get; set; }
+        public static Rectangle VisibleArea { get; private set; }
+        public static Matrix Transform { get; private set; }
         public static CameraMode Mode { get; private set; }
         public static IWalkable Room { get; private set; } // Room to focus on
         public static IList<IVictim> Players { get; set; } // Players to focus
@@ -39,13 +39,15 @@ namespace YGR
 
         private static float currentMouseWheelValue, previousMouseWheelValue;
 
-        public static void Initialize(Vector2 position, Viewport bounds, CameraMode mode)
+        public static void Initialize(GraphicsDeviceManager gdm, CameraMode mode)
         {
-            Position = position;
+            var res_x = gdm.PreferredBackBufferWidth;
+            var res_y = gdm.PreferredBackBufferHeight;
+            Position = new Vector2(res_x / 2, res_y / 2);
             _transitionalPosition = Position;
             Zoom = 1f;
             _transitionalZoom = Zoom;
-            Bounds = bounds.Bounds;
+            Bounds = gdm.GraphicsDevice.Viewport.Bounds;
             Mode = mode;
         }
 
@@ -75,13 +77,13 @@ namespace YGR
             UpdateVisibleArea();
         }
 
-        public static void MoveCamera(Vector2 movePosition)
+        private static void MoveCamera(Vector2 movePosition)
         {
             Vector2 newPosition = Position + movePosition;
             Position = newPosition;
         }
 
-        public static void UpdateZoom(float zoom)
+        private static void UpdateZoom(float zoom)
         {
             // Clamp to the min/max zoom level allowed in the current mode
             Zoom = Math.Clamp(zoom, minZoom[(int)Mode], maxZoom[(int)Mode]);
@@ -159,14 +161,68 @@ namespace YGR
             UpdateZoom(.95f / stretch);
         }
 
+        public static void CycleCameraMode()
+        {
+            switch (Mode)
+            {
+                case CameraMode.Manual:
+                    SetFocusPlayers();
+                    break;
+                case CameraMode.Follow:
+                    SetFocusRoom(Room);
+                    break;
+                case CameraMode.Room:
+                    SetFocusManual();
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        private static double SigmoidCentered(double t, double a)
+        {
+            return (1d / (1 + Math.Exp(-a * t)) - 0.5d);
+        }
+
+        private static double EaseInOut(double t, double k)
+        {
+            return (0.5d / SigmoidCentered(1, k)) * SigmoidCentered(2 * t - 1, k) + 0.5d;
+        }
+
+        private static void UpdateAnimation(GameTime gameTime)
+        {
+
+            if (_animationTimer < _animationDuration)
+            {
+
+                // var animationFraction = _animationTimer / _animationDuration; // linear
+
+                // Hand-made Slow-in, slow-out function, using sin(): (1+sin(pi*x/500-pi/2))/2
+                // https://www.wolframalpha.com/input?i=plot+%281%2Bsin%28pi*x%2F1-pi%2F2%29%29%2F2+from+-0.2+to+1.2
+                // float animationFraction = (float)(1d + Math.Sin(Math.PI * _animationTimer / _animationDuration - Math.PI / 2d)) / 2f;
+
+                // EaseInOut using Sigmoid and a high steepnes factor
+                // https://www.wolframalpha.com/input?i=plot+1+%2F+%281+%2B+exp%28-12%28x+-+1%2F2%29%29%29+from+-0.2+to+1.2
+                // float animationFraction = (float)(1f / (1 + Math.Exp(-16 * (_animationTimer / _animationDuration - 0.5d))));
+
+                // Even better version that works for low factors of k too
+                // https://www.wolframalpha.com/input?i=plot+%28%280.5+%2F+%281%2F%281%2Bexp%28-k%29%29-0.5%29%29*%281%2F%281%2Bexp%28-k*%282x-1%29%29%29-0.5%29%2B0.5%29+x+from+-0.2+to+1.2%2C+k+%3D+8
+                float animationFraction = (float)EaseInOut(t: _animationTimer / _animationDuration, k: 6d);
+
+                _transitionalPosition = (Position * animationFraction) + _previousPosition * (1f - animationFraction);
+                _transitionalZoom = (Zoom * animationFraction) + _previousZoom * (1f - animationFraction);
+
+                _animationTimer += gameTime.ElapsedGameTime.Milliseconds;
+            }
+            else
+            {
+                _transitionalPosition = Position;
+                _transitionalZoom = Zoom;
+            }
+        }
+
         public static void Update(Viewport bounds, GameTime gameTime)
         {
-            if (Input.IsKeyTriggered(Keys.F10))
-            {
-                Mode = (CameraMode)(((int)Mode + 1) % Enum.GetNames(typeof(CameraMode)).Length);
-                Notifications.New("Camera mode switched to " + Mode);
-            }
-
             switch (Mode)
             {
                 case CameraMode.Manual:
@@ -182,42 +238,37 @@ namespace YGR
                     break;
             }
             Bounds = bounds.Bounds;
-
-            if (_animationTimer < _animationDuration)
-            {
-                var animationFraction = _animationTimer / _animationDuration;
-                _transitionalPosition = (Position * animationFraction) + _previousPosition * (1f - animationFraction);
-                _transitionalZoom = (Zoom * animationFraction) +  _previousZoom * (1f - animationFraction);
-                _animationTimer += gameTime.ElapsedGameTime.Milliseconds;
-            } else {
-                _transitionalPosition = Position;
-                _transitionalZoom = Zoom;
-            }
-
+            UpdateAnimation(gameTime);
             UpdateMatrix();
         }
 
-        private static void startAnimation()
+        private static void ResetAnimation()
         {
             _previousPosition = _transitionalPosition;
             _previousZoom = _transitionalZoom;
             _animationTimer = 0;
         }
 
-        public static void focusManual()
+        public static void SetFocusManual()
         {
             Mode = CameraMode.Manual;
         }
 
-        public static void focusOnPlayers()
+        public static void SetFocusPlayers(bool animate = true)
         {
-            startAnimation();
+            if (animate)
+            {
+                ResetAnimation();
+            }
             Mode = CameraMode.Follow;
         }
 
-        public static void focusOnRoom(IWalkable room)
+        public static void SetFocusRoom(IWalkable room, bool animate = true)
         {
-            startAnimation();
+            if (animate)
+            {
+                ResetAnimation();
+            }
             Room = room;
             Mode = CameraMode.Room;
         }
