@@ -238,6 +238,10 @@ namespace YGR
         private byte[] _wallData;
         bool[] _illumination = null;
 
+        private float _barkScale;
+        private Texture2D _bark;
+        private List<Vector2> _barkPositions;
+
         private int _currentDoorOpenOffset = 0;
         private float _doorOpeningTime = 2000.0f;
         private float _animationTime = 0.0f;
@@ -541,7 +545,7 @@ namespace YGR
 #endif
         }
 
-        public void FinalizeItem(GraphicsDevice graphicsDevice)
+        public void FinalizeItem(GraphicsDevice graphicsDevice, Color[] barkColor, Texture2D barkTexture)
         {
             var watch = new Stopwatch();
             watch.Start();
@@ -549,9 +553,9 @@ namespace YGR
             MemoryStream wall = new MemoryStream(_wallData);
             MemoryStream roof = new MemoryStream(_roofData);
 
-            _floor = Texture2D.FromStream(graphicsDevice, floor, DefaultColorProcessors.ZeroTransparentPixels);
-            Texture2D txWall = Texture2D.FromStream(graphicsDevice, wall, DefaultColorProcessors.ZeroTransparentPixels);
-            _roof = Texture2D.FromStream(graphicsDevice, roof, DefaultColorProcessors.ZeroTransparentPixels);
+            _floor = Texture2D.FromStream(graphicsDevice, floor, DefaultColorProcessors.PremultiplyAlpha);
+            Texture2D txWall = Texture2D.FromStream(graphicsDevice, wall, DefaultColorProcessors.PremultiplyAlpha);
+            _roof = Texture2D.FromStream(graphicsDevice, roof, DefaultColorProcessors.PremultiplyAlpha);
 
             Color[] target = new Color[_floor.Width * _floor.Height];
             Color[] source = new Color[txWall.Width * txWall.Height];
@@ -565,7 +569,31 @@ namespace YGR
                 {
                     var c = source[h * _floor.Width + w];
                     if (c.A != 0)
-                        target[h * _floor.Width + w] = source[h * _floor.Width + w];
+                        target[h * _floor.Width + w] = c;
+                }
+            }
+
+            if(Category == "Start" || Category == "Trunc")
+            {
+                _barkScale = Scale*0.15f;
+                var scaledW = (int)(barkTexture.Width * _barkScale);
+                var scaledH = (int)(barkTexture.Height * _barkScale);
+
+                var h = Math.Floor((double)Rect.Height / scaledH) * scaledH + scaledH;
+                var w = Math.Floor((double)Rect.Width / scaledW) * scaledW + scaledW;
+
+                var remX = (int)(w - Rect.Width) / 2;
+                var remY = (int)(h - Rect.Height) / 2;
+                
+                _barkPositions = new List<Vector2>();
+                _bark = barkTexture;
+
+                for (int x = Rect.Location.X - remX; x < Rect.Location.X + Rect.Width; x += scaledW)
+                {
+                    for (int y = Rect.Location.Y - remY; y < Rect.Location.Y + Rect.Height; y += scaledH)
+                    {
+                        _barkPositions.Add(new Vector2(x, y));
+                    }
                 }
             }
 
@@ -1093,6 +1121,15 @@ namespace YGR
                     _playerSpawner[i] += p;
                 }
             }
+
+            if(_barkPositions != null)
+            {
+                for (int i = 0; i < _barkPositions.Count(); ++i)
+                {
+                    _barkPositions[i] = new Vector2(_barkPositions[i].X + p.X, _barkPositions[i].Y + p.Y);
+
+                }
+            }
         }
 
         public X_ConnectorPoint GetConnectorPoint(X_ConnectorSide side)
@@ -1315,6 +1352,18 @@ namespace YGR
             }
         }
 
+        private void drawBark(SpriteBatch spriteBatch)
+        {
+            if (_barkPositions == null) return;
+            foreach (var p in _barkPositions)
+            {
+                spriteBatch.Draw(
+                    _bark, p,
+                    new Rectangle(0, 0, _bark.Width, _bark.Height),
+                    Color.White, 0, Vector2.Zero, Scale*_barkScale, SpriteEffects.None, 0);
+            }
+        }
+
         /// <summary>
         /// Regular Draw method for all drawable objects
         /// </summary>
@@ -1345,12 +1394,14 @@ namespace YGR
                 //    Color.White, 0, Vector2.Zero, Scale, SpriteEffects.None, 0);
             }
             else if (
-                State == X_RoomState.Opening || 
+                State == X_RoomState.Opening ||
                 State == X_RoomState.Closing ||
                 State == X_RoomState.LockedClosing ||
                 State == X_RoomState.LockedOpening
             )
             {
+                drawBark(spriteBatch);
+
                 spriteBatch.Draw(
                     _floor, Rect.Location.ToVector2(),
                     new Rectangle(0, 0, _floor.Width, _floor.Height),
@@ -1365,7 +1416,7 @@ namespace YGR
                     new Rectangle(0, 0, _roofDoor.Roof.Width, _roofDoor.Roof.Height),
                     Color.White, 0, Vector2.Zero, Scale, SpriteEffects.None, 0);
 
-                for(int i=0; i<_roofDoor.Mechanism1Positions.Count(); ++i)
+                for (int i = 0; i < _roofDoor.Mechanism1Positions.Count(); ++i)
                 {
                     if (_currentDoorOpenOffset % 2 == 0)
                     {
@@ -1390,6 +1441,8 @@ namespace YGR
             }
             else
             {
+                drawBark(spriteBatch);
+
                 spriteBatch.Draw(
                     _floor, Rect.Location.ToVector2(),
                     new Rectangle(0, 0, _floor.Width, _floor.Height),
@@ -1401,7 +1454,7 @@ namespace YGR
 
                 foreach (var powerUp in _powerUps)
                 {
-                    if(powerUp.Active == true)
+                    if (powerUp.Active == true)
                     {
                         powerUp.Item.Draw(gameTime, globalOffset, spriteBatch);
                     }
