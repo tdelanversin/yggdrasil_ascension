@@ -388,7 +388,7 @@ namespace YGR
 
             var angle = Math.Atan2(FacingDirection.Y, FacingDirection.X) + Math.PI / 2;
             spriteBatch.Draw(
-                Manager_Sprites.AimIndicator[3], _rect.Center.ToVector2() + FacingDirection * _rect.Height,
+                Manager_Sprites.AimIndicator[3], _rect.Center.ToVector2() + CharacterOffset + FacingDirection * _rect.Height,
                 null,
                 Color.White, (float)angle, new Vector2(Manager_Sprites.AimIndicator[3].Width / 2, 0), 0.03f, SpriteEffects.None, 0);
 
@@ -398,8 +398,8 @@ namespace YGR
         {
             string str = String.Format("{0} {1}", Name, LifePoints);
             Vector2 str_size = Fonts.Normal.MeasureString(str);
-            Vector2 str_pos = new Vector2(_rect.Location.X + _rect.Width / 2 - str_size.X / 2, _rect.Location.Y - str_size.Y - 2);
-            spriteBatch.DrawString(Fonts.Normal, str, str_pos, Color.OrangeRed);
+            Vector2 str_pos = new Vector2(_rect.Location.X + _rect.Width / 2 - str_size.X / 2, _rect.Location.Y - str_size.Y - 2) + CharacterOffset;
+            spriteBatch.DrawString(Fonts.Normal, str, str_pos, Color.Wheat);
         }
 
         protected virtual void DrawCharacterSprite(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)

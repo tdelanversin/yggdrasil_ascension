@@ -14,14 +14,14 @@ namespace YGR
             IList<IVictim> players
         ) : base(position, sprite, level, players)
         {
-            LifePointsMax = 999;
+            LifePointsMax = 120;
             LifePoints = LifePointsMax;
             fleeingHPTreshold = 0; // Gigachad never flees
 
             Name = "Gigachad";
             Gun = new Gun_ShotGun(13);
             Gun2 = new Gun_Gigagun();
-            State = EnemyState.Idle;
+
             _hitColor = Color.OrangeRed;
             _regularColor = Color.White;
             _color = _regularColor;
@@ -34,16 +34,19 @@ namespace YGR
             // Collision bounds
             int height = 250;
             int width = (int)(height / CharacterSprite.SpriteDimension.Y * CharacterSprite.SpriteDimension.X);
+
+            // Offset the boss to center it on the spawner tile that is only 32x32
+            // TODO: standardize boss size and adjust that in the level editor as well 
             _rect = new Rectangle(
-                (int)position.X,
-                (int)position.Y,
+                (int)position.X - (height - 32) / 2,
+                (int)position.Y - (width - 32) / 2 - 30,
                 width,
                 height
             );
 
             // Set the drawing scale to make the character fit into the collision bounds
             CharacterScale = Util.GetSpriteScale(_rect, CharacterSprite.SpriteDimension);
-            CharacterOffset = Vector2.Zero; // Not needed right now
+            CharacterOffset = Vector2.Zero;
         }
 
         public override void Update(GameTime gameTime)
