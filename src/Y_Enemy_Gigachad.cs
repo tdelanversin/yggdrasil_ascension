@@ -74,7 +74,7 @@ namespace YGR
 
             UpdateVelocity(movement, gameTime);
             UpdateCollision(gameTime);
-
+            Manager_Particles.Update(gameTime);
             Gun.Update(gameTime);
             Gun2.Update(gameTime);
 
