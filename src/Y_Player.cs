@@ -128,6 +128,8 @@ namespace YGR
             _invincible = false;
 
             Room = Level.GetRoom(this, Room);
+
+
         }
 
         public X_LevelElements WhatAreYou()

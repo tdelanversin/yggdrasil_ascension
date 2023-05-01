@@ -131,6 +131,10 @@ namespace YGR
             _position += newVelocity * timeStepMS;
             _rect.Location = _position.ToPoint();
             _animationIndex = (int)(5 - (gameTime.TotalGameTime.TotalMilliseconds - TimeCreated) / 500);
+            Manager_Particles._particleEffects[2].Trigger(new Vector2(_rect.Location.X + _rect.Width / 2, _rect.Location.Y + _rect.Height));
+
+            Manager_Particles.Update(gameTime);
+
         }
 
         public virtual void Draw(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)

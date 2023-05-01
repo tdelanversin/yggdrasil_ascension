@@ -24,7 +24,7 @@ namespace YGR
             Name = "Gigachad";
             Gun = new Gun_ShotGun(13);
             Gun2 = new Gun_Gigagun();
-
+            State = EnemyState.Idle;
             _hitColor = Color.OrangeRed;
             _regularColor = Color.White;
             _color = _regularColor;
@@ -74,7 +74,7 @@ namespace YGR
 
             UpdateVelocity(movement, gameTime);
             UpdateCollision(gameTime);
-
+            Manager_Particles.Update(gameTime);
             Gun.Update(gameTime);
             Gun2.Update(gameTime);
 
@@ -92,6 +92,34 @@ namespace YGR
             // Gigachad shoot Big Gun no matter what (as long as there are players in the same room)
             Gun2.Shoot(gameTime, _rect.Center.ToVector2(), Vector2.One, Level, this);
         }
+        protected override void UpdateVelocity(Vector2 input, GameTime gt)
+        {
+            int timeStepMS = gt.ElapsedGameTime.Milliseconds;
+
+            /* ##########################################################################
+             * Speed and velocity handling based on control input
+             *  => must happen before collision handling <=
+             * ########################################################################## */
+            if (input != Vector2.Zero)
+            {
+                Manager_Particles._particleEffects[1].Trigger(new Vector2(_rect.Location.X + _rect.Width / 2, _rect.Location.Y + _rect.Height));
+
+                if (input.LengthSquared() > 1)
+                {
+                    input.Normalize();
+                }
+                Velocity += input * _acceleration * timeStepMS;
+            }
+            else
+            {
+                Velocity = new Vector2(
+                    Math.Sign(Velocity.X) * Math.Max(0.0f, Math.Abs(Velocity.X) - _deceleration * timeStepMS),
+                    Math.Sign(Velocity.Y) * Math.Max(0.0f, Math.Abs(Velocity.Y) - _deceleration * timeStepMS));
+            }
+
+            Velocity = Util.ClampMagnitude(Velocity, _maxVelocity);
+        }
+    
 
         protected override void DrawCharacterSprite(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)
         {
