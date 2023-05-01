@@ -104,6 +104,10 @@ namespace YGR
                 }
             );
 
+            CharacterSpriteDimension = new Vector2(1142, 1527);
+            CharacterScale = Scale * Util.GetSpriteScale(_rect, CharacterSpriteDimension);
+            CharacterSprite = Manager_Sprites.NewAnimatedSprite_NerdyGirl();
+
             GhostSpriteDimension = new Vector2(Manager_Sprites.Player_Ghost.Width / 8, Manager_Sprites.Player_Ghost.Height);
             GhostScale = Scale * _rect.Width / GhostSpriteDimension.X; // Ghost will be slightly higher than players, due to floating and shadows
             GhostSprite = new AnimatedSprite(

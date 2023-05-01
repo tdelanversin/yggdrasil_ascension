@@ -67,5 +67,20 @@ namespace YGR
                 animationDuration: 1000
             );
         }
+
+        public static AnimatedSprite NewAnimatedSprite_NerdyGirl()
+        {
+            return new AnimatedSprite(
+                texture: Player_NerdyGirl,
+                spriteDimension: new Vector2(1142, 1527),
+                animations: new Dictionary<AnimationState, int[,]> {
+                    { AnimationState.WalkLeft, new int[,] { {0,0}, {0,1}, {0,2}, {0,3} } },
+                    { AnimationState.IdleLeft, new int[,] { {0,4}, {0,5}, {0,6}, {0,7} } },
+                    { AnimationState.IdleRight, new int[,] { {1,0}, {1,1}, {1,2}, {1,3} } },
+                    { AnimationState.WalkRight, new int[,] { {1,4}, {1,5}, {1,6}, {0,7} } },
+                },
+                animationDuration: 1000
+            );
+        }
     }
 }
