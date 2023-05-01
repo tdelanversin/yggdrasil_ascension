@@ -26,19 +26,23 @@ namespace YGR
         {
             switch (type)
             {
-                case Y_PowerUps.Revive:
-                    return new Y_PowerUp(type, location, width, height, scale, Manager_Sprites.NewAnimatedSprite_SpinningPlus(),
-                        player => player.LifePoints = player.LifePoints + 15);
-                default:
+                case Y_PowerUps.Life:
                     return new Y_PowerUp(type, location, width, height, scale, Manager_Sprites.NewAnimatedSprite_SpinningHeart(),
+                        (player) => {
+                            var alives = Manager_Players.Players.Where(x => x.WhatAreYou() == X_LevelElements.Victim).ToArray();
+                            foreach (var alive in alives)
+                            {
+                                alive.LifePoints = Math.Min(alive.LifePointsMax, alive.LifePoints + 15);
+                            }
+                        });
+                default: // case Y_PowerUps.Revive:
+                    return new Y_PowerUp(type, location, width, height, scale, Manager_Sprites.NewAnimatedSprite_SpinningPlus(),
                         (player) =>
                         {
-                            var ghosts = Manager_Players.Players.Where(x => x != player && x.WhatAreYou() == X_LevelElements.Ghost && x.Room == player.Room).ToArray();
-                            if (ghosts.Length > 0)
+                            var ghosts = Manager_Players.Players.Where(x => x.WhatAreYou() == X_LevelElements.Ghost).ToArray();
+                            foreach (var ghost in ghosts)
                             {
-                                Random rand = new Random();
-                                var g = ghosts[rand.Next(0, ghosts.Length)];
-                                ((SimplePlayer)g).Revive();
+                                ((SimplePlayer)ghost).Revive();
                             }
                         });
             }
