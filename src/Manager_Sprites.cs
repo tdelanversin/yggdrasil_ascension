@@ -68,6 +68,85 @@ namespace YGR
             );
         }
 
+        public static AnimatedSprite NewAnimatedSprite_TestCharacter()
+        {
+            return new AnimatedSprite(
+                    texture: Player_Simple,
+                    spriteDimension: new Vector2(44, 62),
+                    animations: new Dictionary<AnimationState, int[]> {
+                    { AnimationState.WalkLeft, new int[] { 1, 2 } },
+                    { AnimationState.IdleLeft, new int[] { 1 } },
+                    { AnimationState.WalkRight, new int[] { 3, 4 } },
+                    { AnimationState.IdleRight, new int[] { 3 } },
+                    }
+                );
+        }
+
+        public static AnimatedSprite NewAnimatedSprite_Ghost()
+        {
+            return new AnimatedSprite(
+                texture: Player_Ghost,
+                spriteDimension: new Vector2(Player_Ghost.Width / 8, Player_Ghost.Height),
+                animations: new Dictionary<AnimationState, int[]> {
+                    { AnimationState.WalkRight, new int[] { 0, 1, 2, 3, 2, 1 } },
+                    { AnimationState.IdleRight, new int[] { 0, 1, 2, 3, 2, 1 } },
+                    { AnimationState.WalkLeft, new int[] { 7, 6, 5, 4, 5, 6 } },
+                    { AnimationState.IdleLeft, new int[] { 7, 6, 5, 4, 5, 6 } },
+                }
+            );
+        }
+
+        public static AnimatedSprite NewAnimatedSprite_Ninja()
+        {
+            return new AnimatedSprite(
+                texture: Player_Ninja,
+                spriteDimension: new Vector2(48, 64),
+                animationSourceRects: new Dictionary<AnimationState, Rectangle[]> {
+                    {
+                        AnimationState.WalkDown, new Rectangle[]
+                        {
+                            new Rectangle(0, 128, 48, 64),
+                            new Rectangle(48, 128, 48, 64),
+                            new Rectangle(96, 128, 48, 64)
+                        }
+                    },
+                    {
+                        AnimationState.WalkUp, new Rectangle[]
+                        {
+                            new Rectangle(0, 0, 48, 64),
+                            new Rectangle(48, 0, 48, 64),
+                            new Rectangle(96, 0, 48, 64)
+                        }
+                    },
+                    {
+                        AnimationState.WalkRight, new Rectangle[]
+                        {
+                            new Rectangle(0, 64, 48, 64),
+                            new Rectangle(48, 64, 48, 64),
+                            new Rectangle(96, 64, 48, 64)
+                        }
+                    },
+                    {
+                        AnimationState.WalkLeft, new Rectangle[]
+                        {
+                            new Rectangle(0, 192, 48, 64),
+                            new Rectangle(48, 192, 48, 64),
+                            new Rectangle(96, 192, 48, 64)
+                        }
+                    },
+                        {
+                        AnimationState.Idle, new Rectangle[]
+                        {
+                            new Rectangle(0, 128, 48, 64),
+                            new Rectangle(0, 128, 48, 64),
+                            new Rectangle(0, 128, 48, 64)
+                        }
+                    }
+                },
+                animationDuration: 750
+            );
+        }
+
         public static AnimatedSprite NewAnimatedSprite_NerdyGirl()
         {
             return new AnimatedSprite(

@@ -29,21 +29,14 @@ namespace YGR
         public IWalkable Room { get; set; }
 
         // Class fields
-        public ControlLayout ControlLayout;
-        protected bool _isAiming;
-        protected bool _invincible;
-        protected float _invincibleDuration;
-        protected float _invincibleTimeLeft;
-        protected float _cr;
-        protected float _mass;
-        protected InputType _currentAimInput;
-        protected IShooter _gun;
-        protected PlayerIndex _playerIndex;
+        public ControlLayout ControlLayout { get; set; }
+        public IShooter Gun { get; }
+        public PlayerIndex PlayerIndex { get; }
         protected Rectangle _rect;
-        protected Vector2 CharacterSpriteDimension;
-        protected Vector2 GhostSpriteDimension;
         protected AnimatedSprite GhostSprite;
         protected AnimatedSprite CharacterSprite;
+        protected Vector2 CharacterOffset;
+        protected Vector2 GhostOffset;
         protected float CharacterScale;
         protected float GhostScale;
         protected Texture2D _spriteAimIndicator;
@@ -51,10 +44,16 @@ namespace YGR
         protected Vector2 _aimDirection;
         protected float _deceleration;
         protected float _maxVelocity;
-        protected Vector2 _position;
+        protected Vector2 Position;
         protected ParticleEffect pE;
         protected Color _color;
-
+        protected bool _isAiming;
+        protected bool _invincible;
+        protected float _invincibleDuration;
+        protected float _invincibleTimeLeft;
+        protected float _cr;
+        protected float _mass;
+        protected InputType _currentAimInput;
         protected float _actionTimer;
         protected float _actionTreshold;
 
@@ -67,6 +66,7 @@ namespace YGR
         public SimplePlayer(
             PlayerIndex playerIndex,
             Vector2 initialPosition,
+            AnimatedSprite sprite,
             Y_Level level,
             IShooter gun,
             ControlLayout controlLayout = ControlLayout.ControllerOnly,
@@ -75,52 +75,42 @@ namespace YGR
         {
             // Use all constructor arguments
             Level = level;
-            _playerIndex = playerIndex;
-            _position = initialPosition;
-            _gun = gun;
+            PlayerIndex = playerIndex;
+            Position = initialPosition;
+            CharacterSprite = sprite;
+            Gun = gun;
             ControlLayout = controlLayout;
             Scale = scale;
+
+            // Balancing knobs
+            LifePointsMax = 30;
+            LifePoints = LifePointsMax;
+            _invincibleDuration = 1250;
 
             // Set up sprites
             _spriteAimIndicator = Manager_Sprites.AimIndicator[(int)playerIndex];
             _color = Color.White;
 
+            // Collision bounds
+            int height = 60;
+            int width = (int)(height / CharacterSprite.SpriteDimension.Y * CharacterSprite.SpriteDimension.X);
             _rect = new Rectangle(
-                (int)_position.X,
-                (int)_position.Y,
-                40, 60
+                (int)Position.X,
+                (int)Position.Y,
+                width,
+                height
             );
 
-            CharacterSpriteDimension = new Vector2(44, 62);
-            CharacterScale = Scale * Util.GetSpriteScale(_rect, CharacterSpriteDimension);
-            CharacterSprite = new AnimatedSprite(
-                texture: Manager_Sprites.Player_Simple,
-                spriteDimension: CharacterSpriteDimension,
-                animations: new Dictionary<AnimationState, int[]> {
-                    { AnimationState.WalkLeft, new int[] { 1, 2 } },
-                    { AnimationState.IdleLeft, new int[] { 1 } },
-                    { AnimationState.WalkRight, new int[] { 3, 4 } },
-                    { AnimationState.IdleRight, new int[] { 3 } },
-                }
-            );
+            // Set the drawing scale to make the character fit into the collision bounds
+            CharacterScale = Scale * Util.GetSpriteScale(_rect, CharacterSprite.SpriteDimension);
+            CharacterOffset = Vector2.Zero; // Not needed right now
 
-            CharacterSpriteDimension = new Vector2(1142, 1527);
-            CharacterScale = Scale * Util.GetSpriteScale(_rect, CharacterSpriteDimension);
-            CharacterSprite = Manager_Sprites.NewAnimatedSprite_NerdyGirl();
-
-            GhostSpriteDimension = new Vector2(Manager_Sprites.Player_Ghost.Width / 8, Manager_Sprites.Player_Ghost.Height);
-            GhostScale = Scale * _rect.Width / GhostSpriteDimension.X; // Ghost will be slightly higher than players, due to floating and shadows
-            GhostSprite = new AnimatedSprite(
-                texture: Manager_Sprites.Player_Ghost,
-                spriteDimension: GhostSpriteDimension,
-                animations: new Dictionary<AnimationState, int[]> {
-                    { AnimationState.WalkRight, new int[] { 0, 1, 2, 3, 2, 1 } },
-                    { AnimationState.IdleRight, new int[] { 0, 1, 2, 3, 2, 1 } },
-                    { AnimationState.WalkLeft, new int[] { 7, 6, 5, 4, 5, 6 } },
-                    { AnimationState.IdleLeft, new int[] { 7, 6, 5, 4, 5, 6 } },
-                }
-            );
-
+            // Set up animated sprite for the ghost
+            // It will be slightly higher than players due to floating and shadows.
+            GhostSprite = Manager_Sprites.NewAnimatedSprite_Ghost();
+            GhostScale = Scale * _rect.Width / GhostSprite.SpriteDimension.X;
+            // Make the ghost peak out of the collision bounds at the top instead of bottom
+            GhostOffset = _rect.Size.ToVector2() - GhostSprite.SpriteDimension * GhostScale;
 
             // Movement related
             Velocity = Vector2.Zero;
@@ -132,14 +122,10 @@ namespace YGR
             _cr = 0.0f; // elastic impact
             Collision = new X_CollisionModel_Victim(_mass, _cr);
 
-            // Character related
+            // Character state
             _isAiming = false;
             _aimDirection = new Vector2(1, 0);
             _invincible = false;
-            _invincibleDuration = 1250;
-
-            LifePointsMax = 30;
-            LifePoints = LifePointsMax;
 
             Room = Level.GetRoom(this, Room);
         }
@@ -200,7 +186,7 @@ namespace YGR
         /* Handle GamePad movement, aiming and shooting */
         protected void HandleGamepadInput(GameTime gameTime, ref Vector2 input)
         {
-            GamePadState gpState = GamePad.GetState(_playerIndex);
+            GamePadState gpState = GamePad.GetState(PlayerIndex);
             if (gpState.IsConnected)
             {
                 if (gpState.IsButtonDown(Buttons.LeftThumbstickRight)) input.X += gpState.ThumbSticks.Left.X;
@@ -227,11 +213,11 @@ namespace YGR
                 {
                     _isAiming = false;
                 }
-                if ((Input.IsButtonDown(_playerIndex, Keybinds.GamePadShoot)) && IsAlive() && !_invincible)
+                if ((Input.IsButtonDown(PlayerIndex, Keybinds.GamePadShoot)) && IsAlive() && !_invincible)
                 {
                     _isAiming = true; // Show the aim indicator when firing
                     _currentAimInput = InputType.Controller;
-                    _gun.Shoot(gameTime, Rect.Center.ToVector2(), _aimDirection, Level, this);
+                    Gun.Shoot(gameTime, Rect.Center.ToVector2(), _aimDirection, Level, this);
                 }
             }
         }
@@ -272,7 +258,7 @@ namespace YGR
                 }
                 if (Input.IsLeftMousePressed() && IsAlive() && !_invincible)
                 {
-                    _gun.Shoot(gameTime, playerCenter, _aimDirection, Level, this);
+                    Gun.Shoot(gameTime, playerCenter, _aimDirection, Level, this);
                 }
 
                 if (Input.HasMouseStateChanged())
@@ -326,8 +312,8 @@ namespace YGR
                 Velocity = newVelocity;
             }
 
-            _position += newVelocity * timeStepMS;
-            _rect.Location = _position.ToPoint();
+            Position += newVelocity * timeStepMS;
+            _rect.Location = Position.ToPoint();
         }
 
         public virtual void Update(GameTime gameTime)
@@ -343,17 +329,16 @@ namespace YGR
 
             UpdateVelocity(input, gameTime);
             UpdateCollision(gameTime);
-            _gun.Update(gameTime);
+            Gun.Update(gameTime);
 
         }
 
         // Render ghosty 👻
         protected virtual void DrawGhost(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)
         {
-            Vector2 ghostOffset = new Vector2(0, -GhostSpriteDimension.Y * GhostScale + _rect.Height);
             spriteBatch.Draw(
                 texture: GhostSprite.Texture,
-                position: _rect.Location.ToVector2() + ghostOffset,
+                position: _rect.Location.ToVector2() + GhostOffset,
                 sourceRectangle: GhostSprite.SourceRectangle,
                 color: Color.White,
                 rotation: 0,
@@ -367,7 +352,7 @@ namespace YGR
         {
             spriteBatch.Draw(
                 texture: CharacterSprite.Texture,
-                position: _rect.Location.ToVector2(),
+                position: _rect.Location.ToVector2() + CharacterOffset,
                 sourceRectangle: CharacterSprite.SourceRectangle,
                 color: _color,
                 rotation: 0,
@@ -380,7 +365,7 @@ namespace YGR
         protected virtual void DrawOverheadString(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)
         {
             // TODO: Improve
-            string str = "P" + (int)_playerIndex + ": " + LifePoints.ToString();
+            string str = "P" + (int)PlayerIndex + ": " + LifePoints.ToString();
             float str_width = Fonts.Normal.MeasureString(str).X;
             spriteBatch.DrawString(Fonts.Normal, str, new Vector2(_rect.Location.X + _rect.Width / 2 - str_width / 2, _rect.Location.Y - 16), Color.Wheat);
         }
@@ -392,7 +377,7 @@ namespace YGR
             {
                 var angle = Math.Atan2(_aimDirection.Y, _aimDirection.X) + Math.PI / 2;
                 spriteBatch.Draw(
-                    _spriteAimIndicator, _rect.Location.ToVector2() + CharacterSpriteDimension / 2f + _aimDirection * (int)(_rect.Height * 1.5),
+                    _spriteAimIndicator, _rect.Location.ToVector2() + _rect.Size.ToVector2() / 2f + _aimDirection * (int)(_rect.Height * 1.5),
                     null,
                     Color.White, (float)angle, new Vector2(_spriteAimIndicator.Width / 2, 0), 0.1f, SpriteEffects.None, 0);
             }
@@ -425,7 +410,8 @@ namespace YGR
             Collision.DrawOutline(gameTime, globalOffset, spriteBatch);
         }
     }
-    public class Ninja : SimplePlayer // Y_Sprite
+
+    public class Ninja : SimplePlayer
     {
         private bool _isDashing;
         private int _dashDuration;
@@ -437,11 +423,12 @@ namespace YGR
         public Ninja(
             PlayerIndex playerIndex,
             Vector2 initialPosition,
+            AnimatedSprite sprite,
             Y_Level level,
             IShooter gun,
             ControlLayout controlLayout = ControlLayout.ControllerOnly,
             float scale = 1.0f
-            ) : base(playerIndex, initialPosition, level, gun, controlLayout, scale)
+            ) : base(playerIndex, initialPosition, sprite, level, gun, controlLayout, scale)
         {
             /* Overrides from base class */
             LifePointsMax = 20;
@@ -454,56 +441,6 @@ namespace YGR
             _dashTimer = 0;
             _dashCooldown = 1000; // Dash cooldown in ms
             _dashCooldownTimer = _dashCooldown;
-
-            CharacterSpriteDimension = new Vector2(48, 64);
-            CharacterScale = Scale * Util.GetSpriteScale(_rect, CharacterSpriteDimension);
-            CharacterSprite = new AnimatedSprite(
-                texture: Manager_Sprites.Player_Ninja,
-                spriteDimension: CharacterSpriteDimension,
-                animationSourceRects: new Dictionary<AnimationState, Rectangle[]> {
-                    {
-                        AnimationState.WalkDown, new Rectangle[]
-                        {
-                            new Rectangle(0, 128, 48, 64),
-                            new Rectangle(48, 128, 48, 64),
-                            new Rectangle(96, 128, 48, 64)
-                        }
-                    },
-                    {
-                        AnimationState.WalkUp, new Rectangle[]
-                        {
-                            new Rectangle(0, 0, 48, 64),
-                            new Rectangle(48, 0, 48, 64),
-                            new Rectangle(96, 0, 48, 64)
-                        }
-                    },
-                    {
-                        AnimationState.WalkRight, new Rectangle[]
-                        {
-                            new Rectangle(0, 64, 48, 64),
-                            new Rectangle(48, 64, 48, 64),
-                            new Rectangle(96, 64, 48, 64)
-                        }
-                    },
-                    {
-                        AnimationState.WalkLeft, new Rectangle[]
-                        {
-                            new Rectangle(0, 192, 48, 64),
-                            new Rectangle(48, 192, 48, 64),
-                            new Rectangle(96, 192, 48, 64)
-                        }
-                    },
-                        {
-                        AnimationState.Idle, new Rectangle[]
-                        {
-                            new Rectangle(0, 128, 48, 64),
-                            new Rectangle(0, 128, 48, 64),
-                            new Rectangle(0, 128, 48, 64)
-                        }
-                    }
-                },
-                animationDuration: 750
-            );
         }
 
         private void UpdateDash(GameTime gameTime)
@@ -516,7 +453,7 @@ namespace YGR
                 _dashCooldownTimer += timeStepMS;
             }
 
-            if (!_isDashing && (ControlLayout != ControlLayout.ControllerOnly && Input.IsKeyDown(Keybinds.ActionOne) || Input.IsButtonDown(_playerIndex, Keybinds.GamePadAction)) && _dashCooldownTimer >= _dashCooldown)
+            if (!_isDashing && (ControlLayout != ControlLayout.ControllerOnly && Input.IsKeyDown(Keybinds.ActionOne) || Input.IsButtonDown(PlayerIndex, Keybinds.GamePadAction)) && _dashCooldownTimer >= _dashCooldown)
             {
                 Manager_Sound.Sound_Dash.Play();
                 _isDashing = true;
@@ -550,26 +487,11 @@ namespace YGR
             UpdateDash(gameTime); // Updates Velocity directly for now, so call before UpdateCollision()
             UpdateCollision(gameTime);
 
-            _gun.Update(gameTime);
+            Gun.Update(gameTime);
 
             if (IsAlive())
             { CharacterSprite.Update(gameTime, input); }
             else { GhostSprite.Update(gameTime, input); }
-
-        }
-
-        override protected void DrawCharacterSprite(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)
-        {
-            spriteBatch.Draw(
-                texture: Manager_Sprites.Player_Ninja,
-                position: _rect.Location.ToVector2(),
-                sourceRectangle: CharacterSprite.SourceRectangle,
-                color: _color,
-                rotation: 0,
-                origin: Vector2.Zero,
-                scale: CharacterScale,
-                effects: SpriteEffects.None,
-                layerDepth: 0);
         }
     }
 }
