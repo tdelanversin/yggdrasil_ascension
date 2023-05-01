@@ -215,7 +215,7 @@ namespace YGR
                 {
                     _isAiming = false;
                 }
-                if ((Input.IsButtonDown(PlayerIndex, Keybinds.GamePadShoot)) && IsAlive() && !_invincible)
+                if ((Input.IsButtonDown(PlayerIndex, Keybinds.GamePadShoot)) && IsAlive())
                 {
                     _isAiming = true; // Show the aim indicator when firing
                     _currentAimInput = InputType.Controller;
@@ -258,7 +258,7 @@ namespace YGR
                     newAimDirection.Normalize();
                     _aimDirection = newAimDirection;
                 }
-                if (Input.IsLeftMousePressed() && IsAlive() && !_invincible)
+                if (Input.IsLeftMousePressed() && IsAlive())
                 {
                     Gun.Shoot(gameTime, playerCenter, _aimDirection, Level, this);
                 }

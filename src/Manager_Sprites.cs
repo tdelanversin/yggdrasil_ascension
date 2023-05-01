@@ -40,7 +40,7 @@ namespace YGR
                 contentManager.Load<Texture2D>("SpritesOther/target_indicator_green"),
                 contentManager.Load<Texture2D>("SpritesOther/target_indicator_yellow"),
             };
-            
+
             Projectile_Simple = contentManager.Load<Texture2D>("SpritesOther/projectiles");
 
             Enemy_Basic = Player_Simple;
@@ -88,6 +88,20 @@ namespace YGR
                 );
         }
 
+        public static AnimatedSprite NewAnimatedSprite_Gigachad()
+        {
+            return new AnimatedSprite(
+                    texture: Enemy_Gigachad,
+                    spriteDimension: new Vector2(250, 250),
+                    animations: new Dictionary<AnimationState, int[]> {
+                        { AnimationState.WalkLeft, new int[] { 1 } },
+                        { AnimationState.IdleLeft, new int[] { 1 } },
+                        { AnimationState.WalkRight, new int[] { 0 } },
+                        { AnimationState.IdleRight, new int[] { 0 } },
+                    }
+                );
+        }
+
         public static AnimatedSprite NewAnimatedSprite_Ghost()
         {
             return new AnimatedSprite(
@@ -99,6 +113,21 @@ namespace YGR
                     { AnimationState.WalkLeft, new int[] { 7, 6, 5, 4, 5, 6 } },
                     { AnimationState.IdleLeft, new int[] { 7, 6, 5, 4, 5, 6 } },
                 }
+            );
+        }
+
+        public static AnimatedSprite NewAnimatedSprite_NerdyGirl()
+        {
+            return new AnimatedSprite(
+                texture: Player_NerdyGirl,
+                spriteDimension: new Vector2(1142, 1527),
+                animations: new Dictionary<AnimationState, int[,]> {
+                    { AnimationState.WalkLeft, new int[,] { {0,0}, {0,1}, {0,2}, {0,3} } },
+                    { AnimationState.IdleLeft, new int[,] { {0,4}, {0,5}, {0,6}, {0,7} } },
+                    { AnimationState.IdleRight, new int[,] { {1,0}, {1,1}, {1,2}, {1,3} } },
+                    { AnimationState.WalkRight, new int[,] { {1,4}, {1,5}, {1,6}, {0,7} } },
+                },
+                animationDuration: 1000
             );
         }
 
@@ -150,21 +179,6 @@ namespace YGR
                     }
                 },
                 animationDuration: 750
-            );
-        }
-
-        public static AnimatedSprite NewAnimatedSprite_NerdyGirl()
-        {
-            return new AnimatedSprite(
-                texture: Player_NerdyGirl,
-                spriteDimension: new Vector2(1142, 1527),
-                animations: new Dictionary<AnimationState, int[,]> {
-                    { AnimationState.WalkLeft, new int[,] { {0,0}, {0,1}, {0,2}, {0,3} } },
-                    { AnimationState.IdleLeft, new int[,] { {0,4}, {0,5}, {0,6}, {0,7} } },
-                    { AnimationState.IdleRight, new int[,] { {1,0}, {1,1}, {1,2}, {1,3} } },
-                    { AnimationState.WalkRight, new int[,] { {1,4}, {1,5}, {1,6}, {0,7} } },
-                },
-                animationDuration: 1000
             );
         }
     }

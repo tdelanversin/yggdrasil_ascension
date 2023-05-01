@@ -24,13 +24,13 @@ namespace YGR
             Players.Clear();
         }
 
-        public static void AddPlayer_SimplePlayer(
+        public static void AddPlayer_NerdyGirl(
             PlayerIndex playerIndex,
             Vector2 position,
             Y_Level level,
             ControlLayout controlLayout = ControlLayout.ControllerOnly)
         {
-            Players.Add(new SimplePlayer(
+            Players.Add(new Ninja(
                 playerIndex,
                 position,
                 Manager_Sprites.NewAnimatedSprite_NerdyGirl(),
@@ -70,10 +70,10 @@ namespace YGR
             switch (r)
             {
                 case 0:
-                    Manager_Players.AddPlayer_Ninja(playerIndex, position, level, controlLayout);
+                    AddPlayer_Ninja(playerIndex, position, level, controlLayout);
                     break;
                 case 1:
-                    Manager_Players.AddPlayer_SimplePlayer(playerIndex, position, level, controlLayout);
+                    AddPlayer_NerdyGirl(playerIndex, position, level, controlLayout);
                     break;
                 default:
                     break;
