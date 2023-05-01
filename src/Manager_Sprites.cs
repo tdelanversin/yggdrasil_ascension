@@ -15,6 +15,10 @@ namespace YGR
         public static Texture2D Player_Ghost { get; private set; }
         public static IList<Texture2D> AimIndicator { get; private set; }
 
+        // Projectiles
+        public static Texture2D Projectile_Simple { get; private set; }
+
+
         // Power Ups
         public static Texture2D SpinningHeart { get; private set; }
         public static Texture2D SpinningPlus { get; private set; }
@@ -36,6 +40,8 @@ namespace YGR
                 contentManager.Load<Texture2D>("SpritesOther/target_indicator_green"),
                 contentManager.Load<Texture2D>("SpritesOther/target_indicator_yellow"),
             };
+            
+            Projectile_Simple = contentManager.Load<Texture2D>("SpritesOther/projectiles");
 
             Enemy_Basic = Player_Simple;
             Enemy_Gigachad = contentManager.Load<Texture2D>("SpritesCharacters/gigachad");
