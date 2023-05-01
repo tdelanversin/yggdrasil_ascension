@@ -9,6 +9,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 using static YGR.X_AutoTiler;
 
 namespace YGR
@@ -575,24 +576,42 @@ namespace YGR
 
             if(Category == "Start" || Category == "Trunc")
             {
-                _barkScale = Scale*barkScale;
-                var scaledW = (int)(barkTexture.Width * _barkScale);
-                var scaledH = (int)(barkTexture.Height * _barkScale);
-
-                var h = Math.Floor((double)Rect.Height / scaledH) * scaledH + scaledH;
-                var w = Math.Floor((double)Rect.Width / scaledW) * scaledW + scaledW;
-
-                var remX = (int)(w - Rect.Width) / 2;
-                var remY = (int)(h - Rect.Height) / 2;
-                
+                _barkScale = (float)TextureTileSize / (float)barkTexture.Width;
                 _barkPositions = new List<Vector2>();
                 _bark = barkTexture;
 
-                for (int x = Rect.Location.X - remX; x < Rect.Location.X + Rect.Width; x += scaledW)
+                for (int x = Rect.X; x<Rect.X + Rect.Width; x += TextureTileSize)
                 {
-                    for (int y = Rect.Location.Y - remY; y < Rect.Location.Y + Rect.Height; y += scaledH)
+                    //_barkPositions.Add(new Vector2(x, Rect.Y));
+                    _barkPositions.Add(new Vector2(x, Rect.Y - TextureTileSize));
+                    _barkPositions.Add(new Vector2(x, Rect.Y - 2 * TextureTileSize));
+
+                    //_barkPositions.Add(new Vector2(x, Rect.Y + Rect.Height - TextureTileSize));
+                    _barkPositions.Add(new Vector2(x, Rect.Y + Rect.Height));
+                    _barkPositions.Add(new Vector2(x, Rect.Y + Rect.Height + TextureTileSize));
+                }
+
+                for (int y = Rect.Y- 2*TextureTileSize; y < Rect.Y + Rect.Height + 2*TextureTileSize; y += TextureTileSize)
+                {
+                    //_barkPositions.Add(new Vector2(Rect.X, y));
+                    _barkPositions.Add(new Vector2(Rect.X - TextureTileSize, y));
+                    _barkPositions.Add(new Vector2(Rect.X - 2 * TextureTileSize, y));
+
+                    //_barkPositions.Add(new Vector2(Rect.X + Rect.Width - TextureTileSize, y));
+                    _barkPositions.Add(new Vector2(Rect.X + Rect.Width, y));
+                    _barkPositions.Add(new Vector2(Rect.X + Rect.Width + TextureTileSize, y));
+                }
+
+                var collision = Collision.GetCollisionTemplate();
+                for (int y = 0; y < collision.Length; ++y)
+                {
+                    for (int x = 0; x < collision[0].Length; ++x)
                     {
-                        _barkPositions.Add(new Vector2(x, y));
+                        int index = TextureTileSize*(y * _floor.Width + x);
+                        if (target[index].A == 0)
+                        {
+                            _barkPositions.Add(new Vector2(x*TextureTileSize, y*TextureTileSize));
+                        }
                     }
                 }
             }

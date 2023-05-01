@@ -254,8 +254,8 @@ namespace YGR
 
                     connectors.Add(connector.Connect(fromRoom, fromConnectorPoint, toRoom, toConnectorPoint, direction));
 
-                    var b = connector.BarkConnector(_barkTexture, _barkColor, _barkScale);
-                    if (b != null) _barks.Add(b);
+                    connector.BarkConnector(_barkTexture, _barkColor, _barkScale);
+                    //if (b != null) _barks.Add(b);
                 }
             }
             Logger.Info("Created connectors: " + watch.ElapsedMilliseconds.ToString());
@@ -536,10 +536,10 @@ namespace YGR
 
         public void Draw(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)
         {
-            foreach (var bark in _barks)
-            {
-                bark.Draw(gameTime, globalOffset, spriteBatch);
-            }
+            //foreach (var bark in _barks)
+            //{
+            //    bark.Draw(gameTime, globalOffset, spriteBatch);
+            //}
             foreach (var room in Rooms)
             {
                 room.Value.Draw(gameTime, globalOffset, spriteBatch);
