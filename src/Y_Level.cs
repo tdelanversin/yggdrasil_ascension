@@ -107,7 +107,8 @@ namespace YGR
                 var fs = Directory.GetDirectories(Util.PathOsNormalization(folder + Path.DirectorySeparatorChar + category + Path.DirectorySeparatorChar + _data.LdtkSubfolderName));
                 foreach(var f in fs)
                 {
-                    files.Add(new Tuple<string, string>(category, f));
+                    if(Directory.GetFiles(f).Length > 0)
+                        files.Add(new Tuple<string, string>(category, f));
                 }
             }
 
