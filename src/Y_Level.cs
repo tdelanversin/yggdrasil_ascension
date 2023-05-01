@@ -1,4 +1,5 @@
 ﻿using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using Newtonsoft.Json;
 using System;
@@ -59,6 +60,11 @@ namespace YGR
         public GamePlayState State;
         private List<Interactable_Basic> _interactables = new List<Interactable_Basic> { };
 
+        Texture2D _barkTexture;
+        Color[] _barkColor;
+        float _barkScale;
+        List<Y_ConnectorBark> _barks;
+
         Dictionary<string, List<Tuple<X_RoomStump, Y_CMRoom>>> _availableRooms;
         Y_Level.Data _data;
 
@@ -67,7 +73,8 @@ namespace YGR
             int tileSize,
             int textureTileSize,
             string levelResourceFolder,
-            string doorResourceFolder
+            string doorResourceFolder,
+            ContentManager content
         )
         {
             _name = Util.PathOsNormalization(name);
@@ -134,6 +141,10 @@ namespace YGR
             Logger.Info("room finalize time for " + list.Count() + " rooms: " + elapsed + " which is " + elapsed / list.Count() + " ms per room");
 
             Rooms = new Dictionary<int, IWalkable>();
+            _barkTexture = content.Load<Texture2D>("SpritesOther/bark2");
+            _barkScale = 0.15f;
+            _barkColor = new Color[_barkTexture.Width * _barkTexture.Height];
+            _barkTexture.GetData<Color>(_barkColor);
         }
 
 
@@ -172,7 +183,8 @@ namespace YGR
                 if(n.Item2 == null)
                 {
                     n = new Tuple<X_RoomStump,Y_CMRoom>(null, new Y_CMRoom(n.Item1));
-                    n.Item2.FinalizeItem(graphicsDevice);
+                    n.Item2.FinalizeItem(graphicsDevice, _barkColor, _barkTexture, _barkScale);
+
                 }
                 type.RemoveAt(index);
                 var room = n.Item2;
@@ -199,6 +211,7 @@ namespace YGR
             Logger.Info("Loaded random rooms: " + watch.ElapsedMilliseconds.ToString());
 
             List<IWalkable> connectors = new List<IWalkable>();
+            _barks = new List<Y_ConnectorBark>();
             foreach (var room in Rooms)
             {
                 int index = room.Key;
@@ -240,6 +253,9 @@ namespace YGR
                         "data.json");
 
                     connectors.Add(connector.Connect(fromRoom, fromConnectorPoint, toRoom, toConnectorPoint, direction));
+
+                    connector.BarkConnector(_barkTexture, _barkColor, _barkScale);
+                    //if (b != null) _barks.Add(b);
                 }
             }
             Logger.Info("Created connectors: " + watch.ElapsedMilliseconds.ToString());
@@ -511,10 +527,19 @@ namespace YGR
             {
                 room.Value.DrawOutline(gameTime, globalOffset, spriteBatch);
             }
+
+            foreach (var b in _barks)
+            {
+                b.DrawOutline(gameTime, globalOffset, spriteBatch);
+            }
         }
 
         public void Draw(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)
         {
+            //foreach (var bark in _barks)
+            //{
+            //    bark.Draw(gameTime, globalOffset, spriteBatch);
+            //}
             foreach (var room in Rooms)
             {
                 room.Value.Draw(gameTime, globalOffset, spriteBatch);
