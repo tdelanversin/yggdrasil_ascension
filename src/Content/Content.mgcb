@@ -201,6 +201,18 @@
 /processorParam:TextureFormat=Color
 /build:SpritesCharacters/gigachad.png
 
+#begin SpritesCharacters/NerdyGirl.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:SpritesCharacters/NerdyGirl.png
+
 #begin SpritesCharacters/rat_player.png
 /importer:TextureImporter
 /processor:TextureProcessor
@@ -332,6 +344,18 @@
 /processorParam:MakeSquare=False
 /processorParam:TextureFormat=Color
 /build:SpritesOther/projectile.png
+
+#begin SpritesOther/projectiles.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:SpritesOther/projectiles.png
 
 #begin SpritesOther/smaller_projectile.png
 /importer:TextureImporter

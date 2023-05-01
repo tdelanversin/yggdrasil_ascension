@@ -33,6 +33,7 @@ namespace YGR
             Players.Add(new SimplePlayer(
                 playerIndex,
                 position,
+                Manager_Sprites.NewAnimatedSprite_NerdyGirl(),
                 level,
                 Util.getRandomGun(),
                 controlLayout,
@@ -50,6 +51,7 @@ namespace YGR
             Players.Add(new Ninja(
                 playerIndex,
                 position,
+                Manager_Sprites.NewAnimatedSprite_Ninja(),
                 level,
                 Util.getRandomGun(),
                 controlLayout,
