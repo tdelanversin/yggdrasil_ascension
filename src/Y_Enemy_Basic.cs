@@ -69,9 +69,9 @@ namespace YGR
             Velocity = Vector2.Zero;
             _acceleration = 0.006f;
             _deceleration = 0.04f;
-            _maxVelocity = 0.15f;
+            _maxVelocity = 0.10f;
 
-            safetyDistance = 150f;
+            safetyDistance = 600f;
             FacingDirection = new Vector2(1, 0);
             Sprite = Manager_Sprites.Enemy_Basic;
             Collision = new X_CollisionModel_Victim(1.0f, 0.0f);
