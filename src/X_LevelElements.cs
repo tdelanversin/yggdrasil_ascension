@@ -16,6 +16,7 @@
         Level,
         Interactable,
         PowerUp,
-        MultiPowerUp
+        MultiPowerUp,
+        Bark
     }
 }

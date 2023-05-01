@@ -545,7 +545,7 @@ namespace YGR
 #endif
         }
 
-        public void FinalizeItem(GraphicsDevice graphicsDevice, Color[] barkColor, Texture2D barkTexture)
+        public void FinalizeItem(GraphicsDevice graphicsDevice, Color[] barkColor, Texture2D barkTexture, float barkScale)
         {
             var watch = new Stopwatch();
             watch.Start();
@@ -575,7 +575,7 @@ namespace YGR
 
             if(Category == "Start" || Category == "Trunc")
             {
-                _barkScale = Scale*0.15f;
+                _barkScale = Scale*barkScale;
                 var scaledW = (int)(barkTexture.Width * _barkScale);
                 var scaledH = (int)(barkTexture.Height * _barkScale);
 
@@ -923,7 +923,7 @@ namespace YGR
             {
                 bool illuminated = _illumination[i];
 
-                if (!illuminated)
+                if (!illuminated && _floorColorData[i].A != 0)
                 {
                     var col = _floorColorData[i];
                     Color nCol = Color.White;
