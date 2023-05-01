@@ -1,6 +1,4 @@
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
-using System;
 using System.Collections.Generic;
 
 namespace YGR
@@ -11,15 +9,14 @@ namespace YGR
 
         public Enemy_Gigachad(
             Vector2 position,
+            AnimatedSprite sprite,
             Y_Level level,
             IList<IVictim> players
-        ) : base(position, level, players)
+        ) : base(position, sprite, level, players)
         {
             LifePointsMax = 999;
             LifePoints = LifePointsMax;
             fleeingHPTreshold = 0; // Gigachad never flees
-            Sprite = Manager_Sprites.Enemy_Gigachad;
-            SpriteRect = Sprite.Bounds;
 
             Name = "Gigachad";
             Gun = new Gun_ShotGun(13);
@@ -34,16 +31,19 @@ namespace YGR
             var _mass = 8.0f; // Heavier than other entities
             Collision = new X_CollisionModel_Victim(_mass, 0.0f);
 
+            // Collision bounds
+            int height = 250;
+            int width = (int)(height / CharacterSprite.SpriteDimension.Y * CharacterSprite.SpriteDimension.X);
             _rect = new Rectangle(
                 (int)position.X,
                 (int)position.Y,
-                180, 180
+                width,
+                height
             );
 
-            Scale = Math.Min(
-                _rect.Width / (float)SpriteRect.Width,
-                _rect.Height / (float)SpriteRect.Height
-            );
+            // Set the drawing scale to make the character fit into the collision bounds
+            CharacterScale = Util.GetSpriteScale(_rect, CharacterSprite.SpriteDimension);
+            CharacterOffset = Vector2.Zero; // Not needed right now
         }
 
         public override void Update(GameTime gameTime)
@@ -86,53 +86,13 @@ namespace YGR
                 Gun.Shoot(gameTime, _rect.Center.ToVector2(), targetDirection, Level, this);
             }
 
+            CharacterSprite.Update(gameTime, movement);
+
             var playersInSameRoom = ((List<IVictim>)Manager_Players.Players).FindAll(x => x.LifePoints > 0 && x.Room == Room);
             if (playersInSameRoom.Count < 1) return;
 
             // Gigachad shoot Big Gun no matter what (as long as there are players in the same room)
             Gun2.Shoot(gameTime, _rect.Center.ToVector2(), Vector2.One, Level, this);
-        }
-        protected override void UpdateVelocity(Vector2 input, GameTime gt)
-        {
-            int timeStepMS = gt.ElapsedGameTime.Milliseconds;
-
-            /* ##########################################################################
-             * Speed and velocity handling based on control input
-             *  => must happen before collision handling <=
-             * ########################################################################## */
-            if (input != Vector2.Zero)
-            {
-                Manager_Particles._particleEffects[1].Trigger(new Vector2(_rect.Location.X + _rect.Width / 2, _rect.Location.Y + _rect.Height));
-
-                if (input.LengthSquared() > 1)
-                {
-                    input.Normalize();
-                }
-                Velocity += input * _acceleration * timeStepMS;
-            }
-            else
-            {
-                Velocity = new Vector2(
-                    Math.Sign(Velocity.X) * Math.Max(0.0f, Math.Abs(Velocity.X) - _deceleration * timeStepMS),
-                    Math.Sign(Velocity.Y) * Math.Max(0.0f, Math.Abs(Velocity.Y) - _deceleration * timeStepMS));
-            }
-
-            Velocity = Util.ClampMagnitude(Velocity, _maxVelocity);
-        }
-    
-
-        protected override void DrawCharacterSprite(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)
-        {
-            spriteBatch.Draw(
-                texture: Sprite,
-                position: _rect.Location.ToVector2(),
-                sourceRectangle: SpriteRect,
-                color: _color,
-                rotation: 0,
-                origin: Vector2.Zero,
-                scale: Scale,
-                effects: Velocity.X >= 0 ? SpriteEffects.None : SpriteEffects.FlipHorizontally,
-                layerDepth: 0);
         }
     }
 }

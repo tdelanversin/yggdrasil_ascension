@@ -25,8 +25,9 @@ namespace YGR
         public Vector2 FacingDirection { get; set; }
         protected float _steeringDirection;
 
-        public Texture2D Sprite { get; set; }
-        public Rectangle SpriteRect = new Rectangle(0, 0, 42, 60);
+        public AnimatedSprite CharacterSprite { get; }
+        protected Vector2 CharacterOffset;
+        protected float CharacterScale;
         public X_CollisionModel_Victim Collision { get; set; }
         public Rectangle Rect { get { return _rect; } set { _rect = value; } }
 
@@ -43,13 +44,6 @@ namespace YGR
         protected int _hitFramesCounter = 0;
         protected Rectangle _rect;
 
-        protected Rectangle _spriteDimensions;
-        protected Dictionary<string, int[]> _animations;
-        protected string _animationDirection;
-        protected int _animationIndex;
-        protected float _animationTimer;
-        protected float _animationTreshold;
-
         protected int _stateTimer = 0; // How long have we been idling / wandering
         protected int _stateChangeTime = 0; // How long until we change state
         protected int _stateTimerMax = 5000; // How long do we idle / wander at most
@@ -58,6 +52,7 @@ namespace YGR
 
         public Enemy_Basic(
             Vector2 position,
+            AnimatedSprite sprite,
             Y_Level level,
             IList<IVictim> players
         )
@@ -66,6 +61,8 @@ namespace YGR
             LifePointsMax = 8;
             LifePoints = LifePointsMax;
 
+            CharacterSprite = sprite;
+
             Velocity = Vector2.Zero;
             _acceleration = 0.006f;
             _deceleration = 0.04f;
@@ -73,30 +70,23 @@ namespace YGR
 
             safetyDistance = 600f;
             FacingDirection = new Vector2(1, 0);
-            Sprite = Manager_Sprites.Enemy_Basic;
             Collision = new X_CollisionModel_Victim(1.0f, 0.0f);
             _position = position;
 
-            _spriteDimensions = new Rectangle(0, 0, 44, 62);
-            _animationTimer = 0;
-            _animationTreshold = 250; // After how many ms to cycle through sprites
-            _animationIndex = 0;
-            _animations = new Dictionary<string, int[]> {
-                { "idle", new int[] { 0 } },
-                { "left", new int[] { 1, 2 } },
-                { "right", new int[] { 3, 4 } }};
-            _animationDirection = "idle";
-
+            // Collision bounds
+            int height = 60;
+            int width = (int)(height / CharacterSprite.SpriteDimension.Y * CharacterSprite.SpriteDimension.X);
             _rect = new Rectangle(
                 (int)position.X,
                 (int)position.Y,
-                SpriteRect.Width, SpriteRect.Height
+                width,
+                height
             );
 
-            Scale = Math.Min(
-                _rect.Width / (float)SpriteRect.Width,
-                _rect.Height / (float)SpriteRect.Height
-            );
+            // Set the drawing scale to make the character fit into the collision bounds
+            CharacterScale = Util.GetSpriteScale(_rect, CharacterSprite.SpriteDimension);
+            CharacterOffset = Vector2.Zero; // Not needed right now
+
 
             Level = level;
             Room = Level.GetRoom(this, Room);
@@ -187,47 +177,6 @@ namespace YGR
             else
             {
                 _color = _regularColor;
-            }
-        }
-
-        protected void UpdateAnimation(GameTime gameTime)
-        {
-            string newAnimationDirection = _animationDirection;
-            if (Velocity.X > 0 && _animations.ContainsKey("right"))
-            {
-                newAnimationDirection = "right";
-            }
-            else if (Velocity.X < 0 && _animations.ContainsKey("left"))
-            {
-                newAnimationDirection = "left";
-            }
-            else if (Velocity.Y > 0 && _animations.ContainsKey("up"))
-            {
-                newAnimationDirection = "up";
-            }
-            else if (Velocity.Y < 0 && _animations.ContainsKey("down"))
-            {
-                newAnimationDirection = "down";
-            }
-            else if (_animations.ContainsKey("idle"))
-            {
-                newAnimationDirection = "idle";
-            }
-
-            if (newAnimationDirection == _animationDirection)
-            {
-                _animationTimer += gameTime.ElapsedGameTime.Milliseconds;
-                if (_animationTimer > _animationTreshold)
-                {
-                    _animationTimer = 0;
-                    _animationIndex = (_animationIndex + 1) % _animations[_animationDirection].Length;
-                }
-            }
-            else
-            {
-                _animationTimer = 0;
-                _animationIndex = 0;
-                _animationDirection = newAnimationDirection;
             }
         }
 
@@ -422,7 +371,8 @@ namespace YGR
 
             UpdateVelocity(movement, gameTime);
             UpdateCollision(gameTime);
-            UpdateAnimation(gameTime);
+
+            CharacterSprite.Update(gameTime, movement);
 
             Gun.Update(gameTime);
             if (Target != null)
@@ -455,13 +405,13 @@ namespace YGR
         protected virtual void DrawCharacterSprite(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)
         {
             spriteBatch.Draw(
-                texture: Sprite,
-                position: _rect.Location.ToVector2(),
-                sourceRectangle: new Rectangle(_animations[_animationDirection][_animationIndex] * (_spriteDimensions.Width), 0, _spriteDimensions.Width, _spriteDimensions.Height),
+                texture: CharacterSprite.Texture,
+                position: _rect.Location.ToVector2() + CharacterOffset,
+                sourceRectangle: CharacterSprite.SourceRectangle,
                 color: _color,
                 rotation: 0,
                 origin: Vector2.Zero,
-                scale: Scale,
+                scale: CharacterScale,
                 effects: SpriteEffects.None,
                 layerDepth: 0);
         }
