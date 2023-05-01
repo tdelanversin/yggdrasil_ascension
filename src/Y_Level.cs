@@ -101,13 +101,13 @@ namespace YGR
 
             var categoryFolders = Directory.GetDirectories(Util.PathOsNormalization(_levelResourceFolder + _name));
             List<Tuple<string, string>> files = new List<Tuple<string, string>>();
-            foreach(var folder in categoryFolders)
+            foreach (var folder in categoryFolders)
             {
                 string category = folder.Split(Path.DirectorySeparatorChar).Last();
                 var fs = Directory.GetDirectories(Util.PathOsNormalization(folder + Path.DirectorySeparatorChar + category + Path.DirectorySeparatorChar + _data.LdtkSubfolderName));
-                foreach(var f in fs)
+                foreach (var f in fs)
                 {
-                    if(Directory.GetFiles(f).Length > 0)
+                    if (Directory.GetFiles(f).Length > 0)
                         files.Add(new Tuple<string, string>(category, f));
                 }
             }
@@ -129,7 +129,7 @@ namespace YGR
             {
                 //room.FinalizeItem(graphicsDevice);
                 List<Tuple<X_RoomStump, Y_CMRoom>> rlist;
-                if(!_availableRooms.TryGetValue(room.Category, out rlist))
+                if (!_availableRooms.TryGetValue(room.Category, out rlist))
                 {
                     _availableRooms.Add(room.Category, new List<Tuple<X_RoomStump, Y_CMRoom>> { new Tuple<X_RoomStump, Y_CMRoom>(room, null) });
                 }
@@ -167,7 +167,7 @@ namespace YGR
             Rooms = new Dictionary<int, IWalkable>();
 
             //Rooms.Add(0, _availableRooms["Start"].First());
-            
+
             var random = new Random();
             // randomly select one level tree
             var key = _data.Level.Keys.ToArray()[random.Next(0, _data.Level.Keys.Count)]; // [random.Next(0, _data.Level.Keys.Count)];
@@ -181,9 +181,9 @@ namespace YGR
                 var type = _availableRooms[node.Type];
                 int index = random.Next(0, type.Count);
                 var n = type[index];
-                if(n.Item2 == null)
+                if (n.Item2 == null)
                 {
-                    n = new Tuple<X_RoomStump,Y_CMRoom>(null, new Y_CMRoom(n.Item1));
+                    n = new Tuple<X_RoomStump, Y_CMRoom>(null, new Y_CMRoom(n.Item1));
                     n.Item2.FinalizeItem(graphicsDevice, _barkColor, _barkTexture, _barkScale);
 
                 }
@@ -371,9 +371,9 @@ namespace YGR
         {
             if (Input.IsKeyTriggered(Keybinds.OpenAllDoors))
             {
-                foreach(var room in Rooms)
+                foreach (var room in Rooms)
                 {
-                    if(room.Value.WhatAreYou() == X_LevelElements.Room)
+                    if (room.Value.WhatAreYou() == X_LevelElements.Room)
                     {
                         ((Y_CMRoom)room.Value).OpenAllUnlockedRoomDoors();
                     }
@@ -503,14 +503,28 @@ namespace YGR
                     {
                         break; // let players fight
                     }
+
                     encounterRoom.Cleared = true;
                     encounterRoom.OpenAllUnlockedRoomDoors();
                     Camera.SetFocusPlayers();
 
                     Manager_Sound.PlayFreeRoamMusic();
-                    Notifications.New("Room " + ActiveRoom.Name + " cleared!");
 
-                    State = GamePlayState.FreeRoam;
+                    if (encounterRoom.Name.StartsWith("Gold"))
+                    {
+                        Notifications.New("\n\n\n\n", Color.Wheat, 60000);
+                        Notifications.New("Overcoming the final challenge, glory awaits our heroes", Color.Wheat, 60000, Fonts.Large);
+                        Notifications.New("when they fight alongside the gods in Ragnarok...", Color.Wheat, 60000, Fonts.Large);
+                        Manager_Sound.PlayFreeRoamMusic();
+                        encounterRoom.OpenAllUnlockedRoomDoors();
+                        Camera.SetFocusPlayers();
+                        State = GamePlayState.FreeRoam; // no end screen for now
+                    }
+                    else
+                    {
+                        State = GamePlayState.FreeRoam;
+                        Notifications.New("Room " + ActiveRoom.Name + " cleared!");
+                    }
                     break;
 
                 case GamePlayState.End:
