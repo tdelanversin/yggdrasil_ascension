@@ -173,6 +173,7 @@ namespace YGR
 
         public void BarkConnector(Texture2D barkTexture, Color[] barkColor, float barkScale)
         {
+            if (_barkPoints == null) return;
             List<string> cats = new List<string>();
             foreach(var rooms in DoorRooms.Values)
             {
@@ -649,7 +650,7 @@ namespace YGR
                     collision[x][0] = 1;
                 }
 
-                for (int x = 1; x < half1 - doorWidth / 2; ++x)
+                for (int x = 2; x < half1 - doorWidth / 2; ++x)
                 {
                     collision[x][doorWidth / 2] = 9;
                 }
@@ -670,7 +671,7 @@ namespace YGR
                     collision[x][height - 1] = 1;
                 }
 
-                for (int x = half1 - doorWidth / 2; x < width - 1; ++x)
+                for (int x = half1 - doorWidth / 2; x < width - 2; ++x)
                 {
                     collision[x][height - 1 - doorWidth / 2] = 10;
                 }
@@ -740,7 +741,7 @@ namespace YGR
                 }
 
                 //int openingOffset = width - NumTilesDoorWidth;
-                if(numTilesLength < 0)
+                if (numTilesLength < 0)
                 {
                     for (int i = NumTilesDoorWidth-1; i < width-1; ++i)
                     {
@@ -750,10 +751,10 @@ namespace YGR
                     {
                         collision[i][0] = 1;
                     }
-                    
-                    for (int i = 1; i < height-NumTilesDoorWidth/2; ++i)
+
+                    for (int i = 1; i < height - NumTilesDoorWidth / 2; ++i)
                     {
-                        collision[i][NumTilesDoorWidth/2] = 10;
+                        collision[i][NumTilesDoorWidth / 2] = 10;
                     }
 
                     for (int i = 1; i < height-NumTilesDoorWidth; ++i)
@@ -787,9 +788,9 @@ namespace YGR
                         collision[i][width-1] = 1;
                     }
 
-                    for (int i = 1; i < height-NumTilesDoorWidth/2; ++i)
+                    for (int i = 1; i < height - NumTilesDoorWidth / 2; ++i)
                     {
-                        collision[i][width - 1-NumTilesDoorWidth/2] = 10;
+                        collision[i][width - 1 - NumTilesDoorWidth / 2] = 10;
                     }
 
                     for (int i = 1; i < height - NumTilesDoorWidth+1; ++i)
@@ -1252,11 +1253,14 @@ namespace YGR
                 }
             }
 
-            foreach(var bp in _barkPoints)
+            if(_barkPoints != null)
             {
-                foreach(var b in bp.Value)
+                foreach (var bp in _barkPoints)
                 {
-                    Factory_Debug.DrawPoint((int)b.X, (int)b.Y, 9, Color.DarkRed, spriteBatch);
+                    foreach (var b in bp.Value)
+                    {
+                        Factory_Debug.DrawPoint((int)b.X, (int)b.Y, 9, Color.DarkRed, spriteBatch);
+                    }
                 }
             }
         }
@@ -1375,20 +1379,26 @@ namespace YGR
                     r.Offset(p);
             }
 
-            foreach(var bp in _barkPoints)
+            if(_barkPoints != null)
             {
-                for(int i=0; i<bp.Value.Count(); ++i)
+                foreach (var bp in _barkPoints)
                 {
-                    bp.Value[i] = new Vector2(bp.Value[i].X + p.X, bp.Value[i].Y + p.Y);
+                    for (int i = 0; i < bp.Value.Count(); ++i)
+                    {
+                        bp.Value[i] = new Vector2(bp.Value[i].X + p.X, bp.Value[i].Y + p.Y);
+                    }
                 }
             }
 
-            if (_barkPositions != null)
+            if(_barkPositions != null)
             {
-                for (int i = 0; i < _barkPositions.Count(); ++i)
+                if (_barkPositions != null)
                 {
-                    _barkPositions[i] = new Vector2(_barkPositions[i].X + p.X, _barkPositions[i].Y + p.Y);
+                    for (int i = 0; i < _barkPositions.Count(); ++i)
+                    {
+                        _barkPositions[i] = new Vector2(_barkPositions[i].X + p.X, _barkPositions[i].Y + p.Y);
 
+                    }
                 }
             }
         }
