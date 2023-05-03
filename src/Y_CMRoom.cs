@@ -133,7 +133,8 @@ namespace YGR
     public enum X_RoomState
     {
         Visible = 0,
-        Invisible
+        Invisible,
+        Locked
     }
 
     public class Y_CMRoom : IWalkable
@@ -215,6 +216,7 @@ namespace YGR
         public Dictionary<X_ConnectorSide, IList<X_ConnectorPoint>> Doors { get; set; }
         private Dictionary<X_ConnectorSide, IList<X_DoorMask>> _doorMasks;
         public Dictionary<X_ConnectorSide, IList<IWalkable>> DoorRooms { get; set; }
+        private bool _doorsToggled;
         public int TextureTileSize { get; }
         public string ResourceFolder { get; }
         public Color RegionColor { get; }
@@ -235,6 +237,7 @@ namespace YGR
         bool[] _illumination = null;
         int _width;
         int _height;
+        bool _visited;
 
         //Dictionary<X_DoorTextureLayer, List<X_AutoTiler.X_AutoTileTexture>> _tileTextures;
         //Dictionary<X_DoorTextureLayer, List<X_AutoTiler.X_AutoTileColor>> _tileColors;
@@ -560,6 +563,13 @@ namespace YGR
             _roofData = readRoof.Result;
             _width = Collision.GetCollisionTemplate()[0].Length * TextureTileSize;
             _height = Collision.GetCollisionTemplate().Length * TextureTileSize;
+            _doorsToggled = false;
+            _visited = false;
+        }
+
+        public void ToggleDoors()
+        {
+            _doorsToggled = true;
         }
 
         public void FinalizeItem(GraphicsDevice graphicsDevice)
@@ -626,10 +636,31 @@ namespace YGR
 
         public bool IsVisible()
         {
-            return State == X_RoomState.Visible;
+            return _visited = true;
         }
 
-        public void MakeVisible(bool yes)
+        public bool IsVisited()
+        {
+            return _visited;
+        }
+
+        public bool IsLocked()
+        {
+            return State == X_RoomState.Locked;
+        }
+
+        public void SetLocked(bool yes)
+        {
+            if (yes) State = X_RoomState.Locked;
+            else State = X_RoomState.Locked;
+        }
+
+        public void SetVisited(bool yes)
+        {
+            _visited = yes;
+        }
+
+        public void SetVisible(bool yes)
         {
             if (yes) State = X_RoomState.Visible;
             else State = X_RoomState.Invisible;
@@ -704,6 +735,10 @@ namespace YGR
                             {
                                 door.LockDoor();
                             }
+                            ToggleDoors();
+                            var otherRoom = door.GetOtherDoor(this);
+                            if(!((Y_CMRoom)otherRoom.Item2).IsVisited())
+                                ((Y_CMRoom)otherRoom.Item2).SetVisible(false);
                         }
                     }
                 }
@@ -724,6 +759,10 @@ namespace YGR
                             {
                                 door.LockDoor();
                             }
+                            ToggleDoors();
+                            var otherRoom = door.GetOtherDoor(this);
+                            ((Y_CMRoom)otherRoom.Item2).SetVisible(true);
+                            ((Y_CMRoom)otherRoom.Item2).ToggleDoors();
                         }
                     }
                     else if (walkable.WhatAreYou() == X_LevelElements.Room)
@@ -1062,6 +1101,11 @@ namespace YGR
             switch (State)
             {
                 case X_RoomState.Visible:
+                    if (_doorsToggled)
+                    {
+                        Illuminate();
+                        _doorsToggled = false;
+                    }
                     break;
                 case X_RoomState.Invisible:
                     break;

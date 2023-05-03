@@ -49,6 +49,7 @@ namespace YGR
             X_AutoTiler.Initialize("./Doors/", "data.json", GraphicsDevice, Y_Door.MapJsonName);
             X_AutoTiler.Initialize("./Levels/", "doors.json", GraphicsDevice, Y_CMRoom.MapJsonName);
             Y_MultiPowerUp.Initialize(Content);
+            Y_Door.Initialize(Content);
 
             _level = new Y_Level(level, 32, 32, "./Levels/", "./Doors", Content);
             base.Initialize();

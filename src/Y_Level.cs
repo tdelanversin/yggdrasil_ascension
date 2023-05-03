@@ -309,8 +309,6 @@ namespace YGR
                         "data.json");
 
                     connectors.Add(connector.Connect(fromRoom, fromConnectorPoint, toRoom, toConnectorPoint, direction));
-
-                    connector.BarkConnector(_barkTexture, _barkColor, _barkScale);
                     //if (b != null) _barks.Add(b);
                 }
             }
@@ -391,8 +389,8 @@ namespace YGR
                 }
             }
 
-            _startRoom.MakeVisible(true);
-            _goldRoom.MakeVisible(true);
+            _startRoom.SetVisible(true);
+            _goldRoom.SetVisible(true);
             _startRoom.Illuminate();
             _goldRoom.Illuminate();
             Manager_Sound.PlayFreeRoamMusic();
@@ -426,6 +424,7 @@ namespace YGR
                     if (room.Value.WhatAreYou() == X_LevelElements.Room)
                     {
                         ((Y_CMRoom)room.Value).OpenAllUnlockedRoomDoors();
+                        ((Y_CMRoom)room.Value).SetVisible(true);
                     }
                 }
             }
@@ -436,6 +435,7 @@ namespace YGR
                     if (room.Value.WhatAreYou() == X_LevelElements.Room)
                     {
                         ((Y_CMRoom)room.Value).CloseAllUnlockedRoomDoors();
+                        ((Y_CMRoom)room.Value).SetVisible(false);
                     }
                 }
             }
@@ -515,6 +515,7 @@ namespace YGR
                     // At this point we have all players inside a room with
                     // enemies. Time to go in lock down and let the battle begin
                     cmroom.CloseAllUnlockedRoomDoors();
+                    cmroom.SetLocked(true);
                     Camera.SetFocusRoom(cmroom);
                     foreach (var enemy in cmroom.GetEnemiesInside())
                     {
@@ -556,6 +557,7 @@ namespace YGR
 
                     encounterRoom.Cleared = true;
                     encounterRoom.OpenAllUnlockedRoomDoors();
+                    encounterRoom.SetLocked(false);
                     Camera.SetFocusPlayers();
 
                     Manager_Sound.PlayFreeRoamMusic();

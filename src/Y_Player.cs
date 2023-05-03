@@ -168,6 +168,14 @@ namespace YGR
             _invincibleTimeLeft = _invincibleDuration;
         }
 
+        protected void UpdateRoom(GameTime gameTime)
+        {
+            if(Room.WhatAreYou() == X_LevelElements.Room)
+            {
+                ((Y_CMRoom)Room).SetVisited(true);
+            }
+        }
+
         protected void UpdateInvincibility(GameTime gameTime)
         {
             if (_invincible)
@@ -320,6 +328,7 @@ namespace YGR
 
         public virtual void Update(GameTime gameTime)
         {
+            UpdateRoom(gameTime);
             Manager_Particles.Update(gameTime);
             UpdateInvincibility(gameTime);
             Vector2 input = Vector2.Zero;
@@ -481,6 +490,7 @@ namespace YGR
         override public void Update(GameTime gameTime)
         {
             Vector2 input = Vector2.Zero;
+            UpdateRoom(gameTime);
             HandleGamepadInput(gameTime, ref input);
             HandleMouseKeyboardInput(gameTime, ref input);
 
