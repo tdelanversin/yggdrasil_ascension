@@ -257,7 +257,6 @@ namespace YGR
             {
                 item.Draw(spriteBatch, Bounds);
             }
-            DrawControllerState(spriteBatch);
         }
 
         internal static void LoadContent(ContentManager content)

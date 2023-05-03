@@ -1,13 +1,16 @@
-﻿using Microsoft.Xna.Framework;
+﻿using Assimp;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Threading;
 
 namespace YGR
 {
@@ -67,6 +70,11 @@ namespace YGR
 
         Dictionary<string, List<Tuple<X_RoomStump, Y_CMRoom>>> _availableRooms;
         Y_Level.Data _data;
+
+        public static int ModifiedLevelsTotal = 0;
+        public static List<Tuple<DateTime, X_RoomStump>> ModifiedLevels = new List<Tuple<DateTime, X_RoomStump>>();
+        private static Dictionary<string, DateTime> LevelModifiedDates = new Dictionary<string, DateTime>();
+        private static string LastModifiedFileName = "last_level_modified";
 
         public Y_Level(
             string name,
@@ -148,11 +156,66 @@ namespace YGR
             _barkTexture.GetData<Color>(_barkColor);
         }
 
+        public void CheckModifiedLevels()
+        {
+            // do some preprocessing on all rooms
+            // Store Start, Trunc, Leaf, Gold versions on each of them as binary files
+
+            if(File.Exists(_levelResourceFolder + LastModifiedFileName))
+            {
+                LevelModifiedDates = JsonConvert.DeserializeObject<Dictionary<string, DateTime>>(
+                    File.ReadAllText(_levelResourceFolder + LastModifiedFileName));
+            }
+
+            ModifiedLevels.Clear();
+            foreach (var rooms in _availableRooms)
+            {
+                foreach (var room in rooms.Value)
+                {
+                    var absPath = Util.GetAbsResourceFolderPath(room.Item1.ResourceFolder);
+                    var lastChange = File.GetLastWriteTime(absPath + Path.DirectorySeparatorChar + "data.json");
+                    DateTime value;
+                    if (!LevelModifiedDates.TryGetValue(room.Item1.ResourceFolder, out value))
+                    {
+                        ModifiedLevels.Add(new Tuple<DateTime, X_RoomStump>(lastChange, room.Item1));
+                    }
+                    else if (value != lastChange)
+                    {
+                        LevelModifiedDates.Remove(room.Item1.ResourceFolder);
+                        ModifiedLevels.Add(new Tuple<DateTime, X_RoomStump>(lastChange, room.Item1));
+                    }
+                }
+            }
+            ModifiedLevelsTotal = ModifiedLevels.Count();
+        }
+
+        public void Preprocess(GraphicsDevice graphicsDevice)
+        {
+            var cat = _availableRooms.Select(x => x.Key).ToList();
+            if(ModifiedLevels.Count() > 0)
+            {
+                var r = ModifiedLevels.First();
+                ModifiedLevels.RemoveAt(0);
+                Y_CMRoom.PreprocessRoom(r.Item2, cat, _data.LdtkRoomTypes, graphicsDevice);
+                LevelModifiedDates.Add(r.Item2.ResourceFolder, r.Item1);
+            }
+            else if(ModifiedLevelsTotal > 0)
+            {
+                var text = JsonConvert.SerializeObject(LevelModifiedDates);
+                var srcPath = _levelResourceFolder;
+                // write to both versions if it's windows
+                if (Debugger.IsAttached && System.OperatingSystem.IsWindows())
+                {
+                    srcPath = Util.GetAbsResourceFolderPath(srcPath);
+                    File.WriteAllText(srcPath + LastModifiedFileName, text);
+                }
+                File.WriteAllText(_levelResourceFolder + LastModifiedFileName, text);
+                ModifiedLevelsTotal = 0;
+            }
+        }
 
         public void Create(GraphicsDevice graphicsDevice)
         {
-            //var room = new Y_CMRoom(roomName, TileWidth, TileHeight, f, graphicsDevice);
-
             // put everything back
             foreach (var room in Rooms)
             {
@@ -184,7 +247,7 @@ namespace YGR
                 if (n.Item2 == null)
                 {
                     n = new Tuple<X_RoomStump, Y_CMRoom>(null, new Y_CMRoom(n.Item1));
-                    n.Item2.FinalizeItem(graphicsDevice, _barkColor, _barkTexture, _barkScale);
+                    n.Item2.FinalizeItem(graphicsDevice);
 
                 }
                 type.RemoveAt(index);
@@ -197,7 +260,6 @@ namespace YGR
                 p.X = p.X + (TileWidth - p.X % TileWidth);
                 p.Y = p.Y + (TileHeight - p.Y % TileHeight);
                 room.MoveTo(p);
-                room.InitRoomClosed();
                 Rooms.Add(node.Index, room);
 
                 if (node.Type == "Start")
@@ -277,11 +339,6 @@ namespace YGR
                 }
             }
 
-            _startRoom.OpenUnlockedRoom();
-            _goldRoom.OpenUnlockedRoom();
-            _startRoom.LockRoomOpen();
-            _goldRoom.LockRoomOpen();
-
             Manager_Players.ClearPlayers();
 
             // Place all players, even if they're not going to play
@@ -341,8 +398,8 @@ namespace YGR
                 }
             }
 
-            _startRoom.InitRoomLocked(open: true);
-            _goldRoom.InitRoomLocked(open: true);
+            _startRoom.MakeVisible(true);
+            _goldRoom.MakeVisible(true);
             _startRoom.Illuminate();
             _goldRoom.Illuminate();
             Manager_Sound.PlayFreeRoamMusic();

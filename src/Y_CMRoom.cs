@@ -6,8 +6,10 @@ using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Dynamic;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using static YGR.X_AutoTiler;
@@ -130,15 +132,8 @@ namespace YGR
 
     public enum X_RoomState
     {
-        Open = 1,
-        Opening,
-        Closing,
-        Closed,
-        LockedClosed,
-        LockedClosing,
-        LockedOpen,
-        LockedOpening,
-        Finished
+        Visible = 0,
+        Invisible
     }
 
     public class Y_CMRoom : IWalkable
@@ -238,19 +233,11 @@ namespace YGR
         private Texture2D _roof;
         private byte[] _wallData;
         bool[] _illumination = null;
-
-        private float _barkScale;
-        private Texture2D _bark;
-        private List<Vector2> _barkPositions;
-
-        private int _currentDoorOpenOffset = 0;
-        private float _doorOpeningTime = 2000.0f;
-        private float _animationTime = 0.0f;
+        int _width;
+        int _height;
 
         //Dictionary<X_DoorTextureLayer, List<X_AutoTiler.X_AutoTileTexture>> _tileTextures;
         //Dictionary<X_DoorTextureLayer, List<X_AutoTiler.X_AutoTileColor>> _tileColors;
-
-        X_AutoTiler.X_RoofDoor _roofDoor;
 
         List<Point> _spawner;
         List<Point> _bossSpawner;
@@ -261,9 +248,89 @@ namespace YGR
 
         public bool Cleared;
 
-#if PARALLEL_DEBUG_ROOM
-        public static ConcurrentDictionary<string, int> dbag = new ConcurrentDictionary<string, int>();
-#endif
+        static public void PreprocessRoom(
+            X_RoomStump initiator, 
+            List<string> categories, 
+            Dictionary<string, Dictionary<string, string>> ldtkRoomTypes,
+            GraphicsDevice graphicsDevice
+        )
+        {
+            string name = initiator.Name;
+            string category = initiator.Category;
+            int textureTileSize = initiator.TextureTileSize;
+            string resourceFolder = Util.PathOsNormalization(initiator.ResourceFolder);
+
+            foreach (var c in categories)
+            {
+                var readFloor = File.ReadAllBytesAsync(resourceFolder + ldtkRoomTypes[c]["Floor"]);
+                var readWall = File.ReadAllBytesAsync(resourceFolder + ldtkRoomTypes[c]["Wall"]);
+                var readRoof = File.ReadAllBytesAsync(resourceFolder + ldtkRoomTypes[c]["Roof"]);
+
+                Task.WaitAll(readFloor, readWall, readRoof);
+                var floorData = readFloor.Result;
+                var wallData = readWall.Result;
+                var roofData = readRoof.Result;
+
+                MemoryStream floorStream = new MemoryStream(floorData);
+                MemoryStream wallStream = new MemoryStream(wallData);
+                MemoryStream roofStream = new MemoryStream(roofData);
+
+                Texture2D floor = Texture2D.FromStream(graphicsDevice, floorStream, DefaultColorProcessors.PremultiplyAlpha);
+                Texture2D txWall = Texture2D.FromStream(graphicsDevice, wallStream, DefaultColorProcessors.PremultiplyAlpha);
+                Texture2D roof = Texture2D.FromStream(graphicsDevice, roofStream, DefaultColorProcessors.PremultiplyAlpha);
+
+                Color[] target = new Color[floor.Width * floor.Height];
+                Color[] source = new Color[txWall.Width * txWall.Height];
+                Color[] roofC = new Color[txWall.Width * txWall.Height];
+                byte[] toFloor = new byte[floor.Width * floor.Height * 4];
+                byte[] toRoof = new byte[floor.Width * floor.Height * 4];
+
+                roof.GetData<Color>(roofC);
+                floor.GetData<Color>(target);
+                txWall.GetData<Color>(source);
+
+
+                int index = 0;
+                for (int h = 0; h < floor.Height; ++h)
+                {
+                    for (int w = 0; w < floor.Width; ++w)
+                    {
+                        var col = source[h * floor.Width + w];
+                        if (col.A != 0)
+                        {
+                            toFloor[index] = col.R;
+                            toFloor[index+1] = col.G;
+                            toFloor[index+2] = col.B;
+                            toFloor[index+3] = col.A;
+                        }
+                        else
+                        {
+                            toFloor[index] = target[h * floor.Width + w].R;
+                            toFloor[index+1] = target[h * floor.Width + w].G;
+                            toFloor[index+2] = target[h * floor.Width + w].B;
+                            toFloor[index+3] = target[h * floor.Width + w].A;
+                        }
+
+                        toRoof[index] = roofC[h * floor.Width + w].R;
+                        toRoof[index+1] = roofC[h * floor.Width + w].G;
+                        toRoof[index+2] = roofC[h * floor.Width + w].B;
+                        toRoof[index+3] = roofC[h * floor.Width + w].A;
+
+                        index += 4;
+                    }
+                }
+
+                Util.SaveAsGZip(resourceFolder + c + "_Floor.Color", toFloor);
+                Util.SaveAsGZip(resourceFolder + c + "_Roof.Color", toRoof);
+
+                if (Debugger.IsAttached && System.OperatingSystem.IsWindows())
+                {
+                    var srcPath = Util.GetAbsResourceFolderPath(resourceFolder);
+                    Util.SaveAsGZip(srcPath + c + "_Floor.Color", toFloor);
+                    Util.SaveAsGZip(srcPath + c + "_Roof.Color", toRoof);
+                }
+            }
+        }
 
         public Y_CMRoom(
             X_RoomStump initiator
@@ -276,21 +343,12 @@ namespace YGR
             var files = Directory.GetFiles(ResourceFolder);
             string dataFileName = Path.GetFileName(files.Where(x => Path.GetFileName(x).Contains("data") && Path.GetFileName(x).EndsWith(".json")).First());
             string collisionsFileName = Path.GetFileName(files.Where(x => Path.GetFileName(x).Contains("Collision") && Path.GetFileName(x).EndsWith(".csv")).First());
-            var lines = File.ReadAllLinesAsync(ResourceFolder + collisionsFileName);
-
-#if PARALLEL_DEBUG_ROOM
-            dbag.AddOrUpdate(name, 0, (n, v) => v+1);
-#endif
-
             _ldtkRoomTypeProperties = initiator.LdtkRoomTypeProperties;
 
-            var readFloor = File.ReadAllBytesAsync(ResourceFolder + _ldtkRoomTypeProperties["Floor"]);
-            var readWall = File.ReadAllBytesAsync(ResourceFolder + _ldtkRoomTypeProperties["Wall"]);
-            var readRoof = File.ReadAllBytesAsync(ResourceFolder + _ldtkRoomTypeProperties["Roof"]);
-
-#if PARALLEL_DEBUG_ROOM
-            dbag.AddOrUpdate(name, 0, (n, v) => v + 1);
-#endif
+            var lines = File.ReadAllLinesAsync(ResourceFolder + collisionsFileName);
+            var readFloor = File.ReadAllBytesAsync(ResourceFolder + Category + "_Floor.Color");
+            var readRoof = File.ReadAllBytesAsync(ResourceFolder + Category + "_Roof.Color");
+            var json = File.ReadAllTextAsync(ResourceFolder + dataFileName);
 
             lines.Wait();
             int[][] collisions = new int[lines.Result.Length][];
@@ -301,40 +359,19 @@ namespace YGR
                 counter++;
             }
 
-#if PARALLEL_DEBUG_ROOM
-            dbag.AddOrUpdate(name, 0, (n, v) => v + 1);
-#endif
-
             collisions = paddOutline(collisions);
             Collision = new X_CollisionModel_Room(collisions, initiator.TileWidth, initiator.TileHeight);
             Graph = new X_RoomGraph(this, collisions, initiator.TileWidth, initiator.TileHeight);
             Rect = new Rectangle(0, 0, collisions[0].Length * Collision.TileWidth, collisions.Length * Collision.TileHeight);
             ResetRects = new List<Rectangle>();
 
-#if PARALLEL_DEBUG_ROOM
-            dbag.AddOrUpdate(name, 0, (n, v) => v + 1);
-#endif
-
             Doors = new Dictionary<X_ConnectorSide, IList<X_ConnectorPoint>>();
             DoorRooms = new Dictionary<X_ConnectorSide, IList<IWalkable>>();
             _doorMasks = new Dictionary<X_ConnectorSide, IList<X_DoorMask>>();
 
-            _roofDoor = X_AutoTiler.RoomCoverTexture(
-                initiator.Name,
-                Util.PathOsNormalization("./Levels/"), 
-                "doors.json", Collision.GetCollisionTemplate());
-
-#if PARALLEL_DEBUG_ROOM
-            dbag.AddOrUpdate(name, 0, (n, v) => v + 1);
-#endif
-
             Scale = (float)initiator.TileHeight / TextureTileSize;
 
             List<string> layers;
-            //using (StreamReader stream = new StreamReader(ResourceFolder + dataFileName))
-            //{
-
-            var json = File.ReadAllTextAsync(ResourceFolder + dataFileName);
             json.Wait();
             dynamic array = JsonConvert.DeserializeObject(json.Result);
             layers = JsonConvert.DeserializeObject<List<string>>(array.layers.ToString());
@@ -399,10 +436,6 @@ namespace YGR
                 }
             });
 
-#if PARALLEL_DEBUG_ROOM
-            dbag.AddOrUpdate(name, 0, (n, v) => v + 1);
-#endif
-
             _powerUps = new List<PowerUpItem>();
             var t5 = Task.Run(() =>
             {
@@ -442,10 +475,6 @@ namespace YGR
                     }
                 }
             });
-
-#if PARALLEL_DEBUG_ROOM
-            dbag.AddOrUpdate(name, 0, (n, v) => v + 1);
-#endif
 
             Task.WaitAll(t1);
             foreach (var door in Doors)
@@ -502,11 +531,7 @@ namespace YGR
                 }
             }
 
-#if PARALLEL_DEBUG_ROOM
-            dbag.AddOrUpdate(name, 0, (n, v) => v + 1);
-#endif
-
-            State = X_RoomState.Closed;
+            State = X_RoomState.Invisible;
 
             Lights = new List<X_Light>() {
             new X_Light(
@@ -516,21 +541,11 @@ namespace YGR
                 Rect, Scale)
             };
 
-            Task.WaitAll(readFloor, readWall, readRoof);
-            _floorData = readFloor.Result;
-            _wallData = readWall.Result;
-            _roofData = readRoof.Result;
-
-#if PARALLEL_DEBUG_ROOM
-            dbag.AddOrUpdate(name, 0, (n, v) => v + 1);
-#endif
-
             Task.WaitAll(t2, t3, t4, t5, t6);
 
             // check which power ups are inside multi power ups
             foreach (var mpu in _multiPowerups)
             {
-
                 foreach (var pu in _powerUps)
                 {
                     if (pu.Item.Rect.Intersects(mpu.Item.Rect))
@@ -540,95 +555,31 @@ namespace YGR
                 }
             }
 
-#if PARALLEL_DEBUG_ROOM
-            dbag.AddOrUpdate(name, 0, (n, v) => v + 1);
-            Debug.WriteLine(string.Join(", ", dbag.OrderBy(kvp => kvp.Value).Select(kvp => kvp.ToString())));
-#endif
+            Task.WaitAll(readFloor, readRoof);
+            _floorData = readFloor.Result;
+            _roofData = readRoof.Result;
+            _width = Collision.GetCollisionTemplate()[0].Length * TextureTileSize;
+            _height = Collision.GetCollisionTemplate().Length * TextureTileSize;
         }
 
-        public void FinalizeItem(GraphicsDevice graphicsDevice, Color[] barkColor, Texture2D barkTexture, float barkScale)
+        public void FinalizeItem(GraphicsDevice graphicsDevice)
         {
-            var watch = new Stopwatch();
-            watch.Start();
-            MemoryStream floor = new MemoryStream(_floorData);
-            MemoryStream wall = new MemoryStream(_wallData);
-            MemoryStream roof = new MemoryStream(_roofData);
+            Color[] floor2 = Util.DeGZipFile(_floorData);
+            Color[] roof2 = Util.DeGZipFile(_roofData);
 
-            _floor = Texture2D.FromStream(graphicsDevice, floor, DefaultColorProcessors.PremultiplyAlpha);
-            Texture2D txWall = Texture2D.FromStream(graphicsDevice, wall, DefaultColorProcessors.PremultiplyAlpha);
-            _roof = Texture2D.FromStream(graphicsDevice, roof, DefaultColorProcessors.PremultiplyAlpha);
+            _floor = new Texture2D(graphicsDevice, _width, _height);
+            _floor.SetData(floor2);
+            _roof = new Texture2D(graphicsDevice, _width, _height);
+            _roof.SetData(roof2);
 
-            Color[] target = new Color[_floor.Width * _floor.Height];
-            Color[] source = new Color[txWall.Width * txWall.Height];
-
-            _floor.GetData<Color>(target);
-            txWall.GetData<Color>(source);
-
-            for (int h = 0; h < _floor.Height; ++h)
-            {
-                for (int w = 0; w < _floor.Width; ++w)
-                {
-                    var c = source[h * _floor.Width + w];
-                    if (c.A != 0)
-                        target[h * _floor.Width + w] = c;
-                }
-            }
-
-            if(Category == "Start" || Category == "Trunc")
-            {
-                _barkScale = (float)TextureTileSize / (float)barkTexture.Width;
-                _barkPositions = new List<Vector2>();
-                _bark = barkTexture;
-
-                for (int x = Rect.X; x<Rect.X + Rect.Width; x += TextureTileSize)
-                {
-                    //_barkPositions.Add(new Vector2(x, Rect.Y));
-                    _barkPositions.Add(new Vector2(x, Rect.Y - TextureTileSize));
-                    _barkPositions.Add(new Vector2(x, Rect.Y - 2 * TextureTileSize));
-
-                    //_barkPositions.Add(new Vector2(x, Rect.Y + Rect.Height - TextureTileSize));
-                    _barkPositions.Add(new Vector2(x, Rect.Y + Rect.Height));
-                    _barkPositions.Add(new Vector2(x, Rect.Y + Rect.Height + TextureTileSize));
-                }
-
-                for (int y = Rect.Y- 2*TextureTileSize; y < Rect.Y + Rect.Height + 2*TextureTileSize; y += TextureTileSize)
-                {
-                    //_barkPositions.Add(new Vector2(Rect.X, y));
-                    _barkPositions.Add(new Vector2(Rect.X - TextureTileSize, y));
-                    _barkPositions.Add(new Vector2(Rect.X - 2 * TextureTileSize, y));
-
-                    //_barkPositions.Add(new Vector2(Rect.X + Rect.Width - TextureTileSize, y));
-                    _barkPositions.Add(new Vector2(Rect.X + Rect.Width, y));
-                    _barkPositions.Add(new Vector2(Rect.X + Rect.Width + TextureTileSize, y));
-                }
-
-                var collision = Collision.GetCollisionTemplate();
-                for (int y = 0; y < collision.Length; ++y)
-                {
-                    for (int x = 0; x < collision[0].Length; ++x)
-                    {
-                        int index = TextureTileSize*(y * _floor.Width + x);
-                        if (target[index].A == 0)
-                        {
-                            _barkPositions.Add(new Vector2(x*TextureTileSize, y*TextureTileSize));
-                        }
-                    }
-                }
-            }
-
-            _floor.SetData<Color>(target);
-            _roofDoor.Mechanism1 = new Texture2D(graphicsDevice, TextureTileSize, TextureTileSize);
-            _roofDoor.Mechanism1.SetData<Color>(_roofDoor.Mechanism1Data);
-            _roofDoor.Mechanism2 = new Texture2D(graphicsDevice, TextureTileSize, TextureTileSize);
-            _roofDoor.Mechanism2.SetData<Color>(_roofDoor.Mechanism2Data);
-            _roofDoor.Roof = new Texture2D(graphicsDevice, _roof.Width, _roof.Height);
-            _roofDoor.Roof.SetData<Color>(_roofDoor.RoofData);
+            //_floor.SetData<Color>(floor);
 
             // if the room is initially open, we need to illuminate it
-            if (State == X_RoomState.Open || State == X_RoomState.LockedOpen)
+            if (State == X_RoomState.Visible)
             {
                 Illuminate();
             }
+            //Logger.Info("created room: " + watch.ElapsedMilliseconds);
         }
 
         public void ResetRoom()
@@ -639,7 +590,7 @@ namespace YGR
             DoorRooms.Clear();
             ResetRects.Clear();
             Cleared = false;
-            State = X_RoomState.Closed;
+            State = X_RoomState.Invisible;
             MoveTo(new Point(0, 0));
 
             for (int i = 0; i < _powerUps.Count(); ++i)
@@ -673,100 +624,15 @@ namespace YGR
             }
         }
 
-        public void InitRoomOpen()
+        public bool IsVisible()
         {
-            State = X_RoomState.Open;
+            return State == X_RoomState.Visible;
         }
 
-        public void InitRoomClosed()
+        public void MakeVisible(bool yes)
         {
-            State = X_RoomState.Closed;
-        }
-
-        public void InitRoomLocked(bool open = false)
-        {
-            if (open) State = X_RoomState.LockedOpen;
-            else State = X_RoomState.LockedClosed;
-        }
-
-        public bool IsRoomOpen()
-        {
-            return State == X_RoomState.Open;
-        }
-
-        public bool IsRoomClosed()
-        {
-            return State == X_RoomState.Closed;
-        }
-
-        public bool IsRoomLocked()
-        {
-            return State == X_RoomState.LockedOpen || State == X_RoomState.LockedClosed;
-        }
-
-        public bool LockRoomOpen()
-        {
-            if(State == X_RoomState.Open)
-            {
-                State = X_RoomState.LockedOpen;
-                return true;
-            }
-            else if(State == X_RoomState.Closed)
-            {
-                State = X_RoomState.LockedClosing;
-                return true;
-            }
-            return false;
-        }
-
-        public bool LockRoomClosed()
-        {
-            if (State == X_RoomState.Closed)
-            {
-                State = X_RoomState.LockedClosed;
-                return true;
-            }
-            else if(State == X_RoomState.Open)
-            {
-                State = X_RoomState.LockedClosing;
-                return true;
-            }
-            return false;
-        }
-
-        public bool UnlockRoom()
-        {
-            if (State == X_RoomState.LockedOpen)
-            {
-                State = X_RoomState.Open;
-                return true;
-            }
-            if (State == X_RoomState.LockedClosed)
-            {
-                State = X_RoomState.Closed;
-                return true;
-            }
-            return false;
-        }
-
-        public bool OpenUnlockedRoom()
-        {
-            if (State == X_RoomState.Closed)
-            {
-                State = X_RoomState.Opening;
-                return true;
-            }
-            return false;
-        }
-
-        public bool CloseUnlockedRoom()
-        {
-            if(State == X_RoomState.Open)
-            {
-                State = X_RoomState.Closing;
-                return true;
-            }
-            return false;
+            if (yes) State = X_RoomState.Visible;
+            else State = X_RoomState.Invisible;
         }
 
         public void LockAllDoors(bool unlock = false)
@@ -824,7 +690,7 @@ namespace YGR
         }
 
         // One player has COVID -> Lockdown
-        public void CloseAllUnlockedRoomDoors(bool lockWhenFinished = false, bool doorsOnly = false)
+        public void CloseAllUnlockedRoomDoors(bool lockWhenFinished = false)
         {
             foreach (var side in DoorRooms)
             {
@@ -837,25 +703,6 @@ namespace YGR
                             if (lockWhenFinished)
                             {
                                 door.LockDoor();
-                            }
-                            if (!doorsOnly)
-                            {
-                                foreach (var con in door.DoorRooms)
-                                {
-                                    foreach (var room in con.Value)
-                                    {
-                                        if (room == this)
-                                        {
-                                            continue; // We are already open
-                                        }
-                                        Y_CMRoom cmroom = (Y_CMRoom)room;
-                                        cmroom.CloseUnlockedRoom();
-                                        if (lockWhenFinished)
-                                        {
-                                            cmroom.LockRoomClosed();
-                                        }
-                                    }
-                                }
                             }
                         }
                     }
@@ -876,23 +723,6 @@ namespace YGR
                             if (lockWhenFinished)
                             {
                                 door.LockDoor();
-                            }
-                            // Now the door hall is open, but the next room is not visible. so let's recurse...
-                            foreach (var con in door.DoorRooms)
-                            {
-                                foreach (var room in con.Value)
-                                {
-                                    if (room == this)
-                                    {
-                                        continue; // We are already open
-                                    }
-                                    Y_CMRoom cmroom = (Y_CMRoom)room;
-                                    cmroom.OpenUnlockedRoom();
-                                    if (lockWhenFinished)
-                                    {
-                                        cmroom.LockRoomOpen();
-                                    }
-                                }
                             }
                         }
                     }
@@ -1140,43 +970,11 @@ namespace YGR
                     _playerSpawner[i] += p;
                 }
             }
-
-            if(_barkPositions != null)
-            {
-                for (int i = 0; i < _barkPositions.Count(); ++i)
-                {
-                    _barkPositions[i] = new Vector2(_barkPositions[i].X + p.X, _barkPositions[i].Y + p.Y);
-
-                }
-            }
         }
 
         public X_ConnectorPoint GetConnectorPoint(X_ConnectorSide side)
         {
             return Doors[side].First();
-        }
-
-        private bool doorAnimation(float dt, bool opening)
-        {
-            _animationTime += dt;
-            if (_animationTime < _doorOpeningTime)
-            {
-                float percent = 1.0f / _doorOpeningTime * _animationTime;
-                if (opening)
-                    _currentDoorOpenOffset = (int)Math.Round(TextureTileSize * percent);
-                else
-                    _currentDoorOpenOffset = (int)Math.Round(TextureTileSize * (1.0f - percent));
-            }
-            if (_animationTime >= _doorOpeningTime)
-            {
-                if (opening)
-                    _currentDoorOpenOffset = TextureTileSize;
-                else
-                    _currentDoorOpenOffset = 0;
-                _animationTime = 0;
-                return false;
-            }
-            return true;
         }
 
         public List<Point> GetRegularSpawningPoints()
@@ -1263,49 +1061,11 @@ namespace YGR
             float dt = gameTime.ElapsedGameTime.Milliseconds;
             switch (State)
             {
-                case X_RoomState.Closed:
-                    //if (keyPressed)
-                    //{
-                    //    State = X_RoomState.Opening;
-                    //}
+                case X_RoomState.Visible:
                     break;
-                case X_RoomState.LockedOpening:
-                    if (!doorAnimation(dt, true))
-                    {
-                        State = X_RoomState.LockedOpen;
-                        Illuminate();
-                    }
+                case X_RoomState.Invisible:
                     break;
-                case X_RoomState.LockedOpen:
-                    break;
-                case X_RoomState.Opening:
-                    if (!doorAnimation(dt, true))
-                    {
-                        State = X_RoomState.Open;
-                        Illuminate();
-                    }
-                    break;
-                case X_RoomState.Open:
-                    //if (keyPressed)
-                    //{
-                    //    State = X_RoomState.Closing;
-                    //}
-                    break;
-                case X_RoomState.Closing:
-                    if (!doorAnimation(dt, false))
-                    {
-                        State = X_RoomState.Closed;
-                        Illuminate();
-                    }
-                    break;
-                case X_RoomState.LockedClosing:
-                    if (!doorAnimation(dt, false))
-                    {
-                        State = X_RoomState.LockedClosed;
-                        Illuminate();
-                    }
-                    break;
-                case X_RoomState.LockedClosed:
+                default:
                     break;
             }
 
@@ -1371,18 +1131,6 @@ namespace YGR
             }
         }
 
-        private void drawBark(SpriteBatch spriteBatch)
-        {
-            if (_barkPositions == null) return;
-            foreach (var p in _barkPositions)
-            {
-                spriteBatch.Draw(
-                    _bark, p,
-                    new Rectangle(0, 0, _bark.Width, _bark.Height),
-                    Color.White, 0, Vector2.Zero, Scale*_barkScale, SpriteEffects.None, 0);
-            }
-        }
-
         /// <summary>
         /// Regular Draw method for all drawable objects
         /// </summary>
@@ -1397,7 +1145,7 @@ namespace YGR
                 return;
             }
 
-            if (State == X_RoomState.Closed || State == X_RoomState.LockedClosed)
+            if (State == X_RoomState.Invisible)
             {
                 //spriteBatch.Draw(
                 //    _floor, Rect.Location.ToVector2(),
@@ -1412,56 +1160,8 @@ namespace YGR
                 //    new Rectangle(0, 0, _floor.Width, _floor.Height),
                 //    Color.White, 0, Vector2.Zero, Scale, SpriteEffects.None, 0);
             }
-            else if (
-                State == X_RoomState.Opening ||
-                State == X_RoomState.Closing ||
-                State == X_RoomState.LockedClosing ||
-                State == X_RoomState.LockedOpening
-            )
-            {
-                drawBark(spriteBatch);
-
-                spriteBatch.Draw(
-                    _floor, Rect.Location.ToVector2(),
-                    new Rectangle(0, 0, _floor.Width, _floor.Height),
-                    Color.White, 0, Vector2.Zero, Scale, SpriteEffects.None, 0);
-
-                Vector2 position = Rect.Location.ToVector2();
-                Vector2 movePosition = position;
-                movePosition.Y += _currentDoorOpenOffset;
-
-                spriteBatch.Draw(
-                    _roofDoor.Roof, movePosition,
-                    new Rectangle(0, 0, _roofDoor.Roof.Width, _roofDoor.Roof.Height),
-                    Color.White, 0, Vector2.Zero, Scale, SpriteEffects.None, 0);
-
-                for (int i = 0; i < _roofDoor.Mechanism1Positions.Count(); ++i)
-                {
-                    if (_currentDoorOpenOffset % 2 == 0)
-                    {
-                        spriteBatch.Draw(
-                            _roofDoor.Mechanism1, position + _roofDoor.Mechanism1Positions[i],
-                            new Rectangle(0, 0, TextureTileSize, TextureTileSize),
-                            Color.White, 0, Vector2.Zero, Scale, SpriteEffects.None, 0);
-                    }
-                    else
-                    {
-                        spriteBatch.Draw(
-                            _roofDoor.Mechanism2, position + _roofDoor.Mechanism2Positions[i],
-                            new Rectangle(0, 0, TextureTileSize, TextureTileSize),
-                            Color.White, 0, Vector2.Zero, Scale, SpriteEffects.None, 0);
-                    }
-                }
-
-                spriteBatch.Draw(
-                    _roof, Rect.Location.ToVector2(),
-                    new Rectangle(0, 0, _floor.Width, _floor.Height),
-                    Color.White, 0, Vector2.Zero, Scale, SpriteEffects.None, 0);
-            }
             else
             {
-                drawBark(spriteBatch);
-
                 spriteBatch.Draw(
                     _floor, Rect.Location.ToVector2(),
                     new Rectangle(0, 0, _floor.Width, _floor.Height),

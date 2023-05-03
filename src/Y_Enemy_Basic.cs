@@ -426,7 +426,7 @@ namespace YGR
 
             if (Room.WhatAreYou() == X_LevelElements.Room)
             {
-                if (((Y_CMRoom)Room).IsRoomClosed())
+                if (!((Y_CMRoom)Room).IsVisible())
                 {
                     return;
                 }

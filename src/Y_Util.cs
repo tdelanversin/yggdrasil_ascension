@@ -6,6 +6,8 @@ using System.IO;
 using System.Runtime.InteropServices;
 using Microsoft.VisualBasic;
 using System.Collections.Generic;
+using System.Reflection;
+using System.IO.Compression;
 
 /*
  * Useful static methods
@@ -166,6 +168,42 @@ namespace YGR
                 rect.Width / spriteDimension.X,
                 rect.Height / spriteDimension.Y
             );
+        }
+
+        public static Color[] ByteToColorArray(byte[] input)
+        {
+            Color[] output = new Color[input.Length / 4];
+            int index = 0;
+            for (int i = 0; i < input.Length - 4; i += 4)
+            {
+                output[index].R = input[i];
+                output[index].G = input[i + 1];
+                output[index].B = input[i + 2];
+                output[index].A = input[i + 3];
+                index++;
+            }
+
+            return output;
+        }
+
+        public static void SaveAsGZip(string filePath, byte[] data)
+        {
+            using FileStream compressedFileStream = File.Create(filePath);
+            using var compressor = new GZipStream(compressedFileStream, CompressionMode.Compress);
+            var stream = new MemoryStream(data);
+            stream.CopyTo(compressor);
+            stream.Close();
+
+            //File.WriteAllBytes(compressedFileStream);
+        }
+
+        public static Color[] DeGZipFile(byte[] data)
+        {
+            var stream = new MemoryStream(data);
+            using var decompressor = new GZipStream(stream, CompressionMode.Decompress);
+            MemoryStream output = new MemoryStream();
+            decompressor.CopyTo(output);
+            return ByteToColorArray(output.ToArray());
         }
     }
 }
