@@ -4,8 +4,6 @@ struct X_Vector3
     float Y;
     float Z;
     //int GlobalID;
-    int Index;
-    int Lighted;
 };
 
 struct Point3
@@ -32,8 +30,9 @@ static const int indices[36] =
 
 StructuredBuffer<Point3> Vertices;
 //StructuredBuffer<Input> Inputs;
-RWStructuredBuffer<X_Vector3> Coords;
+StructuredBuffer<X_Vector3> Coords;
 StructuredBuffer<Point3> Lights;
+RWStructuredBuffer<int> Lighted;
 
 //RWStructuredBuffer<float> Output;
 
@@ -155,13 +154,13 @@ void CS(uint3 localID : SV_GroupThreadID, uint3 groupID : SV_GroupID,
 
     for (int l = 0; l < NumLights; l++)
     {
-        if (Coords[c].Lighted == 1) return;
+        if (Lighted[c] == 1) return;
         float3 lightPos = float3(Lights[l].X, Lights[l].Y, Lights[l].Z);
         float3 pos = float3(Coords[c].X, Coords[c].Y, Coords[c].Z);
         float3 direction = pos - lightPos;
         if (RayIntersect(lightPos, direction, c) == 0)
         {
-            Coords[c].Lighted = 1;
+            Lighted[c] = 1;
             //Output[c] == 1;
             return;
         }

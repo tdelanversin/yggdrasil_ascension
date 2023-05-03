@@ -27,12 +27,12 @@ namespace YGR
             public float Y;
             public float Z;
             //public int GlobalID;
-            public int Index;
-            public int Lighted;
+            //public int Index;
+            //public int Lighted;
 
-            public static implicit operator X_Vector3(Vector4 vector)
+            public static implicit operator X_Vector3(Vector3 vector)
             {
-                return new X_Vector3() { X = vector.X, Y = vector.Y, Z = vector.Z, Index = (int)vector.W, Lighted = 0 };
+                return new X_Vector3() { X = vector.X, Y = vector.Y, Z = vector.Z };
             }
         }
 
@@ -63,6 +63,7 @@ namespace YGR
         private static StructuredBuffer LightsBuffer;
         private static StructuredBuffer VerticesBuffer;
         private static StructuredBuffer CoordsBuffer;
+        private static StructuredBuffer LightedBuffer;
 
         private static Effect IlluminationShader { get; set; }
 
@@ -82,6 +83,8 @@ namespace YGR
         static public int NumLights;
         static public int NumCoords;
         static public X_Point3[] Lights;
+        static public int[] Lighted;
+        public static int[] Index;
 
         static public float eps = 1.0e-7f;
 
@@ -200,6 +203,7 @@ namespace YGR
 
             Vector3 offset = unscaledOffset;
             Coords = new X_Vector3[length]; // Enumerable.Repeat<Vector3>(Vector3.Zero, length).ToArray();
+            Index = new int[length];
             Lights = room.Lights.Select(x => x.GetUnscaledPosition()).ToArray();
             Vertices = CreateModel(room); /* (open ? IlluminationModelOpened : IlluminationModelClosed);*/
             NumLights = Lights.Count();
@@ -220,7 +224,7 @@ namespace YGR
                 {
                     CoordsBufferSize = Coords.Length;
                     CoordsBuffer = new StructuredBuffer(
-                        GraphicsDevice_, typeof(X_Vector3), CoordsBufferSize, BufferUsage.None, ShaderAccess.ReadWrite);
+                        GraphicsDevice_, typeof(X_Vector3), CoordsBufferSize, BufferUsage.None, ShaderAccess.Read);
                 }
 
                 if (VerticesBuffer == null || NumVerts > VerticesBufferSize)
@@ -303,14 +307,16 @@ namespace YGR
                         {
                             if (template[h][w] == (int)X_TileType.Floor || template[h][w] == (int)X_TileType.Roof)
                             {
-                                X_Vector3 s = new Vector4(x + offset.X, y - tileSize + offset.Y, -tileSize - 0.001f + offset.Z, (y) * width + x);
+                                X_Vector3 s = new Vector3(x + offset.X, y - tileSize + offset.Y, -tileSize - 0.001f + offset.Z);
+                                Index[index] = (y) * width + x;
                                 Coords[index] = s;
                                 index++;
                             }
                             else if (template[h][w] == (int)X_TileType.Wall)
                             {
 
-                                X_Vector3 s = new Vector4(x + offset.X, fromY + 0.001f + offset.Y, -(y - fromY) + offset.Z, (y) * width + x);
+                                X_Vector3 s = new Vector3(x + offset.X, fromY + 0.001f + offset.Y, -(y - fromY) + offset.Z);
+                                Index[index] = (y) * width + x;
                                 Coords[index] = s;
                                 index++;
                             }
@@ -320,6 +326,9 @@ namespace YGR
             });
 
             NumCoords = baseIndex;
+            Lighted = Enumerable.Repeat<int>(0, baseIndex).ToArray();
+            LightedBuffer = new StructuredBuffer(
+                    GraphicsDevice_, typeof(int), NumCoords, BufferUsage.None, ShaderAccess.ReadWrite);
 
             Logger.Info("Precompute tiles: " + watch.ElapsedMilliseconds.ToString() + " containing " + Coords.Length.ToString() + " coordinates");
 
@@ -332,13 +341,13 @@ namespace YGR
                     ref var p = ref Coords[i];
                     for (int l = 0; l < Lights.Length; ++l)
                     {
-                        if (p.Lighted == 1) return;
+                        if (Lighted[i] == 1) return;
                         Vector3 lightPos = new Vector3(Lights[l].X, Lights[l].Y, Lights[l].Z);
                         Vector3 pos = new Vector3(p.X, p.Y, p.Z);
                         Vector3 direction = pos - lightPos;
                         if (!Manager_Light2.RayIntersect(lightPos, direction, i))
                         {
-                            p.Lighted = 1;
+                            Lighted[i] = 1;
                             //lighted[p.Index] = light;
                             return;;
                         }
@@ -354,12 +363,16 @@ namespace YGR
                 VerticesBuffer.SetData(Vertices, 0, NumVerts);
                 CoordsBuffer.SetData(Coords, 0, NumCoords);
                 LightsBuffer.SetData(Lights, 0, NumLights);
+                LightedBuffer.SetData(Lighted, 0, NumCoords);
 
                 if (IlluminationShader.Parameters["Vertices"] != null)
                     IlluminationShader.Parameters["Vertices"].SetValue(VerticesBuffer);
 
                 if (IlluminationShader.Parameters["Coords"] != null)
                     IlluminationShader.Parameters["Coords"].SetValue(CoordsBuffer);
+
+                if (IlluminationShader.Parameters["Lighted"] != null)
+                    IlluminationShader.Parameters["Lighted"].SetValue(LightedBuffer);
 
                 if (IlluminationShader.Parameters["Lights"] != null)
                     IlluminationShader.Parameters["Lights"].SetValue(LightsBuffer);
@@ -379,15 +392,15 @@ namespace YGR
                     int dispatchCount = (int)Math.Ceiling((double)baseIndex / 64.0);
                     GraphicsDevice_.DispatchCompute(dispatchCount, 1, 1);
                 }
-                CoordsBuffer.GetData<X_Vector3>(Coords, 0, NumCoords);
+                LightedBuffer.GetData<int>(Lighted, 0, NumCoords);
             }
 
             Parallel.For(0, NumCoords, i =>
             //for (int i = 0; i < baseIndex; ++i)
             {
-                if (Coords[i].Lighted == 1)
+                if (Lighted[i] == 1)
                 {
-                    lighted[Coords[i].Index] = true;
+                    lighted[Index[i]] = true;
                 }
             });
 
