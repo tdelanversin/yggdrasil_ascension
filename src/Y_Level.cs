@@ -71,9 +71,6 @@ namespace YGR
         Dictionary<string, List<Tuple<X_RoomStump, Y_CMRoom>>> _availableRooms;
         Y_Level.Data _data;
 
-        public static int ModifiedLevelsTotal = 0;
-        public static List<Tuple<DateTime, X_RoomStump>> ModifiedLevels = new List<Tuple<DateTime, X_RoomStump>>();
-        private static Dictionary<string, DateTime> LevelModifiedDates = new Dictionary<string, DateTime>();
         private static string LastModifiedFileName = "last_level_modified";
 
         public Y_Level(
@@ -156,18 +153,16 @@ namespace YGR
             _barkTexture.GetData<Color>(_barkColor);
         }
 
-        public void CheckModifiedLevels()
+        public void Preprocess(GraphicsDevice graphicsDevice)
         {
-            // do some preprocessing on all rooms
-            // Store Start, Trunc, Leaf, Gold versions on each of them as binary files
-
-            if(File.Exists(_levelResourceFolder + LastModifiedFileName))
+            var modifiedFiles = new Dictionary<string, DateTime>();
+            if (File.Exists(_levelResourceFolder + LastModifiedFileName))
             {
-                LevelModifiedDates = JsonConvert.DeserializeObject<Dictionary<string, DateTime>>(
+                modifiedFiles = JsonConvert.DeserializeObject<Dictionary<string, DateTime>>(
                     File.ReadAllText(_levelResourceFolder + LastModifiedFileName));
             }
 
-            ModifiedLevels.Clear();
+            var modifiedLevels = new List<Tuple<DateTime, X_RoomStump>>();
             foreach (var rooms in _availableRooms)
             {
                 foreach (var room in rooms.Value)
@@ -175,43 +170,41 @@ namespace YGR
                     var absPath = Util.GetAbsResourceFolderPath(room.Item1.ResourceFolder);
                     var lastChange = File.GetLastWriteTime(absPath + Path.DirectorySeparatorChar + "data.json");
                     DateTime value;
-                    if (!LevelModifiedDates.TryGetValue(room.Item1.ResourceFolder, out value))
+                    if (!modifiedFiles.TryGetValue(room.Item1.ResourceFolder, out value))
                     {
-                        ModifiedLevels.Add(new Tuple<DateTime, X_RoomStump>(lastChange, room.Item1));
+                        modifiedLevels.Add(new Tuple<DateTime, X_RoomStump>(lastChange, room.Item1));
                     }
                     else if (value != lastChange)
                     {
-                        LevelModifiedDates.Remove(room.Item1.ResourceFolder);
-                        ModifiedLevels.Add(new Tuple<DateTime, X_RoomStump>(lastChange, room.Item1));
+                        modifiedFiles.Remove(room.Item1.ResourceFolder);
+                        modifiedLevels.Add(new Tuple<DateTime, X_RoomStump>(lastChange, room.Item1));
                     }
                 }
             }
-            ModifiedLevelsTotal = ModifiedLevels.Count();
-        }
 
-        public void Preprocess(GraphicsDevice graphicsDevice)
-        {
             var cat = _availableRooms.Select(x => x.Key).ToList();
-            if(ModifiedLevels.Count() > 0)
+            var total = modifiedLevels.Count();
+            var current = 0;
+            var watch = new Stopwatch();
+            watch.Start();
+            while (modifiedLevels.Count() > 0)
             {
-                var r = ModifiedLevels.First();
-                ModifiedLevels.RemoveAt(0);
+                var r = modifiedLevels.First();
+                modifiedLevels.RemoveAt(0);
                 Y_CMRoom.PreprocessRoom(r.Item2, cat, _data.LdtkRoomTypes, graphicsDevice);
-                LevelModifiedDates.Add(r.Item2.ResourceFolder, r.Item1);
+                modifiedFiles.Add(r.Item2.ResourceFolder, r.Item1);
+                Logger.Info("Preprocessed level [" + watch.ElapsedMilliseconds + "ms]" + r.Item2.ResourceFolder);
             }
-            else if(ModifiedLevelsTotal > 0)
+
+            var text = JsonConvert.SerializeObject(modifiedFiles);
+            var srcPath = _levelResourceFolder;
+            // write to both versions if it's windows
+            if (Debugger.IsAttached && System.OperatingSystem.IsWindows())
             {
-                var text = JsonConvert.SerializeObject(LevelModifiedDates);
-                var srcPath = _levelResourceFolder;
-                // write to both versions if it's windows
-                if (Debugger.IsAttached && System.OperatingSystem.IsWindows())
-                {
-                    srcPath = Util.GetAbsResourceFolderPath(srcPath);
-                    File.WriteAllText(srcPath + LastModifiedFileName, text);
-                }
-                File.WriteAllText(_levelResourceFolder + LastModifiedFileName, text);
-                ModifiedLevelsTotal = 0;
+                srcPath = Util.GetAbsResourceFolderPath(srcPath);
+                File.WriteAllText(srcPath + LastModifiedFileName, text);
             }
+            File.WriteAllText(_levelResourceFolder + LastModifiedFileName, text);
         }
 
         public void Create(GraphicsDevice graphicsDevice)

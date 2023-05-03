@@ -51,7 +51,6 @@ namespace YGR
             Y_MultiPowerUp.Initialize(Content);
 
             _level = new Y_Level(level, 32, 32, "./Levels/", "./Doors", Content);
-            _level.CheckModifiedLevels();
             base.Initialize();
         }
 
@@ -64,6 +63,8 @@ namespace YGR
             _spriteBatch = new SpriteBatch(GraphicsDevice);
             Manager_Particles.LoadContent(Content);
             Manager_Sound.PlayMainMenuMusic();
+
+            _level.Preprocess(GraphicsDevice);
         }
 
         protected override void UnloadContent()
@@ -128,7 +129,6 @@ namespace YGR
             switch (State)
             {
                 case GameState.PreGame:
-                    _level.Preprocess(GraphicsDevice);
                     Menu.Update();
                     break;
                 case GameState.InGame:
