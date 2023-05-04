@@ -10,6 +10,7 @@ using System.Dynamic;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using static YGR.X_AutoTiler;
@@ -251,7 +252,7 @@ namespace YGR
 
         public bool Cleared;
 
-        static public void PreprocessRoom(
+        static public bool PreprocessRoom(
             X_RoomStump initiator, 
             List<string> categories, 
             Dictionary<string, Dictionary<string, string>> ldtkRoomTypes,
@@ -262,9 +263,17 @@ namespace YGR
             string category = initiator.Category;
             int textureTileSize = initiator.TextureTileSize;
             string resourceFolder = Util.PathOsNormalization(initiator.ResourceFolder);
-
+            bool preprocessed = false;
             foreach (var c in categories)
             {
+                var srcPath = Util.GetAbsResourceFolderPath(resourceFolder);
+                if(File.Exists(srcPath + c + "_Floor.Color") && File.Exists(srcPath + c + "_Roof.Color"))
+                {
+                    continue;
+                }
+
+                preprocessed = true;
+
                 var readFloor = File.ReadAllBytesAsync(resourceFolder + ldtkRoomTypes[c]["Floor"]);
                 var readWall = File.ReadAllBytesAsync(resourceFolder + ldtkRoomTypes[c]["Wall"]);
                 var readRoof = File.ReadAllBytesAsync(resourceFolder + ldtkRoomTypes[c]["Roof"]);
@@ -328,11 +337,11 @@ namespace YGR
 
                 if (Debugger.IsAttached && System.OperatingSystem.IsWindows())
                 {
-                    var srcPath = Util.GetAbsResourceFolderPath(resourceFolder);
                     Util.SaveAsGZip(srcPath + c + "_Floor.Color", toFloor);
                     Util.SaveAsGZip(srcPath + c + "_Roof.Color", toRoof);
                 }
             }
+            return preprocessed;
         }
 
         public Y_CMRoom(

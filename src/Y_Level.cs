@@ -10,6 +10,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading;
 
 namespace YGR
@@ -63,15 +64,8 @@ namespace YGR
         public GamePlayState State;
         private List<Interactable_Basic> _interactables = new List<Interactable_Basic> { };
 
-        Texture2D _barkTexture;
-        Color[] _barkColor;
-        float _barkScale;
-        List<Y_ConnectorBark> _barks;
-
         Dictionary<string, List<Tuple<X_RoomStump, Y_CMRoom>>> _availableRooms;
         Y_Level.Data _data;
-
-        private static string LastModifiedFileName = "last_level_modified";
 
         public Y_Level(
             string name,
@@ -147,64 +141,23 @@ namespace YGR
             Logger.Info("room finalize time for " + list.Count() + " rooms: " + elapsed + " which is " + elapsed / list.Count() + " ms per room");
 
             Rooms = new Dictionary<int, IWalkable>();
-            _barkTexture = content.Load<Texture2D>("SpritesOther/bark2");
-            _barkScale = 0.15f;
-            _barkColor = new Color[_barkTexture.Width * _barkTexture.Height];
-            _barkTexture.GetData<Color>(_barkColor);
         }
 
         public void Preprocess(GraphicsDevice graphicsDevice)
         {
-            var modifiedFiles = new Dictionary<string, DateTime>();
-            if (File.Exists(_levelResourceFolder + LastModifiedFileName))
-            {
-                modifiedFiles = JsonConvert.DeserializeObject<Dictionary<string, DateTime>>(
-                    File.ReadAllText(_levelResourceFolder + LastModifiedFileName));
-            }
-
-            var modifiedLevels = new List<Tuple<DateTime, X_RoomStump>>();
+            var cat = _availableRooms.Select(x => x.Key).ToList();
             foreach (var rooms in _availableRooms)
             {
                 foreach (var room in rooms.Value)
                 {
-                    var absPath = Util.GetAbsResourceFolderPath(room.Item1.ResourceFolder);
-                    var lastChange = File.GetLastWriteTime(absPath + Path.DirectorySeparatorChar + "data.json");
-                    DateTime value;
-                    if (!modifiedFiles.TryGetValue(room.Item1.ResourceFolder, out value))
+                    var watch = new Stopwatch();
+                    watch.Start();
+                    if(Y_CMRoom.PreprocessRoom(room.Item1, cat, _data.LdtkRoomTypes, graphicsDevice))
                     {
-                        modifiedLevels.Add(new Tuple<DateTime, X_RoomStump>(lastChange, room.Item1));
-                    }
-                    else if (value != lastChange)
-                    {
-                        modifiedFiles.Remove(room.Item1.ResourceFolder);
-                        modifiedLevels.Add(new Tuple<DateTime, X_RoomStump>(lastChange, room.Item1));
+                        Logger.Info("Preprocessed level [" + watch.ElapsedMilliseconds + "ms]" + room.Item1.ResourceFolder);
                     }
                 }
             }
-
-            var cat = _availableRooms.Select(x => x.Key).ToList();
-            var total = modifiedLevels.Count();
-            var current = 0;
-            var watch = new Stopwatch();
-            watch.Start();
-            while (modifiedLevels.Count() > 0)
-            {
-                var r = modifiedLevels.First();
-                modifiedLevels.RemoveAt(0);
-                Y_CMRoom.PreprocessRoom(r.Item2, cat, _data.LdtkRoomTypes, graphicsDevice);
-                modifiedFiles.Add(r.Item2.ResourceFolder, r.Item1);
-                Logger.Info("Preprocessed level [" + watch.ElapsedMilliseconds + "ms]" + r.Item2.ResourceFolder);
-            }
-
-            var text = JsonConvert.SerializeObject(modifiedFiles);
-            var srcPath = _levelResourceFolder;
-            // write to both versions if it's windows
-            if (Debugger.IsAttached && System.OperatingSystem.IsWindows())
-            {
-                srcPath = Util.GetAbsResourceFolderPath(srcPath);
-                File.WriteAllText(srcPath + LastModifiedFileName, text);
-            }
-            File.WriteAllText(_levelResourceFolder + LastModifiedFileName, text);
         }
 
         public void Create(GraphicsDevice graphicsDevice)
@@ -267,7 +220,7 @@ namespace YGR
             Logger.Info("Loaded random rooms: " + watch.ElapsedMilliseconds.ToString());
 
             List<IWalkable> connectors = new List<IWalkable>();
-            _barks = new List<Y_ConnectorBark>();
+            //_barks = new List<Y_ConnectorBark>();
             foreach (var room in Rooms)
             {
                 int index = room.Key;
@@ -594,19 +547,10 @@ namespace YGR
             {
                 room.Value.DrawOutline(gameTime, globalOffset, spriteBatch);
             }
-
-            foreach (var b in _barks)
-            {
-                b.DrawOutline(gameTime, globalOffset, spriteBatch);
-            }
         }
 
         public void Draw(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)
         {
-            //foreach (var bark in _barks)
-            //{
-            //    bark.Draw(gameTime, globalOffset, spriteBatch);
-            //}
             foreach (var room in Rooms)
             {
                 room.Value.Draw(gameTime, globalOffset, spriteBatch);
