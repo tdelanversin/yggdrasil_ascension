@@ -94,7 +94,7 @@ namespace YGR
 
             _hitColor = Color.OrangeRed;
             _regularColor = Color.Orange;
-            _color = Color.DarkSlateGray; // Initially we're disabled
+            _color = Color.DarkSlateGray * 0.4f; // Initially we're disabled
 
             var rand = new Random();
             Identifier = DateTime.Now.Hour.ToString() + "-" + DateTime.Now.Second.ToString() + "-" + DateTime.Now.Millisecond.ToString() + "-" + rand.NextSingle().ToString();
@@ -426,15 +426,7 @@ namespace YGR
 
             if (Room.WhatAreYou() == X_LevelElements.Room)
             {
-                if (((Y_CMRoom)Room).IsRoomClosed())
-                {
-                    return;
-                }
-
-            }
-            else if (Room.WhatAreYou() == X_LevelElements.Door)
-            {
-                if (((Y_Door)Room).IsDoorClosed())
+                if (!((Y_CMRoom)Room).IsVisible())
                 {
                     return;
                 }

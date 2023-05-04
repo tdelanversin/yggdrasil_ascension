@@ -1,8 +1,12 @@
-﻿using Microsoft.Xna.Framework;
+﻿using Assimp;
+using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using SharpFont;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.ComponentModel.Design;
 using System.IO;
 using System.Linq;
 
@@ -80,17 +84,23 @@ namespace YGR
         int _tileSize;
         int _tileOffset;
         bool[] _illuminated;
+        bool _visited;
         //private Y_Door _door;
-
-        Texture2D _bark;
-        List<Vector2> _barkPositions;
-        float _barkScale;
 
         Dictionary<int, List<Vector2>> _barkPoints;
         bool _closingTheDoor;
 
         //Rectangle _outsideRect1;
         //Rectangle _outsideRect2;
+
+        private static Texture2D _fenceH;
+        private static Texture2D _fenceV;
+
+        public static void Initialize(ContentManager content)
+        {
+            _fenceH = content.Load<Texture2D>("SpritesOther/fence_h");
+            _fenceV = content.Load<Texture2D>("SpritesOther/fence_v");
+        }
 
         public Y_Door(
             X_DoorDirection direction, 
@@ -136,6 +146,7 @@ namespace YGR
             int width = Collision.GetCollisionTemplate()[0].Length;
             int height = Collision.GetCollisionTemplate().Length;
             Color[] trans = Enumerable.Repeat<Color>(Color.Transparent, _tileSize * _tileSize * width * height).ToArray();
+            _visited = false;
         }
 
         private int[][] getBarkLine(int[][] collision, int tileWidth, int tileHeight)
@@ -169,82 +180,6 @@ namespace YGR
             }
 
             return collision;
-        }
-
-        public void BarkConnector(Texture2D barkTexture, Color[] barkColor, float barkScale)
-        {
-            if (_barkPoints == null) return;
-            List<string> cats = new List<string>();
-            foreach(var rooms in DoorRooms.Values)
-            {
-                foreach(var room in rooms)
-                {
-                    if(room.WhatAreYou() == X_LevelElements.Room)
-                    {
-                        cats.Add(((Y_CMRoom)room).Category);
-                    }
-                }
-            }
-
-            if(cats.Contains("Trunc") || (cats.Contains("Trunc") && (cats.Contains("Start") || cats.Contains("Leaf")))){
-                //var scaledW = (int)(barkTexture.Width * barkScale);
-                //var scaledH = (int)(barkTexture.Height * barkScale);
-                _barkScale = (float)TextureTileSize / (float)barkTexture.Width;
-                _barkPositions = new List<Vector2>();
-                _bark = barkTexture;
-
-                foreach (var bline in _barkPoints.Values)
-                {
-                    if(bline.Count() > 1)
-                    {
-                        if (bline[0].X == bline[1].X)
-                        {
-                            // vertical
-                            float X = bline[0].X;
-                            float minY = float.MaxValue;
-                            float maxY = float.MinValue;
-                            for (int i = 0; i < bline.Count(); ++i)
-                            {
-                                _barkPositions.Add(new Vector2(X - (NumTilesDoorWidth / 2) * TextureTileSize, bline[i].Y));
-                                _barkPositions.Add(new Vector2(X - (NumTilesDoorWidth / 2 + 1) * TextureTileSize, bline[i].Y));
-                                _barkPositions.Add(new Vector2(X - (NumTilesDoorWidth / 2 + 2) * TextureTileSize, bline[i].Y));
-
-                                _barkPositions.Add(new Vector2(X + (NumTilesDoorWidth / 2) * TextureTileSize, bline[i].Y));
-                                _barkPositions.Add(new Vector2(X + (NumTilesDoorWidth / 2 + 1) * TextureTileSize, bline[i].Y));
-                                _barkPositions.Add(new Vector2(X + (NumTilesDoorWidth / 2 + 2) * TextureTileSize, bline[i].Y));
-
-                                if (bline[i].Y > maxY) maxY = bline[i].Y;
-                                if (bline[i].Y < minY) minY = bline[i].Y;
-                            }
-                            //for (int n=0; n<5; ++n)
-                            //{
-                            //    _barkPositions.Add(new Vector2(X - (NumTilesDoorWidth / 2) * TextureTileSize, minY - n * TextureTileSize));
-                            //    _barkPositions.Add(new Vector2(X - (NumTilesDoorWidth / 2 + 1) * TextureTileSize, minY - n * TextureTileSize));
-                            //    _barkPositions.Add(new Vector2(X - (NumTilesDoorWidth / 2 + 2) * TextureTileSize, minY - n * TextureTileSize));
-
-                            //    _barkPositions.Add(new Vector2(X + (NumTilesDoorWidth / 2) * TextureTileSize, maxY));
-                            //    _barkPositions.Add(new Vector2(X + (NumTilesDoorWidth / 2 + 1) * TextureTileSize, maxY));
-                            //    _barkPositions.Add(new Vector2(X + (NumTilesDoorWidth / 2 + 2) * TextureTileSize, maxY));
-                            //}
-                        }
-                        else
-                        {
-                            // horizontal
-                            float Y = bline[0].Y;
-                            for (int i = 0; i < bline.Count(); ++i)
-                            {
-                                _barkPositions.Add(new Vector2(bline[i].X, Y - (NumTilesDoorWidth / 2) * TextureTileSize));
-                                _barkPositions.Add(new Vector2(bline[i].X, Y - (NumTilesDoorWidth / 2 + 1) * TextureTileSize));
-                                _barkPositions.Add(new Vector2(bline[i].X, Y - (NumTilesDoorWidth / 2 + 2) * TextureTileSize));
-
-                                _barkPositions.Add(new Vector2(bline[i].X, Y + (NumTilesDoorWidth / 2) * TextureTileSize));
-                                _barkPositions.Add(new Vector2(bline[i].X, Y + (NumTilesDoorWidth / 2 + 1) * TextureTileSize));
-                                _barkPositions.Add(new Vector2(bline[i].X, Y + (NumTilesDoorWidth / 2 + 2) * TextureTileSize));
-                            }
-                        }
-                    }
-                }
-            }
         }
 
         public static X_ConnectorSide ParseFromSide(string side)
@@ -1163,6 +1098,19 @@ namespace YGR
         public void Update(GameTime gameTime)
         {
             float dt = gameTime.ElapsedGameTime.Milliseconds;
+            if (!_visited)
+            {
+                _visited = true;
+                foreach (var room in DoorRooms.Values)
+                {
+                    if (!((Y_CMRoom)room.First()).VisitedBeforeByPlayer())
+                    {
+                        _visited = false;
+                        break;
+                    }
+                }
+            }
+            
             switch (State)
             {
                 case X_DoorState.Closed:
@@ -1319,42 +1267,75 @@ namespace YGR
             }
         }
 
-        private void drawBark(SpriteBatch spriteBatch)
-        {
-            if (_barkPositions == null) return;
-            foreach (var p in _barkPositions)
-            {
-                spriteBatch.Draw(
-                    _bark, p,
-                    new Rectangle(0, 0, _bark.Width, _bark.Height),
-                    Color.White, 0, Vector2.Zero, Scale * _barkScale, SpriteEffects.None, 0);
-            }
-        }
-
         public void Draw(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)
         {
             Vector2 position = Rect.Location.ToVector2();
             Vector2 movePosition = position;
             movePosition.Y += _currentDoorOpenOffset;
-            if (State == X_DoorState.Closed || State == X_DoorState.LockedClosed)
+
+            if (_visited && (State == X_DoorState.Closed || State == X_DoorState.LockedClosed || State == X_DoorState.Opening || State == X_DoorState.Closing))
             {
-                //draw(_tileTextures[X_DoorTextureLayer.Wall], position, spriteBatch, false);
-                //draw(_tileTextures[X_DoorTextureLayer.Door], position, spriteBatch, false);
+                Texture2D fence1, fence2;
+                Vector2 p1, p2;
+                float scale = 1.0f;
+                float temp = (float)(NumTilesDoorWidth / 2 + 1) * TextureTileSize;
+                if (_direction == X_DoorDirection.Vertical)
+                {
+                    fence1 = _fenceH;
+                    fence2 = _fenceH;
+                    scale = temp / fence2.Width;
+                    p1 = Doors[X_ConnectorSide.Top].First().Point.ToVector2() - new Vector2(temp / 2, TextureTileSize / 2.0f);
+                    p2 = Doors[X_ConnectorSide.Bottom].First().Point.ToVector2() - new Vector2(temp / 2, -TextureTileSize / 2.0f);
+                }
+                else if(_direction == X_DoorDirection.Horizontal)
+                {
+                    fence1 = _fenceV;
+                    fence2 = _fenceV;
+                    scale = temp / fence2.Height;
+                    p1 = Doors[X_ConnectorSide.Left].First().Point.ToVector2() - new Vector2(TextureTileSize / 2.0f, temp / 2);
+                    p2 = Doors[X_ConnectorSide.Right].First().Point.ToVector2() - new Vector2(TextureTileSize / 2.0f, temp / 2);
+                }
+                else
+                {
+                    fence1 = _fenceH;
+                    fence2 = _fenceV;
+                    scale = temp / fence2.Height;
+                    if (Doors.ContainsKey(X_ConnectorSide.Top))
+                        p1 = Doors[X_ConnectorSide.Top].First().Point.ToVector2() - new Vector2(temp / 2, TextureTileSize / 2.0f);
+                    else
+                        p1 = Doors[X_ConnectorSide.Bottom].First().Point.ToVector2() - new Vector2(temp / 2, -TextureTileSize / 2.0f);
+
+                    if (Doors.ContainsKey(X_ConnectorSide.Left))
+                        p2 = Doors[X_ConnectorSide.Left].First().Point.ToVector2() - new Vector2(TextureTileSize / 2.0f, temp / 2);
+                    else
+                        p2 = Doors[X_ConnectorSide.Right].First().Point.ToVector2() - new Vector2(TextureTileSize / 2.0f, temp / 2);
+                }
+
+                draw(_tileTextures[X_DoorTextureLayer.Floor], position, spriteBatch, false);
+                draw(_tileTextures[X_DoorTextureLayer.Wall], position, spriteBatch, false);
+
+                spriteBatch.Draw(
+                    fence1, p1,
+                    new Rectangle(0, 0, fence1.Width, fence1.Height),
+                    Color.White, 0, Vector2.Zero, scale, SpriteEffects.None, 0);
+
+                spriteBatch.Draw(
+                    fence2, p2,
+                    new Rectangle(0, 0, fence2.Width, fence2.Height),
+                    Color.White, 0, Vector2.Zero, scale, SpriteEffects.None, 0);
             }
             else if(State == X_DoorState.Opening || State == X_DoorState.Closing)
             {
-                drawBark(spriteBatch);
-                draw(_tileTextures[X_DoorTextureLayer.Floor],position, spriteBatch, true);
+                draw(_tileTextures[X_DoorTextureLayer.Floor], position, spriteBatch, true);
                 draw(_tileTextures[X_DoorTextureLayer.Door], movePosition, spriteBatch, false);
-                if(_currentDoorOpenOffset%2 == 0)
+                if (_currentDoorOpenOffset % 2 == 0)
                     draw(_tileTextures[X_DoorTextureLayer.Mechanism1], position, spriteBatch, false);
                 else
                     draw(_tileTextures[X_DoorTextureLayer.Mechanism2], position, spriteBatch, false);
                 draw(_tileTextures[X_DoorTextureLayer.Wall], position, spriteBatch, false);
             }
-            else
+            else if (State == X_DoorState.Open)
             {
-                drawBark(spriteBatch);
                 draw(_tileTextures[X_DoorTextureLayer.Floor],position, spriteBatch, false);
                 draw(_tileTextures[X_DoorTextureLayer.Wall], position, spriteBatch, false);
             }
@@ -1386,18 +1367,6 @@ namespace YGR
                     for (int i = 0; i < bp.Value.Count(); ++i)
                     {
                         bp.Value[i] = new Vector2(bp.Value[i].X + p.X, bp.Value[i].Y + p.Y);
-                    }
-                }
-            }
-
-            if(_barkPositions != null)
-            {
-                if (_barkPositions != null)
-                {
-                    for (int i = 0; i < _barkPositions.Count(); ++i)
-                    {
-                        _barkPositions[i] = new Vector2(_barkPositions[i].X + p.X, _barkPositions[i].Y + p.Y);
-
                     }
                 }
             }

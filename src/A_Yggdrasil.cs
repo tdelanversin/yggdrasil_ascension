@@ -1,6 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using System.Diagnostics;
 
 namespace YGR
 {
@@ -48,9 +49,9 @@ namespace YGR
             X_AutoTiler.Initialize("./Doors/", "data.json", GraphicsDevice, Y_Door.MapJsonName);
             X_AutoTiler.Initialize("./Levels/", "doors.json", GraphicsDevice, Y_CMRoom.MapJsonName);
             Y_MultiPowerUp.Initialize(Content);
+            Y_Door.Initialize(Content);
 
             _level = new Y_Level(level, 32, 32, "./Levels/", "./Doors", Content);
-
             base.Initialize();
         }
 
@@ -63,6 +64,8 @@ namespace YGR
             _spriteBatch = new SpriteBatch(GraphicsDevice);
             Manager_Particles.LoadContent(Content);
             Manager_Sound.PlayMainMenuMusic();
+
+            _level.Preprocess(GraphicsDevice);
         }
 
         protected override void UnloadContent()
