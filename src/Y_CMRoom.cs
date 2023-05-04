@@ -645,7 +645,7 @@ namespace YGR
 
         public bool IsVisible()
         {
-            return State == X_RoomState.Visible;
+            return State == X_RoomState.Visible || State == X_RoomState.Locked;
         }
 
         public bool VisitedBeforeByPlayer()
