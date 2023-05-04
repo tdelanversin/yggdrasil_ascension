@@ -189,7 +189,16 @@ namespace YGR
             {
                 var type = _availableRooms[node.Type];
                 int index = random.Next(0, type.Count);
+                
+                // some hack to make sure that the first room is always the chosen one
+                var special = type.Where(x => (x.Item1 != null && x.Item1.Name == "World_Level_0") || (x.Item2 != null && x.Item2.Name == "World_Level_0")).FirstOrDefault();
                 var n = type[index];
+                if (special != null)
+                {
+                    n = special;
+                    index = type.IndexOf(special);
+                }
+
                 if (n.Item2 == null)
                 {
                     n = new Tuple<X_RoomStump, Y_CMRoom>(null, new Y_CMRoom(n.Item1));

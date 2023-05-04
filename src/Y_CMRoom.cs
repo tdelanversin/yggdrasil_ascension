@@ -278,22 +278,53 @@ namespace YGR
                 var readWall = File.ReadAllBytesAsync(resourceFolder + ldtkRoomTypes[c]["Wall"]);
                 var readRoof = File.ReadAllBytesAsync(resourceFolder + ldtkRoomTypes[c]["Roof"]);
 
+                Task<byte[]> readVegetation = null;
+                if(File.Exists(resourceFolder + ldtkRoomTypes[c]["Vegetation"]))
+                {
+                    readVegetation = File.ReadAllBytesAsync(resourceFolder + ldtkRoomTypes[c]["Vegetation"]);
+                }
+
                 Task.WaitAll(readFloor, readWall, readRoof);
+                if(readVegetation != null)
+                {
+                    Task.WaitAll(readVegetation);
+                }
                 var floorData = readFloor.Result;
                 var wallData = readWall.Result;
                 var roofData = readRoof.Result;
+                byte[] vegetationData = null;
+                if(readVegetation != null)
+                {
+                    vegetationData = readVegetation.Result;
+                }
 
                 MemoryStream floorStream = new MemoryStream(floorData);
                 MemoryStream wallStream = new MemoryStream(wallData);
                 MemoryStream roofStream = new MemoryStream(roofData);
+                MemoryStream vegetationStream = null;
+                if(vegetationData != null)
+                {
+                    vegetationStream = new MemoryStream(vegetationData);
+                }
 
                 Texture2D floor = Texture2D.FromStream(graphicsDevice, floorStream, DefaultColorProcessors.PremultiplyAlpha);
                 Texture2D txWall = Texture2D.FromStream(graphicsDevice, wallStream, DefaultColorProcessors.PremultiplyAlpha);
                 Texture2D roof = Texture2D.FromStream(graphicsDevice, roofStream, DefaultColorProcessors.PremultiplyAlpha);
+                Texture2D vegetation = null;
+                if(vegetationStream != null)
+                {
+                    vegetation = Texture2D.FromStream(graphicsDevice, vegetationStream, DefaultColorProcessors.PremultiplyAlpha);
+                }
 
                 Color[] target = new Color[floor.Width * floor.Height];
                 Color[] source = new Color[txWall.Width * txWall.Height];
                 Color[] roofC = new Color[txWall.Width * txWall.Height];
+                Color[] vegC = null;
+                if (vegetation != null)
+                {
+                    vegC = new Color[txWall.Width * txWall.Height];
+                    vegetation.GetData<Color>(vegC);
+                }
                 byte[] toFloor = new byte[floor.Width * floor.Height * 4];
                 byte[] toRoof = new byte[floor.Width * floor.Height * 4];
 
@@ -307,9 +338,17 @@ namespace YGR
                 {
                     for (int w = 0; w < floor.Width; ++w)
                     {
-                        var col = source[h * floor.Width + w];
-                        if (col.A != 0)
+                        if(vegC != null && vegC[h * floor.Width + w].A != 0)
                         {
+                            var col = vegC[h * floor.Width + w];
+                            toFloor[index] = col.R;
+                            toFloor[index + 1] = col.G;
+                            toFloor[index + 2] = col.B;
+                            toFloor[index + 3] = col.A;
+                        }
+                        else if (source[h * floor.Width + w].A != 0)
+                        {
+                            var col = source[h * floor.Width + w];
                             toFloor[index] = col.R;
                             toFloor[index+1] = col.G;
                             toFloor[index+2] = col.B;
