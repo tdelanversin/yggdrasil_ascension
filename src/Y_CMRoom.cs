@@ -645,10 +645,10 @@ namespace YGR
 
         public bool IsVisible()
         {
-            return _visited = true;
+            return State == X_RoomState.Visible;
         }
 
-        public bool IsVisited()
+        public bool VisitedBeforeByPlayer()
         {
             return _visited;
         }
@@ -746,7 +746,7 @@ namespace YGR
                             }
                             ToggleDoors();
                             var otherRoom = door.GetOtherDoor(this);
-                            if(!((Y_CMRoom)otherRoom.Item2).IsVisited())
+                            if(!((Y_CMRoom)otherRoom.Item2).VisitedBeforeByPlayer())
                                 ((Y_CMRoom)otherRoom.Item2).SetVisible(false);
                         }
                     }

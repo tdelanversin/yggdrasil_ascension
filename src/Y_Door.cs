@@ -1103,7 +1103,7 @@ namespace YGR
                 _visited = true;
                 foreach (var room in DoorRooms.Values)
                 {
-                    if (!((Y_CMRoom)room.First()).IsVisited())
+                    if (!((Y_CMRoom)room.First()).VisitedBeforeByPlayer())
                     {
                         _visited = false;
                         break;
