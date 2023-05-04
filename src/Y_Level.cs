@@ -362,6 +362,7 @@ namespace YGR
                 if (r.Value.Rect.Contains(location))
                 {
                     currentRoom = r.Value;
+                    break;
                 }
             }
 
