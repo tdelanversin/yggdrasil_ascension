@@ -3,6 +3,7 @@ using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Linq;
 
 namespace YGR
 {
@@ -46,7 +47,8 @@ namespace YGR
 
         public static void Draw(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)
         {
-            foreach (IEnemy enemy in _enemies)
+            var enemiesSorted = _enemies.OrderBy(t => t.Rect.Y + t.Rect.Height);
+            foreach (IEnemy enemy in enemiesSorted)
             {
                 enemy.Draw(gameTime, globalOffset, spriteBatch);
             }

@@ -18,6 +18,9 @@ namespace YGR
         // Projectiles
         public static Texture2D Projectile_Simple { get; private set; }
 
+        // UI
+        public static Texture2D HealthbarEmpty { get; private set; }
+        public static Texture2D HealthbarInfill { get; private set; }
 
         // Power Ups
         public static Texture2D SpinningHeart { get; private set; }
@@ -42,6 +45,9 @@ namespace YGR
             };
 
             Projectile_Simple = contentManager.Load<Texture2D>("SpritesOther/projectiles");
+            
+            HealthbarEmpty = contentManager.Load<Texture2D>("SpritesOther/healthbar_empty");
+            HealthbarInfill = contentManager.Load<Texture2D>("SpritesOther/healthbar_infill");
 
             Enemy_Basic = Player_Simple;
             Enemy_Gigachad = contentManager.Load<Texture2D>("SpritesCharacters/gigachad");
