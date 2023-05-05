@@ -44,7 +44,8 @@ namespace YGR
         Wall,
         Door,
         Mechanism1,
-        Mechanism2
+        Mechanism2,
+        Mechanism3
     }
 
     public class Y_Door : IWalkable
@@ -394,6 +395,7 @@ namespace YGR
             if (textureType.ToLower().Contains("roof")) return X_DoorTextureLayer.Wall;
             if (textureType.ToLower().Contains("mechanism1")) return X_DoorTextureLayer.Mechanism1;
             if (textureType.ToLower().Contains("mechanism2")) return X_DoorTextureLayer.Mechanism2;
+            if (textureType.ToLower().Contains("mechanism3")) return X_DoorTextureLayer.Mechanism3;
             return X_DoorTextureLayer.Door;
         }
 
@@ -1103,7 +1105,7 @@ namespace YGR
                 _visited = true;
                 foreach (var room in DoorRooms.Values)
                 {
-                    if (!((Y_CMRoom)room.First()).IsVisited())
+                    if (!((Y_CMRoom)room.First()).VisitedBeforeByPlayer())
                     {
                         _visited = false;
                         break;
@@ -1328,10 +1330,14 @@ namespace YGR
             {
                 draw(_tileTextures[X_DoorTextureLayer.Floor], position, spriteBatch, true);
                 draw(_tileTextures[X_DoorTextureLayer.Door], movePosition, spriteBatch, false);
-                if (_currentDoorOpenOffset % 2 == 0)
+                
+                if (_currentDoorOpenOffset % 3 == 0)
                     draw(_tileTextures[X_DoorTextureLayer.Mechanism1], position, spriteBatch, false);
-                else
+                else if (_currentDoorOpenOffset % 3 == 1)
                     draw(_tileTextures[X_DoorTextureLayer.Mechanism2], position, spriteBatch, false);
+                else
+                    draw(_tileTextures[X_DoorTextureLayer.Mechanism3], position, spriteBatch, false);
+
                 draw(_tileTextures[X_DoorTextureLayer.Wall], position, spriteBatch, false);
             }
             else if (State == X_DoorState.Open)

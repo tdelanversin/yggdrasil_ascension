@@ -1,3 +1,12 @@
+#if OPENGL
+	#define SV_POSITION POSITION
+	#define VS_SHADERMODEL vs_3_0
+	#define PS_SHADERMODEL ps_3_0
+#else
+	#define VS_SHADERMODEL vs_4_0_level_9_1
+	#define PS_SHADERMODEL ps_4_0_level_9_1
+#endif
+
 struct X_Vector3
 {
     float X;
@@ -134,23 +143,7 @@ int RayIntersect(float3 origin, float3 direction, uint globalIDx)
 void CS(uint3 localID : SV_GroupThreadID, uint3 groupID : SV_GroupID,
         uint localIndex : SV_GroupIndex, uint3 globalID : SV_DispatchThreadID)
 {
-    //uint numLights;
-    //uint stride;
-    //Lights.GetDimensions(numLights, stride);
-    
-    //uint numCoords;
-    //Coords.GetDimensions(numCoords, stride);
-    
-    //int c = globalID.x;
-    //int index = Coords[c].Index;
-    //if (index > NumCoords)
-    //    return;
-    
-    //float3 cPos = Coords[c].Position;
-    
-    //int intersect = 0;
     uint c = globalID.x;
-    //Output[c] = 1;
 
     for (int l = 0; l < NumLights; l++)
     {
@@ -165,28 +158,6 @@ void CS(uint3 localID : SV_GroupThreadID, uint3 groupID : SV_GroupID,
             return;
         }
     }
-    
-    //if (intersect == 0)
-    //{
-    //}
-    
-    //Coords[globalID.x].Lighted = 1;
-    
-    //Lighted[globalID.x] = Coords[globalID.x];
-    
-    //Lighted[globalID.x].GlobalID = globalID.x;
-    //Lighted[globalID.x].Index = Coords[globalID.x].Index;
-    //Lighted[globalID.x].Lighted = Coords[globalID.x].Lighted;
-    //Lighted[globalID.x].X = Coords[globalID.x].X;
-    //Lighted[globalID.x].Y = Coords[globalID.x].Y;
-    //Lighted[globalID.x].Z = Coords[globalID.x].Z;
-    
-    //InputVals[globalID.x] = globalID.x;
-    
-    //if(InputVals[c] == 1)
-    //    Lighted[c].IsLighted = 1;
-    //else
-    //    Lighted[c].IsLighted = 0;
 }
 
 //================================================================================================
@@ -198,4 +169,4 @@ technique Tech0
     {
         ComputeShader = compile cs_5_0 CS();
     }
-}
+};
