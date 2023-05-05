@@ -56,6 +56,7 @@ namespace YGR
         protected InputType _currentAimInput;
         protected float _actionTimer;
         protected float _actionTreshold;
+        private Color _healthbarColor;
 
         protected enum InputType
         {
@@ -89,6 +90,26 @@ namespace YGR
 
             // Set up sprites
             _spriteAimIndicator = Manager_Sprites.AimIndicator[(int)playerIndex];
+
+            switch ((int)playerIndex)
+            {
+                case 0:
+                    _healthbarColor = Color.Red;
+                    break;
+                case 1:
+                    _healthbarColor = Color.Green;
+                    break;
+                case 2:
+                    _healthbarColor = Color.Blue;
+                    break;
+                case 3:
+                    _healthbarColor = Color.Yellow;
+                    break;
+                default:
+                    _healthbarColor = Color.White;
+                    break;
+            }
+
             _color = Color.White;
 
             // Collision bounds
@@ -170,7 +191,7 @@ namespace YGR
 
         protected void UpdateRoom(GameTime gameTime)
         {
-            if(Room.WhatAreYou() == X_LevelElements.Room)
+            if (Room.WhatAreYou() == X_LevelElements.Room)
             {
                 ((Y_CMRoom)Room).SetVisited(true);
             }
@@ -381,6 +402,43 @@ namespace YGR
             spriteBatch.DrawString(Fonts.Normal, str, new Vector2(_rect.Location.X + _rect.Width / 2 - str_width / 2, _rect.Location.Y - 16), Color.Wheat);
         }
 
+        protected virtual void DrawHealthbar(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)
+        {
+            Vector2 dim = Manager_Sprites.HealthbarEmpty.Bounds.Size.ToVector2();
+            float scale = Rect.Height / dim.X;
+            dim *= scale;
+            Vector2 offset = new Vector2((Rect.Width - dim.X) / 2, -dim.Y - 5);
+            Vector2 pos = _rect.Location.ToVector2() + offset;
+            spriteBatch.Draw(
+                texture: Manager_Sprites.HealthbarEmpty,
+                position: pos,
+                sourceRectangle: null,
+                color: Color.White,
+                rotation: 0,
+                origin: Vector2.Zero,
+                scale: scale,
+                effects: SpriteEffects.None,
+                layerDepth: 0);
+
+            // Fill the healthbar
+            if (LifePoints > 0)
+            {
+                float healthPerc = LifePoints / (float)LifePointsMax;
+                Rectangle infill = Manager_Sprites.HealthbarInfill.Bounds;
+                infill.Width = (int)(infill.Width * healthPerc);
+                spriteBatch.Draw(
+                    texture: Manager_Sprites.HealthbarInfill,
+                    position: pos,
+                    sourceRectangle: infill,
+                    color: _healthbarColor,
+                    rotation: 0,
+                    origin: Vector2.Zero,
+                    scale: scale,
+                    effects: SpriteEffects.None,
+                    layerDepth: 0);
+            }
+        }
+
         protected virtual void DrawAimIndicator(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)
         {
             // Draw an indicator only if a) the player is actively aiming on the gamepad or b) is using mouse to aim
@@ -401,7 +459,8 @@ namespace YGR
             {
                 DrawCharacterSprite(gameTime, globalOffset, spriteBatch);
                 DrawAimIndicator(gameTime, globalOffset, spriteBatch);
-                DrawOverheadString(gameTime, globalOffset, spriteBatch);
+                DrawHealthbar(gameTime, globalOffset, spriteBatch);
+                // DrawOverheadString(gameTime, globalOffset, spriteBatch);
             }
             else
             {
