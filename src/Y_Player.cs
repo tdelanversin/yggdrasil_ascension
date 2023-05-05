@@ -97,10 +97,10 @@ namespace YGR
                     _healthbarColor = Color.Red;
                     break;
                 case 1:
-                    _healthbarColor = Color.Green;
+                    _healthbarColor = Color.Blue;
                     break;
                 case 2:
-                    _healthbarColor = Color.Blue;
+                    _healthbarColor = Color.Green;
                     break;
                 case 3:
                     _healthbarColor = Color.Yellow;
