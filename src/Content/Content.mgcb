@@ -33,6 +33,12 @@
 /processorParam:DebugMode=Auto
 /build:Shader/Illuminator.fx
 
+#begin Shader/pxs.fx
+/importer:EffectImporter
+/processor:EffectProcessor
+/processorParam:DebugMode=Auto
+/build:Shader/pxs.fx
+
 #begin Sounds/better_fireball.wav
 /importer:WavImporter
 /processor:SoundEffectProcessor
