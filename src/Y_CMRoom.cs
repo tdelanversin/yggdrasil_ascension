@@ -182,8 +182,8 @@ namespace YGR
         public bool Cleared;
 
         static public bool PreprocessRoom(
-            X_RoomStump initiator, 
-            List<string> categories, 
+            X_RoomStump initiator,
+            List<string> categories,
             Dictionary<string, Dictionary<string, string>> ldtkRoomTypes,
             GraphicsDevice graphicsDevice
         )
@@ -196,7 +196,7 @@ namespace YGR
             foreach (var c in categories)
             {
                 var srcPath = Util.GetAbsResourceFolderPath(resourceFolder);
-                if(File.Exists(srcPath + c + "_Floor.Color") && File.Exists(srcPath + c + "_Roof.Color"))
+                if (File.Exists(srcPath + c + "_Floor.Color") && File.Exists(srcPath + c + "_Roof.Color"))
                 {
                     continue;
                 }
@@ -279,22 +279,22 @@ namespace YGR
                         {
                             var col = source[h * floor.Width + w];
                             toFloor[index] = col.R;
-                            toFloor[index+1] = col.G;
-                            toFloor[index+2] = col.B;
-                            toFloor[index+3] = col.A;
+                            toFloor[index + 1] = col.G;
+                            toFloor[index + 2] = col.B;
+                            toFloor[index + 3] = col.A;
                         }
                         else
                         {
                             toFloor[index] = target[h * floor.Width + w].R;
-                            toFloor[index+1] = target[h * floor.Width + w].G;
-                            toFloor[index+2] = target[h * floor.Width + w].B;
-                            toFloor[index+3] = target[h * floor.Width + w].A;
+                            toFloor[index + 1] = target[h * floor.Width + w].G;
+                            toFloor[index + 2] = target[h * floor.Width + w].B;
+                            toFloor[index + 3] = target[h * floor.Width + w].A;
                         }
 
                         toRoof[index] = roofC[h * floor.Width + w].R;
-                        toRoof[index+1] = roofC[h * floor.Width + w].G;
-                        toRoof[index+2] = roofC[h * floor.Width + w].B;
-                        toRoof[index+3] = roofC[h * floor.Width + w].A;
+                        toRoof[index + 1] = roofC[h * floor.Width + w].G;
+                        toRoof[index + 2] = roofC[h * floor.Width + w].B;
+                        toRoof[index + 3] = roofC[h * floor.Width + w].A;
 
                         index += 4;
                     }
@@ -596,6 +596,11 @@ namespace YGR
 
         public void ApplyPowerUps(IVictim player)
         {
+            if (player is not SimplePlayer)
+            {
+                return;
+            }
+
             for (int i = 0; i < _powerUps.Count(); ++i)
             {
                 if (_powerUps[i].Active && player.Rect.Intersects(_powerUps[i].Item.Rect))
@@ -710,14 +715,15 @@ namespace YGR
                     if (walkable.WhatAreYou() == X_LevelElements.Door)
                     {
                         Y_Door door = (Y_Door)walkable;
-                        if (door.CloseUnlockedDoor()){
+                        if (door.CloseUnlockedDoor())
+                        {
                             if (lockWhenFinished)
                             {
                                 door.LockDoor();
                             }
                             ToggleDoors();
                             var otherRoom = door.GetOtherDoor(this);
-                            if(!((Y_CMRoom)otherRoom.Item2).VisitedBeforeByPlayer())
+                            if (!((Y_CMRoom)otherRoom.Item2).VisitedBeforeByPlayer())
                                 ((Y_CMRoom)otherRoom.Item2).SetVisible(false);
                         }
                     }
@@ -734,7 +740,8 @@ namespace YGR
                     if (walkable.WhatAreYou() == X_LevelElements.Door)
                     {
                         Y_Door door = (Y_Door)walkable;
-                        if (door.OpenUnlockedDoor()){
+                        if (door.OpenUnlockedDoor())
+                        {
                             if (lockWhenFinished)
                             {
                                 door.LockDoor();
@@ -778,9 +785,9 @@ namespace YGR
             if (_floorColorData == null)
             {
                 _floorColorData = new Color[_floor.Width * _floor.Height];
-                _floor.GetData<Color>(_floorColorData);                
+                _floor.GetData<Color>(_floorColorData);
             }
-            
+
             Vector3 offset = new Vector3(Rect.Location.X / Scale, Rect.Location.Y / Scale, 0);
             _illumination = Manager_Light2.Illuminate(this, offset);
 
@@ -953,7 +960,7 @@ namespace YGR
                 door.Value.First().MoveBy(p);
             }
 
-            foreach(var powerUp in _powerUps)
+            foreach (var powerUp in _powerUps)
             {
                 powerUp.Item.MoveBy(p);
             }
@@ -1105,9 +1112,9 @@ namespace YGR
                     break;
             }
 
-            foreach(var powerUp in _powerUps)
+            foreach (var powerUp in _powerUps)
             {
-                if(powerUp.Active)
+                if (powerUp.Active)
                     powerUp.Item.Update(gameTime);
             }
 
