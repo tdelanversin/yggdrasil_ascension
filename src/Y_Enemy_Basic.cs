@@ -402,6 +402,43 @@ namespace YGR
             spriteBatch.DrawString(Fonts.Normal, str, str_pos, Color.Wheat);
         }
 
+        protected virtual void DrawHealthbar(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)
+        {
+            Vector2 dim = Manager_Sprites.HealthbarEmpty.Bounds.Size.ToVector2();
+            float scale = Math.Min(1.25f, Rect.Width / dim.X);
+            dim *= scale;
+            Vector2 offset = new Vector2((Rect.Width - dim.X) / 2, -dim.Y - 5);
+            Vector2 pos = _rect.Location.ToVector2() + offset;
+            spriteBatch.Draw(
+                texture: Manager_Sprites.HealthbarEmpty,
+                position: pos,
+                sourceRectangle: null,
+                color: Color.White,
+                rotation: 0,
+                origin: Vector2.Zero,
+                scale: scale,
+                effects: SpriteEffects.None,
+                layerDepth: 0);
+
+            // Fill the healthbar
+            if (LifePoints > 0)
+            {
+                float healthPerc = LifePoints / (float)LifePointsMax;
+                Rectangle infill = Manager_Sprites.HealthbarInfill.Bounds;
+                infill.Width = (int)(infill.Width * healthPerc);
+                spriteBatch.Draw(
+                    texture: Manager_Sprites.HealthbarInfill,
+                    position: pos,
+                    sourceRectangle: infill,
+                    color: Color.OrangeRed,
+                    rotation: 0,
+                    origin: Vector2.Zero,
+                    scale: scale,
+                    effects: SpriteEffects.None,
+                    layerDepth: 0);
+            }
+        }
+
         protected virtual void DrawCharacterSprite(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)
         {
             spriteBatch.Draw(
@@ -438,7 +475,12 @@ namespace YGR
             {
                 DrawFaceDirectionIndicator(gameTime, globalOffset, spriteBatch);
             }
-            DrawOverheadString(gameTime, globalOffset, spriteBatch);
+
+            if (State != EnemyState.Inactive)
+            {
+                DrawHealthbar(gameTime, globalOffset, spriteBatch);
+                // DrawOverheadString(gameTime, globalOffset, spriteBatch);
+            }
         }
 
         public void DrawOutline(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)
