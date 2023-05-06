@@ -27,6 +27,11 @@ namespace YGR
             _enemies.Add(new Enemy_Basic(position, Manager_Sprites.NewAnimatedSprite_TestCharacter(), level, players));
         }
 
+        public static void AddEnemy_Slime(Vector2 position, Y_Level level, IList<IVictim> players)
+        {
+            _enemies.Add(new Enemy_Slime(position, Manager_Sprites.NewAnimatedSprite_EnemySlime(), level, players));
+        }
+
         internal static void AddEnemy_Gigachad(Vector2 position, Y_Level level, IList<IVictim> players)
         {
             _enemies.Add(new Enemy_Gigachad(position, Manager_Sprites.NewAnimatedSprite_Gigachad(), level, players));

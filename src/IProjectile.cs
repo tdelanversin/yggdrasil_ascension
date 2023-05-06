@@ -8,12 +8,8 @@ namespace YGR
 {
     public interface IProjectile : IGameElement
     {
-        //public Texture2D _sprite { get; set; }
-        //public Rectangle _window { get; set; }
-        //public Vector2 _position { get; set; }
-        //public Vector2 _direction { get; set; }
-        public double TimeCreated { get; set; }
-        public string Name { get; set; }
+        public float Age { get; set; }
+        public float MaxAge { get; set; }
         public bool DeleteNext { get; set; }
         public X_CollisionModel_Projectile Collision { get; set; }
         public Vector2 Velocity { get; set; }
@@ -21,8 +17,5 @@ namespace YGR
         public IWalkable Room { get; set; }
         public IGameElement WhoFiredMe { get; set; } 
         public int Damage { get; set; }
-
-        //public void Update(GameTime gameTime);
-        //public void Draw(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch);
     }
 }

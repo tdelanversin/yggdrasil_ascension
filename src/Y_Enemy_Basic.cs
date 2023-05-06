@@ -11,6 +11,7 @@ namespace YGR
         public string Name { get; set; }
         public int LifePoints { get; set; }
         public int LifePointsMax { get; set; }
+        public Color Color { get; set; }
 
         public EnemyState State { get; set; } = EnemyState.Inactive;
         protected int fleeingHPTreshold = 2; // Flee if at this treshold or lower
@@ -38,9 +39,8 @@ namespace YGR
         public float Scale { get; set; }
         protected Vector2 _position;
         protected Color _hitColor;
-        protected Color _regularColor;
-        protected Color _color;
-        protected int _hitFrames = 10; // = 8 How many frame do we show the hit color
+        protected Color _currentColor;
+        protected int _hitFrames = 30; // How many frames after being hit until the color recovers to normal
         protected int _hitFramesCounter = 0;
         protected Rectangle _rect;
 
@@ -92,9 +92,9 @@ namespace YGR
             Room = Level.GetRoom(this, Room);
             Gun = new Gun_BasicEnemy();
 
-            _hitColor = Color.OrangeRed;
-            _regularColor = Color.Orange;
-            _color = Color.DarkSlateGray * 0.4f; // Initially we're disabled
+            Color = Color.Orange;
+            _currentColor = Color.DarkSlateGray * 0.4f; // Initially we're disabled
+            _hitColor = Color.DarkRed;
 
             var rand = new Random();
             Identifier = DateTime.Now.Hour.ToString() + "-" + DateTime.Now.Second.ToString() + "-" + DateTime.Now.Millisecond.ToString() + "-" + rand.NextSingle().ToString();
@@ -158,7 +158,7 @@ namespace YGR
 
             LifePoints -= projectile.Damage;
             _hitFramesCounter = 1;
-            _color = _hitColor;
+            _currentColor = Color.Lerp(_hitColor, Color, 0.1f);
         }
 
         protected void UpdateHitCounters(GameTime gameTime)
@@ -172,11 +172,13 @@ namespace YGR
                 else
                 {
                     _hitFramesCounter++;
+                    // Transition from the hitcolor back to the normal one
+                    _currentColor = Color.Lerp(_hitColor, Color, 0.1f + 0.9f * _hitFramesCounter / _hitFrames);
                 }
             }
             else
             {
-                _color = _regularColor;
+                _currentColor = Color;
             }
         }
 
@@ -388,9 +390,9 @@ namespace YGR
 
             var angle = Math.Atan2(FacingDirection.Y, FacingDirection.X) + Math.PI / 2;
             spriteBatch.Draw(
-                Manager_Sprites.AimIndicator[3], _rect.Center.ToVector2() + CharacterOffset + FacingDirection * _rect.Height,
+                Manager_Sprites.AimIndicator, _rect.Center.ToVector2() + CharacterOffset + FacingDirection * _rect.Height,
                 null,
-                Color.White, (float)angle, new Vector2(Manager_Sprites.AimIndicator[3].Width / 2, 0), 0.03f, SpriteEffects.None, 0);
+                Color.White, (float)angle, new Vector2(Manager_Sprites.AimIndicator.Width / 2, 0), 0.03f, SpriteEffects.None, 0);
 
         }
 
@@ -445,7 +447,7 @@ namespace YGR
                 texture: CharacterSprite.Texture,
                 position: _rect.Location.ToVector2() + CharacterOffset,
                 sourceRectangle: CharacterSprite.SourceRectangle,
-                color: _color,
+                color: _currentColor,
                 rotation: 0,
                 origin: Vector2.Zero,
                 scale: CharacterScale,

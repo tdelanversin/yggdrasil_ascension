@@ -169,7 +169,11 @@ namespace YGR
                 direction = GetFallbackDirection(direction);
             }
 
-            Direction = direction;
+            if (direction != Direction)
+            {
+                Direction = direction;
+                ResetAnimation();
+            }
         }
 
         public void Update(GameTime gameTime, AnimationState direction)
@@ -177,7 +181,6 @@ namespace YGR
             if (direction != Direction)
             {
                 UpdateDirection(direction);
-                ResetAnimation();
             }
             else
             {
