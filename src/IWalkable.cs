@@ -1,5 +1,5 @@
 ﻿using Microsoft.Xna.Framework;
-using System;
+using Microsoft.Xna.Framework.Graphics;
 using System.Collections.Generic;
 
 /*
@@ -19,7 +19,13 @@ namespace YGR
         public X_ConnectorPoint GetConnectorPoint(X_ConnectorSide side, string name="");
         public int TextureTileSize { get; }
         public string ResourceFolder { get; }
-        public void Illuminate();
+        //public void Illuminate();
+
+
+        public X_IlluminationResources IlluminationResources { get; set; }
+        public Color[] Shade { get; set; }
+        public Texture2D ShadeTexture { get; set; }
+        public Vector3 Offset { get; set; }
         public List<X_Light> Lights { get; set; }
         public Manager_Light2.X_Vector3[] ShadeCoords { get; set; }
     }

@@ -276,20 +276,21 @@ namespace YGR
             }
             Logger.Info("Created connectors: " + watch.ElapsedMilliseconds.ToString());
 
+            //finalize: split collision models
+            foreach (var room in connectors)
+            {
+                if (room.WhatAreYou() == X_LevelElements.Door)
+                {
+                    ((Y_Door)room).SplitConnectedCollisionModels();
+                }
+            }
+
+            Manager_Light2.IlluminateSync(connectors);
             int connectorIndex = Rooms.Count();
             foreach (var c in connectors)
             {
                 Rooms.Add(connectorIndex, c);
                 connectorIndex++;
-            }
-
-            //finalize: split collision models
-            foreach (var room in Rooms)
-            {
-                if (room.Value.WhatAreYou() == X_LevelElements.Door)
-                {
-                    ((Y_Door)room.Value).SplitConnectedCollisionModels();
-                }
             }
 
             Manager_Players.ClearPlayers();
@@ -353,9 +354,11 @@ namespace YGR
 
             _startRoom.SetVisible(true);
             _goldRoom.SetVisible(true);
-            _startRoom.Illuminate();
-            _goldRoom.Illuminate();
+            //_startRoom.Illuminate();
+            //_goldRoom.Illuminate();
             Manager_Sound.PlayFreeRoamMusic();
+
+            //Manager_Light2.IlluminateSync(new List<IWalkable> { _startRoom });
         }
 
         public IWalkable GetRoom(IGameElement elem, IWalkable currentRoom)
@@ -561,6 +564,7 @@ namespace YGR
 
         public void Draw(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)
         {
+
             foreach (var room in Rooms)
             {
                 room.Value.Draw(gameTime, globalOffset, spriteBatch);

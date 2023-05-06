@@ -20,6 +20,8 @@ namespace YGR
         public SpriteBatch _spriteBatch;
         private FrameCounter _frameCounter = new FrameCounter();
 
+        public static GraphicsDevice GraphicsDevice_;
+
         Y_Level _level;
         public GameState State;
         public GameState DesiredState;
@@ -49,6 +51,8 @@ namespace YGR
             X_AutoTiler.Initialize("./Doors/", "data.json", GraphicsDevice, Y_Door.MapJsonName);
             Y_MultiPowerUp.Initialize(Content);
             Y_Door.Initialize(Content);
+
+            GraphicsDevice_ = GraphicsDevice;
 
             _level = new Y_Level(level, 32, 32, "./Levels/", "./Doors", Content);
             base.Initialize();
@@ -136,6 +140,7 @@ namespace YGR
                     Manager_Players.Update(gameTime);
                     Manager_Projectile.Update(gameTime);
                     Manager_Enemies.Update(gameTime);
+                    Manager_Light2.Update(gameTime);
                     _level.Update(gameTime);
                     break;
                 case GameState.Menu:
@@ -164,6 +169,7 @@ namespace YGR
 
                 case GameState.InGame:
                     GraphicsDevice.Clear(_level.OutsideColor);
+
                     _spriteBatch.Begin(
                         SpriteSortMode.Immediate, null, null, null, null, null,
                         Camera.Transform);

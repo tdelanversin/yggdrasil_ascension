@@ -31,8 +31,9 @@ namespace YGR
             Sound = true;
 #if DEBUG
             Fullscreen = false;
-            Lighting = false;
-            Outlines = true;
+            Lighting = true;
+            Outlines = false;
+            Toggle_Volume();
 #else
             Fullscreen = true;
             Lighting = false; // Off by default for now, since it's very slow

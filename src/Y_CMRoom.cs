@@ -226,6 +226,9 @@ namespace YGR
         public string Category { get; set; }
         public Manager_Light2.X_Vector3[] ShadeCoords { get; set; }
         public List<Rectangle> ResetRects { get; }
+        public Vector3 Offset { get; set; }
+        public Color[] Shade { get; set; }
+        public X_IlluminationResources IlluminationResources { get; set; }
 
         private Dictionary<string, string> _ldtkRoomTypeProperties;
 
@@ -242,6 +245,7 @@ namespace YGR
 
         //Dictionary<X_DoorTextureLayer, List<X_AutoTiler.X_AutoTileTexture>> _tileTextures;
         //Dictionary<X_DoorTextureLayer, List<X_AutoTiler.X_AutoTileColor>> _tileColors;
+        public Texture2D ShadeTexture { get; set; }
 
         List<Point> _spawner;
         List<Point> _bossSpawner;
@@ -586,9 +590,9 @@ namespace YGR
 
             Lights = new List<X_Light>() {
             new X_Light(
-                new Vector3(Rect.X + -5*TextureTileSize,
-                Rect.Y - 10*TextureTileSize,
-                10 * TextureTileSize),
+                new Vector3(Rect.X + 20*TextureTileSize,
+                Rect.Y + 15 *TextureTileSize,
+                15 * TextureTileSize),
                 Rect, Scale)
             };
 
@@ -613,6 +617,7 @@ namespace YGR
             _height = Collision.GetCollisionTemplate().Length * TextureTileSize;
             _doorsToggled = false;
             _visited = false;
+            IlluminationResources = new X_IlluminationResources();
         }
 
         public void ToggleDoors()
@@ -625,7 +630,7 @@ namespace YGR
             Color[] floor2 = Util.DeGZipFile(_floorData);
             Color[] roof2 = Util.DeGZipFile(_roofData);
 
-            _floor = new Texture2D(graphicsDevice, _width, _height);
+            _floor = new Texture2D(graphicsDevice, _width, _height, false, SurfaceFormat.Color);
             _floor.SetData(floor2);
             _roof = new Texture2D(graphicsDevice, _width, _height);
             _roof.SetData(roof2);
@@ -633,11 +638,41 @@ namespace YGR
             //_floor.SetData<Color>(floor);
 
             // if the room is initially open, we need to illuminate it
-            if (State == X_RoomState.Visible)
-            {
-                Illuminate();
-            }
+            //Illuminate();
+
             //Logger.Info("created room: " + watch.ElapsedMilliseconds);
+
+            //_renderTarget = new RenderTarget2D(graphicsDevice, _floor.Width, _floor.Height);
+            ShadeTexture = new Texture2D(
+                graphicsDevice, _floor.Width, _floor.Height, false, SurfaceFormat.Color, ShaderAccess.ReadWrite);
+
+            _floorColorData = new Color[_floor.Width * _floor.Height];
+            _floor.GetData<Color>(_floorColorData);
+
+            //Color[] data = new Color[_floor.Width * _floor.Height];
+            Color shadeColor = Color.Black;
+            shadeColor.A = 0;
+            Shade = Enumerable.Repeat<Color>(shadeColor, _floor.Width * _floor.Height).ToArray();
+            ShadeTexture.SetData(Shade);
+            //Parallel.For(0, _illumination.Length, i =>
+            ////for (int i = 0; i < _illuminatedClosed.Length; ++i)
+            //{
+            //    bool illuminated = _illumination[i];
+
+            //    if (!illuminated && _floorColorData[i].A != 0)
+            //    {
+            //        var col = _floorColorData[i];
+            //        Color nCol = Color.White;
+            //        nCol.R = (byte)((1 - 0.4f) * col.R + 0.4f * Color.Black.R);
+            //        nCol.G = (byte)((1 - 0.4f) * col.G + 0.4f * Color.Black.G);
+            //        nCol.B = (byte)((1 - 0.4f) * col.B + 0.4f * Color.Black.B);
+            //        data[i] = nCol;
+            //    }
+            //    else
+            //    {
+            //        data[i] = _floorColorData[i];
+            //    }
+            //});
         }
 
         public void ResetRoom()
@@ -791,6 +826,7 @@ namespace YGR
                     }
                 }
             }
+            //Manager_Light2.Illuminate(this);
         }
 
         public void OpenAllUnlockedRoomDoors(bool lockWhenFinished = false)
@@ -811,6 +847,8 @@ namespace YGR
                             var otherRoom = door.GetOtherDoor(this);
                             ((Y_CMRoom)otherRoom.Item2).SetVisible(true);
                             ((Y_CMRoom)otherRoom.Item2).ToggleDoors();
+
+                            //Manager_Light2.Illuminate(otherRoom.Item2);
                         }
                     }
                     else if (walkable.WhatAreYou() == X_LevelElements.Room)
@@ -819,6 +857,7 @@ namespace YGR
                     }
                 }
             }
+            //Manager_Light2.Illuminate(this);
         }
 
         public static X_DoorTextureLayer MapTexture(string textureType)
@@ -839,42 +878,42 @@ namespace YGR
             return X_TileType.DontCare;
         }
 
-        public void Illuminate()
-        {
-            if (!Settings.Lighting) return;
+        //public void Illuminate()
+        //{
+        //    if (!Settings.Lighting) return;
 
-            if (_floorColorData == null)
-            {
-                _floorColorData = new Color[_floor.Width * _floor.Height];
-                _floor.GetData<Color>(_floorColorData);                
-            }
-            
-            Vector3 offset = new Vector3(Rect.Location.X / Scale, Rect.Location.Y / Scale, 0);
-            _illumination = Manager_Light2.Illuminate(this, offset);
+        //    //if (Manager_Light2.Platform == Manager_Light2.Type.CPU && _floorColorData == null)
+        //    //{
+        //    //    _floorColorData = new Color[_floor.Width * _floor.Height];
+        //    //    _floor.GetData<Color>(_floorColorData);                
+        //    //}
 
+        //    //Manager_Light2.IlluminationShader.Parameters["Floor"].SetValue(_floor);
+        //    //Manager_Light2.IlluminationShader.Parameters["Shade"].SetValue(_computeTexture);
 
-            Color[] data = new Color[_floor.Width * _floor.Height];
-            Parallel.For(0, _illumination.Length, i =>
-            //for (int i = 0; i < _illuminatedClosed.Length; ++i)
-            {
-                bool illuminated = _illumination[i];
+        //    //var watch = new Stopwatch();
+        //    //watch.Start();
+        //    Manager_Light2.Illuminate(this);
 
-                if (!illuminated && _floorColorData[i].A != 0)
-                {
-                    var col = _floorColorData[i];
-                    Color nCol = Color.White;
-                    nCol.R = (byte)((1 - 0.4f) * col.R + 0.4f * Color.Black.R);
-                    nCol.G = (byte)((1 - 0.4f) * col.G + 0.4f * Color.Black.G);
-                    nCol.B = (byte)((1 - 0.4f) * col.B + 0.4f * Color.Black.B);
-                    data[i] = nCol;
-                }
-                else
-                {
-                    data[i] = _floorColorData[i];
-                }
-            });
-            _floor.SetData<Color>(data);
-        }
+        //    //Logger.Info("Illuminated room " + Name + " within " + watch.ElapsedMilliseconds);
+
+        //    //Illuminate();
+        //    //if(Manager_Light2.Platform == Manager_Light2.Type.CPU)
+        //    //{
+        //    //    Color[] data = new Color[_floor.Width * _floor.Height];
+        //    //    Parallel.For(0, _illumination.Length, i =>
+        //    //    //for (int i = 0; i < _illuminatedClosed.Length; ++i)
+        //    //    {
+        //    //        bool illuminated = _illumination[i];
+
+        //    //        if (illuminated)
+        //    //        {
+        //    //            data[i].A = 0;
+        //    //        }
+        //    //    });
+        //    //    _computeTexture.SetData<Color>(data);
+        //    //}
+        //}
 
         private void drawFloor(SpriteBatch spriteBatch)
         {
@@ -1034,6 +1073,8 @@ namespace YGR
             // needs to be done this way because properties return by value and not by ref
             Rect = new Rectangle(position.X, position.Y, Rect.Width, Rect.Height);
 
+            Offset = new Vector3(Rect.Location.X / Scale, Rect.Location.Y / Scale, 0);
+
             if (_spawner != null)
             {
                 for (int i = 0; i < _spawner.Count; ++i)
@@ -1151,7 +1192,6 @@ namespace YGR
                 case X_RoomState.Visible:
                     if (_doorsToggled)
                     {
-                        Illuminate();
                         _doorsToggled = false;
                     }
                     break;
@@ -1172,6 +1212,16 @@ namespace YGR
                 if (powerUp.Active)
                     powerUp.Item.Update(gameTime);
             }
+
+            //if (Rectangle.Intersect(Camera.VisibleArea, Rect) == Rectangle.Empty)
+            //{
+            //    return;
+            //}
+
+            //if (IsVisible())
+            //{
+            //    Manager_Light2.Illuminate(this);
+            //}
         }
 
         /// <summary>
@@ -1191,10 +1241,10 @@ namespace YGR
 
             Collision.DrawOutline(gameTime, globalOffset, spriteBatch);
             Factory_Debug.DrawRectangle(Rect.X, Rect.Y, Rect.Width, Rect.Height, 3, Color.Blue, spriteBatch);
-            foreach (var light in Lights)
-            {
-                light.DrawOutline(gameTime, globalOffset, spriteBatch);
-            }
+            //foreach (var light in Lights)
+            //{
+            //    light.DrawOutline(gameTime, globalOffset, spriteBatch);
+            //}
 
             foreach (var door in _doorMasks)
             {
@@ -1258,6 +1308,12 @@ namespace YGR
                     _floor, Rect.Location.ToVector2(),
                     new Rectangle(0, 0, _floor.Width, _floor.Height),
                     Color.White, 0, Vector2.Zero, Scale, SpriteEffects.None, 0);
+
+                spriteBatch.Draw(
+                    ShadeTexture, Rect.Location.ToVector2(),
+                    new Rectangle(0, 0, ShadeTexture.Width, ShadeTexture.Height),
+                    Color.White*Manager_Light2.ShadeFloat, 0, Vector2.Zero, Scale, SpriteEffects.None, 0);
+
                 spriteBatch.Draw(
                     _roof, Rect.Location.ToVector2(),
                     new Rectangle(0, 0, _floor.Width, _floor.Height),
@@ -1278,6 +1334,21 @@ namespace YGR
                         powerUp.Item.Draw(gameTime, globalOffset, spriteBatch);
                     }
                 }
+
+                //spriteBatch.End();
+
+                //A_Yggdrasil.GraphicsDevice_.SetRenderTarget(_renderTarget);
+                //A_Yggdrasil.GraphicsDevice_.Clear(Color.Transparent);
+
+                ////Manager_Light2.IlluminationShader.Parameters["Input"].SetValue(renderTarget);
+                ////Manager_Light2.IlluminationShader.Parameters["Output"].SetValue(computeTexture);
+
+                //Illuminate();
+                //spriteBatch.Begin();
+                //spriteBatch.Draw(_computeTexture, Vector2.Zero, Color.White);
+                //spriteBatch.End();
+
+                //A_Yggdrasil.GraphicsDevice_.SetRenderTarget(null);
             }
         }
 

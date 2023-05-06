@@ -12,6 +12,8 @@ struct X_Vector3
     float X;
     float Y;
     float Z;
+    int WX;
+    int WY;
     //int GlobalID;
 };
 
@@ -41,7 +43,7 @@ StructuredBuffer<Point3> Vertices;
 //StructuredBuffer<Input> Inputs;
 StructuredBuffer<X_Vector3> Coords;
 StructuredBuffer<Point3> Lights;
-RWStructuredBuffer<int> Lighted;
+//RWStructuredBuffer<int> Lighted;
 
 //RWStructuredBuffer<float> Output;
 
@@ -51,8 +53,10 @@ RWStructuredBuffer<int> Lighted;
 
 //RWStructuredBuffer<int> NumStructs;
 
-const float eps = 1.0e-7f;
+RWTexture2D<float4> Shade;
+//Texture2D<float4> Floor;
 
+const float eps = 1.0e-7f;
 int NumLights;
 int NumCoords;
 int NumVerts;
@@ -137,27 +141,30 @@ int RayIntersect(float3 origin, float3 direction, uint globalIDx)
 //================================================================================================
 // Compute Shader
 //================================================================================================
-#define GroupSize 64
+#define GroupSize 512
 
 [numthreads(GroupSize, 1, 1)]
 void CS(uint3 localID : SV_GroupThreadID, uint3 groupID : SV_GroupID,
         uint localIndex : SV_GroupIndex, uint3 globalID : SV_DispatchThreadID)
 {
     uint c = globalID.x;
-
+    uint2 ind = uint2(Coords[c].WX, Coords[c].WY);
+    
     for (int l = 0; l < NumLights; l++)
     {
-        if (Lighted[c] == 1) return;
         float3 lightPos = float3(Lights[l].X, Lights[l].Y, Lights[l].Z);
         float3 pos = float3(Coords[c].X, Coords[c].Y, Coords[c].Z);
         float3 direction = pos - lightPos;
-        if (RayIntersect(lightPos, direction, c) == 0)
+        if (RayIntersect(lightPos, direction, c) == 1)
         {
-            Lighted[c] = 1;
-            //Output[c] == 1;
+            Shade[ind].a = 1.0f;
             return;
         }
     }
+    Shade[ind].a = 0.0f;
+    
+    //Shade[ind] = float4(0.5f, 0.5f, 0.5f, 1.0f);
+
 }
 
 //================================================================================================
