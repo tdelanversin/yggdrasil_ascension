@@ -65,7 +65,6 @@ namespace YGR
         public string ResourceFolder { get; }
         public Manager_Light2.X_Point3[] IlluminationModel { get; set; }
         public List<X_Light> Lights { get; set; }
-        public Manager_Light2.X_Vector3[] ShadeCoords { get; set; }
 
         private Dictionary<X_DoorState, List<Rectangle>> _doorCollisionRectangles;
         public Vector3 Offset { get; set; }

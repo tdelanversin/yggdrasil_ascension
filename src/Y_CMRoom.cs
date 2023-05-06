@@ -224,7 +224,6 @@ namespace YGR
         public List<X_Light> Lights { get; set; }
         private X_RoomState State { get; set; }
         public string Category { get; set; }
-        public Manager_Light2.X_Vector3[] ShadeCoords { get; set; }
         public List<Rectangle> ResetRects { get; }
         public Vector3 Offset { get; set; }
         public Color[] Shade { get; set; }
@@ -243,8 +242,6 @@ namespace YGR
         int _height;
         bool _visited;
 
-        //Dictionary<X_DoorTextureLayer, List<X_AutoTiler.X_AutoTileTexture>> _tileTextures;
-        //Dictionary<X_DoorTextureLayer, List<X_AutoTiler.X_AutoTileColor>> _tileColors;
         public Texture2D ShadeTexture { get; set; }
 
         List<Point> _spawner;
@@ -590,9 +587,9 @@ namespace YGR
 
             Lights = new List<X_Light>() {
             new X_Light(
-                new Vector3(Rect.X + -3*TextureTileSize,
+                new Vector3(Rect.X + -14*TextureTileSize,
                 Rect.Y + 20 *TextureTileSize,
-                15 * TextureTileSize),
+                10 * TextureTileSize),
                 Rect, Scale)
             };
 
@@ -635,14 +632,6 @@ namespace YGR
             _roof = new Texture2D(graphicsDevice, _width, _height);
             _roof.SetData(roof2);
 
-            //_floor.SetData<Color>(floor);
-
-            // if the room is initially open, we need to illuminate it
-            //Illuminate();
-
-            //Logger.Info("created room: " + watch.ElapsedMilliseconds);
-
-            //_renderTarget = new RenderTarget2D(graphicsDevice, _floor.Width, _floor.Height);
             ShadeTexture = new Texture2D(
                 graphicsDevice, _floor.Width, _floor.Height, false, SurfaceFormat.Color, ShaderAccess.ReadWrite);
 
@@ -654,25 +643,6 @@ namespace YGR
             shadeColor.A = 0;
             Shade = Enumerable.Repeat<Color>(shadeColor, _floor.Width * _floor.Height).ToArray();
             ShadeTexture.SetData(Shade);
-            //Parallel.For(0, _illumination.Length, i =>
-            ////for (int i = 0; i < _illuminatedClosed.Length; ++i)
-            //{
-            //    bool illuminated = _illumination[i];
-
-            //    if (!illuminated && _floorColorData[i].A != 0)
-            //    {
-            //        var col = _floorColorData[i];
-            //        Color nCol = Color.White;
-            //        nCol.R = (byte)((1 - 0.4f) * col.R + 0.4f * Color.Black.R);
-            //        nCol.G = (byte)((1 - 0.4f) * col.G + 0.4f * Color.Black.G);
-            //        nCol.B = (byte)((1 - 0.4f) * col.B + 0.4f * Color.Black.B);
-            //        data[i] = nCol;
-            //    }
-            //    else
-            //    {
-            //        data[i] = _floorColorData[i];
-            //    }
-            //});
         }
 
         public void ResetRoom()
@@ -826,7 +796,7 @@ namespace YGR
                     }
                 }
             }
-            //Manager_Light2.Illuminate(this);
+            Manager_Light2.Illuminate(this);
         }
 
         public void OpenAllUnlockedRoomDoors(bool lockWhenFinished = false)
@@ -848,7 +818,7 @@ namespace YGR
                             ((Y_CMRoom)otherRoom.Item2).SetVisible(true);
                             ((Y_CMRoom)otherRoom.Item2).ToggleDoors();
 
-                            //Manager_Light2.Illuminate(otherRoom.Item2);
+                            Manager_Light2.Illuminate(otherRoom.Item2);
                         }
                     }
                     else if (walkable.WhatAreYou() == X_LevelElements.Room)
@@ -857,7 +827,7 @@ namespace YGR
                     }
                 }
             }
-            //Manager_Light2.Illuminate(this);
+            Manager_Light2.Illuminate(this);
         }
 
         public static X_DoorTextureLayer MapTexture(string textureType)
@@ -877,43 +847,6 @@ namespace YGR
             if (tileType.ToLower().Contains("out")) return X_TileType.Outside;
             return X_TileType.DontCare;
         }
-
-        //public void Illuminate()
-        //{
-        //    if (!Settings.Lighting) return;
-
-        //    //if (Manager_Light2.Platform == Manager_Light2.Type.CPU && _floorColorData == null)
-        //    //{
-        //    //    _floorColorData = new Color[_floor.Width * _floor.Height];
-        //    //    _floor.GetData<Color>(_floorColorData);                
-        //    //}
-
-        //    //Manager_Light2.IlluminationShader.Parameters["Floor"].SetValue(_floor);
-        //    //Manager_Light2.IlluminationShader.Parameters["Shade"].SetValue(_computeTexture);
-
-        //    //var watch = new Stopwatch();
-        //    //watch.Start();
-        //    Manager_Light2.Illuminate(this);
-
-        //    //Logger.Info("Illuminated room " + Name + " within " + watch.ElapsedMilliseconds);
-
-        //    //Illuminate();
-        //    //if(Manager_Light2.Platform == Manager_Light2.Type.CPU)
-        //    //{
-        //    //    Color[] data = new Color[_floor.Width * _floor.Height];
-        //    //    Parallel.For(0, _illumination.Length, i =>
-        //    //    //for (int i = 0; i < _illuminatedClosed.Length; ++i)
-        //    //    {
-        //    //        bool illuminated = _illumination[i];
-
-        //    //        if (illuminated)
-        //    //        {
-        //    //            data[i].A = 0;
-        //    //        }
-        //    //    });
-        //    //    _computeTexture.SetData<Color>(data);
-        //    //}
-        //}
 
         private void drawFloor(SpriteBatch spriteBatch)
         {
@@ -1212,16 +1145,6 @@ namespace YGR
                 if (powerUp.Active)
                     powerUp.Item.Update(gameTime);
             }
-
-            //if (Rectangle.Intersect(Camera.VisibleArea, Rect) == Rectangle.Empty)
-            //{
-            //    return;
-            //}
-
-            //if (IsVisible())
-            //{
-            //    Manager_Light2.Illuminate(this);
-            //}
         }
 
         /// <summary>

@@ -28,9 +28,6 @@ namespace YGR
             public float X;
             public float Y;
             public float Z;
-            //public int GlobalID;
-            //public int Index;
-            //public int Lighted;
             public int WX;
             public int WY;
 
@@ -52,22 +49,15 @@ namespace YGR
             }
         }
 
-        //public static Vector3[] IlluminationModelOpened { get; private set; }
-        //public static Vector3[] IlluminationModelClosed { get; private set; }
-
-        //public static Dictionary<string, bool[]> LoadedIlluminationTemplates { get; private set; }
-        //public static string ShadeVersion { get { return "V3"; } }
         public static GraphicsDevice GraphicsDevice_ { get; set; }
 
         public static Type Platform { get; set; }
-
         private static int LightsBufferSize = 5;
         private static int VerticesBufferSize = 5000;
         private static int CoordsBufferSize = 50000;
         private static StructuredBuffer LightsBuffer;
         private static StructuredBuffer VerticesBuffer;
         private static StructuredBuffer CoordsBuffer;
-        //private static StructuredBuffer LightedBuffer;
 
         private static ConcurrentQueue<IWalkable> ToPrecompute;
         private static ConcurrentQueue<IWalkable> ToIlluminate;
@@ -81,7 +71,7 @@ namespace YGR
         private static int _cooldownMax = 4;
         private static int _cooldownTimer = _cooldown;
 
-        public static float ShadeFloat = 0.8f;
+        public static float ShadeFloat = 0.6f;
 
         static int[] indices = new int[]
         {
@@ -92,16 +82,6 @@ namespace YGR
             /* back   */ 0, 3, 7,   0, 7, 4,
             /* top    */ 5, 4, 6,   6, 4, 7
         };
-
-        //static public X_Vector3[] Coords;
-        //static public X_Point3[] Vertices;
-        //static public int NumVerts;
-        //static public int NumLights;
-        //static public int NumCoords;
-        //static public X_Point3[] Lights;
-        //static public int[] Lighted;
-        //static public bool[] BLighted;
-        //public static int[] Index;
 
         static public float eps = 1.0e-7f;
 
@@ -207,6 +187,8 @@ namespace YGR
 
         public static void IlluminateSync(List<IWalkable> rooms)
         {
+            if (!Settings.Lighting) return;
+
             foreach(var room in rooms)
             {
                 Precompute(room);
@@ -222,6 +204,8 @@ namespace YGR
             IWalkable room
         )
         {
+            if (!Settings.Lighting) return;
+
             if (room.IlluminationResources.InFlight) return;
             room.IlluminationResources.InFlight = true;
             ToPrecompute.Enqueue(room);
@@ -229,8 +213,6 @@ namespace YGR
 
         public static void Update(GameTime gameTime)
         {
-            var watch = new Stopwatch();
-            watch.Start();
             if (ToPrecompute.Count() > 0)
             {
                 if (!_preworking)
@@ -249,13 +231,13 @@ namespace YGR
                     }
                 }
             }
-            Logger.Info("first " + watch.ElapsedMilliseconds);
+
             if (_cooldownTimer < _cooldown)
             {
                 _cooldownTimer++;
                 return;
             }
-            Logger.Info("middle " + watch.ElapsedMilliseconds);
+
             if (ToIlluminate.Count() > 0)
             {
                 if (!_working)
@@ -266,21 +248,20 @@ namespace YGR
                     {
                         //Logger.Info("Start computations... room " + room.Name);
                         Compute(room);
-                        Logger.Info("last x " + watch.ElapsedMilliseconds);
+
                         if (room.IlluminationResources.NumCoords - room.IlluminationResources.NumOffset == 0)
                         {
                             while (!ToIlluminate.TryDequeue(out room));
-                            Logger.Info("last xxx " + watch.ElapsedMilliseconds);
+
                             room.IlluminationResources.InFlight = false;
                         }
                         //Logger.Info("End computations... room " + room.Name);
                     }
                     _working = false;
                     _cooldownTimer = 0;
-                    _cooldown = Util.random.Next(_cooldownMin, _cooldownMax);
+                    _cooldown = 1; // Util.random.Next(_cooldownMin, _cooldownMax);
                 }
             }
-            Logger.Info("last " + watch.ElapsedMilliseconds);
         }
 
         public static void Precompute(IWalkable room)
@@ -416,10 +397,6 @@ namespace YGR
 
         private static void Compute(IWalkable room)
         {
-
-            //LightedBuffer = new StructuredBuffer(
-            //        GraphicsDevice_, typeof(int), NumCoords, BufferUsage.None, ShaderAccess.ReadWrite);
-            //Logger.Info("B Room " + room.Name + ": " + watch.ElapsedMilliseconds);
             if (Platform == Type.CPU)
             {
                 room.IlluminationResources.Lighted = Enumerable.Repeat<int>(0, room.IlluminationResources.NumCoords).ToArray();
@@ -463,9 +440,6 @@ namespace YGR
 
             else if(Platform == Type.GPU && room.IlluminationResources.NumCoords > 0)
             {
-                var watch = new Stopwatch();
-                watch.Start();
-
                 if (LightsBuffer == null || room.IlluminationResources.NumLights > LightsBufferSize)
                 {
                     if(room.IlluminationResources.NumLights > LightsBufferSize)
@@ -493,7 +467,6 @@ namespace YGR
 
                 int use = Math.Min(CoordsBufferSize, room.IlluminationResources.NumCoords - room.IlluminationResources.NumOffset);
                 CoordsBuffer.SetData(room.IlluminationResources.Coords, room.IlluminationResources.NumOffset, use);
-                Logger.Info("Intermediate A: " + watch.ElapsedMilliseconds);
 
                 LightsBuffer.SetData(room.IlluminationResources.Lights, 0, room.IlluminationResources.NumLights);
 
@@ -516,14 +489,12 @@ namespace YGR
                 if (IlluminationShader.Parameters["NumVerts"] != null)
                     IlluminationShader.Parameters["NumVerts"].SetValue(room.IlluminationResources.NumVerts);
 
-                Logger.Info("Intermediate B: " + watch.ElapsedMilliseconds);
                 foreach (var pass in IlluminationShader.CurrentTechnique.Passes)
                 {
                     pass.ApplyCompute();
                     int dispatchCount = (int)Math.Ceiling((double)room.IlluminationResources.NumCoords / 512);
                     GraphicsDevice_.DispatchCompute(dispatchCount, 1, 1);
                 }
-                Logger.Info("Intermediate C: " + watch.ElapsedMilliseconds + " " + use);
 
                 room.IlluminationResources.NumOffset += use;
             }
@@ -531,8 +502,6 @@ namespace YGR
 
         public static X_Point3[] CreateModel(IWalkable room)
         {
-            var watch = new Stopwatch();
-            watch.Start();
             List<Rectangle> rects = new List<Rectangle>();
             if (room.WhatAreYou() == X_LevelElements.Door)
             {
