@@ -15,6 +15,7 @@ namespace YGR
     {
         public int LifePoints { get; set; }
         public int LifePointsMax { get; }
+        public Color Color { get; set; }
         public X_CollisionModel_Victim Collision { get; }
         public Vector2 Velocity { get; set; }
         public Y_Level Level { get; set; }

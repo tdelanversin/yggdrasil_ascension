@@ -11,6 +11,7 @@ namespace YGR
         public string Name { get; set; }
         public int LifePoints { get; set; }
         public int LifePointsMax { get; set; }
+        public Color Color { get; set; }
 
         public EnemyState State { get; set; } = EnemyState.Inactive;
         protected int fleeingHPTreshold = 2; // Flee if at this treshold or lower
@@ -38,9 +39,8 @@ namespace YGR
         public float Scale { get; set; }
         protected Vector2 _position;
         protected Color _hitColor;
-        protected Color _regularColor;
-        protected Color _color;
-        protected int _hitFrames = 10; // = 8 How many frame do we show the hit color
+        protected Color _currentColor;
+        protected int _hitFrames = 30; // How many frames after being hit until the color recovers to normal
         protected int _hitFramesCounter = 0;
         protected Rectangle _rect;
 
@@ -92,9 +92,9 @@ namespace YGR
             Room = Level.GetRoom(this, Room);
             Gun = new Gun_BasicEnemy();
 
-            _hitColor = Color.OrangeRed;
-            _regularColor = Color.Orange;
-            _color = Color.DarkSlateGray * 0.4f; // Initially we're disabled
+            Color = Color.Orange;
+            _currentColor = Color.DarkSlateGray * 0.4f; // Initially we're disabled
+            _hitColor = Color.DarkRed;
 
             var rand = new Random();
             Identifier = DateTime.Now.Hour.ToString() + "-" + DateTime.Now.Second.ToString() + "-" + DateTime.Now.Millisecond.ToString() + "-" + rand.NextSingle().ToString();
@@ -158,7 +158,7 @@ namespace YGR
 
             LifePoints -= projectile.Damage;
             _hitFramesCounter = 1;
-            _color = _hitColor;
+            _currentColor = Color.Lerp(_hitColor, Color, 0.1f);
         }
 
         protected void UpdateHitCounters(GameTime gameTime)
@@ -172,11 +172,13 @@ namespace YGR
                 else
                 {
                     _hitFramesCounter++;
+                    // Transition from the hitcolor back to the normal one
+                    _currentColor = Color.Lerp(_hitColor, Color, 0.1f + 0.9f * _hitFramesCounter / _hitFrames);
                 }
             }
             else
             {
-                _color = _regularColor;
+                _currentColor = Color;
             }
         }
 
@@ -388,9 +390,9 @@ namespace YGR
 
             var angle = Math.Atan2(FacingDirection.Y, FacingDirection.X) + Math.PI / 2;
             spriteBatch.Draw(
-                Manager_Sprites.AimIndicator[3], _rect.Center.ToVector2() + CharacterOffset + FacingDirection * _rect.Height,
+                Manager_Sprites.AimIndicator, _rect.Center.ToVector2() + CharacterOffset + FacingDirection * _rect.Height,
                 null,
-                Color.White, (float)angle, new Vector2(Manager_Sprites.AimIndicator[3].Width / 2, 0), 0.03f, SpriteEffects.None, 0);
+                Color.White, (float)angle, new Vector2(Manager_Sprites.AimIndicator.Width / 2, 0), 0.03f, SpriteEffects.None, 0);
 
         }
 
@@ -402,13 +404,50 @@ namespace YGR
             spriteBatch.DrawString(Fonts.Normal, str, str_pos, Color.Wheat);
         }
 
+        protected virtual void DrawHealthbar(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)
+        {
+            Vector2 dim = Manager_Sprites.HealthbarEmpty.Bounds.Size.ToVector2();
+            float scale = Math.Min(1.25f, Rect.Width / dim.X);
+            dim *= scale;
+            Vector2 offset = new Vector2((Rect.Width - dim.X) / 2, -dim.Y - 5);
+            Vector2 pos = _rect.Location.ToVector2() + offset;
+            spriteBatch.Draw(
+                texture: Manager_Sprites.HealthbarEmpty,
+                position: pos,
+                sourceRectangle: null,
+                color: Color.White,
+                rotation: 0,
+                origin: Vector2.Zero,
+                scale: scale,
+                effects: SpriteEffects.None,
+                layerDepth: 0);
+
+            // Fill the healthbar
+            if (LifePoints > 0)
+            {
+                float healthPerc = LifePoints / (float)LifePointsMax;
+                Rectangle infill = Manager_Sprites.HealthbarInfill.Bounds;
+                infill.Width = (int)(infill.Width * healthPerc);
+                spriteBatch.Draw(
+                    texture: Manager_Sprites.HealthbarInfill,
+                    position: pos,
+                    sourceRectangle: infill,
+                    color: Color.OrangeRed,
+                    rotation: 0,
+                    origin: Vector2.Zero,
+                    scale: scale,
+                    effects: SpriteEffects.None,
+                    layerDepth: 0);
+            }
+        }
+
         protected virtual void DrawCharacterSprite(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)
         {
             spriteBatch.Draw(
                 texture: CharacterSprite.Texture,
                 position: _rect.Location.ToVector2() + CharacterOffset,
                 sourceRectangle: CharacterSprite.SourceRectangle,
-                color: _color,
+                color: _currentColor,
                 rotation: 0,
                 origin: Vector2.Zero,
                 scale: CharacterScale,
@@ -438,7 +477,12 @@ namespace YGR
             {
                 DrawFaceDirectionIndicator(gameTime, globalOffset, spriteBatch);
             }
-            DrawOverheadString(gameTime, globalOffset, spriteBatch);
+
+            if (State != EnemyState.Inactive)
+            {
+                DrawHealthbar(gameTime, globalOffset, spriteBatch);
+                // DrawOverheadString(gameTime, globalOffset, spriteBatch);
+            }
         }
 
         public void DrawOutline(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)

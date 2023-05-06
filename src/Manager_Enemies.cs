@@ -3,11 +3,18 @@ using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Linq;
 
 namespace YGR
 {
     public static class Manager_Enemies
     {
+        public enum EnemyType
+        {
+            SimpleEnemy = 0,
+            BossEnemy
+        };
+
         private static List<IEnemy> _enemies = new List<IEnemy>();
 
         public static void ClearEnemies()
@@ -18,6 +25,11 @@ namespace YGR
         public static void AddEnemy_SimpleEnemy(Vector2 position, Y_Level level, IList<IVictim> players)
         {
             _enemies.Add(new Enemy_Basic(position, Manager_Sprites.NewAnimatedSprite_TestCharacter(), level, players));
+        }
+
+        public static void AddEnemy_Slime(Vector2 position, Y_Level level, IList<IVictim> players)
+        {
+            _enemies.Add(new Enemy_Slime(position, Manager_Sprites.NewAnimatedSprite_EnemySlime(), level, players));
         }
 
         internal static void AddEnemy_Gigachad(Vector2 position, Y_Level level, IList<IVictim> players)
@@ -46,7 +58,8 @@ namespace YGR
 
         public static void Draw(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)
         {
-            foreach (IEnemy enemy in _enemies)
+            var enemiesSorted = _enemies.OrderBy(t => t.Rect.Y + t.Rect.Height);
+            foreach (IEnemy enemy in enemiesSorted)
             {
                 enemy.Draw(gameTime, globalOffset, spriteBatch);
             }
