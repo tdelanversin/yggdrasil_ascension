@@ -10,6 +10,13 @@ namespace YGR
 {
     public static class Manager_Players
     {
+        public enum PlayerType
+        {
+            Nerd = 0,
+            Ninja,
+            Random,
+            Ghost
+        };
 
         // Player list
         public static List<IVictim> Players { get; private set; }
