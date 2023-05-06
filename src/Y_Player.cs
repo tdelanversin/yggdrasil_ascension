@@ -191,7 +191,6 @@ namespace YGR
 
         protected void UpdateRoom(GameTime gameTime)
         {
-            if (Room == null) return;
             if (Room.WhatAreYou() == X_LevelElements.Room)
             {
                 ((Y_CMRoom)Room).SetVisited(true);

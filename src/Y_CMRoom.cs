@@ -964,7 +964,7 @@ namespace YGR
             //}
 
             //// needs to be done this way because properties return by value and not by ref
-            //Rect = new Rectangle(position.X, position.Y, Rect.Width, Rect.Height);
+            Rect = new Rectangle(position.X, position.Y, Rect.Width, Rect.Height);
 
             foreach(var enemy in _enemies)
             {

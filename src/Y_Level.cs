@@ -289,11 +289,6 @@ namespace YGR
                 if (room.Value.WhatAreYou() == X_LevelElements.Door)
                 {
                     ((Y_Door)room.Value).SplitConnectedCollisionModels();
-                    ((Y_Door)room.Value).OpenUnlockedDoor();
-                }
-                else
-                {
-                    ((Y_CMRoom)room.Value).SetVisible(true);
                 }
             }
 
