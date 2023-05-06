@@ -131,9 +131,9 @@ namespace YGR
             _position += newVelocity * timeStepMS;
             _rect.Location = _position.ToPoint();
             _animationIndex = (int)(5 - (gameTime.TotalGameTime.TotalMilliseconds - TimeCreated) / 500);
-            Manager_Particles._particleEffects[2].Trigger(new Vector2(_rect.Location.X + _rect.Width / 2, _rect.Location.Y + _rect.Height));
+            Manager_Particles._particleEffects[2].Trigger(new Vector2(_rect.Location.X + _rect.Width / 2, _rect.Location.Y + _rect.Height/2));
 
-            Manager_Particles.Update(gameTime);
+           
 
         }
 
@@ -152,7 +152,7 @@ namespace YGR
                 _window.Height
             );
             //Logger.Debug("Drawing projectile at " + destinationRectangle.ToString() + " with source " + sourceRectangle.ToString());
-
+            Manager_Particles.Draw(gameTime, spriteBatch);
             spriteBatch.Draw(
                 _sprite, destinationRectangle.Location.ToVector2(),
                 sourceRectangle,
