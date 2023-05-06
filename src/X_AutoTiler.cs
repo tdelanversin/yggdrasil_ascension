@@ -30,7 +30,7 @@ namespace YGR
 
         internal class TileData
         {
-            public string[,][] mask;
+            public string[][,][] masks;
             public List<Textel> coordinates;
         }
 
@@ -78,7 +78,7 @@ namespace YGR
         {
             public int tileSize;
             public Dictionary<string, List<Color[]>> tiles;
-            public Dictionary<string, X_TileType[,][]> masks;
+            public Dictionary<string, X_TileType[][,][]> masks;
         }
 
         private static Random random;
@@ -129,7 +129,7 @@ namespace YGR
 
             info.tileSize = data.size;
             info.tiles = new Dictionary<string, List<Color[]>>();
-            info.masks = new Dictionary<string, X_TileType[,][]>();
+            info.masks = new Dictionary<string, X_TileType[][,][]>();
 
             foreach (var t in data.tiles)
             {
@@ -141,7 +141,12 @@ namespace YGR
                     info.tiles[t.Key].Add(temp);
                 }
 
-                info.masks.Add(t.Key, map(t.Value.mask, mapJsonName));
+                var masks = new List<X_TileType[,][]>();
+                foreach (var mask in t.Value.masks)
+                {
+                    masks.Add(map(mask, mapJsonName));
+                }
+                info.masks.Add(t.Key, masks.ToArray());
             }
         }
 
@@ -156,22 +161,25 @@ namespace YGR
             return match;
         }
 
-        private static List<Tuple<int, int>> match(X_TileType[][] pattern, X_TileType[,][] tile)
+        private static List<Tuple<int, int>> match(X_TileType[][] pattern, X_TileType[][,][] tiles)
         {
             List<Tuple<int, int>> res = new List<Tuple<int, int>>();
-            for (int y = 1; y < pattern.Length - 1; ++y)
+            foreach(var tile in tiles)
             {
-                for (int x = 1; x < pattern[0].Length - 1; ++x)
+                for (int y = 1; y < pattern.Length - 1; ++y)
                 {
-                    for (int j = -1; j <= 1; ++j)
+                    for (int x = 1; x < pattern[0].Length - 1; ++x)
                     {
-                        for (int i = -1; i <= 1; ++i)
+                        for (int j = -1; j <= 1; ++j)
                         {
-                            if (!evalTile(pattern[y + j][x + i], tile[j + 1, i + 1])) goto no_match;
+                            for (int i = -1; i <= 1; ++i)
+                            {
+                                if (!evalTile(pattern[y + j][x + i], tile[j + 1, i + 1])) goto no_match;
+                            }
                         }
+                        res.Add(new Tuple<int, int>(x - 1, y - 1));
+                    no_match: continue;
                     }
-                    res.Add(new Tuple<int, int>(x - 1, y - 1));
-                no_match: continue;
                 }
             }
             return res;
@@ -266,11 +274,6 @@ namespace YGR
                 }
             }
 
-            //res.Mechanism1 = new Texture2D(graphicsDevice, info.tileSize, info.tileSize);
-            //res.Mechanism2 = new Texture2D(graphicsDevice, info.tileSize, info.tileSize);
-            //Texture2D texture = new Texture2D(graphicsDevice, pattern[0].Length * info.tileSize, pattern.Length * info.tileSize);
-            //texture.SetData<Color>(tx);
-            //res.Roof = texture;
             res.RoofData = tx;
 
             res.Mechanism1Data = info.tiles["mechanism1"].First();
