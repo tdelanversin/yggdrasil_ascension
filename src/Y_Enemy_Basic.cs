@@ -37,9 +37,9 @@ namespace YGR
         protected IVictim Target = null;
         public float Scale { get; set; }
         protected Vector2 _position;
+        public Color Color;
         protected Color _hitColor;
-        protected Color _regularColor;
-        protected Color _color;
+        protected Color _currentColor;
         protected int _hitFrames = 10; // = 8 How many frame do we show the hit color
         protected int _hitFramesCounter = 0;
         protected Rectangle _rect;
@@ -93,8 +93,8 @@ namespace YGR
             Gun = new Gun_BasicEnemy();
 
             _hitColor = Color.OrangeRed;
-            _regularColor = Color.Orange;
-            _color = Color.DarkSlateGray * 0.4f; // Initially we're disabled
+            Color = Color.Orange;
+            _currentColor = Color.DarkSlateGray * 0.4f; // Initially we're disabled
 
             var rand = new Random();
             Identifier = DateTime.Now.Hour.ToString() + "-" + DateTime.Now.Second.ToString() + "-" + DateTime.Now.Millisecond.ToString() + "-" + rand.NextSingle().ToString();
@@ -158,7 +158,7 @@ namespace YGR
 
             LifePoints -= projectile.Damage;
             _hitFramesCounter = 1;
-            _color = _hitColor;
+            _currentColor = _hitColor;
         }
 
         protected void UpdateHitCounters(GameTime gameTime)
@@ -176,7 +176,7 @@ namespace YGR
             }
             else
             {
-                _color = _regularColor;
+                _currentColor = Color;
             }
         }
 
@@ -445,7 +445,7 @@ namespace YGR
                 texture: CharacterSprite.Texture,
                 position: _rect.Location.ToVector2() + CharacterOffset,
                 sourceRectangle: CharacterSprite.SourceRectangle,
-                color: _color,
+                color: _currentColor,
                 rotation: 0,
                 origin: Vector2.Zero,
                 scale: CharacterScale,

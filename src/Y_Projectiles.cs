@@ -66,6 +66,11 @@ namespace YGR
             Collision = new X_CollisionModel_Projectile(_mass, 1.0f);
             Color = Color.White; // neutral
 
+            // Make Slime's projectiles have its color
+            if (who is Enemy_Slime) {
+                Color = ((Enemy_Slime)who).Color;
+            }
+
             // TODO: we could probably get rid of the global scale and simplify this at one point
             Room = Level.GetRoom(this, Room);
             Scale = _scale * Room.Scale;
