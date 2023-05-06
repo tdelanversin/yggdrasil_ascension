@@ -1004,6 +1004,11 @@ namespace YGR
                 Collision.UpdateCollisionRectangles(_doorCollisionRectangles[X_DoorState.Closed]);
         }
 
+        public List<X_Light> GetAllRelevantLights()
+        {
+            return Lights;
+        }
+
         public bool IsDoorOpen()
         {
             return State == X_DoorState.Open || State == X_DoorState.LockedOpen;

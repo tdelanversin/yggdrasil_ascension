@@ -497,6 +497,22 @@ namespace YGR
             IlluminationResources = new X_IlluminationResources();
         }
 
+        public List<X_Light> GetAllRelevantLights()
+        {
+            List<X_Light> ret = new List<X_Light>();
+            ret.AddRange(Lights);
+            foreach (var door in DoorRooms)
+            {
+                // add all doors and make sure they are in the opened state
+                var d = (Y_Door)door.Value.First();
+                if (d.DoorIsOpen())
+                {
+                    ret.AddRange(d.Lights);
+                }
+            }
+            return ret.Distinct().ToList();
+        }
+
         public void ToggleDoors()
         {
             _doorsToggled = true;

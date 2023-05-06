@@ -27,5 +27,6 @@ namespace YGR
         public Texture2D ShadeTexture { get; set; }
         public Vector3 Offset { get; set; }
         public List<X_Light> Lights { get; set; }
+        public List<X_Light> GetAllRelevantLights();
     }
 }

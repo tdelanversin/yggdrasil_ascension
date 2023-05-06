@@ -52,7 +52,7 @@ namespace YGR
         public static GraphicsDevice GraphicsDevice_ { get; set; }
 
         public static Type Platform { get; set; }
-        private static int LightsBufferSize = 5;
+        private static int LightsBufferSize = 10;
         private static int VerticesBufferSize = 5000;
         private static int CoordsBufferSize = 50000;
         private static StructuredBuffer LightsBuffer;
@@ -277,7 +277,10 @@ namespace YGR
             Vector3 offset = room.Offset;
             room.IlluminationResources.Coords = new X_Vector3[length]; // Enumerable.Repeat<Vector3>(Vector3.Zero, length).ToArray();
             room.IlluminationResources.Index = new int[length];
-            room.IlluminationResources.Lights = room.Lights.Select(x => x.GetUnscaledPosition()).ToArray();
+
+            //room.IlluminationResources.Lights = room.Lights.Select(x => x.GetUnscaledPosition()).ToArray();
+            room.IlluminationResources.Lights = room.GetAllRelevantLights().Select(x => x.GetUnscaledPosition()).ToArray();
+
             room.IlluminationResources.Vertices = CreateModel(room); /* (open ? IlluminationModelOpened : IlluminationModelClosed);*/
             room.IlluminationResources.NumLights = room.IlluminationResources.Lights.Count();
             room.IlluminationResources.NumVerts = room.IlluminationResources.Vertices.Count();
