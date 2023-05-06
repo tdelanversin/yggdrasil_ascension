@@ -44,7 +44,7 @@ namespace YGR
             _particleTexture_dust = contentManager.Load<Texture2D>("SpritesEffects/dust_particle");
             _particleTexture_dust_cloud = contentManager.Load<Texture2D>("SpritesEffects/dust_cloud");
             _particleTexture_dust_cloud_light = contentManager.Load<Texture2D>("SpritesEffects/big_dust_cloud");
-            _particleTexture_fire = contentManager.Load<Texture2D>("SpritesEffects/dust_particle_red");
+            _particleTexture_fire = contentManager.Load<Texture2D>("SpritesEffects/fire_trail");
             GenParticleEffectBase(new Vector2(0, 0));
             GenParticleEffectGigaChad(new Vector2(0, 0));
             GenParticleEffectProjectileTrails(new Vector2(0, 0));
@@ -209,36 +209,33 @@ namespace YGR
                 //Position = pos,
                 Emitters = new List<ParticleEmitter>
                 {
-                    new ParticleEmitter(textureRegion, 1000, TimeSpan.FromSeconds(0.4f),
+                    new ParticleEmitter(textureRegion, 1000, TimeSpan.FromSeconds(0.1f),
                         //Profile.Point())
                         //Profile.BoxFill(15,15))
-                        Profile.Spray(new Vector2(1,1), 6f))
+                        Profile.Spray(new Vector2(1,1), 3f))
                     {
                         Parameters = new ParticleReleaseParameters
                         {
-                            Speed = new Range<float>(0f, 20f),
+                            Speed = new Range<float>(0f, 100),
                             Quantity = 8,
                             Rotation = new Range<float>(-1f, 1f),
-                            Scale = new Range<float>(0.05f, 0.1f),
+                            Scale = new Range<float>(0.5f, 1f),
                             Opacity = 0.5f
                         },
                         Modifiers =
-            {
-                new AgeModifier
-                {
-                    Interpolators =
-                    {
-                        //new ColorInterpolator
-                        //{
-                        //    StartValue = new HslColor(0f, 1f, 0.5f),
-                        //    EndValue = new HslColor(0f, 1f, 0.5f),
-                        //}
-                    }
-                },
-                //new RotationModifier {RotationRate = -2.1f},
-                //new RectangleContainerModifier {Width = 800, Height = 480},
-                //new LinearGravityModifier {Direction = -Vector2.UnitY, Strength = 30f},
-            }
+                        {
+                            new AgeModifier
+                            {
+                                Interpolators = new List<Interpolator>()
+                                {
+                                    new OpacityInterpolator { StartValue = 0.9f, EndValue = 0.1f },
+                                    new ScaleInterpolator { StartValue = new Vector2(1,1), EndValue = new Vector2(2,2) }
+                                }
+                            },
+                            new RotationModifier {RotationRate = -3f},
+                            new OpacityFastFadeModifier(),
+                            new DragModifier { Density = 0.5f, DragCoefficient = 1f }
+                        }
 
 
                     }
