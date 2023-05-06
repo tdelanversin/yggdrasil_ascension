@@ -76,16 +76,25 @@ namespace YGR
             );
         }
 
-        public static AnimatedSprite NewAnimatedSprite_Projectile(int colorIndex)
+        public static AnimatedSprite NewAnimatedSprite_ProjectileSlimeOuter()
         {
-            // Color index specifies which column to pick from the projectiles sprite sheet
             return new AnimatedSprite(
                 texture: Projectile_Simple,
                 spriteDimension: new Vector2(32, 32),
                 animations: new Dictionary<AnimationState, int[,]> {
-                    { AnimationState.Idle, new int[,] { {0,  colorIndex}, {1, colorIndex}, {2, colorIndex}} },
-                },
-                animationDuration: 1000
+                    { AnimationState.Idle, new int[,] { {0,  0}, {0, 1}, {0, 2}, {0, 3}} },
+                }
+            );
+        }
+
+        public static AnimatedSprite NewAnimatedSprite_ProjectileSlimeInner()
+        {
+            return new AnimatedSprite(
+                texture: Projectile_Simple,
+                spriteDimension: new Vector2(32, 32),
+                animations: new Dictionary<AnimationState, int[,]> {
+                    { AnimationState.Idle, new int[,] { {1,  0}, {1, 1}, {1, 2}, {1, 3}} },
+                }
             );
         }
 

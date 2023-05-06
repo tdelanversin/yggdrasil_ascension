@@ -43,7 +43,7 @@ namespace YGR
                 new Projectile_Basic(
                     position: startPosition,
                     direction: direction,
-                    sprite: Manager_Sprites.NewAnimatedSprite_Projectile(3), // Blue
+                    sprite: Manager_Sprites.NewAnimatedSprite_ProjectileSlimeOuter(), // TODO: dedicated sprite
                     level: level,
                     who: who,
                     scale: 0.35f,
@@ -64,7 +64,7 @@ namespace YGR
                 new Projectile_Basic(
                     position: startPosition,
                     direction: direction,
-                    sprite: Manager_Sprites.NewAnimatedSprite_Projectile(4), // Purple
+                    sprite: Manager_Sprites.NewAnimatedSprite_ProjectileSlimeOuter(), // TODO: dedicated sprite
                     level: level,
                     who: who,
                     scale: 0.25f,
@@ -82,10 +82,11 @@ namespace YGR
             if (!BoundsCheckSimple(startPosition, ((IVictim)who).Room)) return;
 
             _projectiles.Add(
-                new Projectile_Basic(
+                new Projectile_Slime(
                     position: startPosition,
                     direction: direction,
-                    sprite: Manager_Sprites.NewAnimatedSprite_Projectile(0), // Red/Orange
+                    spriteOuter: Manager_Sprites.NewAnimatedSprite_ProjectileSlimeOuter(),
+                    spriteInner: Manager_Sprites.NewAnimatedSprite_ProjectileSlimeInner(),
                     level: level,
                     who: who,
                     scale: 1f,

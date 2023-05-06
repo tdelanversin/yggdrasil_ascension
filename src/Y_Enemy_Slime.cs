@@ -38,7 +38,7 @@ namespace YGR
             Collision = new X_CollisionModel_Victim(_mass, 0.0f);
 
             // Collision bounds
-            int height = 55;
+            int height = 45;
             int width = (int)(height / CharacterSprite.SpriteDimension.Y * CharacterSprite.SpriteDimension.X);
 
             _rect = new Rectangle(
