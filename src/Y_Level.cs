@@ -99,11 +99,11 @@ namespace YGR
             List<Tuple<string, string>> files = new List<Tuple<string, string>>();
             foreach (var folder in categoryFolders)
             {
-                string category = folder.Split(Path.DirectorySeparatorChar).Last();
-
-                var fs = Directory.GetDirectories(Util.PathOsNormalization(folder + Path.DirectorySeparatorChar + category + Path.DirectorySeparatorChar + _data.LdtkSubfolderName));
+                var fs = Directory.GetDirectories(Util.PathOsNormalization(folder + Path.DirectorySeparatorChar + "Trunc" + Path.DirectorySeparatorChar + _data.LdtkSubfolderName));
                 foreach (var f in fs)
                 {
+                    string category = f.Split(Path.DirectorySeparatorChar).Last().Split("_").First();
+
                     if (Directory.GetFiles(f).Length > 0)
                         files.Add(new Tuple<string, string>(category, f));
                 }
@@ -289,6 +289,11 @@ namespace YGR
                 if (room.Value.WhatAreYou() == X_LevelElements.Door)
                 {
                     ((Y_Door)room.Value).SplitConnectedCollisionModels();
+                    ((Y_Door)room.Value).OpenUnlockedDoor();
+                }
+                else
+                {
+                    ((Y_CMRoom)room.Value).SetVisible(true);
                 }
             }
 
@@ -370,7 +375,7 @@ namespace YGR
 
             _startRoom.SetVisible(true);
             //_goldRoom.SetVisible(true);
-            //_startRoom.Illuminate();
+            _startRoom.Illuminate();
             //_goldRoom.Illuminate();
             Manager_Sound.PlayFreeRoamMusic();
         }
