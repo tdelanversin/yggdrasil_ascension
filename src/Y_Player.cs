@@ -23,6 +23,7 @@ namespace YGR
         // IVictim fields
         public int LifePoints { get; set; }
         public int LifePointsMax { get; set; }
+        public Color Color { get; set; }
         public X_CollisionModel_Victim Collision { get; }
         public Vector2 Velocity { get; set; }
         public Y_Level Level { get; set; }
@@ -46,7 +47,6 @@ namespace YGR
         protected float _maxVelocity;
         protected Vector2 Position;
         protected ParticleEffect pE;
-        protected Color _color;
         protected bool _isAiming;
         protected bool _invincible;
         protected float _invincibleDuration;
@@ -56,7 +56,6 @@ namespace YGR
         protected InputType _currentAimInput;
         protected float _actionTimer;
         protected float _actionTreshold;
-        private Color _healthbarColor;
 
         protected enum InputType
         {
@@ -88,29 +87,25 @@ namespace YGR
             LifePoints = LifePointsMax;
             _invincibleDuration = 1250;
 
-            // Set up sprites
-            _spriteAimIndicator = Manager_Sprites.AimIndicator[(int)playerIndex];
-
+            _spriteAimIndicator = Manager_Sprites.AimIndicator;
             switch ((int)playerIndex)
             {
                 case 0:
-                    _healthbarColor = Color.Red;
+                    Color = Color.Red;
                     break;
                 case 1:
-                    _healthbarColor = Color.Blue;
+                    Color = Color.Blue;
                     break;
                 case 2:
-                    _healthbarColor = Color.Green;
+                    Color = Color.Green;
                     break;
                 case 3:
-                    _healthbarColor = Color.Yellow;
+                    Color = Color.Yellow;
                     break;
                 default:
-                    _healthbarColor = Color.White;
+                    Color = Color.White;
                     break;
             }
-
-            _color = Color.White;
 
             // Collision bounds
             int height = 60;
@@ -205,11 +200,11 @@ namespace YGR
                 if (_invincibleTimeLeft < 0)
                 {
                     _invincible = false;
-                    _color = Color.White;
+                    Color = Color.White;
                 }
                 else
                 {
-                    _color = Color.DimGray * (float)((Math.Sin(_invincibleTimeLeft / 50) + 1) / 2);
+                    Color = Color.DimGray * (float)((Math.Sin(_invincibleTimeLeft / 50) + 1) / 2);
                 }
             }
         }
@@ -387,7 +382,7 @@ namespace YGR
                 texture: CharacterSprite.Texture,
                 position: _rect.Location.ToVector2() + CharacterOffset,
                 sourceRectangle: CharacterSprite.SourceRectangle,
-                color: _color,
+                color: Color.White,
                 rotation: 0,
                 origin: Vector2.Zero,
                 scale: CharacterScale,
@@ -431,7 +426,7 @@ namespace YGR
                     texture: Manager_Sprites.HealthbarInfill,
                     position: pos,
                     sourceRectangle: infill,
-                    color: _healthbarColor,
+                    color: Color,
                     rotation: 0,
                     origin: Vector2.Zero,
                     scale: scale,
@@ -449,7 +444,7 @@ namespace YGR
                 spriteBatch.Draw(
                     _spriteAimIndicator, _rect.Location.ToVector2() + _rect.Size.ToVector2() / 2f + _aimDirection * (int)(_rect.Height * 1.5),
                     null,
-                    Color.White, (float)angle, new Vector2(_spriteAimIndicator.Width / 2, 0), 0.1f, SpriteEffects.None, 0);
+                    Color, (float)angle, new Vector2(_spriteAimIndicator.Width / 2, 0), 0.1f, SpriteEffects.None, 0);
             }
         }
 

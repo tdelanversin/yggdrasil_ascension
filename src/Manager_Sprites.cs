@@ -13,7 +13,7 @@ namespace YGR
         public static Texture2D Player_Simple { get; private set; }
         public static Texture2D Player_NerdyGirl { get; private set; }
         public static Texture2D Player_Ghost { get; private set; }
-        public static IList<Texture2D> AimIndicator { get; private set; }
+        public static Texture2D AimIndicator { get; private set; }
 
         // Projectiles
         public static Texture2D Projectile_Simple { get; private set; }
@@ -38,13 +38,7 @@ namespace YGR
             Player_Ghost = contentManager.Load<Texture2D>("SpritesCharacters/ghosty");
             Player_NerdyGirl = contentManager.Load<Texture2D>("SpritesCharacters/NerdyGirl");
 
-            AimIndicator = new List<Texture2D> {
-                contentManager.Load<Texture2D>("SpritesOther/target_indicator_red"),
-                contentManager.Load<Texture2D>("SpritesOther/target_indicator_blue"),
-                contentManager.Load<Texture2D>("SpritesOther/target_indicator_green"),
-                contentManager.Load<Texture2D>("SpritesOther/target_indicator_yellow"),
-            };
-
+            AimIndicator = contentManager.Load<Texture2D>("SpritesOther/target_indicator");
             Projectile_Simple = contentManager.Load<Texture2D>("SpritesOther/projectiles");
 
             HealthbarEmpty = contentManager.Load<Texture2D>("SpritesOther/healthbar_empty");

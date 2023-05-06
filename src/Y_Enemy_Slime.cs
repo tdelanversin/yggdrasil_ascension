@@ -32,7 +32,7 @@ namespace YGR
 
             Color = SlimeyColors[Util.random.Next(SlimeyColors.Count)]; // Slimey green, picked from the colored png files
             _currentColor = Color;
-            _hitColor = Color.OrangeRed;
+            _hitColor = Color.DarkRed;
 
             var _mass = 2.0f;
             Collision = new X_CollisionModel_Victim(_mass, 0.0f);
