@@ -1287,7 +1287,7 @@ namespace YGR
                     fence2 = _fenceH;
                     scale = temp / fence2.Width;
                     p1 = Doors[X_ConnectorSide.Top].First().Point.ToVector2() - new Vector2(temp / 2, TextureTileSize / 2.0f);
-                    p2 = Doors[X_ConnectorSide.Bottom].First().Point.ToVector2() - new Vector2(temp / 2, -TextureTileSize / 2.0f);
+                    p2 = Doors[X_ConnectorSide.Bottom].First().Point.ToVector2() - new Vector2(temp / 2, TextureTileSize / 2.0f);
                 }
                 else if(_direction == X_DoorDirection.Horizontal)
                 {
