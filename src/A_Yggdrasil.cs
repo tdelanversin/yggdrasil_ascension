@@ -42,7 +42,6 @@ namespace YGR
 
             string level = "Level_3";
             Factory_Debug.Initialize(Content);
-            Manager_Projectile.Initialize(Content);
             Manager_Players.Initialize();
             Manager_Particles.Initialize();
             Manager_Light2.Initialize("./Levels/" + level + "/simplified", Content, GraphicsDevice);
@@ -136,6 +135,7 @@ namespace YGR
                     Manager_Players.Update(gameTime);
                     Manager_Projectile.Update(gameTime);
                     Manager_Enemies.Update(gameTime);
+                    Manager_Particles.Update(gameTime);
                     _level.Update(gameTime);
                     break;
                 case GameState.Menu:

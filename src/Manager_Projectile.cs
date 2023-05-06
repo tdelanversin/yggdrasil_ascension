@@ -1,8 +1,5 @@
-using Assimp;
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
-using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 
@@ -14,63 +11,104 @@ namespace YGR
     /// </summary>
     public static class Manager_Projectile
     {
-        public static Dictionary<string, Texture2D> projectile_textures;
         private static List<IProjectile> _projectiles = new List<IProjectile>();
-        private static bool _initialized = false;
-        private static double _maxlifetime = 2500.0;
-
-        public static void Initialize(ContentManager content)
-        {
-            projectile_textures = new Dictionary<string, Texture2D>()
-            {
-                { "default_projectile", content.Load<Texture2D>("SpritesOther/projectile") },
-                { "smaller_projectile", content.Load<Texture2D>("SpritesOther/smaller_projectile")}
-            };
-
-            _initialized = true;
-        }
 
         public static ReadOnlyCollection<IProjectile> GetProjectiles()
         {
             return _projectiles.AsReadOnly();
         }
 
-        private static void check()
+        //. Returns true only when position is inside the room
+        public static bool BoundsCheckSimple(Vector2 position, IWalkable room)
         {
-            if (!_initialized) Logger.Error("Manager_Projectile not initialized: call Manager_Projectile.Initialize(ContentManager) somewhere!");
+            return room.Rect.Contains(position);
         }
 
-        public static void AddProjectile_StarterProjectile(Vector2 startPosition, Vector2 direction, double timeCreated, Y_Level level, IGameElement who)
+        /// Returns true only when position is inside the room and not inside any collision obstacles
+        public static bool BoundsCheckFull(Vector2 position, IWalkable room)
         {
-            check();
-            if (!((IVictim)who).Room.Rect.Contains(startPosition)) return;
-            _projectiles.Add(new Projectile_Basic(startPosition, direction, timeCreated, level, who));
+            if (!BoundsCheckSimple(position, room)) return false;
+
+            // TODO: implement, get all collision rectangles of the room and check if we're colliding with them
+
+            return true;
         }
 
-        public static void AddProjectile_ShotGunProjectile(Vector2 startPosition, Vector2 direction, double timeCreated, Y_Level level, IGameElement who)
+        /// Basic, well rounded projectile
+        public static void AddProjectile_StarterProjectile(Vector2 startPosition, Vector2 direction, Y_Level level, IGameElement who)
         {
-            check();
-            if (!((IVictim)who).Room.Rect.Contains(startPosition)) return;
-            _projectiles.Add(new Projectile_Shotgun(startPosition, direction, timeCreated, level, who));
+            if (!BoundsCheckSimple(startPosition, ((IVictim)who).Room)) return;
+
+            _projectiles.Add(
+                new Projectile_Basic(
+                    position: startPosition,
+                    direction: direction,
+                    sprite: Manager_Sprites.NewAnimatedSprite_Projectile(3), // Blue
+                    level: level,
+                    who: who,
+                    scale: 0.35f,
+                    damage: 1,
+                    maxAge: 2500,
+                    speed: 0.55f,
+                    mass: 0.5f
+                )
+            );
+        }
+
+        /// Lighter, smaller, slower and more short-lived than normal projectile
+        public static void AddProjectile_ShotGunProjectile(Vector2 startPosition, Vector2 direction, Y_Level level, IGameElement who)
+        {
+            if (!BoundsCheckSimple(startPosition, ((IVictim)who).Room)) return;
+
+            _projectiles.Add(
+                new Projectile_Basic(
+                    position: startPosition,
+                    direction: direction,
+                    sprite: Manager_Sprites.NewAnimatedSprite_Projectile(4), // Purple
+                    level: level,
+                    who: who,
+                    scale: 0.25f,
+                    damage: 1,
+                    maxAge: 1500,
+                    speed: 0.45f,
+                    mass: 0.1f
+                )
+            );
+        }
+
+        /// Larger, slower, heavier, longer lived and deals more damage
+        public static void AddProjectile_EnemySlimeProjectile(Vector2 startPosition, Vector2 direction, Y_Level level, IGameElement who)
+        {
+            if (!BoundsCheckSimple(startPosition, ((IVictim)who).Room)) return;
+
+            _projectiles.Add(
+                new Projectile_Basic(
+                    position: startPosition,
+                    direction: direction,
+                    sprite: Manager_Sprites.NewAnimatedSprite_Projectile(0), // Red/Orange
+                    level: level,
+                    who: who,
+                    scale: 1f,
+                    damage: 2,
+                    maxAge: 3500,
+                    speed: 0.25f,
+                    mass: 0.8f
+                )
+            );
         }
 
         public static void Update(GameTime gameTime)
         {
-            check();
             float deltaTime = (float)gameTime.ElapsedGameTime.TotalSeconds;
             foreach (IProjectile projectile in _projectiles)
             {
                 projectile.Update(gameTime);
             }
-
-            // TODO: Add projectile collision detection
-
-            _projectiles.RemoveAll(projectile => (projectile.TimeCreated + _maxlifetime < gameTime.TotalGameTime.TotalMilliseconds) || projectile.DeleteNext);
+            _projectiles.RemoveAll(projectile => (projectile.Age > projectile.MaxAge) || projectile.DeleteNext);
         }
 
         public static void Draw(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)
         {
-            check();
             foreach (IProjectile projectile in _projectiles)
             {
                 projectile.Draw(gameTime, globalOffset, spriteBatch);
@@ -79,7 +117,6 @@ namespace YGR
 
         public static void DrawOutline(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)
         {
-            check();
             foreach (IProjectile projectile in _projectiles)
             {
                 projectile.DrawOutline(gameTime, globalOffset, spriteBatch);

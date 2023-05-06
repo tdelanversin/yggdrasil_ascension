@@ -45,7 +45,7 @@ namespace YGR
             };
 
             Projectile_Simple = contentManager.Load<Texture2D>("SpritesOther/projectiles");
-            
+
             HealthbarEmpty = contentManager.Load<Texture2D>("SpritesOther/healthbar_empty");
             HealthbarInfill = contentManager.Load<Texture2D>("SpritesOther/healthbar_infill");
 
@@ -75,6 +75,19 @@ namespace YGR
                 spriteDimension: new Vector2(1811, 1938),
                 animations: new Dictionary<AnimationState, int[]> {
                     { AnimationState.Idle, new int[] { 0, 1, 2, 3, 4, 5 } },
+                },
+                animationDuration: 1000
+            );
+        }
+
+        public static AnimatedSprite NewAnimatedSprite_Projectile(int colorIndex)
+        {
+            // Color index specifies which column to pick from the projectiles sprite sheet
+            return new AnimatedSprite(
+                texture: Projectile_Simple,
+                spriteDimension: new Vector2(32, 32),
+                animations: new Dictionary<AnimationState, int[,]> {
+                    { AnimationState.Idle, new int[,] { {0,  colorIndex}, {1, colorIndex}, {2, colorIndex}} },
                 },
                 animationDuration: 1000
             );
