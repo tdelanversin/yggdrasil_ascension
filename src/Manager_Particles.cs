@@ -19,30 +19,41 @@ namespace YGR
 {
     public static class Manager_Particles
     {
-        private static ParticleEffect _particleEffect;
-        private static Texture2D _particleTexture;
+        private static ParticleEffect _particleEffect_dust;
+        private static ParticleEffect _particleEffect_dust_cloud;
+        private static ParticleEffect _particleEffect_dust_cloud_light;
+        private static Texture2D _particleTexture_dust;
+        private static Texture2D _particleTexture_dust_cloud;
+        private static Texture2D _particleTexture_dust_cloud_light;
         private static ParticleEffect _particleEffect_fire;
         private static Texture2D _particleTexture_fire;
+
+  
         public static List<ParticleEffect> _particleEffects { get;  private set; }
         public static void Initialize()
         {
             _particleEffects = new List<ParticleEffect>();
-            _particleEffect = new ParticleEffect();
+            _particleEffect_dust = new ParticleEffect();
+            _particleEffect_dust_cloud_light = new ParticleEffect();
+            _particleEffect_dust_cloud = new ParticleEffect();
             _particleEffect_fire = new ParticleEffect();
         }
 
-        public static void LoadContent(ContentManager contentManager)
+        public static void LoadContent(ContentManager contentManager, GraphicsDevice graphicsDevice)
         {
-            _particleTexture = contentManager.Load<Texture2D>("SpritesEffects/dust_particle");
+            _particleTexture_dust = contentManager.Load<Texture2D>("SpritesEffects/dust_particle");
+            _particleTexture_dust_cloud = contentManager.Load<Texture2D>("SpritesEffects/dust_cloud");
+            _particleTexture_dust_cloud_light = contentManager.Load<Texture2D>("SpritesEffects/big_dust_cloud");
             _particleTexture_fire = contentManager.Load<Texture2D>("SpritesEffects/dust_particle_red");
             GenParticleEffectBase(new Vector2(0, 0));
             GenParticleEffectGigaChad(new Vector2(0, 0));
             GenParticleEffectProjectileTrails(new Vector2(0, 0));
+            GenParticleEffectDustCloudLight(graphicsDevice);
         }
         public static void GenParticleEffectBase(Vector2 pos )
         {
-            TextureRegion2D textureRegion = new TextureRegion2D(_particleTexture);
-            _particleEffect = new ParticleEffect(autoTrigger: false)
+            TextureRegion2D textureRegion = new TextureRegion2D(_particleTexture_dust);
+            _particleEffect_dust = new ParticleEffect(autoTrigger: false)
             {
                 Position = new Vector2(33330,3330),
                 //Position = pos,
@@ -73,13 +84,97 @@ namespace YGR
                     }
                 }
             };
-            _particleEffects.Add(_particleEffect);
+            _particleEffects.Add(_particleEffect_dust);
         }
+        public static void GenParticleEffectDustCloud()
+        {
+            TextureRegion2D textureRegion = new TextureRegion2D(_particleTexture_dust_cloud);
+            _particleEffect_dust_cloud = new ParticleEffect(autoTrigger: false)
+            {
+                Position = new Vector2(33330, 3330),
+                //Position = pos,
+                Emitters = new List<ParticleEmitter>
+                {
+                    new ParticleEmitter(textureRegion, 1000, TimeSpan.FromSeconds(0.15f),
+                        Profile.Line(new Vector2(1,1), 5 ))
+                        //Profile.BoxFill(15,15))
+                    {
+                        Parameters = new ParticleReleaseParameters{
+                        
+                            Speed = new Range<float>(5f, 5f),
+                            Quantity = 5,
+                            //Rotation = new Range<float>(-1f, 1f),
+                            Scale = new Range<float>(1f,10f),
+                            Opacity = 1f
+                        },
+                         Modifiers =  {
+                            new AgeModifier()
+                                {
+                                    Interpolators = new List<Interpolator>()
+                                    {
+                                        new ScaleInterpolator { StartValue = new Vector2(1,1), EndValue = new Vector2(3,3) },
 
+
+                                    }
+                                },
+                            new OpacityFastFadeModifier(),
+                            
+
+                        }
+
+                    }
+                }
+            };
+            _particleEffects.Add(_particleEffect_dust_cloud);
+        }
+        public static void GenParticleEffectDustCloudLight(GraphicsDevice _graphicsDevice)
+        {
+            _particleTexture_dust_cloud_light = new Texture2D(_graphicsDevice, 1, 1);
+            _particleTexture_dust_cloud_light.SetData(new[] { Color.Black * 0.5f });
+
+            TextureRegion2D textureRegion = new TextureRegion2D(_particleTexture_dust_cloud_light);
+            _particleEffect_dust_cloud_light = new ParticleEffect(autoTrigger: false)
+            {
+                Position = new Vector2(20060, 23005),
+                Emitters = new List<ParticleEmitter>
+                {
+                    new ParticleEmitter(textureRegion, 25000, TimeSpan.FromSeconds(0.2),
+                        //Profile.Spray(new Vector2(-0.95f,-1f), 1f ))
+                        Profile.Circle(5, Profile.CircleRadiation.Out))
+                        //Profile.Point())
+                    {
+                        Parameters = new ParticleReleaseParameters
+                        {
+                            Speed = new Range<float>(1f, 10f),
+                            Quantity = 10,
+                            Opacity = 1,//new Range<float>(0.1f, f),
+                            Rotation = new Range<float>(-1f, 1f),
+                            Scale = new Range<float>(1.0f, 3.0f),
+                            Mass = 1.25f,
+                        },
+                        Modifiers =
+                        {
+                            new AgeModifier
+                            {
+                                Interpolators = new List<Interpolator>()
+                                {
+                                    new OpacityInterpolator { StartValue = 0.9f, EndValue = 0.1f },
+                                    new ScaleInterpolator { StartValue = new Vector2(1,1), EndValue = new Vector2(2,2) }
+                                }
+                            },
+                            new RotationModifier {RotationRate = -3f},
+                            new OpacityFastFadeModifier(),
+                            new DragModifier { Density = 0.5f, DragCoefficient = 1f }
+                        }
+                    }
+                }
+            };
+            _particleEffects.Add(_particleEffect_dust_cloud_light);
+        }
         public static void GenParticleEffectGigaChad(Vector2 pos)
         {
-            TextureRegion2D textureRegion = new TextureRegion2D(_particleTexture);
-            _particleEffect = new ParticleEffect(autoTrigger: false)
+            TextureRegion2D textureRegion = new TextureRegion2D(_particleTexture_dust);
+            _particleEffect_dust = new ParticleEffect(autoTrigger: false)
             {
                 Position = new Vector2(33330, 3330),
                 //Position = pos,
@@ -97,12 +192,13 @@ namespace YGR
                             Scale = new Range<float>(0.05f, 0.1f),
                             Opacity = 0.2f
                         },
+                       
                       
                         
                     }
                 }
             };
-            _particleEffects.Add(_particleEffect);
+            _particleEffects.Add(_particleEffect_dust);
         }
         public static void GenParticleEffectProjectileTrails(Vector2 pos)
         {
@@ -150,11 +246,11 @@ namespace YGR
             };
             _particleEffects.Add(_particleEffect_fire);
         }
-        public static void Dispose()
-        {
-            _particleTexture.Dispose();
-            _particleEffect.Dispose();
-        }
+        //public static void Dispose()
+        //{
+        //    _particleTexture_dust.Dispose();
+        //    _particleEffect_dust.Dispose();
+        //}
         public static void Update(GameTime gameTime)
         {
             foreach (var pE in _particleEffects)
@@ -163,7 +259,7 @@ namespace YGR
             }
         }
 
-        public static void Draw(GameTime gameTime, Vector2 zero, SpriteBatch spriteBatch)
+        public static void Draw(GameTime gameTime, SpriteBatch spriteBatch)
         {
             foreach (var pE in _particleEffects)
             {

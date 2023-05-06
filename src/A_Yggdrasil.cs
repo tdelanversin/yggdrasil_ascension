@@ -60,15 +60,10 @@ namespace YGR
             Manager_Sound.LoadContent(Content);
             Manager_Sprites.LoadContent(Content);
             _spriteBatch = new SpriteBatch(GraphicsDevice);
-            Manager_Particles.LoadContent(Content);
+            Manager_Particles.LoadContent(Content, GraphicsDevice);
             Manager_Sound.PlayMainMenuMusic();
 
             _level.Preprocess(GraphicsDevice);
-        }
-
-        protected override void UnloadContent()
-        {
-            Manager_Particles.Dispose();
         }
 
         internal void StartNewGame()
@@ -152,7 +147,6 @@ namespace YGR
                     Menu.Update();
                     break;
             }
-
             base.Update(gameTime);
         }
 
@@ -180,7 +174,7 @@ namespace YGR
 
                     _level.Draw(gameTime, Vector2.Zero, _spriteBatch);
 
-                    Manager_Particles.Draw(gameTime, zero, _spriteBatch);
+                    Manager_Particles.Draw(gameTime, _spriteBatch);
                     Manager_Projectile.Draw(gameTime, zero, _spriteBatch);
 
                     Manager_Enemies.Draw(gameTime, zero, _spriteBatch);

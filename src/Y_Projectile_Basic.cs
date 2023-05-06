@@ -69,7 +69,7 @@ namespace YGR
             // TODO: we could probably get rid of the global scale and simplify this at one point
             Room = Level.GetRoom(this, Room);
             Scale = _scale * Room.Scale;
-            _size = Scale  * _sprite.SpriteDimension;
+            _size = Scale * _sprite.SpriteDimension;
 
             // Center on the initial position
             // Note that the position is only affected by the global scale, not the internal one
@@ -120,13 +120,12 @@ namespace YGR
             _sprite.Update(gameTime, AnimationState.Idle);
 
             /* Particle handling */
-            Manager_Particles._particleEffects[2].Trigger(new Vector2(_rect.Location.X + _rect.Width / 2, _rect.Location.Y + _rect.Height));
-            // Not sure about this, but it is surely better than calling Manager_Particles.Update() here
-            Manager_Particles._particleEffects[2].Update((float)gameTime.ElapsedGameTime.TotalSeconds);
+            Manager_Particles._particleEffects[2].Trigger(new Vector2(_rect.Location.X + _rect.Width / 2, _rect.Location.Y + _rect.Height / 2));
         }
 
         public virtual void Draw(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)
         {
+            Manager_Particles.Draw(gameTime, spriteBatch);
             spriteBatch.Draw(
                 _sprite.Texture, _position + globalOffset,
                 _sprite.SourceRectangle,
