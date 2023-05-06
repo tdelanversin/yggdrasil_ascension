@@ -48,7 +48,6 @@ namespace YGR
             Manager_Particles.Initialize();
             Manager_Light2.Initialize("./Levels/" + level + "/simplified", Content, GraphicsDevice);
             X_AutoTiler.Initialize("./Doors/", "data.json", GraphicsDevice, Y_Door.MapJsonName);
-            Y_MultiPowerUp.Initialize(Content);
             Y_Door.Initialize(Content);
 
             GraphicsDevice_ = GraphicsDevice;

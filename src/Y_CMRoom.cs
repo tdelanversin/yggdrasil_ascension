@@ -425,7 +425,6 @@ namespace YGR
             foreach (var door in Doors)
             {
                 float sf = 1.5f;
-                int b = -2;
                 if (door.Key == X_ConnectorSide.Top)
                 {
                     var p = Doors[X_ConnectorSide.Top].First().Point;
@@ -563,11 +562,6 @@ namespace YGR
                     _powerUps[i].Item.Action(player);
                     Manager_Sound.Sound_CashIn.Play();
 
-                    if (_powerUps[i].MultiPowerUp != null && _powerUps[i].MultiPowerUp.Active)
-                    {
-                        _powerUps[i].MultiPowerUp.Item.Action(_powerUps[i], _powerUps);
-                        _powerUps[i].MultiPowerUp.Active = false;
-                    }
                     return;
                 }
             }

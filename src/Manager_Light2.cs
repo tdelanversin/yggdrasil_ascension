@@ -67,8 +67,8 @@ namespace YGR
         private static bool _working;
         private static bool _preworking;
         private static int _cooldown = 2;
-        private static int _cooldownMin = 1;
-        private static int _cooldownMax = 4;
+        //private static int _cooldownMin = 1;
+        //private static int _cooldownMax = 4;
         private static int _cooldownTimer = _cooldown;
 
         public static float ShadeFloat = 0.6f;

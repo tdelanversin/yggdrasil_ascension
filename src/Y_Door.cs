@@ -86,8 +86,6 @@ namespace YGR
         private float _doorOpeningTime = 2000.0f;
         private float _animationTime = 0.0f;
         int _tileSize;
-        int _tileOffset;
-        bool[] _illuminated;
         bool _visited;
         //private Y_Door _door;
 
@@ -121,7 +119,6 @@ namespace YGR
             )
         {
             _direction = direction;
-            _tileOffset = tileOffset;
 
             int[][] collision = createDoorTemplate(numTilesLength, tileOffset);
             collision = flipToPosition(collision, direction, tileOffset);
@@ -1346,14 +1343,6 @@ namespace YGR
             }
             else if(State == X_DoorState.Opening || State == X_DoorState.Closing)
             {
-                draw(_tileTextures[X_DoorTextureLayer.Floor], position, spriteBatch, true);
-
-                draw(_tileTextures[X_DoorTextureLayer.Floor], position, spriteBatch, false);
-                spriteBatch.Draw(
-                    ShadeTexture, Rect.Location.ToVector2(),
-                    new Rectangle(0, 0, ShadeTexture.Width, ShadeTexture.Height),
-                    Color.White * Manager_Light2.ShadeFloat, 0, Vector2.Zero, Scale, SpriteEffects.None, 0);
-
                 draw(_tileTextures[X_DoorTextureLayer.Door], movePosition, spriteBatch, false);
                 
                 if (_currentDoorOpenOffset % 3 == 0)
