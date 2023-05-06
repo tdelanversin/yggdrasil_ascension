@@ -3,15 +3,12 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Text.RegularExpressions;
-using System.Threading;
 
 namespace YGR
 {
@@ -103,6 +100,7 @@ namespace YGR
             foreach (var folder in categoryFolders)
             {
                 string category = folder.Split(Path.DirectorySeparatorChar).Last();
+
                 var fs = Directory.GetDirectories(Util.PathOsNormalization(folder + Path.DirectorySeparatorChar + category + Path.DirectorySeparatorChar + _data.LdtkSubfolderName));
                 foreach (var f in fs)
                 {
@@ -191,13 +189,14 @@ namespace YGR
                 int index = random.Next(0, type.Count);
                 
                 // some hack to make sure that the first room is always the chosen one
-                var special = type.Where(x => (x.Item1 != null && x.Item1.Name == "World_Level_0") || (x.Item2 != null && x.Item2.Name == "World_Level_0")).FirstOrDefault();
+                //var special = type.Where(x => (x.Item1 != null && x.Item1.Name == "World_Level_0") || (x.Item2 != null && x.Item2.Name == "World_Level_0")).FirstOrDefault();
+                
                 var n = type[index];
-                if (special != null)
-                {
-                    n = special;
-                    index = type.IndexOf(special);
-                }
+                //if (special != null)
+                //{
+                //    n = special;
+                //    index = type.IndexOf(special);
+                //}
 
                 if (n.Item2 == null)
                 {
@@ -226,6 +225,7 @@ namespace YGR
                     _goldRoom = room;
                 }
             }
+
             Logger.Info("Loaded random rooms: " + watch.ElapsedMilliseconds.ToString());
 
             List<IWalkable> connectors = new List<IWalkable>();
@@ -295,15 +295,12 @@ namespace YGR
             Manager_Players.ClearPlayers();
 
             // Place all players, even if they're not going to play
-            var spawningPoints = ((Y_CMRoom)_startRoom).GetPlayerSpawningPoints();
-            var sp = spawningPoints.First();
-            for (int i = Manager_Players.Players.Count; i < 4; i++)
-            {
-                Manager_Players.AddPlayer_Random((PlayerIndex)i, position: spawningPoints[i].ToVector2(), this);
-            }
-
-            // Make the last one controllable by keyboard
-            ((SimplePlayer)Manager_Players.Players[3]).ControlLayout = ControlLayout.KeyboardWASD;
+            //var spawningPoints = ((Y_CMRoom)_startRoom).GetPlayerSpawningPoints();
+            //var sp = spawningPoints.First();
+            //for (int i = Manager_Players.Players.Count; i < 4; i++)
+            //{
+            //    Manager_Players.AddPlayer_Random((PlayerIndex)i, position: spawningPoints[i].ToVector2(), this);
+            //}
 
             _interactables.Clear();
 
@@ -328,33 +325,53 @@ namespace YGR
             Manager_Enemies.ClearEnemies();
             foreach (var room in Rooms)
             {
-                if (room.Key == 0) continue;
                 if (room.Value.WhatAreYou() != X_LevelElements.Room) continue;
 
                 var r = (Y_CMRoom)room.Value;
-                var regularSpawners = r.GetRegularSpawningPoints();
-                var bossSpawners = r.GetBossSpawningPoints();
 
-                if (regularSpawners != null)
+                var enemies = r.GetEnemySpawningPoints();
+                foreach (var spr in enemies)
                 {
-                    foreach (var spr in regularSpawners)
+                    Vector2 pos = new Vector2(spr.x, spr.y);
+                    if(EnemyEntity.GetType(spr) == Manager_Enemies.EnemyType.SimpleEnemy)
+                        Manager_Enemies.AddEnemy_SimpleEnemy(pos, this, Manager_Players.Players);
+                    else if(EnemyEntity.GetType(spr) == Manager_Enemies.EnemyType.BossEnemy)
+                        Manager_Enemies.AddEnemy_Gigachad(pos, this, Manager_Players.Players);
+                }
+
+                /**
+                 * TODO: make the selection of the spawning point for players potentially random
+                 */
+                var players = r.GetPlayerSpawningPoints();
+                int playerIndex = 0;
+                foreach (var spr in players)
+                {
+                    if (playerIndex == 4) break;
+                    if (PlayerEntity.GetPointType(spr) == PlayerSpawningPointType.Spawner)
                     {
-                        Manager_Enemies.AddEnemy_SimpleEnemy(spr.ToVector2(), this, Manager_Players.Players);
+                        Vector2 pos = new Vector2(spr.x, spr.y);
+                        if (PlayerEntity.GetType(spr) == Manager_Players.PlayerType.Random)
+                            Manager_Players.AddPlayer_Random((PlayerIndex)playerIndex, position: pos, this);
+                        if (PlayerEntity.GetType(spr) == Manager_Players.PlayerType.Nerd)
+                            Manager_Players.AddPlayer_Ninja((PlayerIndex)playerIndex, position: pos, this);
+                        if (PlayerEntity.GetType(spr) == Manager_Players.PlayerType.Ninja)
+                            Manager_Players.AddPlayer_Ninja((PlayerIndex)playerIndex, position: pos, this);
+                        playerIndex++;
+                    }
+                    else
+                    {
+                        // do the CHOOSER part...
                     }
                 }
-                if (bossSpawners != null)
-                {
-                    foreach (var spr in bossSpawners)
-                    {
-                        Manager_Enemies.AddEnemy_Gigachad(spr.ToVector2(), this, Manager_Players.Players);
-                    }
-                }
+
+                // Make the last one controllable by keyboard
             }
+            ((SimplePlayer)Manager_Players.Players[3]).ControlLayout = ControlLayout.KeyboardWASD;
 
             _startRoom.SetVisible(true);
-            _goldRoom.SetVisible(true);
-            _startRoom.Illuminate();
-            _goldRoom.Illuminate();
+            //_goldRoom.SetVisible(true);
+            //_startRoom.Illuminate();
+            //_goldRoom.Illuminate();
             Manager_Sound.PlayFreeRoamMusic();
         }
 

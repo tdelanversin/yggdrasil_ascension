@@ -9,6 +9,12 @@ namespace YGR
 {
     public static class Manager_Enemies
     {
+        public enum EnemyType
+        {
+            SimpleEnemy = 0,
+            BossEnemy
+        };
+
         private static List<IEnemy> _enemies = new List<IEnemy>();
 
         public static void ClearEnemies()
