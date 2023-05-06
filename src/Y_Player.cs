@@ -33,6 +33,7 @@ namespace YGR
         public ControlLayout ControlLayout { get; set; }
         public IShooter Gun { get; set; }
         public PlayerIndex PlayerIndex { get; }
+        public float VelocityMax;
         protected Rectangle _rect;
         protected AnimatedSprite GhostSprite;
         protected AnimatedSprite CharacterSprite;
@@ -46,7 +47,6 @@ namespace YGR
         protected float _acceleration;
         protected Vector2 _aimDirection;
         protected float _deceleration;
-        protected float _maxVelocity;
         protected Vector2 Position;
         protected ParticleEffect pE;
         protected bool _isAiming;
@@ -145,9 +145,9 @@ namespace YGR
 
             // Movement related
             Velocity = Vector2.Zero;
+            VelocityMax = 0.35f;
             _acceleration = 0.008f;
             _deceleration = 0.004f;
-            _maxVelocity = 0.35f;
 
             // Dash
             _dashing = false;
@@ -411,7 +411,7 @@ namespace YGR
                     Math.Sign(Velocity.Y) * Math.Max(0.0f, Math.Abs(Velocity.Y) - _deceleration * timeStepMS));
             }
 
-            Velocity = Util.ClampMagnitude(Velocity, _maxVelocity);
+            Velocity = Util.ClampMagnitude(Velocity, VelocityMax);
         }
 
         protected virtual void UpdateCollision(GameTime gameTime)
