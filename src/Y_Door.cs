@@ -163,36 +163,36 @@ namespace YGR
                 ShaderAccess.ReadWrite);
 
             IlluminationResources = new X_IlluminationResources();
-            Shade = Enumerable.Repeat<Color>(Color.Black, Rect.Width * Rect.Height).ToArray();
+            Shade = Enumerable.Repeat<Color>(Color.Transparent, Rect.Width * Rect.Height).ToArray();
 
-            var template = Collision.GetCollisionTemplate();
-            int tileSize = TextureTileSize;
-            Parallel.For(0, template.Length, h =>
-            {
-                for (int w = 0; w < template[0].Length; ++w)
-                {
+            //var template = Collision.GetCollisionTemplate();
+            //int tileSize = TextureTileSize;
+            //Parallel.For(0, template.Length, h =>
+            //{
+            //    for (int w = 0; w < template[0].Length; ++w)
+            //    {
 
-                    int fromX = w * tileSize;
-                    int fromY = h * tileSize;
-                    int toX = fromX + tileSize;
-                    int toY = fromY + tileSize;
+            //        int fromX = w * tileSize;
+            //        int fromY = h * tileSize;
+            //        int toX = fromX + tileSize;
+            //        int toY = fromY + tileSize;
 
-                    if (template[h][w] == (int)X_TileType.Floor || template[h][w] == (int)X_TileType.Wall)
-                    {
-                        continue;
-                    }
+            //        if (template[h][w] == (int)X_TileType.Floor || template[h][w] == (int)X_TileType.Wall)
+            //        {
+            //            continue;
+            //        }
 
-                    // if we have shadow, assume that non intersected parts are automatically in the light
-                    // otherwise keep them in the shadow and only light the parts that have direct line of sight
-                    for (int x = fromX; x < toX; x += 1)
-                    {
-                        for (int y = fromY; y < toY; y += 1)
-                        {
-                            Shade[y * ShadeTexture.Width + x] = Color.Transparent;
-                        }
-                    }
-                }
-            });
+            //        // if we have shadow, assume that non intersected parts are automatically in the light
+            //        // otherwise keep them in the shadow and only light the parts that have direct line of sight
+            //        for (int x = fromX; x < toX; x += 1)
+            //        {
+            //            for (int y = fromY; y < toY; y += 1)
+            //            {
+            //                Shade[y * ShadeTexture.Width + x] = Color.Transparent;
+            //            }
+            //        }
+            //    }
+            //});
 
             ShadeTexture.SetData(Shade);
         }
@@ -899,7 +899,7 @@ namespace YGR
             DoorRooms.Add(roomConnectorPoint1.ConnectorSide, new List<IWalkable> { room2 });
             room1.DoorRooms.Add(roomConnectorPoint1.ConnectorSide, new List<IWalkable> { this });
             room2.DoorRooms.Add(roomConnectorPoint2.ConnectorSide, new List<IWalkable> { this });
-            //Lights.AddRange(room1.Lights);
+            Lights.AddRange(room1.Lights);
             Lights.AddRange(room2.Lights);
 
             return this;
@@ -945,7 +945,7 @@ namespace YGR
                 var deltaPC = Rect.Location - Doors[connectorSide1].First().Point;
                 MoveTo(roomConnectorPoint1.Point + deltaPC);
             }
-            //Lights.AddRange(room1.Lights);
+            Lights.AddRange(room1.Lights);
             Lights.AddRange(room2.Lights);
 
             return this;

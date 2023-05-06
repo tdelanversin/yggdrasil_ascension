@@ -211,11 +211,11 @@ namespace YGR
             {
                 Precompute(room);
             }
-            //foreach (var room in rooms)
-            //{
-            //    while(room.IlluminationResources.NumCoords > room.IlluminationResources.NumOffset)
-            //        Compute(room);
-            //}
+            foreach (var room in rooms)
+            {
+                while (room.IlluminationResources.NumCoords > room.IlluminationResources.NumOffset)
+                    Compute(room);
+            }
         }
 
         public static void Illuminate(
@@ -329,31 +329,39 @@ namespace YGR
                     List<Vector3> pts = new List<Vector3>();
                     if (template[h][w] == (int)X_TileType.Floor || template[h][w] == (int)X_TileType.Roof)
                     {
-                        pts.Add(new Vector3(fromX + tileSize/2, fromY + tileSize/2, -tileSize - 0.001f) + offset);
-                        //pts.Add(new Vector3(fromX + tto, fromY + tto - tileSize, -tileSize - 0.001f) + offset);
-                        //pts.Add(new Vector3(fromX - tto + tileSize, fromY + tto - tileSize, -tileSize - 0.001f) + offset);
-                        //pts.Add(new Vector3(fromX + tto, fromY - tto - tileSize + tileSize, -tileSize - 0.001f) + offset);
-                        //pts.Add(new Vector3(fromX - tto + tileSize, fromY - tto - tileSize + tileSize, -tileSize - 0.001f) + offset);
+                        //pts.Add(new Vector3(fromX + tileSize/2, fromY + tileSize/2, -tileSize - 0.001f) + offset);
+                        pts.Add(new Vector3(fromX + tto, fromY + tto - tileSize, -tileSize - 0.001f) + offset);
+                        pts.Add(new Vector3(fromX - tto + tileSize, fromY + tto - tileSize, -tileSize - 0.001f) + offset);
+                        pts.Add(new Vector3(fromX + tto, fromY - tto - tileSize + tileSize, -tileSize - 0.001f) + offset);
+                        pts.Add(new Vector3(fromX - tto + tileSize, fromY - tto - tileSize + tileSize, -tileSize - 0.001f) + offset);
                     }
                     else if (template[h][w] == (int)X_TileType.Wall)
                     {
-                        pts.Add(new Vector3(fromX + tileSize/2, fromY + tileSize/2 + 0.001f, -(0)) + offset);
-                        //pts.Add(new Vector3(fromX + tto, fromY + tto + 0.001f, -(0)) + offset);
-                        //pts.Add(new Vector3(fromX - tto + tileSize, fromY + tto + 0.001f, -(0)) + offset);
-                        //pts.Add(new Vector3(fromX + tto, fromY - tto + tileSize + 0.001f, -(tileSize)) + offset);
-                        //pts.Add(new Vector3(fromX - tto + tileSize - tto, fromY + 0.001f, -(tileSize)) + offset);
+                        //pts.Add(new Vector3(fromX + tileSize/2, fromY + tileSize/2 + 0.001f, -(0)) + offset);
+                        pts.Add(new Vector3(fromX + tto, fromY + tto + 0.001f, -(0)) + offset);
+                        pts.Add(new Vector3(fromX - tto + tileSize, fromY + tto + 0.001f, -(0)) + offset);
+                        pts.Add(new Vector3(fromX + tto, fromY - tto + tileSize + 0.001f, -(tileSize)) + offset);
+                        pts.Add(new Vector3(fromX - tto + tileSize - tto, fromY + 0.001f, -(tileSize)) + offset);
                     }
+
+                    bool[] visible = new bool[] { false, false, false, false};
                     foreach (var lightSource in room.IlluminationResources.Lights)
                     {
                         Vector3 orig = new Vector3(lightSource.X, lightSource.Y, lightSource.Z);
+                        int ind = 0;
                         foreach (var p in pts)
                         {
-                            var intersects = Manager_Light2.RayIntersect(room, orig, p - orig, -1);
-                            if (intersects)
+                            if(!visible[ind] && !Manager_Light2.RayIntersect(room, orig, p - orig, -1))
                             {
-                                goto add_tile;
+                                visible[ind] = true;
                             }
+                            ind++;
                         }
+                    }
+
+                    if (!visible.All(x => x == true))
+                    {
+                        goto add_tile;
                     }
 
                     // if we have shadow, assume that non intersected parts are automatically in the light
@@ -363,7 +371,7 @@ namespace YGR
                         for (int y = fromY; y < toY; y += shadowSpotSize)
                         {
                             room.IlluminationResources.BLighted[y * width + x] = light;
-                            room.Shade[y * width + x] = Color.Yellow;
+                            //room.Shade[y * width + x] = Color.Green;
                         }
                     }
                     continue;
@@ -394,13 +402,13 @@ namespace YGR
                                 room.IlluminationResources.Coords[index] = s;
                                 index++;
                             }
-                            room.Shade[y * width + x] = Color.Blue;
+                            //room.Shade[y * width + x] = Color.Yellow;
                         }
                     }
                 }
             });
 
-            room.ShadeTexture.SetData(room.Shade);
+            //room.ShadeTexture.SetData(room.Shade);
 
             room.IlluminationResources.NumCoords = baseIndex;
             room.IlluminationResources.NumOffset = 0;

@@ -590,8 +590,8 @@ namespace YGR
 
             Lights = new List<X_Light>() {
             new X_Light(
-                new Vector3(Rect.X + 20*TextureTileSize,
-                Rect.Y + 15 *TextureTileSize,
+                new Vector3(Rect.X + -3*TextureTileSize,
+                Rect.Y + 20 *TextureTileSize,
                 15 * TextureTileSize),
                 Rect, Scale)
             };

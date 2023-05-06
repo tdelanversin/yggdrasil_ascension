@@ -14,7 +14,6 @@ struct X_Vector3
     float Z;
     int WX;
     int WY;
-    //int GlobalID;
 };
 
 struct Point3
@@ -23,11 +22,6 @@ struct Point3
     float Y;
     float Z;
 };
-
-//struct LightedS
-//{
-//    int IsLighted;
-//};
 
 static const int indices[36] =
 {
@@ -40,21 +34,10 @@ static const int indices[36] =
 };
 
 StructuredBuffer<Point3> Vertices;
-//StructuredBuffer<Input> Inputs;
 StructuredBuffer<X_Vector3> Coords;
 StructuredBuffer<Point3> Lights;
-//RWStructuredBuffer<int> Lighted;
-
-//RWStructuredBuffer<float> Output;
-
-//RWStructuredBuffer<Coordinate> Lighted;
-
-//RWStructuredBuffer<Point3> TestVals;
-
-//RWStructuredBuffer<int> NumStructs;
 
 RWTexture2D<float4> Shade;
-//Texture2D<float4> Floor;
 
 const float eps = 1.0e-7f;
 int NumLights;
@@ -155,13 +138,13 @@ void CS(uint3 localID : SV_GroupThreadID, uint3 groupID : SV_GroupID,
         float3 lightPos = float3(Lights[l].X, Lights[l].Y, Lights[l].Z);
         float3 pos = float3(Coords[c].X, Coords[c].Y, Coords[c].Z);
         float3 direction = pos - lightPos;
-        if (RayIntersect(lightPos, direction, c) == 1)
+        if (RayIntersect(lightPos, direction, c) == 0)
         {
-            Shade[ind].a = 1.0f;
+            Shade[ind].a = 0.0f;
             return;
         }
     }
-    Shade[ind].a = 0.0f;
+    Shade[ind].a = 1.0f;
     
     //Shade[ind] = float4(0.5f, 0.5f, 0.5f, 1.0f);
 

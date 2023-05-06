@@ -285,13 +285,14 @@ namespace YGR
                 }
             }
 
-            Manager_Light2.IlluminateSync(connectors);
             int connectorIndex = Rooms.Count();
             foreach (var c in connectors)
             {
                 Rooms.Add(connectorIndex, c);
                 connectorIndex++;
             }
+
+            Manager_Light2.IlluminateSync(Rooms.Values.ToList());
 
             Manager_Players.ClearPlayers();
 
