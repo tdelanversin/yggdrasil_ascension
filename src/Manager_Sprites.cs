@@ -18,6 +18,12 @@ namespace YGR
         // Projectiles
         public static Texture2D Projectile_Simple { get; private set; }
 
+        // Weapons
+        public static Texture2D Weapon_Pistol { get; private set; }
+        public static Texture2D Weapon_Keyboard { get; private set; }
+        public static Texture2D Weapon_RedGun { get; private set; }
+        public static Texture2D Weapon_Shotgun { get; private set; }
+
         // UI
         public static Texture2D HealthbarEmpty { get; private set; }
         public static Texture2D HealthbarInfill { get; private set; }
@@ -40,6 +46,11 @@ namespace YGR
 
             AimIndicator = contentManager.Load<Texture2D>("SpritesOther/target_indicator");
             Projectile_Simple = contentManager.Load<Texture2D>("SpritesOther/projectiles");
+
+            Weapon_Pistol = contentManager.Load<Texture2D>("SpritesWeapons/Pistol");
+            Weapon_Keyboard = contentManager.Load<Texture2D>("SpritesWeapons/Keyboard");
+            Weapon_RedGun = contentManager.Load<Texture2D>("SpritesWeapons/Red_Gun");
+            Weapon_Shotgun = contentManager.Load<Texture2D>("SpritesWeapons/Shotgun");
 
             HealthbarEmpty = contentManager.Load<Texture2D>("SpritesOther/healthbar_empty");
             HealthbarInfill = contentManager.Load<Texture2D>("SpritesOther/healthbar_infill");
