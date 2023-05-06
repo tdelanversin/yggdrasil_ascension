@@ -30,7 +30,7 @@ namespace YGR
 
         // Class fields
         public ControlLayout ControlLayout { get; set; }
-        public IShooter Gun { get; }
+        public IShooter Gun { get; set; }
         public PlayerIndex PlayerIndex { get; }
         protected Rectangle _rect;
         protected AnimatedSprite GhostSprite;

@@ -259,6 +259,48 @@ namespace YGR
         }
     }
 
+    // Godmode gun
+    // TODO: subclass all this stuff
+    public class Gun_Godmode : IShooter
+    {
+        double nextShotCooldown = 0.0f;
+        static int shotDelay = 100;
+        static int shotCount = 128;
+        static double shotSpread = 2 * Math.PI / shotCount;
+
+        public void Shoot(GameTime gameTime, Vector2 origin, Vector2 direction, Y_Level level, IGameElement who)
+        {
+
+            if (nextShotCooldown > 0.0f)
+                return;
+
+            // direction does not matter, just make sure it's sensible
+            direction = Vector2.One;
+
+            Manager_Sound.Sound_Explosion.Play(1f, 0, 0);
+
+            nextShotCooldown = shotDelay;
+
+            double spread = -shotCount / 2 * shotSpread;
+            for (int i = 0; i < shotCount; i++)
+            {
+                var new_dir = new Vector2(
+                    (float)(direction.X * Math.Cos(spread) - direction.Y * Math.Sin(spread)),
+                    (float)(direction.X * Math.Sin(spread) + direction.Y * Math.Cos(spread))
+                );
+
+                Manager_Projectile.AddProjectile_ShotGunProjectile(origin, new_dir, level, who);
+                spread += shotSpread;
+            }
+        }
+
+        public void Update(GameTime gameTime)
+        {
+            nextShotCooldown = Math.Max(0, nextShotCooldown - gameTime.ElapsedGameTime.TotalMilliseconds);
+        }
+
+    }
+
     // Gun for Gigachad
     public class Gun_Gigagun : IShooter
     {

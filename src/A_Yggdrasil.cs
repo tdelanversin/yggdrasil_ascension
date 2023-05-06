@@ -124,6 +124,15 @@ namespace YGR
                 Notifications.New("Camera mode switched to " + Camera.Mode);
             }
 
+            if (Input.IsKeyTriggered(Keybinds.GodMode))
+            {
+                foreach (var p in Manager_Players.Players)
+                {
+                    ((SimplePlayer)p).Gun = new Gun_Godmode();
+                    p.LifePoints = 9999;
+                }
+            }
+
             // Update all entities in current game state
             switch (State)
             {
