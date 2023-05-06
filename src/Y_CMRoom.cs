@@ -391,19 +391,6 @@ namespace YGR
                 }
             });
 
-            //_bossSpawner = new List<Point>();
-            //var t3 = Task.Run(() =>
-            //{
-            //        if (array.entities.BossSpawner != null)
-            //    {
-            //        var bossSpawner = JsonConvert.DeserializeObject<List<BossSpawner>>(array.entities.BossSpawner.ToString());
-            //        foreach (var s in bossSpawner)
-            //        {
-            //            _bossSpawner.Add(new Point(s.x + Rect.X, s.y + Rect.Y));
-            //        }
-            //    }
-            //});
-
             _players = new List<PlayerEntity>();
             var t4 = Task.Run(() =>
             {
@@ -432,33 +419,7 @@ namespace YGR
                             _powerUps.Add(new PowerUpItem(Y_PowerUp.Factory(Y_PowerUps.Revive, location, s.width, s.height, Scale)));
                     }
                 }
-
-                //if (array.entities.Revive != null)
-                //{
-                //    var revive = JsonConvert.DeserializeObject<List<Revive>>(array.entities.Revive.ToString());
-                //    foreach (var s in revive)
-                //    {
-                //        Point location = new Point(s.x + Rect.X, s.y + Rect.Y);
-                //        _powerUps.Add(new PowerUpItem(Y_PowerUp.Factory(Y_PowerUps.Revive, location, s.width, s.height, Scale)));
-                //    }
-                //}
             });
-
-            //_multiPowerups = new List<MultiPowerUpItem>();
-            //var t6 = Task.Run(() =>
-            //{
-            //    if (array.entities.MultiPowerUp != null)
-            //    {
-            //        var multiPowerUp = JsonConvert.DeserializeObject<List<MultiPowerUp>>(array.entities.MultiPowerUp.ToString());
-            //        foreach (var s in multiPowerUp)
-            //        {
-            //            Point location = new Point(s.x + Rect.X, s.y + Rect.Y);
-            //            int width = s.width;
-            //            int height = s.height;
-            //            _multiPowerups.Add(new MultiPowerUpItem(Y_MultiPowerUp.Factory(Y_MultiPowerUps.Radio, location, width, height, TextureTileSize, Scale, null)));
-            //        }
-            //    }
-            //});
 
             Task.WaitAll(t1);
             foreach (var door in Doors)
@@ -526,18 +487,6 @@ namespace YGR
             };
 
             Task.WaitAll(t2, t4, t5);
-
-            // check which power ups are inside multi power ups
-            //foreach (var mpu in _multiPowerups)
-            //{
-            //    foreach (var pu in _powerUps)
-            //    {
-            //        if (pu.Item.Rect.Intersects(mpu.Item.Rect))
-            //        {
-            //            pu.MultiPowerUp = mpu;
-            //        }
-            //    }
-            //}
 
             Task.WaitAll(readFloor, readRoof);
             _floorData = readFloor.Result;
@@ -937,11 +886,6 @@ namespace YGR
                 powerUp.Item.MoveBy(p);
             }
 
-            //foreach (var powerUp in _multiPowerups)
-            //{
-            //    powerUp.Item.MoveBy(p);
-            //}
-
             //// needs to be done this way because properties return by value and not by ref
             Rect = new Rectangle(position.X, position.Y, Rect.Width, Rect.Height);
             Offset = new Vector3(Rect.Location.X / Scale, Rect.Location.Y / Scale, 0);
@@ -956,30 +900,6 @@ namespace YGR
                 player.x += p.X;
                 player.y += p.Y;
             }
-
-            //if (_enemies != null)
-            //{
-            //    for (int i = 0; i < _spawner.Count; ++i)
-            //    {
-            //        _spawner[i] += p;
-            //    }
-            //}
-
-            //if (_bossSpawner != null)
-            //{
-            //    for (int i = 0; i < _bossSpawner.Count; ++i)
-            //    {
-            //        _bossSpawner[i] += p;
-            //    }
-            //}
-
-            //if (_playerSpawner != null)
-            //{
-            //    for (int i = 0; i < _playerSpawner.Count; ++i)
-            //    {
-            //        _playerSpawner[i] += p;
-            //    }
-            //}
         }
 
         public X_ConnectorPoint GetConnectorPoint(X_ConnectorSide side)
@@ -991,11 +911,6 @@ namespace YGR
         {
             return _enemies;
         }
-
-        //public List<Point> GetBossSpawningPoints()
-        //{
-        //    return _bossSpawner;
-        //}
 
         public List<PlayerEntity> GetPlayerSpawningPoints()
         {
@@ -1038,35 +953,6 @@ namespace YGR
         /// <param name="gameTime">Monogame GameTime</param>
         public void Update(GameTime gameTime)
         {
-            // Basic room clear logic: If players are in the room but no enemies, open up the doors
-            // if (!Cleared && Name != "Start_0")
-            // {
-            //     bool playersInRoom = false;
-
-            //     if (playersInRoom)
-            //     {
-            //         bool enemiesInRoom = false;
-            //         foreach (var enemy in Manager_Enemies.GetEnemies())
-            //         {
-            //             if (enemy.Room == this)
-            //             {
-            //                 enemiesInRoom = true;
-            //                 break;
-            //             }
-            //         }
-            //         if (!enemiesInRoom)
-            //         {
-            //             /* Room cleared */
-            //             Cleared = true;
-            //             OpenDoorsAndAdjacentRooms();
-            //             Manager_Sound.Sound_LevelCleared.Play(1, 0, 0);
-            //             Logger.Info("Room " + Name + " cleared");
-            //         }
-            //     }
-            // }
-
-
-
             //bool keyPressed = Input.IsKeyTriggered(Keybinds.ToggleConnectors);
             float dt = gameTime.ElapsedGameTime.Milliseconds;
             switch (State)
@@ -1088,12 +974,6 @@ namespace YGR
                 if (powerUp.Active)
                     powerUp.Item.Update(gameTime);
             }
-
-            //foreach (var powerUp in _multiPowerups)
-            //{
-            //    if (powerUp.Active)
-            //        powerUp.Item.Update(gameTime);
-            //}
         }
 
         /// <summary>
@@ -1113,10 +993,10 @@ namespace YGR
 
             Collision.DrawOutline(gameTime, globalOffset, spriteBatch);
             Factory_Debug.DrawRectangle(Rect.X, Rect.Y, Rect.Width, Rect.Height, 3, Color.Blue, spriteBatch);
-            //foreach (var light in Lights)
-            //{
-            //    light.DrawOutline(gameTime, globalOffset, spriteBatch);
-            //}
+            foreach (var light in Lights)
+            {
+                light.DrawOutline(gameTime, globalOffset, spriteBatch);
+            }
 
             foreach (var door in _doorMasks)
             {
@@ -1135,14 +1015,6 @@ namespace YGR
                     powerUp.Item.DrawOutline(gameTime, globalOffset, spriteBatch);
                 }
             }
-
-            //foreach (var mpu in _multiPowerups)
-            //{
-            //    if (mpu.Active == true)
-            //    {
-            //        mpu.Item.DrawOutline(gameTime, globalOffset, spriteBatch);
-            //    }
-            //}
         }
 
         /// <summary>
@@ -1199,38 +1071,6 @@ namespace YGR
                     }
                 }
 
-<<<<<<< HEAD
-                foreach (var powerUp in _multiPowerups)
-                {
-                    if (powerUp.Active == true)
-                    {
-                        powerUp.Item.Draw(gameTime, globalOffset, spriteBatch);
-                    }
-                }
-
-                //spriteBatch.End();
-
-                //A_Yggdrasil.GraphicsDevice_.SetRenderTarget(_renderTarget);
-                //A_Yggdrasil.GraphicsDevice_.Clear(Color.Transparent);
-
-                ////Manager_Light2.IlluminationShader.Parameters["Input"].SetValue(renderTarget);
-                ////Manager_Light2.IlluminationShader.Parameters["Output"].SetValue(computeTexture);
-
-                //Illuminate();
-                //spriteBatch.Begin();
-                //spriteBatch.Draw(_computeTexture, Vector2.Zero, Color.White);
-                //spriteBatch.End();
-
-                //A_Yggdrasil.GraphicsDevice_.SetRenderTarget(null);
-=======
-                //foreach (var powerUp in _multiPowerups)
-                //{
-                //    if (powerUp.Active == true)
-                //    {
-                //        powerUp.Item.Draw(gameTime, globalOffset, spriteBatch);
-                //    }
-                //}
->>>>>>> origin/master
             }
         }
 

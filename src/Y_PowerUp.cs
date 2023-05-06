@@ -11,6 +11,17 @@ namespace YGR
         Life
     }
 
+    public class PowerUpItem
+    {
+        public bool Active { get; set; }
+        public Y_PowerUp Item { get; }
+        public MultiPowerUpItem MultiPowerUp { get; set; }
+        public PowerUpItem(Y_PowerUp item)
+        {
+            Item = item;
+            Active = true;
+        }
+    }
     public class Y_PowerUp : IGameElement
     {
         public float Scale { get; set; }

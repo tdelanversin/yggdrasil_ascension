@@ -1221,10 +1221,10 @@ namespace YGR
                 }
             }
 
-            foreach (var light in Lights)
-            {
-                light.DrawOutline(gameTime, globalOffset, spriteBatch);
-            }
+            //foreach (var light in Lights)
+            //{
+            //    light.DrawOutline(gameTime, globalOffset, spriteBatch);
+            //}
         }
 
         private bool doorAnimation(float dt, bool opening)
