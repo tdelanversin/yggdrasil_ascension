@@ -37,7 +37,7 @@ namespace YGR
             Y_Level level,
             ControlLayout controlLayout = ControlLayout.ControllerOnly)
         {
-            Players.Add(new Ninja(
+            Players.Add(new SimplePlayer(
                 playerIndex,
                 position,
                 Manager_Sprites.NewAnimatedSprite_NerdyGirl(),
@@ -55,7 +55,7 @@ namespace YGR
             ControlLayout controlLayout = ControlLayout.ControllerOnly
         )
         {
-            Players.Add(new Ninja(
+            Players.Add(new SimplePlayer(
                 playerIndex,
                 position,
                 Manager_Sprites.NewAnimatedSprite_Ninja(),
