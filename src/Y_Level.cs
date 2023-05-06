@@ -334,7 +334,7 @@ namespace YGR
                 {
                     Vector2 pos = new Vector2(spr.x, spr.y);
                     if(EnemyEntity.GetType(spr) == Manager_Enemies.EnemyType.SimpleEnemy)
-                        Manager_Enemies.AddEnemy_SimpleEnemy(pos, this, Manager_Players.Players);
+                        Manager_Enemies.AddEnemy_Slime(pos, this, Manager_Players.Players);
                     else if(EnemyEntity.GetType(spr) == Manager_Enemies.EnemyType.BossEnemy)
                         Manager_Enemies.AddEnemy_Gigachad(pos, this, Manager_Players.Players);
                 }

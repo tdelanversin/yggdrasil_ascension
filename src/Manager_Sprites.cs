@@ -28,6 +28,7 @@ namespace YGR
 
         // Enemies
         public static Texture2D Enemy_Basic { get; private set; }
+        public static Texture2D Enemy_Slime { get; private set; }
         public static Texture2D Enemy_Gigachad { get; private set; }
 
         public static void LoadContent(ContentManager contentManager)
@@ -50,6 +51,7 @@ namespace YGR
             HealthbarInfill = contentManager.Load<Texture2D>("SpritesOther/healthbar_infill");
 
             Enemy_Basic = Player_Simple;
+            Enemy_Slime = contentManager.Load<Texture2D>("SpritesCharacters/slime");
             Enemy_Gigachad = contentManager.Load<Texture2D>("SpritesCharacters/gigachad");
 
             SpinningHeart = contentManager.Load<Texture2D>("SpritesOther/SpinningHeart");
@@ -103,6 +105,20 @@ namespace YGR
                     { AnimationState.IdleLeft, new int[] { 1 } },
                     { AnimationState.WalkRight, new int[] { 3, 4 } },
                     { AnimationState.IdleRight, new int[] { 3 } },
+                    }
+                );
+        }
+
+        public static AnimatedSprite NewAnimatedSprite_EnemySlime()
+        {
+            return new AnimatedSprite(
+                    texture: Enemy_Slime,
+                    spriteDimension: new Vector2(55, 42),
+                    animations: new Dictionary<AnimationState, int[]> {
+                        { AnimationState.WalkLeft, new int[] { 0, 1, 2, 3, 4, 3, 2, 1 } },
+                        { AnimationState.WalkRight, new int[] { 0, 1, 2, 3, 4, 3, 2, 1 } },
+                        { AnimationState.IdleLeft, new int[] { 3, 4, 3 } },
+                        { AnimationState.IdleRight, new int[] { 3, 4, 3 } },
                     }
                 );
         }
