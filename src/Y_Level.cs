@@ -297,25 +297,17 @@ namespace YGR
 
             Manager_Players.ClearPlayers();
 
-            // Place all players, even if they're not going to play
-            //var spawningPoints = ((Y_CMRoom)_startRoom).GetPlayerSpawningPoints();
-            //var sp = spawningPoints.First();
-            //for (int i = Manager_Players.Players.Count; i < 4; i++)
-            //{
-            //    Manager_Players.AddPlayer_Random((PlayerIndex)i, position: spawningPoints[i].ToVector2(), this);
-            //}
-
             _interactables.Clear();
 
             // Useless box were all to be participating players should go in
-            Interactable_PlayerField playerField = new Interactable_PlayerField(
-                new Rectangle(5, 5, 8, 8), this, (Y_CMRoom)_startRoom
+            Interactable_Tutorialfield playerField = new Interactable_Tutorialfield(
+                new Rectangle(16, 12, 11, 8), this, (Y_CMRoom)_startRoom
             );
             _interactables.Add(playerField);
 
-            // Room opener to start the game with all players standing in the field
+            // Room opener to start the game when all players are standing in the field
             _interactables.Add(new Interactable_RoomOpener(
-                new Rectangle(29, 5, 8, 8), this, (Y_CMRoom)_startRoom, playerField)
+                new Rectangle(19, 3, 5, 4), this, (Y_CMRoom)_startRoom, playerField)
             );
 
             // Gameplay state

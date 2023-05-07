@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Timers;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using Microsoft.Xna.Framework.Input;
 
 namespace YGR
 {
@@ -96,6 +97,64 @@ namespace YGR
             {
                 Color = Color.DarkGoldenrod;
             }
+        }
+    }
+
+
+    // Tutorial field, guiding the players through the start process
+    public class Interactable_Tutorialfield : Interactable_PlayerField
+    {
+        public Interactable_Tutorialfield(
+            Rectangle bounds,
+            Y_Level level,
+            Y_CMRoom room
+        ) : base(bounds, level, room)
+        {
+            Color = Color.GhostWhite;
+        }
+
+        // Just draw the outline and the Label inside it
+        public override void Draw(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)
+        {
+            DrawOutline(gameTime, globalOffset, spriteBatch);
+
+            int y = Rect.Height / 5 - (int)(Fonts.Normal.MeasureString("0").Y / 2);
+            List<string> text = new List<string> { };
+            foreach (IPlayer p in Manager_Players.Players)
+            {
+                string str = " P" + (int)p.PlayerIndex + ": ";
+                Color c;
+                if (p.ControlLayout == ControlLayout.ControllerOnly && !GamePad.GetState(p.PlayerIndex).IsConnected)
+                {
+                    str += "n/a";
+                    c = Color.White;
+                }
+                else if (!p.IsActive)
+                {
+                    str += "Inactive (move to register)";
+                    c = Color.Orange;
+                }
+                else if (p is Player_Ghost)
+                {
+                    str += "Active (select character)";
+                    c = Color.HotPink;
+                }
+                else
+                {
+                    str += "Ready";
+                    c = Color.LimeGreen;
+                }
+
+                Vector2 str_size = Fonts.Normal.MeasureString(str);
+                Vector2 str_pos = new Vector2(Rect.X, Rect.Y + y);
+                spriteBatch.DrawString(Fonts.Normal, str, str_pos, c);
+                y += Rect.Height / 5;
+            }
+        }
+
+        public override void Update(GameTime gameTime)
+        {
+
         }
     }
 
