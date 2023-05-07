@@ -299,15 +299,14 @@ namespace YGR
 
             _interactables.Clear();
 
-            // Useless box were all to be participating players should go in
-            Interactable_Tutorialfield playerField = new Interactable_Tutorialfield(
-                new Rectangle(16, 12, 11, 8), this, (Y_CMRoom)_startRoom
+            // Place a tutorial field that guides the players
+            _interactables.Add(new Interactable_Tutorialfield(
+                new Rectangle(16, 12, 11, 8), this, (Y_CMRoom)_startRoom)
             );
-            _interactables.Add(playerField);
 
-            // Room opener to start the game when all players are standing in the field
+            // Room opener field that can trigger the game start
             _interactables.Add(new Interactable_RoomOpener(
-                new Rectangle(19, 3, 5, 4), this, (Y_CMRoom)_startRoom, playerField)
+                new Rectangle(18, 3, 7, 4), this, (Y_CMRoom)_startRoom)
             );
 
             // Gameplay state
@@ -466,6 +465,7 @@ namespace YGR
                     if (_interactables[1].InteractionComplete)
                     {
                         State = GamePlayState.FreeRoam;
+                        _startRoom.OpenAllUnlockedRoomDoors();
                         Camera.SetFocusPlayers();
                     }
                     break;

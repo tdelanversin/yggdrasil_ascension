@@ -35,6 +35,11 @@ namespace YGR
             );
         }
 
+        public virtual List<IPlayer> GetPlayersInside()
+        {
+            return Manager_Players.Players.FindAll(p => Rectangle.Intersect(Rect, p.Rect) != Rectangle.Empty);
+        }
+
         public virtual X_LevelElements WhatAreYou() { return X_LevelElements.Interactable; }
 
         public virtual void Update(GameTime gameTime) { }
@@ -54,55 +59,8 @@ namespace YGR
         }
     }
 
-
-    // Simple field for players to stand in
-    public class Interactable_PlayerField : Interactable_Basic
-    {
-        public List<IPlayer> PlayersInside = new List<IPlayer> { };
-        private string BaseLabel = "Move here!";
-
-        public Interactable_PlayerField(
-            Rectangle bounds,
-            Y_Level level,
-            Y_CMRoom room
-        ) : base(bounds, level, room)
-        {
-            Label = BaseLabel;
-        }
-
-        public virtual List<IPlayer> GetPlayersInside()
-        {
-            return Manager_Players.Players.FindAll(p => Rectangle.Intersect(Rect, p.Rect) != Rectangle.Empty);
-        }
-
-        public override void Update(GameTime gameTime)
-        {
-            var playersInside = GetPlayersInside();
-
-            if (playersInside.FindAll(p => !PlayersInside.Contains(p)).Count > 0)
-            {
-                // Play sound effect when a new player enters the field
-                Manager_Sound.Sound_GunCocking.Play();
-            }
-
-            PlayersInside = playersInside;
-            Label = BaseLabel + "\nPlayers: " + PlayersInside.Count;
-
-            // Light up if any player stands inside
-            if (PlayersInside.Count > 0)
-            {
-                Color = Color.Azure;
-            }
-            else
-            {
-                Color = Color.DarkGoldenrod;
-            }
-        }
-    }
-
-
     // Tutorial field, guiding the players through the start process
-    public class Interactable_Tutorialfield : Interactable_PlayerField
+    public class Interactable_Tutorialfield : Interactable_Basic
     {
         public Interactable_Tutorialfield(
             Rectangle bounds,
@@ -116,6 +74,9 @@ namespace YGR
         // Just draw the outline and the Label inside it
         public override void Draw(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)
         {
+            if (Level.State != Y_Level.GamePlayState.Start)
+                return;
+
             DrawOutline(gameTime, globalOffset, spriteBatch);
 
             int y = Rect.Height / 5 - (int)(Fonts.Normal.MeasureString("0").Y / 2);
@@ -151,41 +112,32 @@ namespace YGR
                 y += Rect.Height / 5;
             }
         }
-
-        public override void Update(GameTime gameTime)
-        {
-
-        }
     }
 
 
     // RoomOpener allows opening a room's doors when shot
     public class Interactable_RoomOpener : Interactable_Basic
     {
-        public Interactable_PlayerField PlayerField;
 
         public Interactable_RoomOpener(
             Rectangle bounds,
             Y_Level level,
-            Y_CMRoom room,
-            Interactable_PlayerField playerField
+            Y_CMRoom room
             ) : base(bounds, level, room)
         {
-            Color = Color.DarkGoldenrod;
-            Label = "Shoot me when all\n players ready! ";
-            PlayerField = playerField;
+            Color = Color.Wheat;
+            Label = "Move here to start";
         }
 
         public void TriggerInteraction(GameTime gameTime)
         {
-            List<IPlayer> selectedPlayers = PlayerField.PlayersInside;
+            // Remove all non-participating players
+            Manager_Players.Players.RemoveAll(p => !p.IsActive || (p.ControlLayout == ControlLayout.ControllerOnly && !GamePad.GetState(p.PlayerIndex).IsConnected));
 
-            // If not a single player manages to stand in the field, we're not starting the game
-            if (selectedPlayers.Count < 1) { return; }
+            // Disable all pickups in the starter room
+            Room.PickUps.ForEach(pu => pu.Active = false);
 
-            Manager_Players.Players.RemoveAll(p => !selectedPlayers.Contains(p));
-            Room.OpenAllUnlockedRoomDoors();
-            Label = "Go get 'em! :)";
+            Label = "Have fun! :)";
             Color = Color.SpringGreen;
             Manager_Sound.Sound_PlatformActivate.Play(1, 0, 0);
             InteractionComplete = true;
@@ -195,38 +147,38 @@ namespace YGR
         {
             if (InteractionComplete) { return; }
 
-            bool hitByPlayerNotInField = false;
+            bool tryTrigger = false;
+            bool ready = true;
 
-            // Amazing "collision detection"
-            foreach (var projectile in Manager_Projectile.GetProjectiles())
+            foreach (IPlayer p in Manager_Players.Players)
             {
-                if (!Rect.Contains(projectile.Rect))
-                {
+                // Don't care about disconnected players
+                if (p.ControlLayout == ControlLayout.ControllerOnly && !GamePad.GetState(p.PlayerIndex).IsConnected)
                     continue;
-                }
-                // Can only be triggered by a player standing in the field
-                if (projectile.WhoFiredMe is not IPlayer)
-                {
-                    continue;
-                }
 
-                if (!PlayerField.PlayersInside.Contains((IPlayer)projectile.WhoFiredMe))
-                {
-                    hitByPlayerNotInField = true;
-                    continue;
-                }
+                // One player needs to trigger the field
+                if (p.Rect.Intersects(Rect))
+                    tryTrigger = true;
 
-                TriggerInteraction(gameTime);
-                return;
+                // Participating players need to choose a character
+                if (p.IsActive && p is Player_Ghost)
+                    ready = false;
             }
 
-            if (hitByPlayerNotInField)
+            if (tryTrigger)
             {
-                Color = Color.Red;
+                if (!ready)
+                {
+                    Color = Color.Red;
+                }
+                else
+                {
+                    TriggerInteraction(gameTime);
+                }
             }
             else
             {
-                Color = Color.DarkGoldenrod;
+                Color = Color.Wheat;
             }
         }
     }

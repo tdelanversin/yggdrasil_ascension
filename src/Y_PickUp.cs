@@ -89,22 +89,28 @@ namespace YGR
                     return new PickUp(type, location, width, height, scale, Manager_Sprites.Weapon_Pistol,
                         (player) =>
                         {
-                            if (player.Gun.GetType() != typeof(Gun_Basic))
-                            {
-                                player.Gun = new Gun_Basic();
-                                Manager_Sound.Sound_GunCocking.Play();
-                            }
+                            if (player is Player_Ghost)
+                                return false;
+
+                            if (player.Gun.GetType() == typeof(Gun_Basic))
+                                return false;
+
+                            player.Gun = new Gun_Basic();
+                            Manager_Sound.Sound_GunCocking.Play();
                             return false;
                         });
                 case Y_PowerUps.WeaponShotgun:
                     return new PickUp(type, location, width, height, scale, Manager_Sprites.Weapon_Shotgun,
                         (player) =>
                         {
-                            if (player.Gun.GetType() != typeof(Gun_ShotGun))
-                            {
-                                player.Gun = new Gun_ShotGun();
-                                Manager_Sound.Sound_GunCocking.Play();
-                            }
+                            if (player is Player_Ghost)
+                                return false;
+
+                            if (player.Gun.GetType() == typeof(Gun_ShotGun))
+                                return false;
+
+                            player.Gun = new Gun_ShotGun();
+                            Manager_Sound.Sound_GunCocking.Play();
                             return false;
                         });
                 case Y_PowerUps.Life:
@@ -127,7 +133,7 @@ namespace YGR
                     return new PickUp(type, location, width, height, scale, Manager_Sprites.NewAnimatedSprite_SpinningPlus(),
                         (player) =>
                         {
-                            var ghosts = Manager_Players.Players.Where(x => x.WhatAreYou() == X_LevelElements.Ghost).ToArray();
+                            var ghosts = Manager_Players.Players.Where(x => !x.IsAlive() && x is not Player_Ghost).ToArray();
                             bool ret = false;
                             foreach (var ghost in ghosts)
                             {

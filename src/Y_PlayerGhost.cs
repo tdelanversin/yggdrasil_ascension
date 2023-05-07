@@ -14,6 +14,7 @@ namespace YGR
             ) : base(playerIndex, initialPosition, Manager_Sprites.NewAnimatedSprite_Ghost(), level, new Gun_Ghost(), controlLayout)
         {
             VelocityMax *= 1.5f;
+            IsActive = false;
         }
 
         public override X_LevelElements WhatAreYou()
