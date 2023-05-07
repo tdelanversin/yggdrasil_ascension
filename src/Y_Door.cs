@@ -91,6 +91,7 @@ namespace YGR
 
         Dictionary<int, List<Vector2>> _barkPoints;
         bool _closingTheDoor;
+        bool _openingTheDoor;
 
         //Rectangle _outsideRect1;
         //Rectangle _outsideRect2;
@@ -101,6 +102,7 @@ namespace YGR
 
         private static Texture2D _fenceH;
         private static Texture2D _fenceV;
+        public static int DoorMoovingCounter = 0;
 
         public static void Initialize(ContentManager content)
         {
@@ -147,6 +149,7 @@ namespace YGR
             _tileSize = (int)(TextureTileSize * Scale);
             State = X_DoorState.Closed;
             _closingTheDoor = false;
+            _openingTheDoor = false;
 
             int width = Collision.GetCollisionTemplate()[0].Length;
             int height = Collision.GetCollisionTemplate().Length;
@@ -1142,18 +1145,34 @@ namespace YGR
                 case X_DoorState.LockedOpen:
                     //Illuminate(); // only happens once no matter where it is!!
                     //Manager_Light2.Illuminate(this);
+                    if (!_openingTheDoor)
+                    {
+                        _openingTheDoor = true;
+                        DoorMoovingCounter++;
+                        Manager_Sound.PlaySoundWhile(() => Y_Door.DoorMoovingCounter > 0, ref Manager_Sound.Sound_StoneWall);
+                    }
                     if (!doorAnimation(dt, true))
                     {
                         openDoor();
+                        _openingTheDoor = false;
+                        DoorMoovingCounter--;
                     }
                     break;
                 case X_DoorState.Opening:
                     //Illuminate(); // only happens once no matter where it is!!
                     //Manager_Light2.Illuminate(this);
+                    if (!_openingTheDoor)
+                    {
+                        _openingTheDoor = true;
+                        DoorMoovingCounter++;
+                        Manager_Sound.PlaySoundWhile(() => Y_Door.DoorMoovingCounter > 0, ref Manager_Sound.Sound_StoneWall);
+                    }
                     if (!doorAnimation(dt, true))
                     {
                         State = X_DoorState.Open;
                         openDoor();
+                        _openingTheDoor = false;
+                        DoorMoovingCounter--;
                     }
                     break;
                 case X_DoorState.Open:
@@ -1168,6 +1187,8 @@ namespace YGR
                     {
                         closeDoor();
                         _closingTheDoor = true;
+                        DoorMoovingCounter++;
+                        Manager_Sound.PlaySoundWhile(() => Y_Door.DoorMoovingCounter > 0, ref Manager_Sound.Sound_StoneWall);
                     }
                     if (!doorAnimation(dt, false))
                     {
@@ -1181,6 +1202,7 @@ namespace YGR
                                     ((Y_CMRoom)d).SetVisible(false);
                             }
                         }
+                        DoorMoovingCounter--;
                     }
                     break;
                 case X_DoorState.LockedClosed:
@@ -1188,6 +1210,8 @@ namespace YGR
                     {
                         closeDoor();
                         _closingTheDoor = true;
+                        DoorMoovingCounter++;
+                        Manager_Sound.PlaySoundWhile(() => Y_Door.DoorMoovingCounter > 0, ref Manager_Sound.Sound_StoneWall);
                     }
                     if (!doorAnimation(dt, false))
                     {
@@ -1200,6 +1224,7 @@ namespace YGR
                                     ((Y_CMRoom)d).SetVisible(false);
                             }
                         }
+                        DoorMoovingCounter--;
                     }
                     break;
             }

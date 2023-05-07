@@ -154,6 +154,12 @@
 /processorParam:Quality=Best
 /build:Sounds/song_the-white-lion.mp3
 
+#begin Sounds/stonewall.wav
+/importer:WavImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:Sounds/stonewall.wav
+
 #begin Sounds/viking_horn.wav
 /importer:WavImporter
 /processor:SoundEffectProcessor
