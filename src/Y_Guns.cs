@@ -105,13 +105,13 @@ namespace YGR
         // bulletArray is a 2D array of booleans that represent the shape of the bullet spray patter
         static bool[,] bulletArray = {
             { false, false, true, false, false },
-            { false, true, false, true, false },
-            { true, true, false, true, true },
-            { false, true, false, true, false },
-            { false, true, false, true, false },
-            { false, true, false, true, false },
+            { false, true, true, true, false },
+            { true, true, true, true, true },
+            { true, true, true, true, true },
+            { true, true, true, true, true },
+            { true, true, true, true, true },
             { true, false, true, false, true },
-            { false, true, false, true, false }
+            { false, true, true, true, false }
         };
         // shotTimings is an array of doubles that represent the time in milliseconds that each bullet row should be fired
         static double[] shotTimings = { 0.0, 60.0, 120.0, 180.0, 240.0, 300.0, 360.0, 420.0 };
@@ -164,7 +164,7 @@ namespace YGR
                         (float)(_who.Rect.Center.Y + timedelta * new_dir.Y)
                     );
 
-                    Manager_Projectile.AddProjectile_ShotGunProjectile(new_origin, new_dir, _level, _who);
+                    Manager_Projectile.AddProjectile_Strong(new_origin, new_dir, _level, _who);
                     spread += shotSpread;
                 }
             }

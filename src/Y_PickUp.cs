@@ -115,6 +115,20 @@ namespace YGR
                             Manager_Sound.Sound_GunCocking.Play();
                             return false;
                         });
+                case Y_PowerUps.WeaponFunky:
+                    return new PickUp(type, location, width, height, scale, Manager_Sprites.Weapon_RedGun,
+                        (player) =>
+                        {
+                            if (player is Player_Ghost)
+                                return false;
+
+                            if (player.Gun.GetType() == typeof(Gun_Funky))
+                                return false;
+
+                            player.Gun = new Gun_Funky();
+                            Manager_Sound.Sound_GunCocking.Play();
+                            return false;
+                        });
                 case Y_PowerUps.Life:
                     return new PickUp(type, location, width, height, scale, Manager_Sprites.NewAnimatedSprite_SpinningHeart(),
                         (player) =>
