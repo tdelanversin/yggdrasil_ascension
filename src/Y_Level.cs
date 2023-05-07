@@ -64,6 +64,10 @@ namespace YGR
         private int _waitTimeBetweenEndOfFightAndLowerDoors = 125;
         private int _waitTimeBetweenEndOfFightAndLowerDoorsCounter = 0;
 
+        public static int LightOffsetX;
+        public static int LightOffsetY;
+        public static int LightOffsetZ;
+
         Texture2D _background;
         Rectangle _backgroundRect;
 
@@ -197,6 +201,9 @@ namespace YGR
             var watch = new Stopwatch();
             watch.Start();
             float offset = 1024;
+            LightOffsetX = Util.random.Next(-15, Rect.Width + 15);
+            LightOffsetY = Util.random.Next(-15, Rect.Height + 15);
+            LightOffsetZ = Util.random.Next(8, 20);
             foreach (var node in tree)
             {
                 var type = _availableRooms[node.Value.Type];
@@ -220,6 +227,8 @@ namespace YGR
                     (int)(node.Value.Y * h * offset - room.Rect.Height / 2));
                 p.X = p.X + (TileWidth - p.X % TileWidth);
                 p.Y = p.Y + (TileHeight - p.Y % TileHeight);
+
+                ((Y_CMRoom)room).AddLight(LightOffsetX, LightOffsetY, LightOffsetZ);
                 room.MoveTo(p);
                 Rooms.Add(node.Key, room);
 

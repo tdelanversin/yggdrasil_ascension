@@ -477,14 +477,6 @@ namespace YGR
 
             State = X_RoomState.Invisible;
 
-            Lights = new List<X_Light>() {
-            new X_Light(
-                new Vector3(Rect.X + -14*TextureTileSize,
-                Rect.Y + 20 *TextureTileSize,
-                10 * TextureTileSize),
-                Rect, Scale)
-            };
-
             Task.WaitAll(t2, t4, t5);
 
             Task.WaitAll(readFloor, readRoof);
@@ -495,6 +487,17 @@ namespace YGR
             _doorsToggled = false;
             _visited = false;
             IlluminationResources = new X_IlluminationResources();
+        }
+
+        public void AddLight(int offsetX, int offsetY, int offsetZ)
+        {
+            Lights = new List<X_Light>() {
+            new X_Light(
+                new Vector3(Rect.X + -offsetX*TextureTileSize,
+                Rect.Y + offsetY*TextureTileSize,
+                offsetZ * TextureTileSize),
+                Rect, Scale)
+            };
         }
 
         public int GetTargetShadeIndex()
