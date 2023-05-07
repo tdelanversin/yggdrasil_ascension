@@ -143,9 +143,9 @@ namespace YGR
             Rooms = new Dictionary<int, IWalkable>();
 
             _background = content.Load<Texture2D>("SpritesOther/Level_Background");
-            int width = (int)(_background.Width * 3.5f);
-            int height = (int)(_background.Height * 3.5f);
-            Point startLocation = new Point((int)(width / 1.96f), (int)(height / 1.137f));
+            int width = (int)(_background.Width * 3.8f);
+            int height = (int)(_background.Height * 3.8f);
+            Point startLocation = new Point((int)(width / 1.96f), (int)(height / 1.12f));
             _backgroundRect = new Rectangle(-startLocation.X, -startLocation.Y, width, height);
 
         }

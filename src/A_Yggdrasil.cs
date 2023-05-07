@@ -94,7 +94,7 @@ namespace YGR
             Notifications.Update(gameTime);
 
             // Keybind to switch in and out of the menu screen
-            if (Input.IsKeyTriggered(Keys.Escape) || Input.IsButtonTriggered(0, Buttons.Start))
+            if (Input.IsKeyTriggered(Keys.Escape) || Input.IsButtonTriggeredAny(Buttons.Start))
             {
                 if (State == GameState.InGame)
                 {

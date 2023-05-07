@@ -79,6 +79,24 @@ namespace YGR
             return currentGamePadState[(int)gamePadIndex].IsButtonDown(button) && !previousGamePadState[(int)gamePadIndex].IsButtonDown(button);
         }
 
+        public static bool IsButtonDownAny(Buttons button)
+        {
+            foreach (var idx in new List<PlayerIndex> { PlayerIndex.One, PlayerIndex.Two, PlayerIndex.Three, PlayerIndex.Four })
+            {
+                if (IsButtonDown(idx, button)) { return true; }
+            }
+            return false;
+        }
+
+        public static bool IsButtonTriggeredAny(Buttons button)
+        {
+            foreach (var idx in new List<PlayerIndex> { PlayerIndex.One, PlayerIndex.Two, PlayerIndex.Three, PlayerIndex.Four })
+            {
+                if (IsButtonTriggered(idx, button)) { return true; }
+            }
+            return false;
+        }
+
         public static Point GetMousePosition()
         {
             return currentMouseState.Position;
