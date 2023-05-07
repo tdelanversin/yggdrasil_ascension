@@ -375,6 +375,8 @@ namespace YGR
                     {
                         if (PlayerEntity.GetType(spr) == PlayerType.Nerd)
                             r.PickUps.Add(PickUp.Factory(Y_PowerUps.ChooserNerd, pos.ToPoint(), spr.width, spr.height, Scale));
+                        if (PlayerEntity.GetType(spr) == PlayerType.Mailman)
+                            r.PickUps.Add(PickUp.Factory(Y_PowerUps.ChooserMailman, pos.ToPoint(), spr.width, spr.height, Scale));
                         if (PlayerEntity.GetType(spr) == PlayerType.Ninja)
                             r.PickUps.Add(PickUp.Factory(Y_PowerUps.ChooserNinja, pos.ToPoint(), spr.width, spr.height, Scale));
                     }

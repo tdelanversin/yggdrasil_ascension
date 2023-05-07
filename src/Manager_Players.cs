@@ -57,6 +57,17 @@ namespace YGR
                     controlLayout,
                     scale: 1.0f
                 );
+            if (type == PlayerType.Mailman)
+                return new SimplePlayer(
+                    playerIndex,
+                    position,
+                    Manager_Sprites.NewAnimatedSprite_Mailman(),
+                    level,
+                    Util.getRandomGun(),
+                    type,
+                    controlLayout,
+                    scale: 1.0f
+                );
             else // if (type == PlayerType.Ghost)
             {
                 var player = new Player_Ghost(

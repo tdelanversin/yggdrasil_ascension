@@ -20,6 +20,7 @@ namespace YGR
         // CharacterChoosers
         ChooserNerd,
         ChooserNinja,
+        ChooserMailman,
     }
 
     public class PickUp : IGameElement
@@ -76,6 +77,17 @@ namespace YGR
                             if (player.Type != PlayerType.Nerd)
                             {
                                 Manager_Players.SetPlayerType(player.PlayerIndex, PlayerType.Nerd);
+                                Manager_Sound.Sound_GunCocking.Play();
+                            }
+                            return false;
+                        });
+                case Y_PowerUps.ChooserMailman:
+                    return new PickUp(type, location, width, height, scale, Manager_Sprites.NewAnimatedSprite_Mailman(),
+                        (player) =>
+                        {
+                            if (player.Type != PlayerType.Mailman)
+                            {
+                                Manager_Players.SetPlayerType(player.PlayerIndex, PlayerType.Mailman);
                                 Manager_Sound.Sound_GunCocking.Play();
                             }
                             return false;
