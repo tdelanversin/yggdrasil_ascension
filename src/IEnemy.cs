@@ -16,7 +16,7 @@ namespace YGR
     {
         public Vector2 FacingDirection { get; set; }
         public EnemyState State { get; set; }
-
         public IShooter Gun { get; set; }
+        public void DropSomethingJuicyMaybe();
     }
 }
