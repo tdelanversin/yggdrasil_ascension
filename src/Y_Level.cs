@@ -145,7 +145,7 @@ namespace YGR
             _background = content.Load<Texture2D>("SpritesOther/Level_Background");
             int width = (int)(_background.Width * 3.8f);
             int height = (int)(_background.Height * 3.8f);
-            Point startLocation = new Point((int)(width / 1.96f), (int)(height / 1.137f));
+            Point startLocation = new Point((int)(width / 1.96f), (int)(height / 1.12f));
             _backgroundRect = new Rectangle(-startLocation.X, -startLocation.Y, width, height);
 
         }
@@ -186,8 +186,8 @@ namespace YGR
 
             var random = new Random();
             // randomly select one level tree
-            //var key = _data.Level.Keys.ToArray()[random.Next(0, _data.Level.Keys.Count)];
-            var key = _data.Level.Keys.ToArray()[3];
+            var key = _data.Level.Keys.ToArray()[random.Next(0, _data.Level.Keys.Count)];
+            //var key = _data.Level.Keys.ToArray()[0];
             var tree = _data.Level[key];
 
             var watch = new Stopwatch();
