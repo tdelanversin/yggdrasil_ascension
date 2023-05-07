@@ -14,6 +14,7 @@ namespace YGR
         {
             public Vector2 Position;
             public string Text;
+            public string String;
             public bool IsSelected;
             public bool IsActive;
             public Action Handler;
@@ -21,6 +22,7 @@ namespace YGR
             public MenuItem(string text, Action handler)
             {
                 Text = text;
+                String = Text;
                 IsSelected = false;
                 IsActive = true;
                 Handler = handler;
@@ -34,28 +36,31 @@ namespace YGR
             public void Draw(SpriteBatch spriteBatch, Rectangle bounds)
             {
                 var color = Color.BurlyWood;
-                if (IsSelected)
-                {
-                    color = Color.Beige;
-                }
+                String = Text;
 
                 if (!IsActive)
                 {
                     color = Color.Gray;
                 }
-                Util.DrawString(Fonts.Large, Text, GetOffsetPosition(), color, spriteBatch);
+                else if (IsSelected)
+                {
+                    String = "> " + Text + "  ";
+                    color = Color.Beige;
+                }
+
+                Util.DrawString(Fonts.Large, String, GetOffsetPosition(), color, spriteBatch);
             }
 
             public Vector2 GetOffsetPosition()
             {
                 // Offset position by own size to center text
-                return Position - Fonts.Large.MeasureString(Text) / 2;
+                return Position - Fonts.Large.MeasureString(String) / 2;
             }
 
             public Rectangle Bounds()
             {
                 Vector2 topLeft = GetOffsetPosition();
-                Vector2 size = Fonts.Large.MeasureString(Text);
+                Vector2 size = Fonts.Large.MeasureString(String);
                 return new Rectangle((int)topLeft.X, (int)topLeft.Y, (int)size.X, (int)size.Y);
             }
 
@@ -216,17 +221,20 @@ namespace YGR
 
         public static void Update()
         {
-            if (Input.IsKeyTriggered(Keybinds.P1Down) || Input.IsKeyTriggered(Keys.Down) || Input.IsButtonTriggered(0, Buttons.DPadDown))
+            if (Input.IsKeyTriggered(Keybinds.P1Down) || Input.IsKeyTriggered(Keys.Down) ||
+                Input.IsButtonTriggeredAny(Buttons.DPadDown) || Input.IsButtonTriggeredAny(Buttons.LeftThumbstickDown))
             {
                 SelectMenuNext();
             }
 
-            if (Input.IsKeyTriggered(Keybinds.P1Up) || Input.IsKeyTriggered(Keys.Up) || Input.IsButtonTriggered(0, Buttons.DPadUp))
+            if (Input.IsKeyTriggered(Keybinds.P1Up) || Input.IsKeyTriggered(Keys.Up) ||
+                Input.IsButtonTriggeredAny(Buttons.DPadUp) || Input.IsButtonTriggeredAny(Buttons.LeftThumbstickUp))
             {
                 SelectMenuPrev();
             }
 
-            if (Input.IsKeyTriggered(Keybinds.Enter) || Input.IsKeyTriggered(Keys.Space) || Input.IsButtonTriggered(0, Buttons.A))
+            if (Input.IsKeyTriggered(Keybinds.Enter) || Input.IsKeyTriggered(Keys.Space) ||
+                Input.IsButtonTriggeredAny(Buttons.A))
             {
                 SelectableItems[SelectedMenu].Dispatch();
             }
