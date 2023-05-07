@@ -44,6 +44,7 @@ namespace YGR
 
     internal sealed class Door
     {
+#pragma warning disable 0649
         public string id;
         public string iid;
         public string layer;
@@ -52,6 +53,7 @@ namespace YGR
         public int width;
         public int height;
         public int color;
+#pragma warning restore 0649
     }
 
     public enum X_RoomState
@@ -159,8 +161,6 @@ namespace YGR
         private Color[] _floorColorData;
         private byte[] _roofData;
         private Texture2D _roof;
-        private byte[] _wallData;
-        bool[] _illumination = null;
         int _width;
         int _height;
         bool _visited;

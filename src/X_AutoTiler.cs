@@ -24,14 +24,18 @@ namespace YGR
 
         internal struct Textel
         {
+#pragma warning disable 0649
             public int x;
             public int y;
+#pragma warning restore 0649
         }
 
         internal class TileData
         {
+#pragma warning disable 0649
             public string[][,][] masks;
             public List<Textel> coordinates;
+#pragma warning restore 0649
         }
 
         public class X_AutoTileTexture
@@ -69,9 +73,11 @@ namespace YGR
 
         internal class Data
         {
+#pragma warning disable 0649
             public string textureName;
             public int size;
             public Dictionary<string, TileData> tiles;
+#pragma warning restore 0649
         }
 
         internal class TileInfo

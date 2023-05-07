@@ -96,7 +96,6 @@ namespace YGR
         //Rectangle _outsideRect1;
         //Rectangle _outsideRect2;
 
-        RenderTarget2D _renderTarget;
         public Texture2D[] ShadeTexture { get; set; }
         public int ShadeIndex { get; set; }
 
