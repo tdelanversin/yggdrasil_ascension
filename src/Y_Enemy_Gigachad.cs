@@ -23,8 +23,8 @@ namespace YGR
             Gun2 = new Gun_Gigagun();
 
             _hitColor = Color.OrangeRed;
-            _regularColor = Color.White;
-            _color = _regularColor;
+            Color = Color.White;
+            _currentColor = Color;
 
             _maxVelocity = 0.075f;
 

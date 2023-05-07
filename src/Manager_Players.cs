@@ -10,6 +10,13 @@ namespace YGR
 {
     public static class Manager_Players
     {
+        public enum PlayerType
+        {
+            Nerd = 0,
+            Ninja,
+            Random,
+            Ghost
+        };
 
         // Player list
         public static List<IVictim> Players { get; private set; }
@@ -30,7 +37,7 @@ namespace YGR
             Y_Level level,
             ControlLayout controlLayout = ControlLayout.ControllerOnly)
         {
-            Players.Add(new Ninja(
+            Players.Add(new SimplePlayer(
                 playerIndex,
                 position,
                 Manager_Sprites.NewAnimatedSprite_NerdyGirl(),
@@ -48,7 +55,7 @@ namespace YGR
             ControlLayout controlLayout = ControlLayout.ControllerOnly
         )
         {
-            Players.Add(new Ninja(
+            Players.Add(new SimplePlayer(
                 playerIndex,
                 position,
                 Manager_Sprites.NewAnimatedSprite_Ninja(),

@@ -42,12 +42,10 @@ namespace YGR
 
             string level = "Level_3";
             Factory_Debug.Initialize(Content);
-            Manager_Projectile.Initialize(Content);
             Manager_Players.Initialize();
             Manager_Particles.Initialize();
             Manager_Light2.Initialize("./Levels/" + level + "/simplified", Content, GraphicsDevice);
             X_AutoTiler.Initialize("./Doors/", "data.json", GraphicsDevice, Y_Door.MapJsonName);
-            X_AutoTiler.Initialize("./Levels/", "doors.json", GraphicsDevice, Y_CMRoom.MapJsonName);
             Y_MultiPowerUp.Initialize(Content);
             Y_Door.Initialize(Content);
 
@@ -119,6 +117,16 @@ namespace YGR
             {
                 Camera.CycleCameraMode();
                 Notifications.New("Camera mode switched to " + Camera.Mode);
+            }
+
+            if (Input.IsKeyTriggered(Keybinds.GodMode))
+            {
+                foreach (var p in Manager_Players.Players)
+                {
+                    ((SimplePlayer)p).Gun = new Gun_Godmode();
+                    ((SimplePlayer)p).VelocityMax = 0.6f;
+                    p.LifePoints = 9999;
+                }
             }
 
             // Update all entities in current game state

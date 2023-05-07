@@ -13,10 +13,16 @@ namespace YGR
         public static Texture2D Player_Simple { get; private set; }
         public static Texture2D Player_NerdyGirl { get; private set; }
         public static Texture2D Player_Ghost { get; private set; }
-        public static IList<Texture2D> AimIndicator { get; private set; }
+        public static Texture2D AimIndicator { get; private set; }
 
         // Projectiles
         public static Texture2D Projectile_Simple { get; private set; }
+
+        // Weapons
+        public static Texture2D Weapon_Pistol { get; private set; }
+        public static Texture2D Weapon_Keyboard { get; private set; }
+        public static Texture2D Weapon_RedGun { get; private set; }
+        public static Texture2D Weapon_Shotgun { get; private set; }
 
         // UI
         public static Texture2D HealthbarEmpty { get; private set; }
@@ -28,6 +34,7 @@ namespace YGR
 
         // Enemies
         public static Texture2D Enemy_Basic { get; private set; }
+        public static Texture2D Enemy_Slime { get; private set; }
         public static Texture2D Enemy_Gigachad { get; private set; }
 
         public static void LoadContent(ContentManager contentManager)
@@ -37,19 +44,19 @@ namespace YGR
             Player_Ghost = contentManager.Load<Texture2D>("SpritesCharacters/ghosty");
             Player_NerdyGirl = contentManager.Load<Texture2D>("SpritesCharacters/NerdyGirl");
 
-            AimIndicator = new List<Texture2D> {
-                contentManager.Load<Texture2D>("SpritesOther/target_indicator_red"),
-                contentManager.Load<Texture2D>("SpritesOther/target_indicator_blue"),
-                contentManager.Load<Texture2D>("SpritesOther/target_indicator_green"),
-                contentManager.Load<Texture2D>("SpritesOther/target_indicator_yellow"),
-            };
-
+            AimIndicator = contentManager.Load<Texture2D>("SpritesOther/target_indicator");
             Projectile_Simple = contentManager.Load<Texture2D>("SpritesOther/projectiles");
-            
+
+            Weapon_Pistol = contentManager.Load<Texture2D>("SpritesWeapons/Pistol");
+            Weapon_Keyboard = contentManager.Load<Texture2D>("SpritesWeapons/Keyboard");
+            Weapon_RedGun = contentManager.Load<Texture2D>("SpritesWeapons/Red_Gun");
+            Weapon_Shotgun = contentManager.Load<Texture2D>("SpritesWeapons/Shotgun");
+
             HealthbarEmpty = contentManager.Load<Texture2D>("SpritesOther/healthbar_empty");
             HealthbarInfill = contentManager.Load<Texture2D>("SpritesOther/healthbar_infill");
 
             Enemy_Basic = Player_Simple;
+            Enemy_Slime = contentManager.Load<Texture2D>("SpritesCharacters/slime");
             Enemy_Gigachad = contentManager.Load<Texture2D>("SpritesCharacters/gigachad");
 
             SpinningHeart = contentManager.Load<Texture2D>("SpritesOther/SpinningHeart");
@@ -80,6 +87,28 @@ namespace YGR
             );
         }
 
+        public static AnimatedSprite NewAnimatedSprite_ProjectileSlimeOuter()
+        {
+            return new AnimatedSprite(
+                texture: Projectile_Simple,
+                spriteDimension: new Vector2(32, 32),
+                animations: new Dictionary<AnimationState, int[,]> {
+                    { AnimationState.Idle, new int[,] { {0,  0}, {0, 1}, {0, 2}, {0, 3}} },
+                }
+            );
+        }
+
+        public static AnimatedSprite NewAnimatedSprite_ProjectileSlimeInner()
+        {
+            return new AnimatedSprite(
+                texture: Projectile_Simple,
+                spriteDimension: new Vector2(32, 32),
+                animations: new Dictionary<AnimationState, int[,]> {
+                    { AnimationState.Idle, new int[,] { {1,  0}, {1, 1}, {1, 2}, {1, 3}} },
+                }
+            );
+        }
+
         public static AnimatedSprite NewAnimatedSprite_TestCharacter()
         {
             return new AnimatedSprite(
@@ -90,6 +119,20 @@ namespace YGR
                     { AnimationState.IdleLeft, new int[] { 1 } },
                     { AnimationState.WalkRight, new int[] { 3, 4 } },
                     { AnimationState.IdleRight, new int[] { 3 } },
+                    }
+                );
+        }
+
+        public static AnimatedSprite NewAnimatedSprite_EnemySlime()
+        {
+            return new AnimatedSprite(
+                    texture: Enemy_Slime,
+                    spriteDimension: new Vector2(55, 42),
+                    animations: new Dictionary<AnimationState, int[]> {
+                        { AnimationState.WalkLeft, new int[] { 0, 1, 2, 3, 4, 3, 2, 1 } },
+                        { AnimationState.WalkRight, new int[] { 0, 1, 2, 3, 4, 3, 2, 1 } },
+                        { AnimationState.IdleLeft, new int[] { 3, 4, 3 } },
+                        { AnimationState.IdleRight, new int[] { 3, 4, 3 } },
                     }
                 );
         }

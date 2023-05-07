@@ -11,8 +11,6 @@ namespace YGR
         protected double NextShotCooldown = 0.0f;
         protected int ShotDelay = 240;
 
-        public Gun_Basic() { }
-
         public virtual void Shoot(GameTime gameTime, Vector2 origin, Vector2 direction, Y_Level level, IGameElement who)
         {
             if (NextShotCooldown > 0.0f)
@@ -22,7 +20,7 @@ namespace YGR
 
             NextShotCooldown = ShotDelay;
 
-            Manager_Projectile.AddProjectile_StarterProjectile(origin, direction, gameTime.TotalGameTime.TotalMilliseconds, level, who);
+            Manager_Projectile.AddProjectile_StarterProjectile(origin, direction, level, who);
         }
 
         public virtual void Update(GameTime gameTime)
@@ -36,6 +34,18 @@ namespace YGR
     {
         public Gun_BasicEnemy() { 
             ShotDelay = 1000;
+        }
+
+        public override void Shoot(GameTime gameTime, Vector2 origin, Vector2 direction, Y_Level level, IGameElement who)
+        {
+            if (NextShotCooldown > 0.0f)
+                return;
+
+            Manager_Sound.Sound_Fireball.Play(0.2f, 0, 0);
+
+            NextShotCooldown = ShotDelay;
+
+            Manager_Projectile.AddProjectile_EnemySlimeProjectile(origin, direction, level, who);
         }
     }
 
@@ -74,7 +84,7 @@ namespace YGR
                     (float)(direction.X * Math.Sin(spread) + direction.Y * Math.Cos(spread))
                 );
 
-                Manager_Projectile.AddProjectile_ShotGunProjectile(origin, new_dir, gameTime.TotalGameTime.TotalMilliseconds, level, who);
+                Manager_Projectile.AddProjectile_ShotGunProjectile(origin, new_dir, level, who);
                 spread += ShotSpread;
             }
         }
@@ -85,32 +95,28 @@ namespace YGR
         double timeSinceShot = 1001;
         Vector2 _origin = new Vector2(0, 0);
         Vector2 _direction = new Vector2(0, 0);
-        Y_Level _level;
-        IGameElement _who;
+        Y_Level? _level;
+        IGameElement? _who;
 
         static int shotDelay = 1000;
-        // bulletArray is a 2D array of booleans that represent the shape of the bullet spray patter
         static double shotSpread = .1;
-        // static bool[,] bulletArray = {{false, true, false},
-        //                               {true, false, true},
-        //                               {false, true, false}};
-        static bool[,] bulletArray = {{ false, false, true, false, false },
-                                    { false, true, false, true, false },
-                                    { false, true, false, true, false },
-                                    { false, true, false, true, false },
-                                    { false, true, false, true, false },
-                                    { false, true, false, true, false },
-                                    { true, false, true, false, true },
-                                    { false, true, false, true, false }};
+
+        // bulletArray is a 2D array of booleans that represent the shape of the bullet spray patter
+        static bool[,] bulletArray = {
+            { false, false, true, false, false },
+            { false, true, false, true, false },
+            { true, true, false, true, true },
+            { false, true, false, true, false },
+            { false, true, false, true, false },
+            { false, true, false, true, false },
+            { true, false, true, false, true },
+            { false, true, false, true, false }
+        };
         // shotTimings is an array of doubles that represent the time in milliseconds that each bullet row should be fired
-        // static double[] shotTimings = { 0.0, 60.0, 120.0 };
         static double[] shotTimings = { 0.0, 60.0, 120.0, 180.0, 240.0, 300.0, 360.0, 420.0 };
 
-        public Gun_Funky() { }
-
-        public void Shoot(GameTime gameTime, Vector2 origin, Vector2 direction, Y_Level level, IGameElement who)
+        public virtual void Shoot(GameTime gameTime, Vector2 origin, Vector2 direction, Y_Level level, IGameElement who)
         {
-
             if (timeSinceShot < shotDelay)
                 return;
 
@@ -121,9 +127,9 @@ namespace YGR
             _who = who;
         }
 
-        public void Update(GameTime gameTime)
+        public virtual void Update(GameTime gameTime)
         {
-            if (timeSinceShot >= shotDelay)
+            if (timeSinceShot >= shotDelay || _who == null || _level == null)
                 return;
 
             var lastUpdate = timeSinceShot;
@@ -157,7 +163,7 @@ namespace YGR
                         (float)(_who.Rect.Center.Y + timedelta * new_dir.Y)
                     );
 
-                    Manager_Projectile.AddProjectile_ShotGunProjectile(new_origin, new_dir, gameTime.TotalGameTime.TotalMilliseconds, _level, _who);
+                    Manager_Projectile.AddProjectile_ShotGunProjectile(new_origin, new_dir, _level, _who);
                     spread += shotSpread;
                 }
             }
@@ -169,15 +175,12 @@ namespace YGR
         double timeSinceShot = 1001;
         Vector2 _origin = new Vector2(0, 0);
         Vector2 _direction = new Vector2(0, 0);
-        Y_Level _level;
-        IGameElement _who;
+        Y_Level? _level;
+        IGameElement? _who;
 
         static int shotDelay = 1000;
-        // static bool[,] bulletArray = {{false, true, false},
-        //                               {true, false, true},
-        //                               {false, true, false}};
         static bool[,] bulletArray = {{ false, false, true, false, false },
-                                    { false, true, false, true, false },
+                                    { true, true, false, true, true },
                                     { false, true, false, true, false },
                                     { false, true, false, true, false },
                                     { false, true, false, true, false },
@@ -185,13 +188,9 @@ namespace YGR
                                     { true, false, true, false, true },
                                     { false, true, false, true, false }};
         // shotTimings is an array of doubles that represent the time in milliseconds that each bullet row should be fired
-        // static double[] shotTimings = { 0.0, 60.0, 120.0 };
         static double[] shotTimings = { 30.0, 60.0, 120.0, 180.0, 240.0, 300.0, 360.0, 420.0 };
         static double[] positionShift = { 50, 20, 0, -20, -50 };
         static double[] shotSpread = { 0, 0, 0, 0, 0 };
-
-
-        public Gun_Wide() { }
 
         public void Shoot(GameTime gameTime, Vector2 origin, Vector2 direction, Y_Level level, IGameElement who)
         {
@@ -208,7 +207,7 @@ namespace YGR
 
         public void Update(GameTime gameTime)
         {
-            if (timeSinceShot >= shotDelay)
+            if (timeSinceShot >= shotDelay || _who == null || _level == null)
                 return;
 
             var lastUpdate = timeSinceShot;
@@ -243,52 +242,58 @@ namespace YGR
                         (float)(_who.Rect.Center.Y + timedelta * new_dir.Y + shift * perp.Y)
                     );
 
-                    Manager_Projectile.AddProjectile_ShotGunProjectile(new_origin, new_dir, gameTime.TotalGameTime.TotalMilliseconds, _level, _who);
+                    Manager_Projectile.AddProjectile_ShotGunProjectile(new_origin, new_dir, _level, _who);
                 }
             }
         }
     }
 
     // Gun for Gigachad
-    public class Gun_Gigagun : IShooter
+    public class Gun_Gigagun : Gun_ShotGun
     {
-        double nextShotCooldown = 0.0f;
-        static int shotDelay = 3000;
-        static int shotCount = 256;
-        static double shotSpread = 2 * Math.PI / shotCount;
-
-        public Gun_Gigagun() { }
-
-        public void Shoot(GameTime gameTime, Vector2 origin, Vector2 direction, Y_Level level, IGameElement who)
+        public Gun_Gigagun()
         {
+            ShotCount = 256;
+            ShotDelay = 5000;
+            ShotSpread = 2 * Math.PI / ShotCount;
+        }
 
-            if (nextShotCooldown > 0.0f)
+        public override void Shoot(GameTime gameTime, Vector2 origin, Vector2 direction, Y_Level level, IGameElement who)
+        {
+            // Override to make sure the direction is set, since gigachad shoots even without a target
+            if (NextShotCooldown > 0.0f)
                 return;
 
-            // direction does not matter, just make sure it's sensible
-            direction = Vector2.One;
+            if (direction == null || direction == Vector2.Zero) {
+                direction = Vector2.One;
+            }
 
-            Manager_Sound.Sound_Explosion.Play(1f, 0, 0);
+            Manager_Sound.Sound_Explosion.Play();
 
-            nextShotCooldown = shotDelay;
+            NextShotCooldown = ShotDelay;
 
-            double spread = -shotCount / 2 * shotSpread;
-            for (int i = 0; i < shotCount; i++)
+            double spread = -ShotCount / 2 * ShotSpread;
+            for (int i = 0; i < ShotCount; i++)
             {
                 var new_dir = new Vector2(
                     (float)(direction.X * Math.Cos(spread) - direction.Y * Math.Sin(spread)),
                     (float)(direction.X * Math.Sin(spread) + direction.Y * Math.Cos(spread))
                 );
 
-                Manager_Projectile.AddProjectile_ShotGunProjectile(origin, new_dir, gameTime.TotalGameTime.TotalMilliseconds, level, who);
-                spread += shotSpread;
+                Manager_Projectile.AddProjectile_ShotGunProjectile(origin, new_dir, level, who);
+                spread += ShotSpread;
             }
         }
+    }
 
-        public void Update(GameTime gameTime)
+    // Become the one
+    public class Gun_Godmode : Gun_Gigagun
+    {
+        public Gun_Godmode()
         {
-            nextShotCooldown = Math.Max(0, nextShotCooldown - gameTime.ElapsedGameTime.TotalMilliseconds);
+            ShotCount = 128;
+            ShotDelay = 100;
+            ShotSpread = 2 * Math.PI / ShotCount;
         }
-
     }
 }
