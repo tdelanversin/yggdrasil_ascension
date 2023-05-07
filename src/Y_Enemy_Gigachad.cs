@@ -7,7 +7,6 @@ namespace YGR
     public class Enemy_Gigachad : Enemy_Basic
     {
         IShooter Gun2; // Gigachad needs moar guns
-        public float VelocityMax;
 
         public Enemy_Gigachad(
             Vector2 position,
@@ -48,7 +47,6 @@ namespace YGR
             // Set the drawing scale to make the character fit into the collision bounds
             CharacterScale = Util.GetSpriteScale(_rect, CharacterSprite.SpriteDimension);
             CharacterOffset = Vector2.Zero;
-            VelocityMax = 0.35f;
 
         }
 
@@ -99,7 +97,7 @@ namespace YGR
             // Gigachad shoot Big Gun no matter what (as long as there are players in the same room)
             Gun2.Shoot(gameTime, _rect.Center.ToVector2(), Vector2.One, Level, this);
         }
-        protected virtual void UpdateVelocity(Vector2 input, GameTime gameTime)
+        protected override void UpdateVelocity(Vector2 input, GameTime gameTime)
         {
             int timeStepMS = gameTime.ElapsedGameTime.Milliseconds;
 
@@ -125,7 +123,7 @@ namespace YGR
                     Math.Sign(Velocity.Y) * Math.Max(0.0f, Math.Abs(Velocity.Y) - _deceleration * timeStepMS));
             }
 
-            Velocity = Util.ClampMagnitude(Velocity, VelocityMax);
+            Velocity = Util.ClampMagnitude(Velocity, _maxVelocity);
         }
     }
 }

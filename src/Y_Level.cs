@@ -18,20 +18,24 @@ namespace YGR
     {
         internal class LevelNode
         {
+#pragma warning disable 0649
             public bool Optional;
             public string Type;
             public float X;
             public float Y;
             public List<Dictionary<string, string[]>> Connections;
+#pragma warning restore 0649
         }
 
         internal class Data
         {
+#pragma warning disable 0649
             public string LdtkSubfolderName;
             public Dictionary<string, Dictionary<string, string>> LdtkRoomTypes;
             public float W;
             public float H;
             public Dictionary<string, Dictionary<int, LevelNode>> Level;
+#pragma warning restore 0649
         }
 
         public enum GamePlayState
