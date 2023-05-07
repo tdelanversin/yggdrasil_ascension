@@ -125,7 +125,6 @@ namespace YGR
 
         public virtual void Draw(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)
         {
-            Manager_Particles.Draw(gameTime, spriteBatch);
             spriteBatch.Draw(
                 _sprite.Texture, _position + globalOffset,
                 _sprite.SourceRectangle,
