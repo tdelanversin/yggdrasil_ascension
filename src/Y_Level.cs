@@ -2,6 +2,7 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
+using Microsoft.Xna.Framework.Input;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Concurrent;
@@ -300,9 +301,9 @@ namespace YGR
             _interactables.Clear();
 
             // Place a tutorial field that guides the players
-            _interactables.Add(new Interactable_Tutorialfield(
-                new Rectangle(16, 12, 11, 8), this, (Y_CMRoom)_startRoom)
-            );
+            // _interactables.Add(new Interactable_Tutorialfield(
+            //     new Rectangle(16, 12, 11, 8), this, (Y_CMRoom)_startRoom)
+            // );
 
             // Room opener field that can trigger the game start
             _interactables.Add(new Interactable_RoomOpener(
@@ -462,7 +463,7 @@ namespace YGR
             switch (State)
             {
                 case GamePlayState.Start:
-                    if (_interactables[1].InteractionComplete)
+                    if (_interactables[0].InteractionComplete)
                     {
                         State = GamePlayState.FreeRoam;
                         _startRoom.OpenAllUnlockedRoomDoors();
@@ -580,6 +581,56 @@ namespace YGR
 
                 default:
                     break;
+            }
+        }
+
+        public void DrawUI(GameTime gameTime, SpriteBatch spriteBatch)
+        {
+            if (State != Y_Level.GamePlayState.Start)
+                return;
+
+            SpriteFont font = Fonts.Large;
+            float spacing = 1.5f;
+            string longest_str = "P1: [JOINED] Pick character"; // Used to center the text
+            Vector2 size = font.MeasureString(longest_str);
+            Vector2 pos = new Vector2((Camera.Bounds.Width - size.X) / 2, (Camera.Bounds.Height - size.Y * (1f + 3f * spacing)) / 2);
+            pos.Y += 10; // Feels like CSS...
+
+            foreach (IPlayer p in Manager_Players.Players)
+            {
+                string indexString = "P" + (int)p.PlayerIndex + ": ";
+                string statusString = "";
+                Color statusColor;
+                if (p.ControlLayout == ControlLayout.ControllerOnly && !GamePad.GetState(p.PlayerIndex).IsConnected)
+                {
+                    statusString += "[  --  ] Disconnected";
+                    statusColor = Color.DimGray;
+                }
+                else if (!p.IsActive)
+                {
+                    statusString += "[  --  ] Move to join";
+                    statusColor = Color.LightPink;
+                }
+                else if (p is Player_Ghost)
+                {
+                    statusString += "[JOINED] Pick character";
+                    statusColor = Color.LightBlue;
+                }
+                else
+                {
+                    statusString += "[JOINED] Ready";
+                    statusColor = Color.LimeGreen;
+                }
+                
+                float indexStringWidth = font.MeasureString(indexString).X;
+                // Draw text shadow
+                spriteBatch.DrawString(font, indexString + statusString, pos + Vector2.One, Color.Black);
+
+                // Draw text line itself
+                Vector2 offset = new Vector2(font.MeasureString(indexString).X, 0);
+                spriteBatch.DrawString(font, indexString, pos, Color.Lerp(p.Color, Color.Wheat, 0.5f));
+                spriteBatch.DrawString(font, statusString, pos + offset, Color.Lerp(statusColor, Color.Wheat, 0.2f));
+                pos.Y += size.Y * spacing;
             }
         }
 

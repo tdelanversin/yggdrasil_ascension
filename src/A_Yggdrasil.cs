@@ -199,6 +199,10 @@ namespace YGR
                         Manager_Enemies.DrawOutline(gameTime, zero, _spriteBatch);
                     }
                     _spriteBatch.End();
+
+                    _spriteBatch.Begin(SpriteSortMode.Immediate, null, null, null, null, null, null);
+                    _level.DrawUI(gameTime, _spriteBatch);
+                    _spriteBatch.End();
                     break;
 
                 case GameState.Menu:

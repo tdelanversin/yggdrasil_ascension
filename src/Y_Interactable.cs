@@ -108,7 +108,7 @@ namespace YGR
 
                 Vector2 str_size = Fonts.Normal.MeasureString(str);
                 Vector2 str_pos = new Vector2(Rect.X, Rect.Y + y);
-                spriteBatch.DrawString(Fonts.Normal, str, str_pos, c);
+                spriteBatch.DrawString(Fonts.Normal, str, str_pos, Color.Lerp(c, Color.Wheat, 0.5f));
                 y += Rect.Height / 5;
             }
         }
@@ -157,7 +157,7 @@ namespace YGR
                     continue;
 
                 // One player needs to trigger the field
-                if (p.Rect.Intersects(Rect))
+                if (Rect.Contains(p.Rect.Center))
                     tryTrigger = true;
 
                 // Participating players need to choose a character
@@ -169,7 +169,7 @@ namespace YGR
             {
                 if (!ready)
                 {
-                    Color = Color.Red;
+                    Color = Color.OrangeRed;
                 }
                 else
                 {
