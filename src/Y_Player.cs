@@ -259,6 +259,7 @@ namespace YGR
         {
             if (_dashing)
             {
+                Manager_Particles.GenParticleEffectDash(new Vector2(_rect.Location.X, _rect.Location.Y));
                 if (_dashTimer > _dashDuration)
                 {
                     _dashing = false;
@@ -294,9 +295,12 @@ namespace YGR
                 if (Input.IsKeyDown(Keybinds.ActionOne) || Input.IsButtonDown(PlayerIndex, Keybinds.GamePadAction))
                 {
                     Manager_Sound.Sound_Dash.Play();
+
                     _dashing = true;
                     _dashTimer = 0;
                     _dashCooldownTimer = 0; // Reset timer
+                    //Manager_Particles._particleEffects[4].Trigger(new Vector2(_rect.Location.X + _rect.Width / 2 + 50, _rect.Location.Y + _rect.Height + 50));
+
                 }
             }
         }
@@ -397,9 +401,8 @@ namespace YGR
              * ########################################################################## */
             if (input != Vector2.Zero)
             {   
+                Manager_Particles.GenParticleEffectDustCloudLight(new Vector2(_rect.Location.X + _rect.Width / 2, _rect.Location.Y + _rect.Height));
                 //Manager_Particles._particleEffects[3].Trigger(new Vector2(_rect.Location.X + _rect.Width / 2, _rect.Location.Y + _rect.Height));
-     
-                Manager_Particles._particleEffects[3].Trigger(new Vector2(_rect.Location.X + _rect.Width / 2, _rect.Location.Y + _rect.Height));
 
 
                 if (input.LengthSquared() > 1)

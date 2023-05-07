@@ -108,6 +108,8 @@ namespace YGR
                     // Hit players and enemies
                     if (obj is IVictim)
                     {
+                        //Manager_Particles._particleEffects[6].Trigger(new Vector2(_rect.Location.X + _rect.Width / 2, _rect.Location.Y + _rect.Height / 2));
+                        Manager_Particles.GenParticleEffectImpact(new Vector2(_rect.Location.X + _rect.Width / 2, _rect.Location.Y + _rect.Height / 2));
                         ((IVictim)obj).Hit(this);
                     }
                 }
@@ -120,7 +122,8 @@ namespace YGR
             _sprite.Update(gameTime, AnimationState.Idle);
 
             /* Particle handling */
-            Manager_Particles._particleEffects[2].Trigger(new Vector2(_rect.Location.X + _rect.Width / 2, _rect.Location.Y + _rect.Height / 2));
+            Manager_Particles.GenParticleEffectProjectileTrails(new Vector2(_rect.Location.X + _rect.Width / 2, _rect.Location.Y + _rect.Height / 2));
+            //Manager_Particles._particleEffects[2].Trigger(new Vector2(_rect.Location.X + _rect.Width / 2, _rect.Location.Y + _rect.Height / 2));
         }
 
         public virtual void Draw(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)
