@@ -96,7 +96,8 @@ namespace YGR
         //Rectangle _outsideRect2;
 
         RenderTarget2D _renderTarget;
-        public Texture2D ShadeTexture { get; set; }
+        public Texture2D[] ShadeTexture { get; set; }
+        public int ShadeIndex { get; set; }
 
         private static Texture2D _fenceH;
         private static Texture2D _fenceV;
@@ -152,45 +153,60 @@ namespace YGR
             Color[] trans = Enumerable.Repeat<Color>(Color.Transparent, _tileSize * _tileSize * width * height).ToArray();
             _visited = false;
 
-            ShadeTexture = new Texture2D(
-                graphicsDevice,
-                Rect.Width, Rect.Height,
-                false, SurfaceFormat.Color,
-                ShaderAccess.ReadWrite);
+            ShadeTexture = new Texture2D[] { 
+                new Texture2D(graphicsDevice, Rect.Width, Rect.Height, false, SurfaceFormat.Color, ShaderAccess.ReadWrite)
+            };
 
             IlluminationResources = new X_IlluminationResources();
-            Shade = Enumerable.Repeat<Color>(Color.Transparent, Rect.Width * Rect.Height).ToArray();
+            ShadeIndex = 0;
 
-            //var template = Collision.GetCollisionTemplate();
-            //int tileSize = TextureTileSize;
-            //Parallel.For(0, template.Length, h =>
-            //{
-            //    for (int w = 0; w < template[0].Length; ++w)
-            //    {
+            if (Settings.DynamicShades)
+            {
+                Shade = Enumerable.Repeat<Color>(Color.Transparent, Rect.Width * Rect.Height).ToArray();
+            }
+            else
+            {
+                Shade = Enumerable.Repeat<Color>(Color.Black, Rect.Width * Rect.Height).ToArray();
+                var template = Collision.GetCollisionTemplate();
+                int tileSize = TextureTileSize;
+                Parallel.For(0, template.Length, h =>
+                {
+                    for (int w = 0; w < template[0].Length; ++w)
+                    {
 
-            //        int fromX = w * tileSize;
-            //        int fromY = h * tileSize;
-            //        int toX = fromX + tileSize;
-            //        int toY = fromY + tileSize;
+                        int fromX = w * tileSize;
+                        int fromY = h * tileSize;
+                        int toX = fromX + tileSize;
+                        int toY = fromY + tileSize;
 
-            //        if (template[h][w] == (int)X_TileType.Floor || template[h][w] == (int)X_TileType.Wall)
-            //        {
-            //            continue;
-            //        }
+                        if (template[h][w] == (int)X_TileType.Floor || template[h][w] == (int)X_TileType.Wall)
+                        {
+                            continue;
+                        }
 
-            //        // if we have shadow, assume that non intersected parts are automatically in the light
-            //        // otherwise keep them in the shadow and only light the parts that have direct line of sight
-            //        for (int x = fromX; x < toX; x += 1)
-            //        {
-            //            for (int y = fromY; y < toY; y += 1)
-            //            {
-            //                Shade[y * ShadeTexture.Width + x] = Color.Transparent;
-            //            }
-            //        }
-            //    }
-            //});
+                        // if we have shadow, assume that non intersected parts are automatically in the light
+                        // otherwise keep them in the shadow and only light the parts that have direct line of sight
+                        for (int x = fromX; x < toX; x += 1)
+                        {
+                            for (int y = fromY; y < toY; y += 1)
+                            {
+                                Shade[y * ShadeTexture[0].Width + x] = Color.Transparent;
+                            }
+                        }
+                    }
+                });
+            }
 
-            ShadeTexture.SetData(Shade);
+            ShadeTexture[0].SetData(Shade);
+        }
+
+        public int GetTargetShadeIndex()
+        {
+            return ShadeIndex;
+        }
+
+        public void SwitchTargetShadeIndex()
+        {
         }
 
         private int[][] getBarkLine(int[][] collision, int tileWidth, int tileHeight)
@@ -349,6 +365,11 @@ namespace YGR
 
             numTilesLength /= tileSize;
             tileOffset /= tileSize;
+        }
+
+        public void ResetRoom()
+        {
+            _visited = false;
         }
 
         public Tuple<X_ConnectorSide, Y_CMRoom> GetOtherDoor(Y_CMRoom room)
@@ -1152,6 +1173,14 @@ namespace YGR
                     {
                         _closingTheDoor = false;
                         State = X_DoorState.Closed;
+                        foreach (var door in DoorRooms)
+                        {
+                            foreach(var d in door.Value)
+                            {
+                                if (!((Y_CMRoom)d).VisitedBeforeByPlayer())
+                                    ((Y_CMRoom)d).SetVisible(false);
+                            }
+                        }
                     }
                     break;
                 case X_DoorState.LockedClosed:
@@ -1163,6 +1192,14 @@ namespace YGR
                     if (!doorAnimation(dt, false))
                     {
                         _closingTheDoor = false;
+                        foreach (var door in DoorRooms)
+                        {
+                            foreach (var d in door.Value)
+                            {
+                                if (!((Y_CMRoom)d).VisitedBeforeByPlayer())
+                                    ((Y_CMRoom)d).SetVisible(false);
+                            }
+                        }
                     }
                     break;
             }
@@ -1256,30 +1293,48 @@ namespace YGR
             List<X_AutoTiler.X_AutoTileTexture> textures, 
             Vector2 position, 
             SpriteBatch spriteBatch,
-            bool partial)
+            bool partial, 
+            bool isFloor = false)
         {
-            foreach(var t in textures)
+            var srcPos = Rect.Location.ToVector2() + new Vector2(TextureTileSize, TextureTileSize);
+            var srcRect = new Rectangle(
+                    TextureTileSize,
+                    TextureTileSize,
+                    ShadeTexture[ShadeIndex].Width - 2 * TextureTileSize,
+                    ShadeTexture[ShadeIndex].Height - TextureTileSize);
+
+            var testOffset = Vector2.One * _tileSize / 2;
+            foreach (var t in textures)
             {
                 int height = t.Texture().Height;
                 int width = t.Texture().Width;
-                Vector2 pos = position + t.Location().ToVector2() * _tileSize;
+                
+                Vector2 tLocation = _tileSize * t.Location().ToVector2();
+                if (isFloor && !srcRect.Contains(tLocation + testOffset)) continue;
+
+                Vector2 pos = position + tLocation;
 
                 if (partial)
                 {
-                    if (_direction == X_DoorDirection.Horizontal)
-                    {
-                        if (pos.X > _tileSize && pos.X < Rect.Width - _tileSize) height = _currentDoorOpenOffset;
-                    }
-                    else
-                    {
-                        height = _currentDoorOpenOffset;
-                    }
+                    height = _currentDoorOpenOffset;
+                    //srcRect.Height = srcRect.Height - (_tileSize - _currentDoorOpenOffset);
                 }
 
                 spriteBatch.Draw(
                     t.Texture(), pos,
                     new Rectangle(0, 0, width, height),
                     Color.White, 0, Vector2.Zero, Scale, SpriteEffects.None, 0);
+            }
+
+            // only draw the part of the shade that is actually on the connector
+            if (isFloor)
+            {
+                srcRect.Height = srcRect.Height - (_tileSize - _currentDoorOpenOffset);
+                spriteBatch.Draw(
+                    ShadeTexture[ShadeIndex],
+                    srcPos,
+                    srcRect,
+                    Color.White * Manager_Light2.ShadeFloat, 0, Vector2.Zero, Scale, SpriteEffects.None, 0);
             }
         }
 
@@ -1327,13 +1382,7 @@ namespace YGR
                         p2 = Doors[X_ConnectorSide.Right].First().Point.ToVector2() - new Vector2(TextureTileSize / 2.0f, temp / 2);
                 }
 
-                draw(_tileTextures[X_DoorTextureLayer.Floor], position, spriteBatch, false);
-
-                spriteBatch.Draw(
-                    ShadeTexture, Rect.Location.ToVector2(),
-                    new Rectangle(0, 0, ShadeTexture.Width, ShadeTexture.Height),
-                    Color.White * Manager_Light2.ShadeFloat, 0, Vector2.Zero, Scale, SpriteEffects.None, 0);
-
+                draw(_tileTextures[X_DoorTextureLayer.Floor], position, spriteBatch, false, true);
                 draw(_tileTextures[X_DoorTextureLayer.Wall], position, spriteBatch, false);
 
                 spriteBatch.Draw(
@@ -1348,8 +1397,9 @@ namespace YGR
             }
             else if(State == X_DoorState.Opening || State == X_DoorState.Closing)
             {
+                draw(_tileTextures[X_DoorTextureLayer.Floor], position, spriteBatch, true, true);
                 draw(_tileTextures[X_DoorTextureLayer.Door], movePosition, spriteBatch, false);
-                
+
                 if (_currentDoorOpenOffset % 3 == 0)
                     draw(_tileTextures[X_DoorTextureLayer.Mechanism1], position, spriteBatch, false);
                 else if (_currentDoorOpenOffset % 3 == 1)
@@ -1361,12 +1411,7 @@ namespace YGR
             }
             else if (State == X_DoorState.Open)
             {
-                draw(_tileTextures[X_DoorTextureLayer.Floor],position, spriteBatch, false);
-                spriteBatch.Draw(
-                    ShadeTexture, Rect.Location.ToVector2(),
-                    new Rectangle(0, 0, ShadeTexture.Width, ShadeTexture.Height),
-                    Color.White * Manager_Light2.ShadeFloat, 0, Vector2.Zero, Scale, SpriteEffects.None, 0);
-
+                draw(_tileTextures[X_DoorTextureLayer.Floor],position, spriteBatch, false, true);
                 draw(_tileTextures[X_DoorTextureLayer.Wall], position, spriteBatch, false);
             }
         }

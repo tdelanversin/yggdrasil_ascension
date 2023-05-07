@@ -36,6 +36,7 @@ static const int indices[36] =
 StructuredBuffer<Point3> Vertices;
 StructuredBuffer<X_Vector3> Coords;
 StructuredBuffer<Point3> Lights;
+StructuredBuffer<int> KeepAllive;
 
 RWTexture2D<float4> Shade;
 
@@ -130,6 +131,9 @@ int RayIntersect(float3 origin, float3 direction, uint globalIDx)
 void CS(uint3 localID : SV_GroupThreadID, uint3 groupID : SV_GroupID,
         uint localIndex : SV_GroupIndex, uint3 globalID : SV_DispatchThreadID)
 {
+    if (KeepAllive[0] == 0)
+        return;
+    
     uint c = globalID.x;
     uint2 ind = uint2(Coords[c].WX, Coords[c].WY);
     

@@ -172,7 +172,8 @@ namespace YGR
         int _height;
         bool _visited;
 
-        public Texture2D ShadeTexture { get; set; }
+        public Texture2D[] ShadeTexture { get; set; }
+        public int ShadeIndex { get; set; }
 
         List<EnemyEntity> _enemies;
         List<PlayerEntity> _players;
@@ -497,6 +498,16 @@ namespace YGR
             IlluminationResources = new X_IlluminationResources();
         }
 
+        public int GetTargetShadeIndex()
+        {
+            return (ShadeIndex+1)%2;
+        }
+
+        public void SwitchTargetShadeIndex()
+        {
+            ShadeIndex = (ShadeIndex + 1) % 2;
+        }
+
         public List<X_Light> GetAllRelevantLights()
         {
             List<X_Light> ret = new List<X_Light>();
@@ -510,7 +521,9 @@ namespace YGR
                     ret.AddRange(d.Lights);
                 }
             }
-            return ret.Distinct().ToList();
+            if (ret.Count() == 0) ret.AddRange(Lights);
+            //return ret.Distinct().ToList();
+            return Lights;
         }
 
         public void ToggleDoors()
@@ -528,8 +541,11 @@ namespace YGR
             _roof = new Texture2D(graphicsDevice, _width, _height);
             _roof.SetData(roof2);
 
-            ShadeTexture = new Texture2D(
-                graphicsDevice, _floor.Width, _floor.Height, false, SurfaceFormat.Color, ShaderAccess.ReadWrite);
+            ShadeTexture = new Texture2D[] {
+                new Texture2D(graphicsDevice, _floor.Width, _floor.Height, false, SurfaceFormat.Color, ShaderAccess.ReadWrite),
+                new Texture2D(graphicsDevice, _floor.Width, _floor.Height, false, SurfaceFormat.Color, ShaderAccess.ReadWrite)
+            };
+            ShadeIndex = 0;
 
             _floorColorData = new Color[_floor.Width * _floor.Height];
             _floor.GetData<Color>(_floorColorData);
@@ -538,7 +554,8 @@ namespace YGR
             Color shadeColor = Color.Black;
             shadeColor.A = 0;
             Shade = Enumerable.Repeat<Color>(shadeColor, _floor.Width * _floor.Height).ToArray();
-            ShadeTexture.SetData(Shade);
+            ShadeTexture[0].SetData(Shade);
+            ShadeTexture[1].SetData(Shade);
         }
 
         public void ResetRoom()
@@ -551,6 +568,7 @@ namespace YGR
             Cleared = false;
             State = X_RoomState.Invisible;
             MoveTo(new Point(0, 0));
+            _visited = false;
 
             for (int i = 0; i < _powerUps.Count(); ++i)
             {
@@ -686,14 +704,11 @@ namespace YGR
                                 door.LockDoor();
                             }
                             ToggleDoors();
-                            var otherRoom = door.GetOtherDoor(this);
-                            if (!((Y_CMRoom)otherRoom.Item2).VisitedBeforeByPlayer())
-                                ((Y_CMRoom)otherRoom.Item2).SetVisible(false);
                         }
                     }
                 }
             }
-            Manager_Light2.Illuminate(this);
+            Illuminate(this);
         }
 
         public void OpenAllUnlockedRoomDoors(bool lockWhenFinished = false)
@@ -716,7 +731,7 @@ namespace YGR
                             ((Y_CMRoom)otherRoom.Item2).SetVisible(true);
                             ((Y_CMRoom)otherRoom.Item2).ToggleDoors();
 
-                            Manager_Light2.Illuminate(otherRoom.Item2);
+                            Illuminate(otherRoom.Item2);
                         }
                     }
                     else if (walkable.WhatAreYou() == X_LevelElements.Room)
@@ -725,7 +740,13 @@ namespace YGR
                     }
                 }
             }
-            Manager_Light2.Illuminate(this);
+            Illuminate(this);
+        }
+
+        public void Illuminate(IWalkable room)
+        {
+            if (!Settings.DynamicShades) return;
+            Manager_Light2.Illuminate(room);
         }
 
         public static X_DoorTextureLayer MapTexture(string textureType)
@@ -1064,8 +1085,8 @@ namespace YGR
                     Color.White, 0, Vector2.Zero, Scale, SpriteEffects.None, 0);
 
                 spriteBatch.Draw(
-                    ShadeTexture, Rect.Location.ToVector2(),
-                    new Rectangle(0, 0, ShadeTexture.Width, ShadeTexture.Height),
+                    ShadeTexture[ShadeIndex], Rect.Location.ToVector2(),
+                    new Rectangle(0, 0, ShadeTexture[ShadeIndex].Width, ShadeTexture[ShadeIndex].Height),
                     Color.White*Manager_Light2.ShadeFloat, 0, Vector2.Zero, Scale, SpriteEffects.None, 0);
 
                 spriteBatch.Draw(

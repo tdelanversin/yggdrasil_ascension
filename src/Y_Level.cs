@@ -56,6 +56,9 @@ namespace YGR
         private Y_CMRoom _startRoom;
         private Y_CMRoom _goldRoom;
 
+        private int _waitTimeBetweenEndOfFightAndLowerDoors = 125;
+        private int _waitTimeBetweenEndOfFightAndLowerDoorsCounter = 0;
+
         // Gameplay state objects
         public IWalkable ActiveRoom;
         public GamePlayState State;
@@ -163,10 +166,10 @@ namespace YGR
             // put everything back
             foreach (var room in Rooms)
             {
+                room.Value.ResetRoom();
                 if (room.Value.WhatAreYou() == X_LevelElements.Room)
                 {
                     var r = (Y_CMRoom)room.Value;
-                    r.ResetRoom();
                     _availableRooms[r.Category].Add(new Tuple<X_RoomStump, Y_CMRoom>(null, r));
                 }
             }
@@ -292,8 +295,6 @@ namespace YGR
                 connectorIndex++;
             }
 
-            Manager_Light2.IlluminateSync(Rooms.Values.ToList());
-
             Manager_Players.ClearPlayers();
 
             // Place all players, even if they're not going to play
@@ -371,10 +372,22 @@ namespace YGR
             ((SimplePlayer)Manager_Players.Players[3]).ControlLayout = ControlLayout.KeyboardWASD;
 
             _startRoom.SetVisible(true);
-            _goldRoom.SetVisible(true);
-            //_startRoom.Illuminate();
+            //_goldRoom.SetVisible(true);
             //_goldRoom.Illuminate();
             Manager_Sound.PlayFreeRoamMusic();
+
+            if (Settings.DynamicShades)
+            {
+                foreach (var c in connectors)
+                {
+                    Manager_Light2.Illuminate(c);
+                }
+                Manager_Light2.Illuminate(_startRoom);
+            }
+            else
+            {
+                Manager_Light2.IlluminateSync(Rooms.Values.Where(c => c.WhatAreYou() == X_LevelElements.Room).ToList());
+            }
 
             //Manager_Light2.IlluminateSync(new List<IWalkable> { _startRoom });
         }
@@ -408,7 +421,6 @@ namespace YGR
                     if (room.Value.WhatAreYou() == X_LevelElements.Room)
                     {
                         ((Y_CMRoom)room.Value).OpenAllUnlockedRoomDoors();
-                        ((Y_CMRoom)room.Value).SetVisible(true);
                     }
                 }
             }
@@ -419,7 +431,6 @@ namespace YGR
                     if (room.Value.WhatAreYou() == X_LevelElements.Room)
                     {
                         ((Y_CMRoom)room.Value).CloseAllUnlockedRoomDoors();
-                        ((Y_CMRoom)room.Value).SetVisible(false);
                     }
                 }
             }
@@ -539,10 +550,18 @@ namespace YGR
                         break; // let players fight
                     }
 
+                    Camera.SetFocusPlayers();
+
+                    if (_waitTimeBetweenEndOfFightAndLowerDoorsCounter < _waitTimeBetweenEndOfFightAndLowerDoors)
+                    {
+                        _waitTimeBetweenEndOfFightAndLowerDoorsCounter++;
+                        break;
+                    }
+                    _waitTimeBetweenEndOfFightAndLowerDoorsCounter = 0;
+
                     encounterRoom.Cleared = true;
                     encounterRoom.OpenAllUnlockedRoomDoors();
                     encounterRoom.SetLocked(false);
-                    Camera.SetFocusPlayers();
 
                     Manager_Sound.PlayFreeRoamMusic();
 

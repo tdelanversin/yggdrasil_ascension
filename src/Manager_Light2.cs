@@ -54,13 +54,16 @@ namespace YGR
         public static Type Platform { get; set; }
         private static int LightsBufferSize = 10;
         private static int VerticesBufferSize = 5000;
-        private static int CoordsBufferSize = 50000;
+        private static int CoordsBufferSize = 100000;
         private static StructuredBuffer LightsBuffer;
         private static StructuredBuffer VerticesBuffer;
         private static StructuredBuffer CoordsBuffer;
 
         private static ConcurrentQueue<IWalkable> ToPrecompute;
         private static ConcurrentQueue<IWalkable> ToIlluminate;
+
+        private static int KeepAliveSize = 50;
+        private static StructuredBuffer KeepAllive;
 
         public static Effect IlluminationShader { get; set; }
 
@@ -183,12 +186,11 @@ namespace YGR
             ToIlluminate = new ConcurrentQueue<IWalkable>();
             _working = false;
             _preworking = false;
+            KeepAllive = new StructuredBuffer(GraphicsDevice_, typeof(int), KeepAliveSize, BufferUsage.None, ShaderAccess.Read);
         }
 
         public static void IlluminateSync(List<IWalkable> rooms)
         {
-            if (!Settings.Lighting) return;
-
             foreach(var room in rooms)
             {
                 Precompute(room);
@@ -197,6 +199,7 @@ namespace YGR
             {
                 while (room.IlluminationResources.NumCoords > room.IlluminationResources.NumOffset)
                     Compute(room);
+                room.SwitchTargetShadeIndex();
             }
         }
 
@@ -204,8 +207,6 @@ namespace YGR
             IWalkable room
         )
         {
-            if (!Settings.Lighting) return;
-
             if (room.IlluminationResources.InFlight) return;
             room.IlluminationResources.InFlight = true;
             ToPrecompute.Enqueue(room);
@@ -253,6 +254,7 @@ namespace YGR
                         {
                             while (!ToIlluminate.TryDequeue(out room));
 
+                            room.SwitchTargetShadeIndex();
                             room.IlluminationResources.InFlight = false;
                         }
                         //Logger.Info("End computations... room " + room.Name);
@@ -261,6 +263,17 @@ namespace YGR
                     _cooldownTimer = 0;
                     _cooldown = 1; // Util.random.Next(_cooldownMin, _cooldownMax);
                 }
+            }
+            else
+            {
+                //KeepAllive.SetData(Enumerable.Repeat<int>(0, KeepAliveSize).ToArray());
+                //IlluminationShader.Parameters["KeepAllive"].SetValue(KeepAllive);
+                //foreach (var pass in IlluminationShader.CurrentTechnique.Passes)
+                //{
+                //    pass.ApplyCompute();
+                //    int dispatchCount = 512;
+                //    GraphicsDevice_.DispatchCompute(dispatchCount, 1, 1);
+                //}
             }
         }
 
@@ -392,7 +405,7 @@ namespace YGR
                 }
             });
 
-            //room.ShadeTexture.SetData(room.Shade);
+            room.ShadeTexture[room.GetTargetShadeIndex()].SetData(room.Shade);
 
             room.IlluminationResources.NumCoords = baseIndex;
             room.IlluminationResources.NumOffset = 0;
@@ -436,7 +449,7 @@ namespace YGR
                     }
                 });
 
-                room.ShadeTexture.SetData(room.Shade);
+                room.ShadeTexture[room.GetTargetShadeIndex()].SetData(room.Shade);
             }
 
             // =============================================================================
@@ -465,13 +478,16 @@ namespace YGR
                         GraphicsDevice_, typeof(X_Point3), VerticesBufferSize, BufferUsage.None, ShaderAccess.Read);
                 }
 
-                Manager_Light2.IlluminationShader.Parameters["Shade"].SetValue(room.ShadeTexture);
+                Manager_Light2.IlluminationShader.Parameters["Shade"].SetValue(room.ShadeTexture[room.GetTargetShadeIndex()]);
                 VerticesBuffer.SetData(room.IlluminationResources.Vertices, 0, room.IlluminationResources.NumVerts);
 
                 int use = Math.Min(CoordsBufferSize, room.IlluminationResources.NumCoords - room.IlluminationResources.NumOffset);
                 CoordsBuffer.SetData(room.IlluminationResources.Coords, room.IlluminationResources.NumOffset, use);
 
                 LightsBuffer.SetData(room.IlluminationResources.Lights, 0, room.IlluminationResources.NumLights);
+
+                KeepAllive.SetData(Enumerable.Repeat<int>(1, KeepAliveSize).ToArray());
+                IlluminationShader.Parameters["KeepAllive"].SetValue(KeepAllive);
 
                 //LightedBuffer.SetData(Lighted, 0, NumCoords);
                 if (IlluminationShader.Parameters["Vertices"] != null)

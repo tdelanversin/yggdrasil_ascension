@@ -22,9 +22,14 @@ namespace YGR
         //public void Illuminate();
 
 
+        public void ResetRoom();
+
         public X_IlluminationResources IlluminationResources { get; set; }
         public Color[] Shade { get; set; }
-        public Texture2D ShadeTexture { get; set; }
+        public Texture2D[] ShadeTexture { get; set; }
+        public int ShadeIndex { get; set; }
+        public int GetTargetShadeIndex();
+        public void SwitchTargetShadeIndex();
         public Vector3 Offset { get; set; }
         public List<X_Light> Lights { get; set; }
         public List<X_Light> GetAllRelevantLights();
