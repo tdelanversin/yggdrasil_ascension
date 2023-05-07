@@ -87,15 +87,6 @@ namespace YGR
             foreach (var player in Players.ToList())
             {
                 player.Update(gameTime);
-
-                if (player.LifePoints <= 0 &&
-                   !Manager_Sound.playing_sound_effects.ContainsKey(player))
-
-                {
-                    SoundEffectInstance death_player_sound = Manager_Sound.Sound_PlayerDeath.CreateInstance();
-                    Manager_Sound.playing_sound_effects.Add(player, death_player_sound);
-                    death_player_sound.Play();
-                }
             }
         }
 

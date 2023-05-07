@@ -232,11 +232,14 @@ namespace YGR
         /* Deal with being hit by projectile, basically physical therapy */
         public virtual void Hit(IProjectile projectile)
         {
-            if (_invincible) { return; }
+            if (_invincible || !IsAlive()) { return; }
 
             LifePoints -= projectile.Damage;
             _invincible = true;
             _invincibleTimer = 0;
+
+            if (LifePoints <= 0)
+                Manager_Sound.Sound_PlayerDeath.Play();
         }
 
         protected virtual void UpdateRoom(GameTime gameTime)
