@@ -205,5 +205,14 @@ namespace YGR
             decompressor.CopyTo(output);
             return ByteToColorArray(output.ToArray());
         }
+
+        /// <summary>
+        /// Draw a string. But with shadows. So that it's readable.
+        /// </summary>
+        public static void DrawString(SpriteFont font, string text, Vector2 position, Color color, SpriteBatch spriteBatch)
+        {
+            spriteBatch.DrawString(font, text, position + Vector2.One, Color.Black);
+            spriteBatch.DrawString(font, text, position, color);
+        }
     }
 }

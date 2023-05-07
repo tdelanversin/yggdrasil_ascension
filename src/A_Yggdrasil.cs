@@ -20,6 +20,8 @@ namespace YGR
         public SpriteBatch _spriteBatch;
         private FrameCounter _frameCounter = new FrameCounter();
 
+        public static GraphicsDevice GraphicsDevice_;
+
         Y_Level _level;
         public GameState State;
         public GameState DesiredState;
@@ -46,8 +48,9 @@ namespace YGR
             Manager_Particles.Initialize();
             Manager_Light2.Initialize("./Levels/" + level + "/simplified", Content, GraphicsDevice);
             X_AutoTiler.Initialize("./Doors/", "data.json", GraphicsDevice, Y_Door.MapJsonName);
-            Y_MultiPowerUp.Initialize(Content);
             Y_Door.Initialize(Content);
+
+            GraphicsDevice_ = GraphicsDevice;
 
             _level = new Y_Level(level, 32, 32, "./Levels/", "./Doors", Content);
             base.Initialize();
@@ -126,7 +129,7 @@ namespace YGR
             {
                 foreach (var p in Manager_Players.Players)
                 {
-                    ((SimplePlayer)p).Gun = new Gun_Godmode();
+                    p.Gun = new Gun_Godmode();
                     ((SimplePlayer)p).VelocityMax = 0.6f;
                     p.LifePoints = 9999;
                 }
@@ -143,6 +146,7 @@ namespace YGR
                     Manager_Players.Update(gameTime);
                     Manager_Projectile.Update(gameTime);
                     Manager_Enemies.Update(gameTime);
+                    Manager_Light2.Update(gameTime);
                     Manager_Particles.Update(gameTime);
                     _level.Update(gameTime);
                     break;
@@ -173,6 +177,7 @@ namespace YGR
 
                 case GameState.InGame:
                     GraphicsDevice.Clear(_level.OutsideColor);
+
                     _spriteBatch.Begin(
                         SpriteSortMode.Immediate, null, null, null, null, null,
                         Camera.Transform);
@@ -193,6 +198,10 @@ namespace YGR
                         Manager_Enemies.DrawOutline(gameTime, zero, _spriteBatch);
                     }
                     _spriteBatch.End();
+
+                    _spriteBatch.Begin(SpriteSortMode.Immediate, null, null, null, null, null, null);
+                    _level.DrawUI(gameTime, _spriteBatch);
+                    _spriteBatch.End();
                     break;
 
                 case GameState.Menu:
@@ -209,7 +218,7 @@ namespace YGR
             string fps = string.Format("FPS: {0:0}", _frameCounter.AverageFramesPerSecond);
             var fpsColor = Color.BlanchedAlmond;
             _spriteBatch.Begin(SpriteSortMode.Immediate, null, null, null, null, null, null);
-            _spriteBatch.DrawString(Fonts.Normal, fps, new Vector2(1, 1), fpsColor);
+            _spriteBatch.DrawString(Fonts.Small, fps, new Vector2(1, 1), fpsColor);
             Notifications.Draw(gameTime, zero, _spriteBatch);
             _spriteBatch.End();
             base.Draw(gameTime);

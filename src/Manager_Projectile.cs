@@ -76,6 +76,27 @@ namespace YGR
             );
         }
 
+        /// Fast and strong projectiles for the funky gun
+        public static void AddProjectile_Strong(Vector2 startPosition, Vector2 direction, Y_Level level, IGameElement who)
+        {
+            if (!BoundsCheckFull(startPosition, ((IVictim)who).Room)) return;
+
+            _projectiles.Add(
+                new Projectile_Basic(
+                    position: startPosition,
+                    direction: direction,
+                    sprite: Manager_Sprites.NewAnimatedSprite_ProjectileSlimeInner(), // TODO: dedicated sprite
+                    level: level,
+                    who: who,
+                    scale: 0.45f,
+                    damage: 1,
+                    maxAge: 1500,
+                    speed: 0.85f,
+                    mass: 0.5f
+                )
+            );
+        }
+
         /// Larger, slower, heavier, longer lived and deals more damage
         public static void AddProjectile_EnemySlimeProjectile(Vector2 startPosition, Vector2 direction, Y_Level level, IGameElement who)
         {

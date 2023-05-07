@@ -1,9 +1,24 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using System;
+using static YGR.Manager_Light2;
 
 namespace YGR
 {
+    public class X_IlluminationResources
+    {
+        public bool InFlight;
+        public X_Vector3[] Coords;
+        public X_Point3[] Vertices;
+        public int NumVerts;
+        public int NumLights;
+        public int NumCoords;
+        public int NumOffset;
+        public X_Point3[] Lights;
+        public int[] Lighted;
+        public bool[] BLighted;
+        public int[] Index;
+    }
     public class X_Light
     {
         public Color Color { get; }

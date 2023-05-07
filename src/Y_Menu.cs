@@ -133,7 +133,7 @@ namespace YGR
                 new MenuItem("Play", NewGame),
                 new MenuItem("Restart", NewGame, isActive: false),
                 new SettingsItem("Fullscreen: ", Settings.Fullscreen, toggleFunc: Settings.ToggleFullscreen),
-                new SettingsItem("Lighting: ", Settings.Lighting, toggleFunc: Settings.ToggleLighting),
+                new SettingsItem("Dynamic Shades: ", Settings.DynamicShades, toggleFunc: Settings.ToggleShades),
                 new SettingsItem("Outlines: ", Settings.Outlines, toggleFunc: Settings.ToggleOutlines),
                 new SettingsItem("Sound: ", Settings.Sound, toggleFunc: Settings.Toggle_Volume),
                 new MenuItem(os_exit_string, Util.Quit),
@@ -198,9 +198,9 @@ namespace YGR
                 float y = Bounds.Height * 7 / 8;
 
                 string string_a = "Controller " + i + ":  ";
-                spriteBatch.DrawString(Fonts.Normal, string_a, new Vector2(x, y), Color.Wheat);
+                spriteBatch.DrawString(Fonts.Small, string_a, new Vector2(x, y), Color.Wheat);
 
-                Vector2 stringSize = Fonts.Normal.MeasureString(string_a);
+                Vector2 stringSize = Fonts.Small.MeasureString(string_a);
                 GamePadState gamePadState = GamePad.GetState(i);
 
                 string string_b = "Connected";
@@ -210,7 +210,7 @@ namespace YGR
                     string_b = "N/A";
                     color = Color.Gray;
                 }
-                spriteBatch.DrawString(Fonts.Normal, string_b, new Vector2(x + stringSize.X, y), color);
+                spriteBatch.DrawString(Fonts.Small, string_b, new Vector2(x + stringSize.X, y), color);
             }
         }
 

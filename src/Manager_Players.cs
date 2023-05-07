@@ -1,8 +1,6 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Audio;
-using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -10,20 +8,12 @@ namespace YGR
 {
     public static class Manager_Players
     {
-        public enum PlayerType
-        {
-            Nerd = 0,
-            Ninja,
-            Random,
-            Ghost
-        };
-
         // Player list
-        public static List<IVictim> Players { get; private set; }
+        public static List<IPlayer> Players { get; private set; }
 
         public static void Initialize()
         {
-            Players = new List<IVictim>();
+            Players = new List<IPlayer>();
         }
 
         public static void ClearPlayers()
@@ -31,76 +21,72 @@ namespace YGR
             Players.Clear();
         }
 
-        public static void AddPlayer_NerdyGirl(
+        public static void SetPlayerType(PlayerIndex idx, PlayerType type)
+        {
+            for (int i = 0; i < Players.Count; i++)
+            {
+                IPlayer p = Players[i];
+                if (p.PlayerIndex == idx)
+                {
+                    Players[i] = Factory(type, idx, p.Rect.Location.ToVector2(), p.Level, p.ControlLayout);
+                }
+            }
+        }
+
+        public static IPlayer Factory(PlayerType type, PlayerIndex playerIndex, Vector2 position, Y_Level level, ControlLayout controlLayout = ControlLayout.ControllerOnly)
+        {
+            if (type == PlayerType.Ninja)
+                return new SimplePlayer(
+                    playerIndex,
+                    position,
+                    Manager_Sprites.NewAnimatedSprite_Ninja(),
+                    level,
+                    Util.getRandomGun(),
+                    type,
+                    controlLayout,
+                    scale: 1.0f
+                );
+            if (type == PlayerType.Nerd)
+                return new SimplePlayer(
+                    playerIndex,
+                    position,
+                    Manager_Sprites.NewAnimatedSprite_NerdyGirl(),
+                    level,
+                    Util.getRandomGun(),
+                    type,
+                    controlLayout,
+                    scale: 1.0f
+                );
+            else // if (type == PlayerType.Ghost)
+            {
+                var player = new Player_Ghost(
+                    playerIndex,
+                    position,
+                    level,
+                    controlLayout,
+                    scale: 1.0f
+                );
+                return player;
+            }
+        }
+
+        public static void AddPlayer(
+            PlayerType type,
             PlayerIndex playerIndex,
             Vector2 position,
             Y_Level level,
             ControlLayout controlLayout = ControlLayout.ControllerOnly)
         {
-            Players.Add(new SimplePlayer(
-                playerIndex,
-                position,
-                Manager_Sprites.NewAnimatedSprite_NerdyGirl(),
-                level,
-                Util.getRandomGun(),
-                controlLayout,
-                scale: 1.0f
-            ));
-        }
-
-        public static void AddPlayer_Ninja(
-            PlayerIndex playerIndex,
-            Vector2 position,
-            Y_Level level,
-            ControlLayout controlLayout = ControlLayout.ControllerOnly
-        )
-        {
-            Players.Add(new SimplePlayer(
-                playerIndex,
-                position,
-                Manager_Sprites.NewAnimatedSprite_Ninja(),
-                level,
-                Util.getRandomGun(),
-                controlLayout,
-                scale: 1.0f
-                ));
-        }
-
-        public static void AddPlayer_Random(
-            PlayerIndex playerIndex,
-            Vector2 position,
-            Y_Level level,
-            ControlLayout controlLayout = ControlLayout.ControllerOnly
-        )
-        {
-            int r = Util.random.Next() % 2;
-            switch (r)
-            {
-                case 0:
-                    AddPlayer_Ninja(playerIndex, position, level, controlLayout);
-                    break;
-                case 1:
-                    AddPlayer_NerdyGirl(playerIndex, position, level, controlLayout);
-                    break;
-                default:
-                    break;
-            }
+            Players.Add(Factory(type, playerIndex, position, level, controlLayout));
         }
 
         internal static void Update(GameTime gameTime)
         {
-            foreach (var player in Players)
+            // HACK: .ToList() since players can indirectly modify the Players
+            // collection by switching their class in the starting room
+            foreach (var player in Players.ToList())
             {
                 player.Update(gameTime);
-
-                if (player.LifePoints <= 0 &&
-                   !Manager_Sound.playing_sound_effects.ContainsKey(player))
-
-                {
-                    SoundEffectInstance death_player_sound = Manager_Sound.Sound_PlayerDeath.CreateInstance();
-                    Manager_Sound.playing_sound_effects.Add(player, death_player_sound);
-                    death_player_sound.Play();
-                }
             }
         }
 
@@ -115,7 +101,7 @@ namespace YGR
 
         internal static void DrawOutline(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)
         {
-            foreach (var player in Players)
+            foreach (var player in Players.ToList())
             {
                 player.DrawOutline(gameTime, globalOffset, spriteBatch);
             }

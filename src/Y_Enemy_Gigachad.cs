@@ -12,9 +12,8 @@ namespace YGR
         public Enemy_Gigachad(
             Vector2 position,
             AnimatedSprite sprite,
-            Y_Level level,
-            IList<IVictim> players
-        ) : base(position, sprite, level, players)
+            Y_Level level
+        ) : base(position, sprite, level)
         {
             LifePointsMax = 120;
             LifePoints = LifePointsMax;
@@ -94,7 +93,7 @@ namespace YGR
 
             CharacterSprite.Update(gameTime, movement);
 
-            var playersInSameRoom = ((List<IVictim>)Manager_Players.Players).FindAll(x => x.LifePoints > 0 && x.Room == Room);
+            var playersInSameRoom = Manager_Players.Players.FindAll(x => x.LifePoints > 0 && x.Room == Room);
             if (playersInSameRoom.Count < 1) return;
 
             // Gigachad shoot Big Gun no matter what (as long as there are players in the same room)

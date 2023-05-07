@@ -20,12 +20,19 @@
 /processorParam:TextureFormat=Compressed
 /build:Fonts/font_large.spritefont
 
-#begin Fonts/font_normal.spritefont
+#begin Fonts/font_medium.spritefont
 /importer:FontDescriptionImporter
 /processor:FontDescriptionProcessor
 /processorParam:PremultiplyAlpha=True
 /processorParam:TextureFormat=Compressed
-/build:Fonts/font_normal.spritefont
+/build:Fonts/font_medium.spritefont
+
+#begin Fonts/font_small.spritefont
+/importer:FontDescriptionImporter
+/processor:FontDescriptionProcessor
+/processorParam:PremultiplyAlpha=True
+/processorParam:TextureFormat=Compressed
+/build:Fonts/font_small.spritefont
 
 #begin Shader/Illuminator.fx
 /importer:EffectImporter
@@ -356,6 +363,42 @@
 /processorParam:MakeSquare=False
 /processorParam:TextureFormat=Color
 /build:SpritesOther/bark2.png
+
+#begin SpritesOther/Button_Half.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:SpritesOther/Button_Half.png
+
+#begin SpritesOther/Button_In.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:SpritesOther/Button_In.png
+
+#begin SpritesOther/Button_Out.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:SpritesOther/Button_Out.png
 
 #begin SpritesOther/fence_h.png
 /importer:TextureImporter

@@ -53,8 +53,7 @@ namespace YGR
         public Enemy_Basic(
             Vector2 position,
             AnimatedSprite sprite,
-            Y_Level level,
-            IList<IVictim> players
+            Y_Level level
         )
         {
             Name = "Mob";
@@ -399,9 +398,9 @@ namespace YGR
         protected virtual void DrawOverheadString(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)
         {
             string str = String.Format("{0} {1}", Name, LifePoints);
-            Vector2 str_size = Fonts.Normal.MeasureString(str);
+            Vector2 str_size = Fonts.Small.MeasureString(str);
             Vector2 str_pos = new Vector2(_rect.Location.X + _rect.Width / 2 - str_size.X / 2, _rect.Location.Y - str_size.Y - 2) + CharacterOffset;
-            spriteBatch.DrawString(Fonts.Normal, str, str_pos, Color.Wheat);
+            spriteBatch.DrawString(Fonts.Small, str, str_pos, Color.Wheat);
         }
 
         protected virtual void DrawHealthbar(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)

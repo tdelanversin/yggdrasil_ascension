@@ -1,11 +1,19 @@
+#if OPENGL
+	#define SV_POSITION POSITION
+	#define VS_SHADERMODEL vs_3_0
+	#define PS_SHADERMODEL ps_3_0
+#else
+	#define VS_SHADERMODEL vs_4_0_level_9_1
+	#define PS_SHADERMODEL ps_4_0_level_9_1
+#endif
+
 struct X_Vector3
 {
     float X;
     float Y;
     float Z;
-    //int GlobalID;
-    int Index;
-    int Lighted;
+    int WX;
+    int WY;
 };
 
 struct Point3
@@ -14,11 +22,6 @@ struct Point3
     float Y;
     float Z;
 };
-
-//struct LightedS
-//{
-//    int IsLighted;
-//};
 
 static const int indices[36] =
 {
@@ -31,20 +34,13 @@ static const int indices[36] =
 };
 
 StructuredBuffer<Point3> Vertices;
-//StructuredBuffer<Input> Inputs;
-RWStructuredBuffer<X_Vector3> Coords;
+StructuredBuffer<X_Vector3> Coords;
 StructuredBuffer<Point3> Lights;
+StructuredBuffer<int> KeepAllive;
 
-//RWStructuredBuffer<float> Output;
-
-//RWStructuredBuffer<Coordinate> Lighted;
-
-//RWStructuredBuffer<Point3> TestVals;
-
-//RWStructuredBuffer<int> NumStructs;
+RWTexture2D<float4> Shade;
 
 const float eps = 1.0e-7f;
-
 int NumLights;
 int NumCoords;
 int NumVerts;
@@ -129,65 +125,33 @@ int RayIntersect(float3 origin, float3 direction, uint globalIDx)
 //================================================================================================
 // Compute Shader
 //================================================================================================
-#define GroupSize 64
+#define GroupSize 512
 
 [numthreads(GroupSize, 1, 1)]
 void CS(uint3 localID : SV_GroupThreadID, uint3 groupID : SV_GroupID,
         uint localIndex : SV_GroupIndex, uint3 globalID : SV_DispatchThreadID)
 {
-    //uint numLights;
-    //uint stride;
-    //Lights.GetDimensions(numLights, stride);
+    if (KeepAllive[0] == 0)
+        return;
     
-    //uint numCoords;
-    //Coords.GetDimensions(numCoords, stride);
-    
-    //int c = globalID.x;
-    //int index = Coords[c].Index;
-    //if (index > NumCoords)
-    //    return;
-    
-    //float3 cPos = Coords[c].Position;
-    
-    //int intersect = 0;
     uint c = globalID.x;
-    //Output[c] = 1;
-
+    uint2 ind = uint2(Coords[c].WX, Coords[c].WY);
+    
     for (int l = 0; l < NumLights; l++)
     {
-        if (Coords[c].Lighted == 1) return;
         float3 lightPos = float3(Lights[l].X, Lights[l].Y, Lights[l].Z);
         float3 pos = float3(Coords[c].X, Coords[c].Y, Coords[c].Z);
         float3 direction = pos - lightPos;
         if (RayIntersect(lightPos, direction, c) == 0)
         {
-            Coords[c].Lighted = 1;
-            //Output[c] == 1;
+            Shade[ind].a = 0.0f;
             return;
         }
     }
+    Shade[ind].a = 1.0f;
     
-    //if (intersect == 0)
-    //{
-    //}
-    
-    //Coords[globalID.x].Lighted = 1;
-    
-    //Lighted[globalID.x] = Coords[globalID.x];
-    
-    //Lighted[globalID.x].GlobalID = globalID.x;
-    //Lighted[globalID.x].Index = Coords[globalID.x].Index;
-    //Lighted[globalID.x].Lighted = Coords[globalID.x].Lighted;
-    //Lighted[globalID.x].X = Coords[globalID.x].X;
-    //Lighted[globalID.x].Y = Coords[globalID.x].Y;
-    //Lighted[globalID.x].Z = Coords[globalID.x].Z;
-    
-    //InputVals[globalID.x] = globalID.x;
-    
-    //if(InputVals[c] == 1)
-    //    Lighted[c].IsLighted = 1;
-    //else
-    //    Lighted[c].IsLighted = 0;
+    //Shade[ind] = float4(0.5f, 0.5f, 0.5f, 1.0f);
+
 }
 
 //================================================================================================
@@ -199,4 +163,4 @@ technique Tech0
     {
         ComputeShader = compile cs_5_0 CS();
     }
-}
+};
