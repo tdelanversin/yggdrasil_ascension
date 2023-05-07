@@ -363,7 +363,7 @@ namespace YGR
                 {
                     new ParticleEmitter(textureRegion, 100, TimeSpan.FromSeconds(1.5f),
                         //Profile.Point())
-                        Profile.BoxFill(150,150))
+                        Profile.BoxFill(15,15))
                         //Profile.Line(new Vector2(1,1), 5f))
                     {
                         Parameters = new ParticleReleaseParameters
