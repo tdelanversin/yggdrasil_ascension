@@ -198,9 +198,9 @@ namespace YGR
                 float y = Bounds.Height * 7 / 8;
 
                 string string_a = "Controller " + i + ":  ";
-                spriteBatch.DrawString(Fonts.Normal, string_a, new Vector2(x, y), Color.Wheat);
+                spriteBatch.DrawString(Fonts.Small, string_a, new Vector2(x, y), Color.Wheat);
 
-                Vector2 stringSize = Fonts.Normal.MeasureString(string_a);
+                Vector2 stringSize = Fonts.Small.MeasureString(string_a);
                 GamePadState gamePadState = GamePad.GetState(i);
 
                 string string_b = "Connected";
@@ -210,7 +210,7 @@ namespace YGR
                     string_b = "N/A";
                     color = Color.Gray;
                 }
-                spriteBatch.DrawString(Fonts.Normal, string_b, new Vector2(x + stringSize.X, y), color);
+                spriteBatch.DrawString(Fonts.Small, string_b, new Vector2(x + stringSize.X, y), color);
             }
         }
 

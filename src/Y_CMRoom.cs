@@ -1,21 +1,14 @@
 ﻿//#define PARALLEL_DEBUG_ROOM
 
-using Assimp;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel.Design;
 using System.Diagnostics;
-using System.Dynamic;
 using System.IO;
 using System.Linq;
-using System.Runtime.InteropServices;
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using System.Xml.Linq;
-using static YGR.X_AutoTiler;
 
 namespace YGR
 {
@@ -177,9 +170,7 @@ namespace YGR
 
         List<EnemyEntity> _enemies;
         List<PlayerEntity> _players;
-        List<PowerUp> _powerups;
-
-        private List<PowerUpItem> _powerUps;
+        public List<PickUp> PickUps;
 
         public bool Cleared;
 
@@ -210,13 +201,13 @@ namespace YGR
                 var readRoof = File.ReadAllBytesAsync(resourceFolder + ldtkRoomTypes[c]["Roof"]);
 
                 Task<byte[]> readVegetation = null;
-                if(File.Exists(resourceFolder + ldtkRoomTypes[c]["Vegetation"]))
+                if (File.Exists(resourceFolder + ldtkRoomTypes[c]["Vegetation"]))
                 {
                     readVegetation = File.ReadAllBytesAsync(resourceFolder + ldtkRoomTypes[c]["Vegetation"]);
                 }
 
                 Task.WaitAll(readFloor, readWall, readRoof);
-                if(readVegetation != null)
+                if (readVegetation != null)
                 {
                     Task.WaitAll(readVegetation);
                 }
@@ -224,7 +215,7 @@ namespace YGR
                 var wallData = readWall.Result;
                 var roofData = readRoof.Result;
                 byte[] vegetationData = null;
-                if(readVegetation != null)
+                if (readVegetation != null)
                 {
                     vegetationData = readVegetation.Result;
                 }
@@ -233,7 +224,7 @@ namespace YGR
                 MemoryStream wallStream = new MemoryStream(wallData);
                 MemoryStream roofStream = new MemoryStream(roofData);
                 MemoryStream vegetationStream = null;
-                if(vegetationData != null)
+                if (vegetationData != null)
                 {
                     vegetationStream = new MemoryStream(vegetationData);
                 }
@@ -242,7 +233,7 @@ namespace YGR
                 Texture2D txWall = Texture2D.FromStream(graphicsDevice, wallStream, DefaultColorProcessors.PremultiplyAlpha);
                 Texture2D roof = Texture2D.FromStream(graphicsDevice, roofStream, DefaultColorProcessors.PremultiplyAlpha);
                 Texture2D vegetation = null;
-                if(vegetationStream != null)
+                if (vegetationStream != null)
                 {
                     vegetation = Texture2D.FromStream(graphicsDevice, vegetationStream, DefaultColorProcessors.PremultiplyAlpha);
                 }
@@ -269,7 +260,7 @@ namespace YGR
                 {
                     for (int w = 0; w < floor.Width; ++w)
                     {
-                        if(vegC != null && vegC[h * floor.Width + w].A != 0)
+                        if (vegC != null && vegC[h * floor.Width + w].A != 0)
                         {
                             var col = vegC[h * floor.Width + w];
                             toFloor[index] = col.R;
@@ -405,7 +396,7 @@ namespace YGR
                 }
             });
 
-            _powerUps = new List<PowerUpItem>();
+            PickUps = new List<PickUp>();
             var t5 = Task.Run(() =>
             {
                 if (array.entities.PowerUp != null)
@@ -414,10 +405,18 @@ namespace YGR
                     foreach (var s in pups)
                     {
                         Point location = new Point(s.x + Rect.X, s.y + Rect.Y);
-                        if (s.customFields["Type"] == "Life")
-                            _powerUps.Add(new PowerUpItem(Y_PowerUp.Factory(Y_PowerUps.Life, location, s.width, s.height, Scale)));
-                        if (s.customFields["Type"] == "Revive")
-                            _powerUps.Add(new PowerUpItem(Y_PowerUp.Factory(Y_PowerUps.Revive, location, s.width, s.height, Scale)));
+                        if (s.customFields["Type"] == PowerUp.Life)
+                            PickUps.Add(PickUp.Factory(Y_PowerUps.Life, location, s.width, s.height, Scale));
+                        if (s.customFields["Type"] == PowerUp.Revive)
+                            PickUps.Add(PickUp.Factory(Y_PowerUps.Revive, location, s.width, s.height, Scale));
+
+                        // Weapons
+                        if (s.customFields["Type"] == PowerUp.WeaponPistol)
+                            PickUps.Add(PickUp.Factory(Y_PowerUps.WeaponPistol, location, s.width, s.height, Scale));
+                        if (s.customFields["Type"] == PowerUp.WeaponShotgun)
+                            PickUps.Add(PickUp.Factory(Y_PowerUps.WeaponShotgun, location, s.width, s.height, Scale));
+                        if (s.customFields["Type"] == PowerUp.WeaponFunky)
+                            PickUps.Add(PickUp.Factory(Y_PowerUps.WeaponFunky, location, s.width, s.height, Scale));
                     }
                 }
             });
@@ -570,32 +569,29 @@ namespace YGR
             MoveTo(new Point(0, 0));
             _visited = false;
 
-            for (int i = 0; i < _powerUps.Count(); ++i)
+            for (int i = 0; i < PickUps.Count(); ++i)
             {
-                _powerUps[i].Active = true;
+                PickUps[i].Active = true;
             }
-
-            //for (int i = 0; i < _multiPowerups.Count(); ++i)
-            //{
-            //    _multiPowerups[i].Active = true;
-            //}
         }
 
         public void ApplyPowerUps(IVictim player)
         {
-            if (player is not SimplePlayer)
+            if (player is not IPlayer)
             {
                 return;
             }
 
-            for (int i = 0; i < _powerUps.Count(); ++i)
+            for (int i = 0; i < PickUps.Count(); ++i)
             {
-                if (_powerUps[i].Active && player.Rect.Intersects(_powerUps[i].Item.Rect))
+                if (PickUps[i].Active && player.Rect.Intersects(PickUps[i].Rect))
                 {
-                    _powerUps[i].Active = false;
-                    _powerUps[i].Item.Action(player);
-                    Manager_Sound.Sound_CashIn.Play();
-
+                    bool powerupExpired = PickUps[i].Action((SimplePlayer)player);
+                    if (powerupExpired)
+                    {
+                        PickUps[i].Active = false;
+                        Manager_Sound.Sound_CashIn.Play();
+                    }
                     return;
                 }
             }
@@ -912,9 +908,9 @@ namespace YGR
                 door.Value.First().MoveBy(p);
             }
 
-            foreach (var powerUp in _powerUps)
+            foreach (var powerUp in PickUps)
             {
-                powerUp.Item.MoveBy(p);
+                powerUp.MoveBy(p);
             }
 
             //// needs to be done this way because properties return by value and not by ref
@@ -943,12 +939,17 @@ namespace YGR
             return _enemies;
         }
 
+        public List<PickUp> GetPickUps()
+        {
+           return PickUps;
+        }
+
         public List<PlayerEntity> GetPlayerSpawningPoints()
         {
             return _players;
         }
 
-        public List<IVictim> GetPlayersInside()
+        public List<IPlayer> GetPlayersInside()
         {
             return Manager_Players.Players.FindAll(p => p.Room == this);
         }
@@ -984,7 +985,6 @@ namespace YGR
         /// <param name="gameTime">Monogame GameTime</param>
         public void Update(GameTime gameTime)
         {
-            //bool keyPressed = Input.IsKeyTriggered(Keybinds.ToggleConnectors);
             float dt = gameTime.ElapsedGameTime.Milliseconds;
             switch (State)
             {
@@ -1000,10 +1000,10 @@ namespace YGR
                     break;
             }
 
-            foreach (var powerUp in _powerUps)
+            foreach (var powerUp in PickUps)
             {
                 if (powerUp.Active)
-                    powerUp.Item.Update(gameTime);
+                    powerUp.Update(gameTime);
             }
         }
 
@@ -1039,11 +1039,11 @@ namespace YGR
                 door.Value.First().DrawOutline(gameTime, Rect.Location.ToVector2(), spriteBatch);
             }
 
-            foreach (var powerUp in _powerUps)
+            foreach (var powerUp in PickUps)
             {
                 if (powerUp.Active == true)
                 {
-                    powerUp.Item.DrawOutline(gameTime, globalOffset, spriteBatch);
+                    powerUp.DrawOutline(gameTime, globalOffset, spriteBatch);
                 }
             }
         }
@@ -1064,18 +1064,6 @@ namespace YGR
 
             if (State == X_RoomState.Invisible)
             {
-                //spriteBatch.Draw(
-                //    _floor, Rect.Location.ToVector2(),
-                //    new Rectangle(0, 0, _floor.Width, _floor.Height),
-                //    Color.White, 0, Vector2.Zero, Scale, SpriteEffects.None, 0);
-
-                //Vector2 position = Rect.Location.ToVector2();
-                //draw(_tileTextures[X_DoorTextureLayer.Door], position, spriteBatch, false);
-
-                //spriteBatch.Draw(
-                //    _roof, Rect.Location.ToVector2(),
-                //    new Rectangle(0, 0, _floor.Width, _floor.Height),
-                //    Color.White, 0, Vector2.Zero, Scale, SpriteEffects.None, 0);
             }
             else
             {
@@ -1094,14 +1082,13 @@ namespace YGR
                     new Rectangle(0, 0, _floor.Width, _floor.Height),
                     Color.White, 0, Vector2.Zero, Scale, SpriteEffects.None, 0);
 
-                foreach (var powerUp in _powerUps)
+                foreach (var powerUp in PickUps)
                 {
                     if (powerUp.Active == true)
                     {
-                        powerUp.Item.Draw(gameTime, globalOffset, spriteBatch);
+                        powerUp.Draw(gameTime, globalOffset, spriteBatch);
                     }
                 }
-
             }
         }
 

@@ -1,5 +1,4 @@
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -12,7 +11,8 @@ namespace YGR
         public enum EnemyType
         {
             SimpleEnemy = 0,
-            BossEnemy
+            SlimeEnemy,
+            BossEnemy,
         };
 
         private static List<IEnemy> _enemies = new List<IEnemy>();
@@ -22,19 +22,19 @@ namespace YGR
             _enemies.Clear();
         }
 
-        public static void AddEnemy_SimpleEnemy(Vector2 position, Y_Level level, IList<IVictim> players)
+        public static void AddEnemy_SimpleEnemy(Vector2 position, Y_Level level)
         {
-            _enemies.Add(new Enemy_Basic(position, Manager_Sprites.NewAnimatedSprite_TestCharacter(), level, players));
+            _enemies.Add(new Enemy_Basic(position, Manager_Sprites.NewAnimatedSprite_TestCharacter(), level));
         }
 
-        public static void AddEnemy_Slime(Vector2 position, Y_Level level, IList<IVictim> players)
+        public static void AddEnemy_Slime(Vector2 position, Y_Level level)
         {
-            _enemies.Add(new Enemy_Slime(position, Manager_Sprites.NewAnimatedSprite_EnemySlime(), level, players));
+            _enemies.Add(new Enemy_Slime(position, Manager_Sprites.NewAnimatedSprite_EnemySlime(), level));
         }
 
-        internal static void AddEnemy_Gigachad(Vector2 position, Y_Level level, IList<IVictim> players)
+        internal static void AddEnemy_Gigachad(Vector2 position, Y_Level level)
         {
-            _enemies.Add(new Enemy_Gigachad(position, Manager_Sprites.NewAnimatedSprite_Gigachad(), level, players));
+            _enemies.Add(new Enemy_Gigachad(position, Manager_Sprites.NewAnimatedSprite_Gigachad(), level));
         }
 
         public static ReadOnlyCollection<IEnemy> GetEnemies()

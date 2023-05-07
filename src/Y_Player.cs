@@ -14,7 +14,7 @@ namespace YGR
         KeyboardArrows,
     }
 
-    public class SimplePlayer : IVictim
+    public class SimplePlayer : IPlayer
     {
         // IGameElement fields
         public float Scale { get; protected set; }
@@ -28,11 +28,16 @@ namespace YGR
         public Vector2 Velocity { get; set; }
         public Y_Level Level { get; set; }
         public IWalkable Room { get; set; }
+        public string Name { get; set; }
 
-        // Class fields
+        // IPLayer fields
         public ControlLayout ControlLayout { get; set; }
         public IShooter Gun { get; set; }
         public PlayerIndex PlayerIndex { get; }
+        public bool IsActive { get; protected set; }
+        public PlayerType Type { get; }
+
+        // Class fields
         public float VelocityMax;
         protected Rectangle _rect;
         protected AnimatedSprite GhostSprite;
@@ -79,6 +84,7 @@ namespace YGR
             AnimatedSprite sprite,
             Y_Level level,
             IShooter gun,
+            PlayerType type,
             ControlLayout controlLayout = ControlLayout.ControllerOnly,
             float scale = 1.0f
             )
@@ -89,8 +95,23 @@ namespace YGR
             Position = initialPosition;
             CharacterSprite = sprite;
             Gun = gun;
+            Type = type;
             ControlLayout = controlLayout;
             Scale = scale;
+
+            // Set Name
+            if (type == PlayerType.Nerd)
+            {
+                Name = "Nerdy Girl";
+            }
+            else if (type == PlayerType.Ninja)
+            {
+                Name = "Ninja";
+            }
+            else
+            {
+                Name = "undef";
+            }
 
             // Balancing knobs
             LifePointsMax = 15;
@@ -113,6 +134,10 @@ namespace YGR
                     break;
                 case 3:
                     Color = Color.Yellow;
+                    // Keep the last player keyboard/mouse controllable, that
+                    // way one extra person can participate if players don't
+                    // have four controllers.
+                    ControlLayout = ControlLayout.KeyboardWASD;
                     break;
                 default:
                     Color = Color.White;
@@ -165,11 +190,12 @@ namespace YGR
             _isAiming = false;
             _aimDirection = new Vector2(1, 0);
             _invincible = false;
+            IsActive = true;
 
             Room = Level.GetRoom(this, Room);
         }
 
-        public X_LevelElements WhatAreYou()
+        public virtual X_LevelElements WhatAreYou()
         {
             if (_invincible || _dashing)
             {
@@ -185,12 +211,12 @@ namespace YGR
             }
         }
 
-        public bool IsAlive()
+        public virtual bool IsAlive()
         {
             return LifePoints > 0;
         }
 
-        public void Heal(int healAmount = 999)
+        public virtual void Heal(int healAmount = 999)
         {
             // Don't heal a dead player
             if (!IsAlive()) { return; }
@@ -198,22 +224,25 @@ namespace YGR
             LifePoints = Math.Min(LifePoints + healAmount, LifePointsMax);
         }
 
-        public void Revive(int healAmount = 999)
+        public virtual void Revive()
         {
             LifePoints = LifePointsMax;
         }
 
         /* Deal with being hit by projectile, basically physical therapy */
-        public void Hit(IProjectile projectile)
+        public virtual void Hit(IProjectile projectile)
         {
-            if (_invincible) { return; }
+            if (_invincible || !IsAlive()) { return; }
 
             LifePoints -= projectile.Damage;
             _invincible = true;
             _invincibleTimer = 0;
+
+            if (LifePoints <= 0)
+                Manager_Sound.Sound_PlayerDeath.Play();
         }
 
-        protected void UpdateRoom(GameTime gameTime)
+        protected virtual void UpdateRoom(GameTime gameTime)
         {
             if (Room.WhatAreYou() == X_LevelElements.Room)
             {
@@ -221,7 +250,7 @@ namespace YGR
             }
         }
 
-        protected void UpdateInvincibility(GameTime gameTime)
+        protected virtual void UpdateInvincibility(GameTime gameTime)
         {
             if (_invincible)
             {
@@ -236,7 +265,15 @@ namespace YGR
             }
         }
 
-        protected void UpdateColor(GameTime gameTime)
+        public virtual AnimatedSprite GetSprite()
+        {
+            if (IsAlive())
+                return CharacterSprite;
+            else
+                return GhostSprite;
+        }
+
+        protected virtual void UpdateColor(GameTime gameTime)
         {
             if (_invincible)
             {
@@ -301,7 +338,7 @@ namespace YGR
         }
 
         /* Handle GamePad movement, aiming and shooting */
-        protected void HandleGamepadInput(GameTime gameTime, ref Vector2 input)
+        protected virtual void HandleGamepadInput(GameTime gameTime, ref Vector2 input)
         {
             GamePadState gpState = GamePad.GetState(PlayerIndex);
             if (gpState.IsConnected)
@@ -340,7 +377,7 @@ namespace YGR
         }
 
         /* Handle Keyboard & Mouse movement, aiming and shooting */
-        protected void HandleMouseKeyboardInput(GameTime gameTime, ref Vector2 input)
+        protected virtual void HandleMouseKeyboardInput(GameTime gameTime, ref Vector2 input)
         {
             if (ControlLayout > 0)
             {
@@ -486,8 +523,8 @@ namespace YGR
         protected virtual void DrawOverheadString(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)
         {
             string str = "P" + (int)PlayerIndex + ": " + LifePoints.ToString();
-            float str_width = Fonts.Normal.MeasureString(str).X;
-            spriteBatch.DrawString(Fonts.Normal, str, new Vector2(_rect.Location.X + _rect.Width / 2 - str_width / 2, _rect.Location.Y - 16), Color.Wheat);
+            float str_width = Fonts.Small.MeasureString(str).X;
+            spriteBatch.DrawString(Fonts.Small, str, new Vector2(_rect.Location.X + _rect.Width / 2 - str_width / 2, _rect.Location.Y - 16), Color.Wheat);
         }
 
         protected virtual void DrawHealthbar(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)

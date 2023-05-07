@@ -19,7 +19,7 @@ namespace YGR
             internal Notification(string message)
             {
                 Message = message;
-                Font = Fonts.Normal;
+                Font = Fonts.Small;
                 Size = Font.MeasureString(message);
             }
 
