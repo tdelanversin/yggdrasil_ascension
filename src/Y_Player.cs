@@ -296,7 +296,7 @@ namespace YGR
         {
             if (_dashing)
             {
-                Manager_Particles._particleEffects[4].Trigger(new Vector2(_rect.Location.X + _rect.Width / 2, _rect.Location.Y + _rect.Height));
+                Manager_Particles._particleEffects[(int)Manager_Particles.Effect.Dash].Trigger(new Vector2(_rect.Location.X + _rect.Width / 2, _rect.Location.Y + _rect.Height));
                 //Manager_Particles.GenParticleEffectDash(new Vector2(_rect.Location.X+_rect.Width/2, _rect.Location.Y+_rect.Height));
                 if (_dashTimer > _dashDuration)
                 {
@@ -439,7 +439,7 @@ namespace YGR
             if (input != Vector2.Zero)
             {
                 //Manager_Particles.GenParticleEffectDustCloudLight(new Vector2(_rect.Location.X + _rect.Width / 2, _rect.Location.Y + _rect.Height));
-                Manager_Particles._particleEffects[3].Trigger(new Vector2(_rect.Location.X + _rect.Width / 2, _rect.Location.Y + _rect.Height));
+                Manager_Particles._particleEffects[(int)Manager_Particles.Effect.DustCloudLight].Trigger(new Vector2(_rect.Location.X + _rect.Width / 2, _rect.Location.Y + _rect.Height));
 
                 if (input.LengthSquared() > 1)
                 {

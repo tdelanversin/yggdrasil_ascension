@@ -19,6 +19,16 @@ namespace YGR
 {
     public static class Manager_Particles
     {
+        public enum Effect
+        {
+            Base = 0,
+            GigaChad,
+            ProjectileTrails,
+            DustCloudLight,
+            Dash,
+            Impact
+        }
+
         private static ParticleEffect _particleEffect_dust;
         private static ParticleEffect _particleEffect_dust_cloud_light;
         private static Texture2D _particleTexture_dust;
