@@ -12,6 +12,7 @@ namespace YGR
         public int LifePoints { get; set; }
         public int LifePointsMax { get; set; }
         public Color Color { get; set; }
+        public IGameElement WhoKilledMe { get; set; }
 
         public EnemyState State { get; set; } = EnemyState.Inactive;
         protected int fleeingHPTreshold = 2; // Flee if at this treshold or lower
@@ -49,6 +50,9 @@ namespace YGR
         protected int _stateTimerMax = 5000; // How long do we idle / wander at most
 
         public string Identifier;
+
+        protected float _dropProbabilityPercent = 5;
+        protected float _dropProbabilityPercentLifeSaving = 30;
 
         public Enemy_Basic(
             Vector2 position,
@@ -90,6 +94,7 @@ namespace YGR
             Level = level;
             Room = Level.GetRoom(this, Room);
             Gun = new Gun_BasicEnemy();
+            Scale = 1.0f;
 
             Color = Color.Orange;
             _currentColor = Color.DarkSlateGray * 0.4f; // Initially we're disabled
@@ -497,5 +502,43 @@ namespace YGR
         }
 
         public X_LevelElements WhatAreYou() => X_LevelElements.Enemy;
+
+        virtual public void DropSomethingJuicyMaybe()
+        {
+            if(WhoKilledMe != null)
+            {
+                if (WhoKilledMe.WhatAreYou() == X_LevelElements.Victim)
+                {
+                    if (Room.WhatAreYou() == X_LevelElements.Room)
+                    {
+                        var vic = (IVictim)WhoKilledMe;
+                        if (vic.LifePoints < 0.1f * (float)vic.LifePointsMax)
+                        {
+                            var next = Util.random.Next(0, 100);
+                            if(next < _dropProbabilityPercentLifeSaving)
+                            {
+                                // drop a life saving goodie
+                                var room = (Y_CMRoom)Room;
+                                var p = new Point(Rect.Location.X + Rect.Width / 2, Rect.Location.Y + Rect.Height / 2);
+                                room.PickUps.Add(PickUp.Factory(Y_PowerUps.Life, p, 32, 32, Scale));
+                            }
+                        }
+                        else
+                        {
+                            // otherwise maybe drop something that may or may not be usefull
+                            var next = Util.random.Next(0, 100);
+                            if (next < _dropProbabilityPercent)
+                            {
+                                var droppables = new Y_PowerUps[] { Y_PowerUps.Life, Y_PowerUps.Revive };
+                                var ind = Util.random.Next(0, droppables.Length);
+                                var room = (Y_CMRoom)Room;
+                                var p = new Point(Rect.Location.X + Rect.Width / 2, Rect.Location.Y + Rect.Height / 2);
+                                room.PickUps.Add(PickUp.Factory(droppables[ind], p, 32, 32, Scale));
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
 }

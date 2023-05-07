@@ -139,6 +139,9 @@ namespace YGR
                 _records.Add(new Manager_Collision.Record(
                     (DateTime.Now - Manager_Collision.StartTime).TotalMilliseconds,
                     point, Vector2.Zero, 0));
+
+                impactedObject.WhoKilledMe = me.WhoFiredMe;
+                
                 return true;
             }
             return false;

@@ -53,6 +53,14 @@ namespace YGR
                     Manager_Sound.Sound_EnemyDeath.Play(0.8f, -0.5f, 0);
                 }
             }
+
+            // select all dying enemies
+            var list = _enemies.Where(x => x.LifePoints <= 0).ToList();
+            // drop, or maybe not, something jucy
+            foreach(var enemy in list)
+            {
+                enemy.DropSomethingJuicyMaybe();
+            }
             _enemies.RemoveAll(enemy => enemy.LifePoints <= 0);
         }
 
