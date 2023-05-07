@@ -76,7 +76,9 @@ namespace YGR
 
             Manager_Light2.Platform = Manager_Light2.Type.GPU;
             _level.Create(GraphicsDevice);
-            Manager_Particles.Dispose();
+            //Manager_Particles.Dispose();
+            //Manager_Particles.Initialize();
+            //Manager_Particles.LoadContent();
 
             // Once everything is in place, inform Update() of the new desired state
             DesiredState = GameState.InGame;
@@ -148,6 +150,7 @@ namespace YGR
                     Menu.Update();
                     break;
             }
+            //Manager_Particles.Dispose();
             base.Update(gameTime);
         }
 

@@ -491,19 +491,21 @@ namespace YGR
             foreach (var pE in _particleEffects)
             {
                 pE.Update((float)gameTime.ElapsedGameTime.TotalSeconds);
+                pE.Emitters.ForEach(e => { e.AutoTrigger = false; });
             }
-            foreach (var pE in _particleEffects)
-            {
-                pE.Emitters.ForEach(e => { e.AutoTrigger = false; }) ;
-                //pE.Dispose();
-            }
+           
+
+            
         }
         public static void Dispose()
         {
             foreach (var pE in _particleEffects)
             {
-                pE.Emitters.ForEach(e => { e.AutoTrigger = false; });
-                pE.Dispose();
+                //pE.Dispose();
+                foreach (var emitter in pE.Emitters)
+                {
+                    emitter.Capacity = 0;
+                }
             }
         }
         public static void Draw(GameTime gameTime, SpriteBatch spriteBatch)
