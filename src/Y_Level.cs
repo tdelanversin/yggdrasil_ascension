@@ -4,6 +4,7 @@ using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using Newtonsoft.Json;
+using SharpFont.Cache;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -17,7 +18,6 @@ namespace YGR
     {
         internal class LevelNode
         {
-            public int Index;
             public bool Optional;
             public string Type;
             public float X;
@@ -31,7 +31,7 @@ namespace YGR
             public Dictionary<string, Dictionary<string, string>> LdtkRoomTypes;
             public float W;
             public float H;
-            public Dictionary<string, List<LevelNode>> Level;
+            public Dictionary<string, Dictionary<int, LevelNode>> Level;
         }
 
         public enum GamePlayState
@@ -59,6 +59,9 @@ namespace YGR
 
         private int _waitTimeBetweenEndOfFightAndLowerDoors = 125;
         private int _waitTimeBetweenEndOfFightAndLowerDoorsCounter = 0;
+
+        Texture2D _background;
+        Rectangle _backgroundRect;
 
         // Gameplay state objects
         public IWalkable ActiveRoom;
@@ -94,10 +97,10 @@ namespace YGR
                 _data = JsonConvert.DeserializeObject<Y_Level.Data>(array.ToString());
             }
 
-            foreach (var dk in _data.Level.Keys)
-            {
-                _data.Level[dk] = _data.Level[dk].OrderBy(x => x.Index).ToList();
-            }
+            //foreach (var dk in _data.Level.Keys)
+            //{
+            //    _data.Level[dk] = _data.Level[dk].OrderBy(x => x.Index).ToList();
+            //}
 
             var categoryFolders = Directory.GetDirectories(Util.PathOsNormalization(_levelResourceFolder + _name));
             List<Tuple<string, string>> files = new List<Tuple<string, string>>();
@@ -143,6 +146,13 @@ namespace YGR
             Logger.Info("room finalize time for " + list.Count() + " rooms: " + elapsed + " which is " + elapsed / list.Count() + " ms per room");
 
             Rooms = new Dictionary<int, IWalkable>();
+
+            _background = content.Load<Texture2D>("SpritesOther/title_image");
+            int width = (int)(_background.Width * 3.5f);
+            int height = (int)(_background.Height * 3.5f);
+            Point startLocation = new Point((int)(width / 1.87f), (int)(height / 1.137f));
+            _backgroundRect = new Rectangle(-startLocation.X, -startLocation.Y, width, height);
+
         }
 
         public void Preprocess(GraphicsDevice graphicsDevice)
@@ -181,7 +191,7 @@ namespace YGR
 
             var random = new Random();
             // randomly select one level tree
-            var key = _data.Level.Keys.ToArray()[random.Next(0, _data.Level.Keys.Count)]; // [random.Next(0, _data.Level.Keys.Count)];
+            var key = _data.Level.Keys.ToArray()[random.Next(0, _data.Level.Keys.Count)];
             var tree = _data.Level[key];
 
             var watch = new Stopwatch();
@@ -189,7 +199,7 @@ namespace YGR
             float offset = 1024;
             foreach (var node in tree)
             {
-                var type = _availableRooms[node.Type];
+                var type = _availableRooms[node.Value.Type];
                 int index = random.Next(0, type.Count);
 
                 // some hack to make sure that the first room is always the chosen one
@@ -213,18 +223,18 @@ namespace YGR
                 float h = 1.0f;
                 float w = (float)room.Rect.Width / (float)room.Rect.Height;
                 Point p = new Point(
-                    (int)(node.X * w * offset - room.Rect.Width / 2),
-                    (int)(node.Y * h * offset - room.Rect.Height / 2));
+                    (int)(node.Value.X * w * offset - room.Rect.Width / 2),   // + _backgroundRect.Width / 1.87f),
+                    (int)(node.Value.Y * h * offset - room.Rect.Height / 2)); // + _backgroundRect.Height / 1.137f));
                 p.X = p.X + (TileWidth - p.X % TileWidth);
                 p.Y = p.Y + (TileHeight - p.Y % TileHeight);
                 room.MoveTo(p);
-                Rooms.Add(node.Index, room);
+                Rooms.Add(node.Key, room);
 
-                if (node.Type == "Start")
+                if (node.Value.Type == "Start")
                 {
                     _startRoom = room;
                 }
-                else if (node.Type == "Gold")
+                else if (node.Value.Type == "Gold")
                 {
                     _goldRoom = room;
                 }
@@ -246,6 +256,7 @@ namespace YGR
                 int numTilesLength = 17;
                 X_DoorDirection direction = X_DoorDirection.Horizontal;
                 var fromRoom = room.Value;
+
                 foreach (var con in connection)
                 {
                     X_ConnectorSide fromSide = Y_Door.ParseFromSide(con.Key);
@@ -289,7 +300,7 @@ namespace YGR
                 }
             }
 
-            int connectorIndex = Rooms.Count();
+            int connectorIndex = Rooms.Max(x => x.Key)+1;
             foreach (var c in connectors)
             {
                 Rooms.Add(connectorIndex, c);
@@ -705,7 +716,7 @@ namespace YGR
 
         public void Draw(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)
         {
-
+            spriteBatch.Draw(_background, _backgroundRect, Color.White);
             foreach (var room in Rooms)
             {
                 room.Value.Draw(gameTime, globalOffset, spriteBatch);
