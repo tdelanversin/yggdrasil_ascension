@@ -1,5 +1,6 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using MonoGame.Extended;
 using System.Collections.Generic;
 #nullable enable
 
@@ -65,6 +66,7 @@ namespace YGR
             Velocity = _speed * direction;
             Collision = new X_CollisionModel_Projectile(_mass, 1.0f);
             Color = Color.White; // neutral
+                                 //Manager_Particles.GenParticleEffectProjectileTrails(new Vector2(_rect.Location.X + _rect.Width / 2, _rect.Location.Y + _rect.Height / 2), Color);
 
             // TODO: we could probably get rid of the global scale and simplify this at one point
             Room = Level.GetRoom(this, Room);
@@ -78,6 +80,9 @@ namespace YGR
                 (int)position.Y - (int)(_size.Y / 2.0f),
                 (int)(_size.X * Room.Scale),
                 (int)(_size.Y * Room.Scale));
+           // Manager_Particles._particleEffects[2].Trigger
+           //(new Vector2(_rect.Location.X + _rect.Width / 2, _rect.Location.Y + _rect.Height / 2));
+
             _position = _rect.Location.ToVector2();
         }
 
@@ -108,7 +113,6 @@ namespace YGR
                     // Hit players and enemies
                     if (obj is IVictim)
                     {
-                        Manager_Particles.GenParticleEffectImpact(new Vector2(_rect.Location.X + _rect.Width / 2, _rect.Location.Y + _rect.Height / 2));
                         ((IVictim)obj).Hit(this);
                     }
                 }
@@ -121,8 +125,13 @@ namespace YGR
             _sprite.Update(gameTime, AnimationState.Idle);
 
             /* Particle handling */
-            Manager_Particles.GenParticleEffectProjectileTrails(new Vector2(_rect.Location.X + _rect.Width / 2, _rect.Location.Y + _rect.Height / 2), Color);
-        }
+            Manager_Particles._particleEffects[2].Emitters.ForEach(emitter => { emitter.Parameters.Color = Color.ToHsl(); });//new MonoGame.Extended.Range<HslColor>(Color.ToHsl());
+            Manager_Particles._particleEffects[2].Trigger(new Vector2(_rect.Location.X + _rect.Width / 2, _rect.Location.Y + _rect.Height / 2));
+        
+            
+
+    }
+   
 
         public virtual void Draw(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)
         {

@@ -38,7 +38,7 @@ namespace YGR
         public static void AddProjectile_StarterProjectile(Vector2 startPosition, Vector2 direction, Y_Level level, IGameElement who)
         {
             if (!BoundsCheckSimple(startPosition, ((IVictim)who).Room)) return;
-
+         
             _projectiles.Add(
                 new Projectile_Basic(
                     position: startPosition,

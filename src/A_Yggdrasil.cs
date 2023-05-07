@@ -150,7 +150,8 @@ namespace YGR
                     Menu.Update();
                     break;
             }
-            //Manager_Particles.Dispose();
+
+
             base.Update(gameTime);
         }
 
