@@ -21,7 +21,6 @@ namespace YGR
         public static Matrix Transform { get; private set; }
         public static CameraMode Mode { get; private set; }
         public static IWalkable Room { get; private set; } // Room to focus on
-        public static IList<IVictim> Players { get; set; } // Players to focus
 
         private static float _animationDuration = 1000;
         private static float _animationTimer = _animationDuration;
@@ -114,23 +113,15 @@ namespace YGR
 
         private static void centerOnPlayers()
         {
-            if (Players == null || Players.Count < 1) return;
+            if (Manager_Players.Players == null || Manager_Players.Players.Count < 1) return;
 
-            // var playersAlive = ((List<IVictim>)Players).FindAll(x => x.WhatAreYou() == X_LevelElements.Victim).ToList();
-            var playersAlive = Players;
-
-            if (playersAlive.Count == 0)
-            {
-                return;
-            }
-
-            var left = Players[0].Rect.X;
-            var right = Players[0].Rect.X;
-            var top = Players[0].Rect.Y;
-            var bot = Players[0].Rect.Y;
+            var left = Manager_Players.Players[0].Rect.X;
+            var right = Manager_Players.Players[0].Rect.X;
+            var top = Manager_Players.Players[0].Rect.Y;
+            var bot = Manager_Players.Players[0].Rect.Y;
 
             Vector2 playerMeanPos = Vector2.Zero;
-            foreach (var player in playersAlive)
+            foreach (var player in Manager_Players.Players)
             {
                 playerMeanPos += player.Rect.Location.ToVector2();
                 left = Math.Min(player.Rect.X, left);
@@ -140,7 +131,7 @@ namespace YGR
             }
 
             // Update camera position
-            playerMeanPos /= playersAlive.Count;
+            playerMeanPos /= Manager_Players.Players.Count;
             Position = playerMeanPos;
             // Console.WriteLine(playerMeanPos);
 

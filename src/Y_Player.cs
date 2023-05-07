@@ -14,7 +14,7 @@ namespace YGR
         KeyboardArrows,
     }
 
-    public class SimplePlayer : IVictim
+    public class SimplePlayer : IPlayer
     {
         // IGameElement fields
         public float Scale { get; protected set; }
@@ -29,10 +29,12 @@ namespace YGR
         public Y_Level Level { get; set; }
         public IWalkable Room { get; set; }
 
-        // Class fields
+        // IPLayer fields
         public ControlLayout ControlLayout { get; set; }
         public IShooter Gun { get; set; }
         public PlayerIndex PlayerIndex { get; }
+
+        // Class fields
         public float VelocityMax;
         protected Rectangle _rect;
         protected AnimatedSprite GhostSprite;
@@ -202,7 +204,7 @@ namespace YGR
             LifePoints = Math.Min(LifePoints + healAmount, LifePointsMax);
         }
 
-        public void Revive(int healAmount = 999)
+        public void Revive()
         {
             LifePoints = LifePointsMax;
         }

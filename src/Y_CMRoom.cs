@@ -575,7 +575,7 @@ namespace YGR
 
         public void ApplyPowerUps(IVictim player)
         {
-            if (player is not SimplePlayer)
+            if (player is not IPlayer)
             {
                 return;
             }
@@ -947,7 +947,7 @@ namespace YGR
             return _players;
         }
 
-        public List<IVictim> GetPlayersInside()
+        public List<IPlayer> GetPlayersInside()
         {
             return Manager_Players.Players.FindAll(p => p.Room == this);
         }

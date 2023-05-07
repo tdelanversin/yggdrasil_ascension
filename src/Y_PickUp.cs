@@ -30,14 +30,14 @@ namespace YGR
 
         public bool Active { get; set; }
 
-        public Func<SimplePlayer, bool> Action { get; }
+        public Func<IPlayer, bool> Action { get; }
 
         private AnimatedSprite _sprite;
         private float _spriteScale;
 
         private Texture2D _texture;
 
-        public PickUp(Y_PowerUps type, Point location, int width, int height, float scale, AnimatedSprite sprite, Func<SimplePlayer, bool> action)
+        public PickUp(Y_PowerUps type, Point location, int width, int height, float scale, AnimatedSprite sprite, Func<IPlayer, bool> action)
         {
             Scale = scale;
             float heightNew = (int)(height * 1.75);
@@ -49,7 +49,7 @@ namespace YGR
             _spriteScale = Scale * Util.GetSpriteScale(Rect, _sprite.SpriteDimension);
         }
 
-        public PickUp(Y_PowerUps type, Point location, int width, int height, float scale, Texture2D texture, Func<SimplePlayer, bool> action)
+        public PickUp(Y_PowerUps type, Point location, int width, int height, float scale, Texture2D texture, Func<IPlayer, bool> action)
         {
             Scale = scale;
             float heightNew = (int)(height * 1.75);
@@ -131,7 +131,7 @@ namespace YGR
                             bool ret = false;
                             foreach (var ghost in ghosts)
                             {
-                                ((SimplePlayer)ghost).Revive();
+                                ghost.Revive();
                                 ret = true;
                             }
                             return ret;

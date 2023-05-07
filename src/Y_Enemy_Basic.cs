@@ -53,8 +53,7 @@ namespace YGR
         public Enemy_Basic(
             Vector2 position,
             AnimatedSprite sprite,
-            Y_Level level,
-            IList<IVictim> players
+            Y_Level level
         )
         {
             Name = "Mob";

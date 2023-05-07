@@ -131,7 +131,7 @@ namespace YGR
             {
                 foreach (var p in Manager_Players.Players)
                 {
-                    ((SimplePlayer)p).Gun = new Gun_Godmode();
+                    p.Gun = new Gun_Godmode();
                     ((SimplePlayer)p).VelocityMax = 0.6f;
                     p.LifePoints = 9999;
                 }

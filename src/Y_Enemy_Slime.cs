@@ -19,9 +19,8 @@ namespace YGR
         public Enemy_Slime(
             Vector2 position,
             AnimatedSprite sprite,
-            Y_Level level,
-            IList<IVictim> players
-        ) : base(position, sprite, level, players)
+            Y_Level level
+        ) : base(position, sprite, level)
         {
             LifePointsMax = 15;
             LifePoints = LifePointsMax;

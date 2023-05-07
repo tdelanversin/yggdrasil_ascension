@@ -57,7 +57,7 @@ namespace YGR
     // Simple field for players to stand in
     public class Interactable_PlayerField : Interactable_Basic
     {
-        public List<IVictim> PlayersInside = new List<IVictim> { };
+        public List<IPlayer> PlayersInside = new List<IPlayer> { };
         private string BaseLabel = "Move here!";
 
         public Interactable_PlayerField(
@@ -69,9 +69,9 @@ namespace YGR
             Label = BaseLabel;
         }
 
-        public virtual List<IVictim> GetPlayersInside()
+        public virtual List<IPlayer> GetPlayersInside()
         {
-            return ((List<IVictim>)Manager_Players.Players).FindAll(p => Rectangle.Intersect(Rect, p.Rect) != Rectangle.Empty);
+            return Manager_Players.Players.FindAll(p => Rectangle.Intersect(Rect, p.Rect) != Rectangle.Empty);
         }
 
         public override void Update(GameTime gameTime)
@@ -119,7 +119,7 @@ namespace YGR
 
         public void TriggerInteraction(GameTime gameTime)
         {
-            List<IVictim> selectedPlayers = PlayerField.PlayersInside;
+            List<IPlayer> selectedPlayers = PlayerField.PlayersInside;
 
             // If not a single player manages to stand in the field, we're not starting the game
             if (selectedPlayers.Count < 1) { return; }
@@ -146,12 +146,12 @@ namespace YGR
                     continue;
                 }
                 // Can only be triggered by a player standing in the field
-                if (projectile.WhoFiredMe is not IVictim)
+                if (projectile.WhoFiredMe is not IPlayer)
                 {
                     continue;
                 }
 
-                if (!PlayerField.PlayersInside.Contains((IVictim)projectile.WhoFiredMe))
+                if (!PlayerField.PlayersInside.Contains((IPlayer)projectile.WhoFiredMe))
                 {
                     hitByPlayerNotInField = true;
                     continue;

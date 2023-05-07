@@ -17,11 +17,11 @@ namespace YGR
         };
 
         // Player list
-        public static List<IVictim> Players { get; private set; }
+        public static List<IPlayer> Players { get; private set; }
 
         public static void Initialize()
         {
-            Players = new List<IVictim>();
+            Players = new List<IPlayer>();
         }
 
         public static void ClearPlayers()
@@ -33,7 +33,7 @@ namespace YGR
         {
             for (int i = 0; i < Players.Count; i++)
             {
-                SimplePlayer p = (SimplePlayer)Players[i];
+                IPlayer p = Players[i];
                 if (p.PlayerIndex == idx)
                 {
                     Players[i] = Factory(type, idx, p.Rect.Location.ToVector2(), p.Level, p.ControlLayout);
@@ -41,7 +41,7 @@ namespace YGR
             }
         }
 
-        public static IVictim Factory(PlayerType type, PlayerIndex playerIndex, Vector2 position, Y_Level level, ControlLayout controlLayout = ControlLayout.ControllerOnly)
+        public static IPlayer Factory(PlayerType type, PlayerIndex playerIndex, Vector2 position, Y_Level level, ControlLayout controlLayout = ControlLayout.ControllerOnly)
         {
             if (type == PlayerType.Ninja)
                 return new SimplePlayer(
