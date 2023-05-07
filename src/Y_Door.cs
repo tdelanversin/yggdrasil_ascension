@@ -1,6 +1,7 @@
 ﻿using Assimp;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
+using Microsoft.Xna.Framework.Content.Pipeline.Serialization.Intermediate;
 using Microsoft.Xna.Framework.Graphics;
 using SharpFont;
 using System;
@@ -9,6 +10,7 @@ using System.ComponentModel;
 using System.ComponentModel.Design;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace YGR
 {
@@ -63,10 +65,11 @@ namespace YGR
         public string ResourceFolder { get; }
         public Manager_Light2.X_Point3[] IlluminationModel { get; set; }
         public List<X_Light> Lights { get; set; }
-        public Manager_Light2.X_Vector3[] ShadeCoords { get; set; }
 
         private Dictionary<X_DoorState, List<Rectangle>> _doorCollisionRectangles;
-
+        public Vector3 Offset { get; set; }
+        public Color[] Shade { get; set; }
+        public X_IlluminationResources IlluminationResources { get; set; }
         private X_DoorState State { get; set; }
 
         private X_DoorDirection _direction;
@@ -83,8 +86,6 @@ namespace YGR
         private float _doorOpeningTime = 2000.0f;
         private float _animationTime = 0.0f;
         int _tileSize;
-        int _tileOffset;
-        bool[] _illuminated;
         bool _visited;
         //private Y_Door _door;
 
@@ -93,6 +94,10 @@ namespace YGR
 
         //Rectangle _outsideRect1;
         //Rectangle _outsideRect2;
+
+        RenderTarget2D _renderTarget;
+        public Texture2D[] ShadeTexture { get; set; }
+        public int ShadeIndex { get; set; }
 
         private static Texture2D _fenceH;
         private static Texture2D _fenceV;
@@ -104,10 +109,10 @@ namespace YGR
         }
 
         public Y_Door(
-            X_DoorDirection direction, 
-            int numTilesLength, 
-            int tileWidth, 
-            int tileHeight, 
+            X_DoorDirection direction,
+            int numTilesLength,
+            int tileWidth,
+            int tileHeight,
             int tileOffset,
             GraphicsDevice graphicsDevice,
             string resourceFolder,
@@ -115,7 +120,6 @@ namespace YGR
             )
         {
             _direction = direction;
-            _tileOffset = tileOffset;
 
             int[][] collision = createDoorTemplate(numTilesLength, tileOffset);
             collision = flipToPosition(collision, direction, tileOffset);
@@ -132,9 +136,9 @@ namespace YGR
             Lights = new List<X_Light>();
 
             X_AutoTiler.Resolve<X_DoorTextureLayer>(
-                ResourceFolder, tileJsonFile, 
-                graphicsDevice, 
-                Collision.GetCollisionTemplate(), 
+                ResourceFolder, tileJsonFile,
+                graphicsDevice,
+                Collision.GetCollisionTemplate(),
                 MapTexture,
                 out _tileTextures, out _tileColors);
 
@@ -148,6 +152,61 @@ namespace YGR
             int height = Collision.GetCollisionTemplate().Length;
             Color[] trans = Enumerable.Repeat<Color>(Color.Transparent, _tileSize * _tileSize * width * height).ToArray();
             _visited = false;
+
+            ShadeTexture = new Texture2D[] { 
+                new Texture2D(graphicsDevice, Rect.Width, Rect.Height, false, SurfaceFormat.Color, ShaderAccess.ReadWrite)
+            };
+
+            IlluminationResources = new X_IlluminationResources();
+            ShadeIndex = 0;
+
+            if (Settings.DynamicShades)
+            {
+                Shade = Enumerable.Repeat<Color>(Color.Transparent, Rect.Width * Rect.Height).ToArray();
+            }
+            else
+            {
+                Shade = Enumerable.Repeat<Color>(Color.Black, Rect.Width * Rect.Height).ToArray();
+                var template = Collision.GetCollisionTemplate();
+                int tileSize = TextureTileSize;
+                Parallel.For(0, template.Length, h =>
+                {
+                    for (int w = 0; w < template[0].Length; ++w)
+                    {
+
+                        int fromX = w * tileSize;
+                        int fromY = h * tileSize;
+                        int toX = fromX + tileSize;
+                        int toY = fromY + tileSize;
+
+                        if (template[h][w] == (int)X_TileType.Floor || template[h][w] == (int)X_TileType.Wall)
+                        {
+                            continue;
+                        }
+
+                        // if we have shadow, assume that non intersected parts are automatically in the light
+                        // otherwise keep them in the shadow and only light the parts that have direct line of sight
+                        for (int x = fromX; x < toX; x += 1)
+                        {
+                            for (int y = fromY; y < toY; y += 1)
+                            {
+                                Shade[y * ShadeTexture[0].Width + x] = Color.Transparent;
+                            }
+                        }
+                    }
+                });
+            }
+
+            ShadeTexture[0].SetData(Shade);
+        }
+
+        public int GetTargetShadeIndex()
+        {
+            return ShadeIndex;
+        }
+
+        public void SwitchTargetShadeIndex()
+        {
         }
 
         private int[][] getBarkLine(int[][] collision, int tileWidth, int tileHeight)
@@ -308,6 +367,11 @@ namespace YGR
             tileOffset /= tileSize;
         }
 
+        public void ResetRoom()
+        {
+            _visited = false;
+        }
+
         public Tuple<X_ConnectorSide, Y_CMRoom> GetOtherDoor(Y_CMRoom room)
         {
             var p = new Point(room.Rect.X + room.Rect.Width / 2, room.Rect.Y + room.Rect.Height / 2);
@@ -319,57 +383,6 @@ namespace YGR
                 }
             }
             return null;
-        }
-
-        public void Illuminate()
-        {
-            if (!Settings.Lighting) return;
-
-            //var lights = new List<X_Light>();
-            //foreach (var room in DoorRooms)
-            //{
-            //    var r = (Y_CMRoom)room.Value.First();
-            //    lights.AddRange(r.Lights);
-            //}
-
-            if(_illuminated == null)
-            {
-                Vector3 offset = new Vector3(Rect.Location.X / Scale, Rect.Location.Y / Scale, 0);
-                _illuminated = Manager_Light2.Illuminate(this, offset);
-
-                Color[] red = Enumerable.Repeat<Color>(Color.Green, _tileSize * _tileSize).ToArray();
-                foreach (var tile in _tileColors)
-                {
-                    if (tile.Key != X_DoorTextureLayer.Floor) continue;
-                    for (int t = 0; t < tile.Value.Count; ++t) // (var t in tile.Value)
-                    {
-
-                        var location = tile.Value[t].Location();
-                        Rectangle rect = new Rectangle(location.X * _tileSize, location.Y * _tileSize, _tileSize, _tileSize);
-
-                        var light = getRectFromArray(_illuminated, rect);
-                        for (int i = 0; i < tile.Value[t].Color().Length; ++i)
-                        {
-                            var col = tile.Value[t].Color()[i];
-                            if (!light[i] && col.A != 0)
-                            {
-                                Color nCol = Color.White;
-                                nCol.R = (byte)((1 - 0.4f) * col.R + 0.4f * Color.Black.R);
-                                nCol.G = (byte)((1 - 0.4f) * col.G + 0.4f * Color.Black.G);
-                                nCol.B = (byte)((1 - 0.4f) * col.B + 0.4f * Color.Black.B);
-                                tile.Value[t].Color()[i] = nCol;
-                            }
-                        }
-                    }
-                }
-
-                var colors = _tileColors.Where(x => x.Key == X_DoorTextureLayer.Floor).Select(x => x.Value).First();
-                var textures = _tileTextures.Where(x => x.Key == X_DoorTextureLayer.Floor).Select(x => x.Value).First();
-                for (int t = 0; t < colors.Count(); ++t)
-                {
-                    textures[t].Texture().SetData<Color>(colors[t].Color());
-                };
-            }
         }
 
         private bool[] getRectFromArray(bool[] lighted, Rectangle rect)
@@ -760,7 +773,7 @@ namespace YGR
 
         public bool DoorIsOpen()
         {
-            return State == X_DoorState.Open || State == X_DoorState.LockedOpen;
+            return State == X_DoorState.Open || State == X_DoorState.LockedOpen || State == X_DoorState.Opening;
         }
 
         public X_ConnectorPoint GetConnectorPoint(X_ConnectorSide side, string name = "")
@@ -1012,6 +1025,11 @@ namespace YGR
                 Collision.UpdateCollisionRectangles(_doorCollisionRectangles[X_DoorState.Closed]);
         }
 
+        public List<X_Light> GetAllRelevantLights()
+        {
+            return Lights;
+        }
+
         public bool IsDoorOpen()
         {
             return State == X_DoorState.Open || State == X_DoorState.LockedOpen;
@@ -1122,14 +1140,16 @@ namespace YGR
                     //}
                     break;
                 case X_DoorState.LockedOpen:
-                    Illuminate(); // only happens once no matter where it is!!
+                    //Illuminate(); // only happens once no matter where it is!!
+                    //Manager_Light2.Illuminate(this);
                     if (!doorAnimation(dt, true))
                     {
                         openDoor();
                     }
                     break;
                 case X_DoorState.Opening:
-                    Illuminate(); // only happens once no matter where it is!!
+                    //Illuminate(); // only happens once no matter where it is!!
+                    //Manager_Light2.Illuminate(this);
                     if (!doorAnimation(dt, true))
                     {
                         State = X_DoorState.Open;
@@ -1137,7 +1157,7 @@ namespace YGR
                     }
                     break;
                 case X_DoorState.Open:
-                    Illuminate(); // only happens once no matter where it is!!
+                    //Illuminate(); // only happens once no matter where it is!!
                     //if (keyPressed)
                     //{
                     //    State = X_DoorState.Closing;
@@ -1153,6 +1173,14 @@ namespace YGR
                     {
                         _closingTheDoor = false;
                         State = X_DoorState.Closed;
+                        foreach (var door in DoorRooms)
+                        {
+                            foreach(var d in door.Value)
+                            {
+                                if (!((Y_CMRoom)d).VisitedBeforeByPlayer())
+                                    ((Y_CMRoom)d).SetVisible(false);
+                            }
+                        }
                     }
                     break;
                 case X_DoorState.LockedClosed:
@@ -1164,9 +1192,27 @@ namespace YGR
                     if (!doorAnimation(dt, false))
                     {
                         _closingTheDoor = false;
+                        foreach (var door in DoorRooms)
+                        {
+                            foreach (var d in door.Value)
+                            {
+                                if (!((Y_CMRoom)d).VisitedBeforeByPlayer())
+                                    ((Y_CMRoom)d).SetVisible(false);
+                            }
+                        }
                     }
                     break;
             }
+
+            //if (Rectangle.Intersect(Camera.VisibleArea, Rect) == Rectangle.Empty)
+            //{
+            //    return;
+            //}
+
+            //if (IsDoorOpen())
+            //{
+            //    Manager_Light2.Illuminate(this);
+            //}
         }
 
         public List<Rectangle> GetOpenDoorCollisionRects()
@@ -1213,6 +1259,11 @@ namespace YGR
                     }
                 }
             }
+
+            //foreach (var light in Lights)
+            //{
+            //    light.DrawOutline(gameTime, globalOffset, spriteBatch);
+            //}
         }
 
         private bool doorAnimation(float dt, bool opening)
@@ -1242,30 +1293,48 @@ namespace YGR
             List<X_AutoTiler.X_AutoTileTexture> textures, 
             Vector2 position, 
             SpriteBatch spriteBatch,
-            bool partial)
+            bool partial, 
+            bool isFloor = false)
         {
-            foreach(var t in textures)
+            var srcPos = Rect.Location.ToVector2() + new Vector2(TextureTileSize, TextureTileSize);
+            var srcRect = new Rectangle(
+                    TextureTileSize,
+                    TextureTileSize,
+                    ShadeTexture[ShadeIndex].Width - 2 * TextureTileSize,
+                    ShadeTexture[ShadeIndex].Height - TextureTileSize);
+
+            var testOffset = Vector2.One * _tileSize / 2;
+            foreach (var t in textures)
             {
                 int height = t.Texture().Height;
                 int width = t.Texture().Width;
-                Vector2 pos = position + t.Location().ToVector2() * _tileSize;
+                
+                Vector2 tLocation = _tileSize * t.Location().ToVector2();
+                if (isFloor && !srcRect.Contains(tLocation + testOffset)) continue;
+
+                Vector2 pos = position + tLocation;
 
                 if (partial)
                 {
-                    if (_direction == X_DoorDirection.Horizontal)
-                    {
-                        if (pos.X > _tileSize && pos.X < Rect.Width - _tileSize) height = _currentDoorOpenOffset;
-                    }
-                    else
-                    {
-                        height = _currentDoorOpenOffset;
-                    }
+                    height = _currentDoorOpenOffset;
+                    //srcRect.Height = srcRect.Height - (_tileSize - _currentDoorOpenOffset);
                 }
 
                 spriteBatch.Draw(
                     t.Texture(), pos,
                     new Rectangle(0, 0, width, height),
                     Color.White, 0, Vector2.Zero, Scale, SpriteEffects.None, 0);
+            }
+
+            // only draw the part of the shade that is actually on the connector
+            if (isFloor)
+            {
+                srcRect.Height = srcRect.Height - (_tileSize - _currentDoorOpenOffset);
+                spriteBatch.Draw(
+                    ShadeTexture[ShadeIndex],
+                    srcPos,
+                    srcRect,
+                    Color.White * Manager_Light2.ShadeFloat, 0, Vector2.Zero, Scale, SpriteEffects.None, 0);
             }
         }
 
@@ -1313,7 +1382,7 @@ namespace YGR
                         p2 = Doors[X_ConnectorSide.Right].First().Point.ToVector2() - new Vector2(TextureTileSize / 2.0f, temp / 2);
                 }
 
-                draw(_tileTextures[X_DoorTextureLayer.Floor], position, spriteBatch, false);
+                draw(_tileTextures[X_DoorTextureLayer.Floor], position, spriteBatch, false, true);
                 draw(_tileTextures[X_DoorTextureLayer.Wall], position, spriteBatch, false);
 
                 spriteBatch.Draw(
@@ -1328,9 +1397,9 @@ namespace YGR
             }
             else if(State == X_DoorState.Opening || State == X_DoorState.Closing)
             {
-                draw(_tileTextures[X_DoorTextureLayer.Floor], position, spriteBatch, true);
+                draw(_tileTextures[X_DoorTextureLayer.Floor], position, spriteBatch, true, true);
                 draw(_tileTextures[X_DoorTextureLayer.Door], movePosition, spriteBatch, false);
-                
+
                 if (_currentDoorOpenOffset % 3 == 0)
                     draw(_tileTextures[X_DoorTextureLayer.Mechanism1], position, spriteBatch, false);
                 else if (_currentDoorOpenOffset % 3 == 1)
@@ -1342,7 +1411,7 @@ namespace YGR
             }
             else if (State == X_DoorState.Open)
             {
-                draw(_tileTextures[X_DoorTextureLayer.Floor],position, spriteBatch, false);
+                draw(_tileTextures[X_DoorTextureLayer.Floor],position, spriteBatch, false, true);
                 draw(_tileTextures[X_DoorTextureLayer.Wall], position, spriteBatch, false);
             }
         }
@@ -1351,7 +1420,8 @@ namespace YGR
         {
             var p = position - Rect.Location;
             Rect = new Rectangle(p.X, p.Y, Rect.Width, Rect.Height);
-            foreach(var door in Doors)
+            Offset = new Vector3(Rect.Location.X / Scale, Rect.Location.Y / Scale, 0);
+            foreach (var door in Doors)
             {
                 foreach(var d in door.Value)
                 {

@@ -264,6 +264,9 @@ namespace YGR
             if (NextShotCooldown > 0.0f)
                 return;
 
+            /*
+             * TODO: check out what kind of sense this one has => always false
+             */
             if (direction == null || direction == Vector2.Zero) {
                 direction = Vector2.One;
             }

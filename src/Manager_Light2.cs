@@ -2,10 +2,12 @@
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -26,13 +28,12 @@ namespace YGR
             public float X;
             public float Y;
             public float Z;
-            //public int GlobalID;
-            public int Index;
-            public int Lighted;
+            public int WX;
+            public int WY;
 
-            public static implicit operator X_Vector3(Vector4 vector)
+            public static implicit operator X_Vector3(Vector3 vector)
             {
-                return new X_Vector3() { X = vector.X, Y = vector.Y, Z = vector.Z, Index = (int)vector.W, Lighted = 0 };
+                return new X_Vector3() { X = vector.X, Y = vector.Y, Z = vector.Z };
             }
         }
 
@@ -48,23 +49,32 @@ namespace YGR
             }
         }
 
-        public static Vector3[] IlluminationModelOpened { get; private set; }
-        public static Vector3[] IlluminationModelClosed { get; private set; }
-
-        public static Dictionary<string, bool[]> LoadedIlluminationTemplates { get; private set; }
-        public static string ShadeVersion { get { return "V3"; } }
         public static GraphicsDevice GraphicsDevice_ { get; set; }
 
         public static Type Platform { get; set; }
-
-        private static int LightsBufferSize = 5;
+        private static int LightsBufferSize = 10;
         private static int VerticesBufferSize = 5000;
-        private static int CoordsBufferSize = 2500000;
+        private static int CoordsBufferSize = 100000;
         private static StructuredBuffer LightsBuffer;
         private static StructuredBuffer VerticesBuffer;
         private static StructuredBuffer CoordsBuffer;
 
-        private static Effect IlluminationShader { get; set; }
+        private static ConcurrentQueue<IWalkable> ToPrecompute;
+        private static ConcurrentQueue<IWalkable> ToIlluminate;
+
+        private static int KeepAliveSize = 50;
+        private static StructuredBuffer KeepAllive;
+
+        public static Effect IlluminationShader { get; set; }
+
+        private static bool _working;
+        private static bool _preworking;
+        private static int _cooldown = 2;
+        //private static int _cooldownMin = 1;
+        //private static int _cooldownMax = 4;
+        private static int _cooldownTimer = _cooldown;
+
+        public static float ShadeFloat = 0.6f;
 
         static int[] indices = new int[]
         {
@@ -76,28 +86,21 @@ namespace YGR
             /* top    */ 5, 4, 6,   6, 4, 7
         };
 
-        static public X_Vector3[] Coords;
-        static public X_Point3[] Vertices;
-        static public int NumVerts;
-        static public int NumLights;
-        static public int NumCoords;
-        static public X_Point3[] Lights;
-
         static public float eps = 1.0e-7f;
 
-        static public bool RayIntersect(Vector3 origin, Vector3 direction, int globalIDx)
+        static public bool RayIntersect(IWalkable room, Vector3 origin, Vector3 direction, int globalIDx)
         {
             float length = direction.Length();
             direction.Normalize();
 
-            for (int ind = 0; ind < NumVerts; ind += 8)
+            for (int ind = 0; ind < room.IlluminationResources.NumVerts; ind += 8)
             {
                 //int index = 0;
                 for (int i = 0; i < 36; i += 3)
                 {
-                    var p00 = Vertices[ind + indices[i]];
-                    var p01 = Vertices[ind + indices[i + 1]];
-                    var p02 = Vertices[ind + indices[i + 2]];
+                    var p00 = room.IlluminationResources.Vertices[ind + indices[i]];
+                    var p01 = room.IlluminationResources.Vertices[ind + indices[i + 1]];
+                    var p02 = room.IlluminationResources.Vertices[ind + indices[i + 2]];
                     Vector3 p0 = new Vector3(p00.X, p00.Y, p00.Z);
                     Vector3 p1 = new Vector3(p01.X, p01.Y, p01.Z);
                     Vector3 p2 = new Vector3(p02.X, p02.Y, p02.Z);
@@ -179,63 +182,128 @@ namespace YGR
         {
             GraphicsDevice_ = graphicsDevice;
             IlluminationShader = content.Load<Effect>("Shader/Illuminator");
+            ToPrecompute = new ConcurrentQueue<IWalkable>();
+            ToIlluminate = new ConcurrentQueue<IWalkable>();
+            _working = false;
+            _preworking = false;
+            KeepAllive = new StructuredBuffer(GraphicsDevice_, typeof(int), KeepAliveSize, BufferUsage.None, ShaderAccess.Read);
         }
 
-        public static bool[] Illuminate(
-            IWalkable room,
-            Vector3 unscaledOffset
+        public static void IlluminateSync(List<IWalkable> rooms)
+        {
+            foreach(var room in rooms)
+            {
+                Precompute(room);
+            }
+            foreach (var room in rooms)
+            {
+                while (room.IlluminationResources.NumCoords > room.IlluminationResources.NumOffset)
+                    Compute(room);
+                room.SwitchTargetShadeIndex();
+            }
+        }
+
+        public static void Illuminate(
+            IWalkable room
         )
         {
-            var watch = new Stopwatch();
-            watch.Start();
+            if (room.IlluminationResources.InFlight) return;
+            room.IlluminationResources.InFlight = true;
+            ToPrecompute.Enqueue(room);
+        }
 
+        public static void Update(GameTime gameTime)
+        {
+            if (ToPrecompute.Count() > 0)
+            {
+                if (!_preworking)
+                {
+                    _preworking = true;
+                    IWalkable room;
+                    if(ToPrecompute.TryDequeue(out room))
+                    {
+                        var t = Task.Run(() =>
+                        {
+                            //Logger.Info("Start precompute... room " + room.Name);
+                            Precompute(room);
+                            ToIlluminate.Enqueue(room);
+                            _preworking = false;
+                        });
+                    }
+                }
+            }
+
+            if (_cooldownTimer < _cooldown)
+            {
+                _cooldownTimer++;
+                return;
+            }
+
+            if (ToIlluminate.Count() > 0)
+            {
+                if (!_working)
+                {
+                    _working = true;
+                    IWalkable room;
+                    if(ToIlluminate.TryPeek(out room))
+                    {
+                        //Logger.Info("Start computations... room " + room.Name);
+                        Compute(room);
+
+                        if (room.IlluminationResources.NumCoords - room.IlluminationResources.NumOffset == 0)
+                        {
+                            while (!ToIlluminate.TryDequeue(out room));
+
+                            room.SwitchTargetShadeIndex();
+                            room.IlluminationResources.InFlight = false;
+                        }
+                        //Logger.Info("End computations... room " + room.Name);
+                    }
+                    _working = false;
+                    _cooldownTimer = 0;
+                    _cooldown = 1; // Util.random.Next(_cooldownMin, _cooldownMax);
+                }
+            }
+            else
+            {
+                //KeepAllive.SetData(Enumerable.Repeat<int>(0, KeepAliveSize).ToArray());
+                //IlluminationShader.Parameters["KeepAllive"].SetValue(KeepAllive);
+                //foreach (var pass in IlluminationShader.CurrentTechnique.Passes)
+                //{
+                //    pass.ApplyCompute();
+                //    int dispatchCount = 512;
+                //    GraphicsDevice_.DispatchCompute(dispatchCount, 1, 1);
+                //}
+            }
+        }
+
+        public static void Precompute(IWalkable room)
+        {
             bool light = true;
-
             var tileSize = room.TextureTileSize;
             var template = room.Collision.GetCollisionTemplate();
 
             int width = template[0].Length * tileSize;
             int length = width * template.Length * tileSize;
-            bool[] lighted = Enumerable.Repeat<bool>(!light, length).ToArray();
+            room.IlluminationResources.BLighted = Enumerable.Repeat<bool>(!light, length).ToArray();
 
-            Vector3 offset = unscaledOffset;
-            Coords = new X_Vector3[length]; // Enumerable.Repeat<Vector3>(Vector3.Zero, length).ToArray();
-            Lights = room.Lights.Select(x => x.GetUnscaledPosition()).ToArray();
-            Vertices = CreateModel(room); /* (open ? IlluminationModelOpened : IlluminationModelClosed);*/
-            NumLights = Lights.Count();
-            NumVerts = Vertices.Count();
-            NumCoords = 0;
+            Vector3 offset = room.Offset;
+            room.IlluminationResources.Coords = new X_Vector3[length]; // Enumerable.Repeat<Vector3>(Vector3.Zero, length).ToArray();
+            room.IlluminationResources.Index = new int[length];
 
-            if (Platform == Type.GPU)
-            {
+            //room.IlluminationResources.Lights = room.Lights.Select(x => x.GetUnscaledPosition()).ToArray();
+            room.IlluminationResources.Lights = room.GetAllRelevantLights().Select(x => x.GetUnscaledPosition()).ToArray();
 
-                if (LightsBuffer == null || NumLights > LightsBufferSize)
-                {
-                    LightsBufferSize = Lights.Count();
-                    LightsBuffer = new StructuredBuffer(
-                        GraphicsDevice_, typeof(X_Point3), LightsBufferSize, BufferUsage.None, ShaderAccess.Read);
-                }
-
-                if (CoordsBuffer == null || Coords.Length > CoordsBufferSize)
-                {
-                    CoordsBufferSize = Coords.Length;
-                    CoordsBuffer = new StructuredBuffer(
-                        GraphicsDevice_, typeof(X_Vector3), CoordsBufferSize, BufferUsage.None, ShaderAccess.ReadWrite);
-                }
-
-                if (VerticesBuffer == null || NumVerts > VerticesBufferSize)
-                {
-                    VerticesBufferSize = NumVerts;
-                    VerticesBuffer = new StructuredBuffer(
-                        GraphicsDevice_, typeof(X_Point3), VerticesBufferSize, BufferUsage.None, ShaderAccess.Read);
-                }
-            }
+            room.IlluminationResources.Vertices = CreateModel(room); /* (open ? IlluminationModelOpened : IlluminationModelClosed);*/
+            room.IlluminationResources.NumLights = room.IlluminationResources.Lights.Count();
+            room.IlluminationResources.NumVerts = room.IlluminationResources.Vertices.Count();
+            room.IlluminationResources.NumCoords = 0;
 
             int shadowSpotSize = 1;
             float tto = 0.001f;
             int shadowSize = (tileSize + shadowSpotSize / 2) * (tileSize + shadowSpotSize / 2);
             int baseIndex = 0;
-
+            //Logger.Info("A Room " + room.Name + ": " + watch.ElapsedMilliseconds);
             Parallel.For(0, template.Length, h =>
             //for (int h=0; h < template.Length; ++h)
             {
@@ -258,6 +326,7 @@ namespace YGR
                     List<Vector3> pts = new List<Vector3>();
                     if (template[h][w] == (int)X_TileType.Floor || template[h][w] == (int)X_TileType.Roof)
                     {
+                        //pts.Add(new Vector3(fromX + tileSize/2, fromY + tileSize/2, -tileSize - 0.001f) + offset);
                         pts.Add(new Vector3(fromX + tto, fromY + tto - tileSize, -tileSize - 0.001f) + offset);
                         pts.Add(new Vector3(fromX - tto + tileSize, fromY + tto - tileSize, -tileSize - 0.001f) + offset);
                         pts.Add(new Vector3(fromX + tto, fromY - tto - tileSize + tileSize, -tileSize - 0.001f) + offset);
@@ -265,22 +334,31 @@ namespace YGR
                     }
                     else if (template[h][w] == (int)X_TileType.Wall)
                     {
+                        //pts.Add(new Vector3(fromX + tileSize/2, fromY + tileSize/2 + 0.001f, -(0)) + offset);
                         pts.Add(new Vector3(fromX + tto, fromY + tto + 0.001f, -(0)) + offset);
                         pts.Add(new Vector3(fromX - tto + tileSize, fromY + tto + 0.001f, -(0)) + offset);
                         pts.Add(new Vector3(fromX + tto, fromY - tto + tileSize + 0.001f, -(tileSize)) + offset);
                         pts.Add(new Vector3(fromX - tto + tileSize - tto, fromY + 0.001f, -(tileSize)) + offset);
                     }
-                    foreach (var lightSource in Lights)
+
+                    bool[] visible = new bool[] { false, false, false, false};
+                    foreach (var lightSource in room.IlluminationResources.Lights)
                     {
                         Vector3 orig = new Vector3(lightSource.X, lightSource.Y, lightSource.Z);
+                        int ind = 0;
                         foreach (var p in pts)
                         {
-                            var intersects = Manager_Light2.RayIntersect(orig, p - orig, -1);
-                            if (intersects)
+                            if(!visible[ind] && !Manager_Light2.RayIntersect(room, orig, p - orig, -1))
                             {
-                                goto add_tile;
+                                visible[ind] = true;
                             }
+                            ind++;
                         }
+                    }
+
+                    if (!visible.All(x => x == true))
+                    {
+                        goto add_tile;
                     }
 
                     // if we have shadow, assume that non intersected parts are automatically in the light
@@ -289,7 +367,8 @@ namespace YGR
                     {
                         for (int y = fromY; y < toY; y += shadowSpotSize)
                         {
-                            lighted[y * width + x] = light;
+                            room.IlluminationResources.BLighted[y * width + x] = light;
+                            //room.Shade[y * width + x] = Color.Green;
                         }
                     }
                     continue;
@@ -303,58 +382,114 @@ namespace YGR
                         {
                             if (template[h][w] == (int)X_TileType.Floor || template[h][w] == (int)X_TileType.Roof)
                             {
-                                X_Vector3 s = new Vector4(x + offset.X, y - tileSize + offset.Y, -tileSize - 0.001f + offset.Z, (y) * width + x);
-                                Coords[index] = s;
+                                X_Vector3 s = new Vector3(x + offset.X, y - tileSize + offset.Y, -tileSize - 0.001f + offset.Z);
+                                s.WX = x;
+                                s.WY = y;
+                                room.IlluminationResources.Index[index] = (y) * width + x;
+                                room.IlluminationResources.Coords[index] = s;
                                 index++;
                             }
                             else if (template[h][w] == (int)X_TileType.Wall)
                             {
 
-                                X_Vector3 s = new Vector4(x + offset.X, fromY + 0.001f + offset.Y, -(y - fromY) + offset.Z, (y) * width + x);
-                                Coords[index] = s;
+                                X_Vector3 s = new Vector3(x + offset.X, fromY + 0.001f + offset.Y, -(y - fromY) + offset.Z);
+                                s.WX = x;
+                                s.WY = y;
+                                room.IlluminationResources.Index[index] = (y) * width + x;
+                                room.IlluminationResources.Coords[index] = s;
                                 index++;
                             }
+                            //room.Shade[y * width + x] = Color.Yellow;
                         }
                     }
                 }
             });
 
-            NumCoords = baseIndex;
+            room.ShadeTexture[room.GetTargetShadeIndex()].SetData(room.Shade);
 
-            Logger.Info("Precompute tiles: " + watch.ElapsedMilliseconds.ToString() + " containing " + Coords.Length.ToString() + " coordinates");
+            room.IlluminationResources.NumCoords = baseIndex;
+            room.IlluminationResources.NumOffset = 0;
+        }
 
+        private static void Compute(IWalkable room)
+        {
             if (Platform == Type.CPU)
             {
+                room.IlluminationResources.Lighted = Enumerable.Repeat<int>(0, room.IlluminationResources.NumCoords).ToArray();
                 //float scale = room.Scale;
-                Parallel.For(0, NumCoords, i =>
+                Parallel.For(0, room.IlluminationResources.NumCoords, i =>
                 //for (int i = 0; i < baseIndex; ++i)
                 {
-                    ref var p = ref Coords[i];
-                    for (int l = 0; l < Lights.Length; ++l)
+                    ref var p = ref room.IlluminationResources.Coords[i];
+                    for (int l = 0; l < room.IlluminationResources.Lights.Length; ++l)
                     {
-                        if (p.Lighted == 1) return;
-                        Vector3 lightPos = new Vector3(Lights[l].X, Lights[l].Y, Lights[l].Z);
+                        if (room.IlluminationResources.Lighted[i] == 1) return;
+                        Vector3 lightPos = new Vector3(
+                            room.IlluminationResources.Lights[l].X, 
+                            room.IlluminationResources.Lights[l].Y, 
+                            room.IlluminationResources.Lights[l].Z);
+
                         Vector3 pos = new Vector3(p.X, p.Y, p.Z);
                         Vector3 direction = pos - lightPos;
-                        if (!Manager_Light2.RayIntersect(lightPos, direction, i))
+                        if (!Manager_Light2.RayIntersect(room, lightPos, direction, i))
                         {
-                            p.Lighted = 1;
+                            room.IlluminationResources.Lighted[i] = 1;
                             //lighted[p.Index] = light;
-                            return;;
+                            return;
                         }
                     }
                 });
+
+                Parallel.For(0, room.IlluminationResources.NumCoords, i =>
+                //for (int i = 0; i < baseIndex; ++i)
+                {
+                    if (room.IlluminationResources.Lighted[i] == 0)
+                    {
+                        room.Shade[room.IlluminationResources.Index[i]].A = 1;
+                    }
+                });
+
+                room.ShadeTexture[room.GetTargetShadeIndex()].SetData(room.Shade);
             }
 
             // =============================================================================
 
-            else if(Platform == Type.GPU && NumCoords > 0)
+            else if(Platform == Type.GPU && room.IlluminationResources.NumCoords > 0)
             {
+                if (LightsBuffer == null || room.IlluminationResources.NumLights > LightsBufferSize)
+                {
+                    if(room.IlluminationResources.NumLights > LightsBufferSize)
+                        LightsBufferSize = room.IlluminationResources.Lights.Count();
+                    LightsBuffer = new StructuredBuffer(
+                        GraphicsDevice_, typeof(X_Point3), LightsBufferSize, BufferUsage.None, ShaderAccess.Read);
+                }
 
-                VerticesBuffer.SetData(Vertices, 0, NumVerts);
-                CoordsBuffer.SetData(Coords, 0, NumCoords);
-                LightsBuffer.SetData(Lights, 0, NumLights);
+                if (CoordsBuffer == null)
+                {
+                    CoordsBuffer = new StructuredBuffer(
+                        GraphicsDevice_, typeof(X_Vector3), CoordsBufferSize, BufferUsage.None, ShaderAccess.Read);
+                }
 
+                if (VerticesBuffer == null || room.IlluminationResources.NumVerts > VerticesBufferSize)
+                {
+                    if(room.IlluminationResources.NumVerts > VerticesBufferSize)
+                        VerticesBufferSize = room.IlluminationResources.NumVerts;
+                    VerticesBuffer = new StructuredBuffer(
+                        GraphicsDevice_, typeof(X_Point3), VerticesBufferSize, BufferUsage.None, ShaderAccess.Read);
+                }
+
+                Manager_Light2.IlluminationShader.Parameters["Shade"].SetValue(room.ShadeTexture[room.GetTargetShadeIndex()]);
+                VerticesBuffer.SetData(room.IlluminationResources.Vertices, 0, room.IlluminationResources.NumVerts);
+
+                int use = Math.Min(CoordsBufferSize, room.IlluminationResources.NumCoords - room.IlluminationResources.NumOffset);
+                CoordsBuffer.SetData(room.IlluminationResources.Coords, room.IlluminationResources.NumOffset, use);
+
+                LightsBuffer.SetData(room.IlluminationResources.Lights, 0, room.IlluminationResources.NumLights);
+
+                KeepAllive.SetData(Enumerable.Repeat<int>(1, KeepAliveSize).ToArray());
+                IlluminationShader.Parameters["KeepAllive"].SetValue(KeepAllive);
+
+                //LightedBuffer.SetData(Lighted, 0, NumCoords);
                 if (IlluminationShader.Parameters["Vertices"] != null)
                     IlluminationShader.Parameters["Vertices"].SetValue(VerticesBuffer);
 
@@ -365,148 +500,36 @@ namespace YGR
                     IlluminationShader.Parameters["Lights"].SetValue(LightsBuffer);
 
                 if (IlluminationShader.Parameters["NumLights"] != null)
-                    IlluminationShader.Parameters["NumLights"].SetValue(NumLights);
+                    IlluminationShader.Parameters["NumLights"].SetValue(room.IlluminationResources.NumLights);
 
                 if (IlluminationShader.Parameters["NumCoords"] != null)
-                    IlluminationShader.Parameters["NumCoords"].SetValue(NumCoords);
+                    IlluminationShader.Parameters["NumCoords"].SetValue(room.IlluminationResources.NumCoords);
 
                 if (IlluminationShader.Parameters["NumVerts"] != null)
-                    IlluminationShader.Parameters["NumVerts"].SetValue(NumVerts);
+                    IlluminationShader.Parameters["NumVerts"].SetValue(room.IlluminationResources.NumVerts);
 
                 foreach (var pass in IlluminationShader.CurrentTechnique.Passes)
                 {
                     pass.ApplyCompute();
-                    int dispatchCount = (int)Math.Ceiling((double)baseIndex / 64.0);
+                    int dispatchCount = (int)Math.Ceiling((double)room.IlluminationResources.NumCoords / 512);
                     GraphicsDevice_.DispatchCompute(dispatchCount, 1, 1);
                 }
-                CoordsBuffer.GetData<X_Vector3>(Coords, 0, NumCoords);
+
+                room.IlluminationResources.NumOffset += use;
             }
-
-            Parallel.For(0, NumCoords, i =>
-            //for (int i = 0; i < baseIndex; ++i)
-            {
-                if (Coords[i].Lighted == 1)
-                {
-                    lighted[Coords[i].Index] = true;
-                }
-            });
-
-            return lighted;
-            //saveShadeToFile(lighted, room, lights);
-        }
-
-        private static string combineIdentifiers(List<X_Light> lights, IWalkable room)
-        {
-            string identifier = "";
-            foreach (var light in lights)
-            {
-                if (light.GetScaledIlluminationRect().Intersects(room.Rect))
-                {
-                    identifier += light.GetIdentifier(room) + "|";
-                }
-            }
-            if (identifier.EndsWith("|"))
-                identifier = identifier.Substring(0, identifier.Length - 1);
-
-            return identifier;
-        }
-
-        public static void SaveShadeToFile(bool[] shadeTemplate, bool open, IWalkable room, List<X_Light> lights)
-        {
-            if (room.ResourceFolder != "")
-            {
-                string fileName = "shade_" + (open ? "opened_" : "closed_");
-                string identifier = DateTime.Now.ToLongDateString() + " - " + DateTime.Now.ToLongTimeString() + "\n";
-                identifier += Manager_Light2.ShadeVersion + "\n";
-
-                identifier += combineIdentifiers(lights, room);
-                identifier += "\n";
-                identifier += string.Join("", shadeTemplate.Select(x => x ? "1" : "0"));
-
-                fileName += Util.CreateGenericIdentifier();
-                fileName += ".shade";
-
-                // write to all available directories: current runtime directory and source code directory
-                File.WriteAllText(room.ResourceFolder + fileName, identifier);
-                if (Debugger.IsAttached)
-                {
-                    var srcPath = Util.GetAbsResourceFolderPath(room.ResourceFolder);
-                    File.WriteAllText(srcPath + fileName, identifier);
-                }
-                LoadedIlluminationTemplates.Add(room.ResourceFolder + fileName, shadeTemplate);
-            }
-        }
-
-        public static bool[] LoadShadeFromFile(bool open, IWalkable room, List<X_Light> lights)
-        {
-            string fileName = "shade_" + (open ? "opened_" : "closed_");
-            var files = Directory.GetFiles(room.ResourceFolder);
-            string dataFileName = Path.GetFileName(files
-                .Where(x => Path.GetFileName(x).Contains(fileName) && Path.GetFileName(x).EndsWith(".shade"))
-                .FirstOrDefault());
-
-            if (dataFileName == null) return null;
-
-            if (LoadedIlluminationTemplates.ContainsKey(room.ResourceFolder + fileName))
-                return LoadedIlluminationTemplates[room.ResourceFolder + fileName];
-
-            var contents = File.ReadAllLines(room.ResourceFolder + dataFileName);
-            var vCorr = contents[1] == Manager_Light2.ShadeVersion;
-            if (!vCorr) return null;
-
-            var iCorr = contents[2] == combineIdentifiers(lights, room);
-            if (!iCorr) return null;
-
-            LoadedIlluminationTemplates.Add(room.ResourceFolder + fileName, contents[3].Select(c => c == '1').ToArray());
-
-            return LoadedIlluminationTemplates[room.ResourceFolder + fileName];
-        }
-
-        public static void RemoveAllShadeFiles(IWalkable room, bool open)
-        {
-            string fileName = "shade_" + (open ? "opened_" : "closed_");
-            var files = Directory.GetFiles(room.ResourceFolder);
-            var sFiles = files.Where(x => Path.GetFileName(x).Contains(fileName) && Path.GetFileName(x).EndsWith(".shade")).ToArray();
-            foreach (var f in sFiles)
-            {
-                string dataFileName = Path.GetFileName(f);
-                string dataRessourceFolder = Util.GetAbsResourceFolderPath(room.ResourceFolder);
-                File.Delete(dataRessourceFolder + dataFileName);
-            }
-        }
-
-        private static void output(bool[,] pattern, string name)
-        {
-            string s = "";
-            for (int x = 0; x < pattern.GetLength(0); ++x)
-            {
-                s += string.Join("\t", Enumerable.Range(0, pattern.GetLength(1)).Select(y => pattern[x, y]).ToArray());
-                s += "\n";
-            }
-
-            File.WriteAllText(name, s);
-        }
-
-        private static void output(int[][] pattern, string name)
-        {
-            string s = "";
-            for (int x = 0; x < pattern.GetLength(0); ++x)
-            {
-                s += string.Join("\t", pattern[x]);
-                s += "\n";
-            }
-
-            File.WriteAllText(name, s);
         }
 
         public static X_Point3[] CreateModel(IWalkable room)
         {
-            var watch = new Stopwatch();
-            watch.Start();
             List<Rectangle> rects = new List<Rectangle>();
             if (room.WhatAreYou() == X_LevelElements.Door)
             {
                 rects.AddRange(((Y_Door)room).GetOpenDoorCollisionRects());
+                foreach (var door in room.DoorRooms)
+                {
+                    var d = (Y_CMRoom)door.Value.First();
+                    rects.AddRange(d.Collision.GetCollisionRectangles());
+                }
             }
             else
             {
@@ -548,7 +571,7 @@ namespace YGR
                 points.AddRange(vertices);
             }
 
-            Logger.Info("Calcualte light model for room " + room.Name + ": " + watch.ElapsedMilliseconds.ToString());
+            //Logger.Info("Calcualte light model for room " + room.Name + ": " + watch.ElapsedMilliseconds.ToString());
 
             return points.ToArray();
         }

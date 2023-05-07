@@ -56,6 +56,9 @@ namespace YGR
         private Y_CMRoom _startRoom;
         private Y_CMRoom _goldRoom;
 
+        private int _waitTimeBetweenEndOfFightAndLowerDoors = 125;
+        private int _waitTimeBetweenEndOfFightAndLowerDoorsCounter = 0;
+
         // Gameplay state objects
         public IWalkable ActiveRoom;
         public GamePlayState State;
@@ -163,10 +166,10 @@ namespace YGR
             // put everything back
             foreach (var room in Rooms)
             {
+                room.Value.ResetRoom();
                 if (room.Value.WhatAreYou() == X_LevelElements.Room)
                 {
                     var r = (Y_CMRoom)room.Value;
-                    r.ResetRoom();
                     _availableRooms[r.Category].Add(new Tuple<X_RoomStump, Y_CMRoom>(null, r));
                 }
             }
@@ -276,20 +279,20 @@ namespace YGR
             }
             Logger.Info("Created connectors: " + watch.ElapsedMilliseconds.ToString());
 
+            //finalize: split collision models
+            foreach (var room in connectors)
+            {
+                if (room.WhatAreYou() == X_LevelElements.Door)
+                {
+                    ((Y_Door)room).SplitConnectedCollisionModels();
+                }
+            }
+
             int connectorIndex = Rooms.Count();
             foreach (var c in connectors)
             {
                 Rooms.Add(connectorIndex, c);
                 connectorIndex++;
-            }
-
-            //finalize: split collision models
-            foreach (var room in Rooms)
-            {
-                if (room.Value.WhatAreYou() == X_LevelElements.Door)
-                {
-                    ((Y_Door)room.Value).SplitConnectedCollisionModels();
-                }
             }
 
             Manager_Players.ClearPlayers();
@@ -370,9 +373,23 @@ namespace YGR
 
             _startRoom.SetVisible(true);
             //_goldRoom.SetVisible(true);
-            _startRoom.Illuminate();
             //_goldRoom.Illuminate();
             Manager_Sound.PlayFreeRoamMusic();
+
+            if (Settings.DynamicShades)
+            {
+                foreach (var c in connectors)
+                {
+                    Manager_Light2.Illuminate(c);
+                }
+                Manager_Light2.Illuminate(_startRoom);
+            }
+            else
+            {
+                Manager_Light2.IlluminateSync(Rooms.Values.Where(c => c.WhatAreYou() == X_LevelElements.Room).ToList());
+            }
+
+            //Manager_Light2.IlluminateSync(new List<IWalkable> { _startRoom });
         }
 
         public IWalkable GetRoom(IGameElement elem, IWalkable currentRoom)
@@ -404,7 +421,6 @@ namespace YGR
                     if (room.Value.WhatAreYou() == X_LevelElements.Room)
                     {
                         ((Y_CMRoom)room.Value).OpenAllUnlockedRoomDoors();
-                        ((Y_CMRoom)room.Value).SetVisible(true);
                     }
                 }
             }
@@ -415,7 +431,6 @@ namespace YGR
                     if (room.Value.WhatAreYou() == X_LevelElements.Room)
                     {
                         ((Y_CMRoom)room.Value).CloseAllUnlockedRoomDoors();
-                        ((Y_CMRoom)room.Value).SetVisible(false);
                     }
                 }
             }
@@ -535,10 +550,18 @@ namespace YGR
                         break; // let players fight
                     }
 
+                    Camera.SetFocusPlayers();
+
+                    if (_waitTimeBetweenEndOfFightAndLowerDoorsCounter < _waitTimeBetweenEndOfFightAndLowerDoors)
+                    {
+                        _waitTimeBetweenEndOfFightAndLowerDoorsCounter++;
+                        break;
+                    }
+                    _waitTimeBetweenEndOfFightAndLowerDoorsCounter = 0;
+
                     encounterRoom.Cleared = true;
                     encounterRoom.OpenAllUnlockedRoomDoors();
                     encounterRoom.SetLocked(false);
-                    Camera.SetFocusPlayers();
 
                     Manager_Sound.PlayFreeRoamMusic();
 
@@ -578,6 +601,7 @@ namespace YGR
 
         public void Draw(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)
         {
+
             foreach (var room in Rooms)
             {
                 room.Value.Draw(gameTime, globalOffset, spriteBatch);
