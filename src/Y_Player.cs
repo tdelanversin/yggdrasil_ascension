@@ -259,7 +259,7 @@ namespace YGR
         {
             if (_dashing)
             {
-                Manager_Particles.GenParticleEffectDash(new Vector2(_rect.Location.X, _rect.Location.Y));
+                Manager_Particles.GenParticleEffectDash(new Vector2(_rect.Location.X+_rect.Width/2, _rect.Location.Y+_rect.Height));
                 if (_dashTimer > _dashDuration)
                 {
                     _dashing = false;

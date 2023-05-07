@@ -50,7 +50,7 @@ namespace YGR
             _particleTexture_dust = contentManager.Load<Texture2D>("SpritesEffects/dust_particle");
             _particleTexture_dust_cloud = contentManager.Load<Texture2D>("SpritesEffects/dust_cloud");
             _particleTexture_dust_cloud_light = contentManager.Load<Texture2D>("SpritesEffects/big_dust_cloud");
-            _particleTexture_fire = contentManager.Load<Texture2D>("SpritesEffects/fire_trail");
+            _particleTexture_fire = new Texture2D(graphicsDevice,1,1);
             _particleTexture_dash = new Texture2D(graphicsDevice, 1, 1);
             _particleTexture_dash.SetData(new[] { Color.Cyan });
             _particleTexture_impact = new Texture2D(graphicsDevice, 1, 1);
@@ -215,8 +215,9 @@ namespace YGR
             };
             _particleEffects.Add(_particleEffect_dust);
         }
-        public static void GenParticleEffectProjectileTrails(Vector2 pos)
+        public static void GenParticleEffectProjectileTrails(Vector2 pos, Color c)
         {
+            _particleTexture_fire.SetData(new[] {c});
             TextureRegion2D textureRegion = new TextureRegion2D(_particleTexture_fire);
             _particleEffect_fire = new ParticleEffect(autoTrigger: false)
             {
@@ -224,7 +225,7 @@ namespace YGR
                 Position = pos,
                 Emitters = new List<ParticleEmitter>
                 {
-                    new ParticleEmitter(textureRegion, 1000, TimeSpan.FromSeconds(0.1f),
+                    new ParticleEmitter(textureRegion, 1000, TimeSpan.FromSeconds(0.9f),
                         //Profile.Point())
                         //Profile.BoxFill(15,15))
                         Profile.Spray(new Vector2(1,1), 3f))
@@ -361,17 +362,17 @@ namespace YGR
                 Position = pos,
                 Emitters = new List<ParticleEmitter>
                 {
-                    new ParticleEmitter(textureRegion, 100, TimeSpan.FromSeconds(1.5f),
+                    new ParticleEmitter(textureRegion, 100, TimeSpan.FromSeconds(1f),
                         //Profile.Point())
                         Profile.BoxFill(15,15))
                         //Profile.Line(new Vector2(1,1), 5f))
                     {
                         Parameters = new ParticleReleaseParameters
                         {
-                            Speed = new Range<float>(10f, 100),
-                            Quantity = 30,
+                            Speed = new Range<float>(10f, 50),
+                            Quantity = 10,
                             Rotation = new Range<float>(2f, 2f),
-                            Scale = new Range<float>(5f, 5f),
+                            Scale = new Range<float>(2f, 3f),
                             Opacity = 1f
                         },
                         Modifiers =
