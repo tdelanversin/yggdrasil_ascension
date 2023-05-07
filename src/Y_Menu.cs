@@ -43,7 +43,7 @@ namespace YGR
                 {
                     color = Color.Gray;
                 }
-                spriteBatch.DrawString(Fonts.Large, Text, GetOffsetPosition(), color);
+                Util.DrawString(Fonts.Large, Text, GetOffsetPosition(), color, spriteBatch);
             }
 
             public Vector2 GetOffsetPosition()
@@ -198,7 +198,7 @@ namespace YGR
                 float y = Bounds.Height * 7 / 8;
 
                 string string_a = "Controller " + i + ":  ";
-                spriteBatch.DrawString(Fonts.Small, string_a, new Vector2(x, y), Color.Wheat);
+                Util.DrawString(Fonts.Small, string_a, new Vector2(x, y), Color.Wheat, spriteBatch);
 
                 Vector2 stringSize = Fonts.Small.MeasureString(string_a);
                 GamePadState gamePadState = GamePad.GetState(i);
@@ -210,7 +210,7 @@ namespace YGR
                     string_b = "N/A";
                     color = Color.Gray;
                 }
-                spriteBatch.DrawString(Fonts.Small, string_b, new Vector2(x + stringSize.X, y), color);
+                Util.DrawString(Fonts.Small, string_b, new Vector2(x + stringSize.X, y), color, spriteBatch);
             }
         }
 
