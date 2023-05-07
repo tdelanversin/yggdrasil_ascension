@@ -33,6 +33,7 @@ namespace YGR
         public ControlLayout ControlLayout { get; set; }
         public IShooter Gun { get; set; }
         public PlayerIndex PlayerIndex { get; }
+        public bool IsActive { get; protected set; }
 
         // Class fields
         public float VelocityMax;
@@ -171,11 +172,12 @@ namespace YGR
             _isAiming = false;
             _aimDirection = new Vector2(1, 0);
             _invincible = false;
+            IsActive = true;
 
             Room = Level.GetRoom(this, Room);
         }
 
-        public X_LevelElements WhatAreYou()
+        public virtual X_LevelElements WhatAreYou()
         {
             if (_invincible || _dashing)
             {
@@ -191,12 +193,12 @@ namespace YGR
             }
         }
 
-        public bool IsAlive()
+        public virtual bool IsAlive()
         {
             return LifePoints > 0;
         }
 
-        public void Heal(int healAmount = 999)
+        public virtual void Heal(int healAmount = 999)
         {
             // Don't heal a dead player
             if (!IsAlive()) { return; }
@@ -204,13 +206,13 @@ namespace YGR
             LifePoints = Math.Min(LifePoints + healAmount, LifePointsMax);
         }
 
-        public void Revive()
+        public virtual void Revive()
         {
             LifePoints = LifePointsMax;
         }
 
         /* Deal with being hit by projectile, basically physical therapy */
-        public void Hit(IProjectile projectile)
+        public virtual void Hit(IProjectile projectile)
         {
             if (_invincible) { return; }
 
@@ -219,7 +221,7 @@ namespace YGR
             _invincibleTimer = 0;
         }
 
-        protected void UpdateRoom(GameTime gameTime)
+        protected virtual void UpdateRoom(GameTime gameTime)
         {
             if (Room.WhatAreYou() == X_LevelElements.Room)
             {
@@ -227,7 +229,7 @@ namespace YGR
             }
         }
 
-        protected void UpdateInvincibility(GameTime gameTime)
+        protected virtual void UpdateInvincibility(GameTime gameTime)
         {
             if (_invincible)
             {
@@ -242,7 +244,7 @@ namespace YGR
             }
         }
 
-        protected void UpdateColor(GameTime gameTime)
+        protected virtual void UpdateColor(GameTime gameTime)
         {
             if (_invincible)
             {
@@ -307,7 +309,7 @@ namespace YGR
         }
 
         /* Handle GamePad movement, aiming and shooting */
-        protected void HandleGamepadInput(GameTime gameTime, ref Vector2 input)
+        protected virtual void HandleGamepadInput(GameTime gameTime, ref Vector2 input)
         {
             GamePadState gpState = GamePad.GetState(PlayerIndex);
             if (gpState.IsConnected)
@@ -346,7 +348,7 @@ namespace YGR
         }
 
         /* Handle Keyboard & Mouse movement, aiming and shooting */
-        protected void HandleMouseKeyboardInput(GameTime gameTime, ref Vector2 input)
+        protected virtual void HandleMouseKeyboardInput(GameTime gameTime, ref Vector2 input)
         {
             if (ControlLayout > 0)
             {

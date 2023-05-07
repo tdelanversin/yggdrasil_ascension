@@ -32,7 +32,8 @@ namespace YGR
     // Slower version of basic gun for basic enemies
     public class Gun_BasicEnemy : Gun_Basic
     {
-        public Gun_BasicEnemy() { 
+        public Gun_BasicEnemy()
+        {
             ShotDelay = 1000;
         }
 
@@ -264,10 +265,8 @@ namespace YGR
             if (NextShotCooldown > 0.0f)
                 return;
 
-            /*
-             * TODO: check out what kind of sense this one has => always false
-             */
-            if (direction == null || direction == Vector2.Zero) {
+            if (direction == Vector2.Zero)
+            {
                 direction = Vector2.One;
             }
 
@@ -298,5 +297,13 @@ namespace YGR
             ShotDelay = 100;
             ShotSpread = 2 * Math.PI / ShotCount;
         }
+    }
+
+    // Gun for ghosts. Does absolutely nothing. Just there to make other code simpler.
+    public class Gun_Ghost : IShooter
+    {
+        public void Shoot(GameTime gametime, Vector2 origin, Vector2 direction, Y_Level level, IGameElement who) { }
+
+        public void Update(GameTime gameTime) { }
     }
 }

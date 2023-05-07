@@ -69,7 +69,7 @@ namespace YGR
                     return new PickUp(type, location, width, height, scale, Manager_Sprites.NewAnimatedSprite_NerdyGirl(),
                         (player) =>
                         {
-                            if (!player.IsAlive())
+                            if (player is Player_Ghost)
                             {
                                 Manager_Players.SetPlayerType(player.PlayerIndex, Manager_Players.PlayerType.Nerd);
                             }
@@ -79,7 +79,7 @@ namespace YGR
                     return new PickUp(type, location, width, height, scale, Manager_Sprites.NewAnimatedSprite_Ninja(),
                         (player) =>
                         {
-                            if (!player.IsAlive())
+                            if (player is Player_Ghost)
                             {
                                 Manager_Players.SetPlayerType(player.PlayerIndex, Manager_Players.PlayerType.Ninja);
                             }

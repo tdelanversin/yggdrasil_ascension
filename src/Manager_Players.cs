@@ -65,16 +65,13 @@ namespace YGR
                 );
             else // if (type == PlayerType.Ghost)
             {
-                var player = new SimplePlayer(
+                var player = new Player_Ghost(
                     playerIndex,
                     position,
-                    Manager_Sprites.NewAnimatedSprite_NerdyGirl(),
                     level,
-                    Util.getRandomGun(),
                     controlLayout,
                     scale: 1.0f
                 );
-                player.LifePoints = 0; // he dead
                 return player;
             }
         }
