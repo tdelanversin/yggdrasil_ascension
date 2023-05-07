@@ -118,6 +118,14 @@ namespace YGR
     // RoomOpener allows opening a room's doors when shot
     public class Interactable_RoomOpener : Interactable_Basic
     {
+        enum ButtonState
+        {
+            Out,
+            Half,
+            In,
+        }
+
+        ButtonState state = ButtonState.Out;
 
         public Interactable_RoomOpener(
             Rectangle bounds,
@@ -181,7 +189,7 @@ namespace YGR
 
             foreach (var p in activePlayers)
             {
-                if (Rect.Contains(p.Rect.Center))
+                if (Rect.Contains(p.Rect.Center + new Point(0, p.Rect.Height / 2)))
                     tryTrigger = true;
                 else
                     ready = false;
@@ -190,21 +198,54 @@ namespace YGR
                     ready = false;
             }
 
+
+            ButtonState statePrev = state;
             if (tryTrigger)
             {
                 if (!ready)
                 {
+                    state = ButtonState.Half;
                     Color = Color.OrangeRed;
                 }
                 else
                 {
+                    state = ButtonState.In;
                     TriggerInteraction(gameTime);
                 }
             }
             else
             {
+                state = ButtonState.Out;
                 Color = Color.Wheat;
             }
+            if (state != statePrev)
+            {
+                Manager_Sound.Sound_PlatformActivate.Play();
+            }
+        }
+
+        public override void Draw(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)
+        {
+            Texture2D buttonSprite = Manager_Sprites.ButtonOut;
+            if (state == ButtonState.In)
+            {
+                buttonSprite = Manager_Sprites.ButtonIn;
+            }
+            else if (state == ButtonState.Half)
+            {
+                buttonSprite = Manager_Sprites.ButtonHalf;
+            }
+
+            spriteBatch.Draw(
+                texture: buttonSprite,
+                position: Rect.Location.ToVector2(),
+                sourceRectangle: null,
+                color: Color.White,
+                rotation: 0,
+                origin: Vector2.Zero,
+                scale: 1,
+                effects: SpriteEffects.None,
+                layerDepth: 0);
         }
     }
 }

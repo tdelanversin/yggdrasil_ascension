@@ -307,7 +307,7 @@ namespace YGR
 
             // Room opener field that can trigger the game start
             _interactables.Add(new Interactable_RoomOpener(
-                new Rectangle(18, 3, 7, 4), this, (Y_CMRoom)_startRoom)
+                new Rectangle(16, 2, 11, 7), this, (Y_CMRoom)_startRoom)
             );
 
             // Gameplay state
@@ -695,6 +695,11 @@ namespace YGR
             foreach (var room in Rooms)
             {
                 room.Value.DrawOutline(gameTime, globalOffset, spriteBatch);
+            }
+
+            foreach (var interactable in _interactables)
+            {
+                interactable.DrawOutline(gameTime, globalOffset, spriteBatch);
             }
         }
 
