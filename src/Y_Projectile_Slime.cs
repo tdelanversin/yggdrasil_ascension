@@ -8,6 +8,7 @@ namespace YGR
     {
         // Slime projectiles have an outer and inner component
         protected AnimatedSprite _spriteInner;
+        protected AnimatedSprite _spriteOuter;
 
         public Projectile_Slime(
             Vector2 position,
@@ -24,29 +25,35 @@ namespace YGR
         ) : base(position, direction, spriteOuter, level, who, scale, damage, maxAge, speed, mass)
         {
             _spriteInner = spriteInner;
+            _spriteOuter = spriteOuter;
 
             // Make Slime's projectiles have its color
-            if (who is Enemy_Slime) {
+            if (who is Enemy_Slime)
+            {
                 Color = ((Enemy_Slime)who).Color;
             }
         }
 
+        // Override to update both AnimatedSprites
+        public override void UpdateSprites(GameTime gameTime)
+        {
+            _spriteInner.Update(gameTime, AnimationState.Idle);
+            _spriteOuter.Update(gameTime, AnimationState.Idle);
+        }
+
         public override void Draw(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)
         {
-            // Draw outer projectile texture in the color of the slime
-            spriteBatch.Draw(
-                _sprite.Texture, _position + globalOffset,
-                _sprite.SourceRectangle,
-                Color, 0, Vector2.Zero, Scale, SpriteEffects.None, 0);
-
             // Draw inner projectile texture in strict white
-            // HACK: only _sprite is updated in base.Update(), but we can abuse that and use it's source Rect
-            Rectangle sourceRectInner = _sprite.SourceRectangle;
-            sourceRectInner.Location = sourceRectInner.Location + new Point(0, (int)_sprite.SpriteDimension.Y);
             spriteBatch.Draw(
                 _spriteInner.Texture, _position + globalOffset,
-                sourceRectInner,
+                _spriteInner.SourceRectangle,
                 Color.White, 0, Vector2.Zero, Scale, SpriteEffects.None, 0);
+
+            // Draw outer projectile texture in the color of the slime
+            spriteBatch.Draw(
+                _spriteOuter.Texture, _position + globalOffset,
+                _spriteOuter.SourceRectangle,
+                Color, 0, Vector2.Zero, Scale, SpriteEffects.None, 0);
         }
     }
 }

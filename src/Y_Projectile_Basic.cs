@@ -87,13 +87,13 @@ namespace YGR
                 (int)position.Y - (int)(_size.Y / 2.0f),
                 (int)(_size.X * Room.Scale),
                 (int)(_size.Y * Room.Scale));
-           // Manager_Particles._particleEffects[2].Trigger
-           //(new Vector2(_rect.Location.X + _rect.Width / 2, _rect.Location.Y + _rect.Height / 2));
+            // Manager_Particles._particleEffects[2].Trigger
+            //(new Vector2(_rect.Location.X + _rect.Width / 2, _rect.Location.Y + _rect.Height / 2));
 
             _position = _rect.Location.ToVector2();
         }
 
-        public virtual void Update(GameTime gameTime)
+        public virtual void UpdateCollisionAndVelocity(GameTime gameTime)
         {
             int timeStepMS = (int)gameTime.ElapsedGameTime.TotalMilliseconds;
             Age += timeStepMS;
@@ -128,18 +128,27 @@ namespace YGR
             }
             _position += Velocity * timeStepMS;
             _rect.Location = _position.ToPoint();
+        }
 
-            /* Sprite animation handling */
-            _sprite.Update(gameTime, AnimationState.Idle);
-
-            /* Particle handling */
+        /* Particle handling */
+        public virtual void UpdateParticles(GameTime gameTime)
+        {
             Manager_Particles._particleEffects[2].Emitters.ForEach(emitter => { emitter.Parameters.Color = Color.ToHsl(); });//new MonoGame.Extended.Range<HslColor>(Color.ToHsl());
             Manager_Particles._particleEffects[2].Trigger(new Vector2(_rect.Location.X + _rect.Width / 2, _rect.Location.Y + _rect.Height / 2));
-        
-            
+        }
 
-    }
-   
+        /* Sprite animation handling */
+        public virtual void UpdateSprites(GameTime gameTime)
+        {
+            _sprite.Update(gameTime, AnimationState.Idle);
+        }
+
+        public virtual void Update(GameTime gameTime)
+        {
+            UpdateCollisionAndVelocity(gameTime);
+            UpdateParticles(gameTime);
+            UpdateSprites(gameTime);
+        }
 
         public virtual void Draw(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)
         {
