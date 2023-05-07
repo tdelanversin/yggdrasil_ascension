@@ -20,6 +20,7 @@ namespace YGR
         // IGameElement fields
         public float Scale { get; protected set; }
         public Rectangle Rect { get { return _rect; } set { _rect = value; } }
+        public IGameElement WhoKilledMe { get; set; }
 
         // IVictim fields
         public int LifePoints { get; set; }
