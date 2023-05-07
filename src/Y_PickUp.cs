@@ -30,6 +30,8 @@ namespace YGR
 
         public bool Active { get; set; }
 
+        public Y_PowerUps Type { get; }
+
         public Func<IPlayer, bool> Action { get; }
 
         private AnimatedSprite _sprite;
@@ -40,6 +42,7 @@ namespace YGR
         public PickUp(Y_PowerUps type, Point location, int width, int height, float scale, AnimatedSprite sprite, Func<IPlayer, bool> action)
         {
             Scale = scale;
+            Type = type;
             float heightNew = (int)(height * 1.75);
             float widthNew = (int)((heightNew * sprite.SpriteDimension.X / sprite.SpriteDimension.Y));
             Rect = new Rectangle((int)(location.X * scale - (widthNew - width) / 2.0), (int)(location.Y * scale - (heightNew - height) - 10), (int)(scale * widthNew), (int)(scale * heightNew));
@@ -52,6 +55,7 @@ namespace YGR
         public PickUp(Y_PowerUps type, Point location, int width, int height, float scale, Texture2D texture, Func<IPlayer, bool> action)
         {
             Scale = scale;
+            Type = type;
             float heightNew = (int)(height * 1.75);
             float widthNew = (int)((heightNew * texture.Width / texture.Height));
             Rect = new Rectangle((int)(location.X * scale - (widthNew - width) / 2.0), (int)(location.Y * scale - (heightNew - height) - 10), (int)(scale * widthNew), (int)(scale * heightNew));

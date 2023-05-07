@@ -134,8 +134,12 @@ namespace YGR
             // Remove all non-participating players
             Manager_Players.Players.RemoveAll(p => !p.IsActive || (p.ControlLayout == ControlLayout.ControllerOnly && !GamePad.GetState(p.PlayerIndex).IsConnected));
 
-            // Disable all pickups in the starter room
-            Room.PickUps.ForEach(pu => pu.Active = false);
+            // Disable all character chooser pickups in the starter room
+            foreach (var pu in Room.GetPickUps())
+            {
+                // HACK: too lazy to implement it differently
+                if (pu.Type.ToString().StartsWith("Chooser")) pu.Active = false;
+            }
 
             Label = "Have fun! :)";
             Color = Color.SpringGreen;
