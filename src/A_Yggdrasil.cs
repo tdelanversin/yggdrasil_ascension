@@ -76,6 +76,7 @@ namespace YGR
 
             Manager_Light2.Platform = Manager_Light2.Type.GPU;
             _level.Create(GraphicsDevice);
+            Manager_Particles.Dispose();
 
             // Once everything is in place, inform Update() of the new desired state
             DesiredState = GameState.InGame;
@@ -174,7 +175,7 @@ namespace YGR
 
                     _level.Draw(gameTime, Vector2.Zero, _spriteBatch);
 
-                    Manager_Particles.Draw(gameTime, _spriteBatch);
+                    //Manager_Particles.Draw(gameTime, _spriteBatch);
                     Manager_Projectile.Draw(gameTime, zero, _spriteBatch);
 
                     Manager_Enemies.Draw(gameTime, zero, _spriteBatch);

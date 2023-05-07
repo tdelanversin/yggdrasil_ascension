@@ -225,7 +225,7 @@ namespace YGR
                 Position = pos,
                 Emitters = new List<ParticleEmitter>
                 {
-                    new ParticleEmitter(textureRegion, 1000, TimeSpan.FromSeconds(0.9f),
+                    new ParticleEmitter(textureRegion, 1000, TimeSpan.FromSeconds(0.2f),
                         //Profile.Point())
                         //Profile.BoxFill(15,15))
                         Profile.Spray(new Vector2(1,1), 3f))
@@ -495,9 +495,17 @@ namespace YGR
             foreach (var pE in _particleEffects)
             {
                 pE.Emitters.ForEach(e => { e.AutoTrigger = false; }) ;
+                //pE.Dispose();
             }
         }
-
+        public static void Dispose()
+        {
+            foreach (var pE in _particleEffects)
+            {
+                pE.Emitters.ForEach(e => { e.AutoTrigger = false; });
+                pE.Dispose();
+            }
+        }
         public static void Draw(GameTime gameTime, SpriteBatch spriteBatch)
         {
             foreach (var pE in _particleEffects)
