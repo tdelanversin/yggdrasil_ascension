@@ -10,6 +10,7 @@ namespace YGR
     {
         Follow = 0, // Follow players
         Room,       // Focus on a room
+        Rect,       // Focus on a rect
         Manual      // Control pos and zoom with keybinds
     }
     public static class Camera
@@ -21,6 +22,8 @@ namespace YGR
         public static Matrix Transform { get; private set; }
         public static CameraMode Mode { get; private set; }
         public static IWalkable Room { get; private set; } // Room to focus on
+        public static Rectangle Rect { get; private set; } // Rect to focus on
+        public static bool InAnimation { get { return _animationTimer < _animationDuration; } }
 
         private static float _animationDuration = 1000;
         private static float _animationTimer = _animationDuration;
@@ -30,9 +33,9 @@ namespace YGR
         private static Vector2 _previousPosition;
 
 
-        // Zoom levels for...              { Follow, Room, Manual }
-        private static readonly float[] minZoom = { 0.05f, 0.25f, 0.05f };
-        private static readonly float[] maxZoom = { 1.00f, 1.75f, 16.0f };
+        // Zoom levels for...                     { Follow, Room, Rect, Manual }
+        private static readonly float[] minZoom = { 0.05f, 0.25f, 0.05f, 0.05f };
+        private static readonly float[] maxZoom = { 1.00f, 1.75f, 16.0f, 16.0f };
         private const float zoomSpeed = 0.1f;
         private const float panSpeed = 1;
 
@@ -149,7 +152,14 @@ namespace YGR
             }
             Position = new Vector2(Room.Rect.X + Room.Rect.Width / 2, Room.Rect.Y + Room.Rect.Height / 2);
             var stretch = Math.Max((float)Room.Rect.Width / Bounds.Width, (float)Room.Rect.Height / Bounds.Height);
-            UpdateZoom(.95f / stretch);
+            UpdateZoom(.95f / stretch); // Show a bit more than just the room
+        }
+
+        private static void focusOnRect()
+        {
+            Position = new Vector2(Rect.X + Rect.Width / 2, Rect.Y + Rect.Height / 2);
+            var stretch = Math.Max((float)Rect.Width / Bounds.Width, (float)Rect.Height / Bounds.Height);
+            UpdateZoom(1.0f / stretch);
         }
 
         public static void CycleCameraMode()
@@ -214,6 +224,7 @@ namespace YGR
 
         public static void Update(Viewport bounds, GameTime gameTime)
         {
+            Bounds = bounds.Bounds;
             switch (Mode)
             {
                 case CameraMode.Manual:
@@ -227,14 +238,18 @@ namespace YGR
                 case CameraMode.Room:
                     focusOnRoom();
                     break;
+
+                case CameraMode.Rect:
+                    focusOnRect();
+                    break;
             }
-            Bounds = bounds.Bounds;
             UpdateAnimation(gameTime);
             UpdateMatrix();
         }
 
-        private static void ResetAnimation()
+        private static void ResetAnimation(float animationDuration)
         {
+            _animationDuration = animationDuration;
             _previousPosition = _transitionalPosition;
             _previousZoom = _transitionalZoom;
             _animationTimer = 0;
@@ -245,23 +260,33 @@ namespace YGR
             Mode = CameraMode.Manual;
         }
 
-        public static void SetFocusPlayers(bool animate = true)
+        public static void SetFocusPlayers(bool animate = true, float animationDuration = 1000)
         {
             if (animate)
             {
-                ResetAnimation();
+                ResetAnimation(animationDuration);
             }
             Mode = CameraMode.Follow;
         }
 
-        public static void SetFocusRoom(IWalkable room, bool animate = true)
+        public static void SetFocusRoom(IWalkable room, bool animate = true, float animationDuration = 1000)
         {
             if (animate)
             {
-                ResetAnimation();
+                ResetAnimation(animationDuration);
             }
             Room = room;
             Mode = CameraMode.Room;
+        }
+
+        public static void SetFocusRect(Rectangle rect, bool animate = true, float animationDuration = 1000)
+        {
+            if (animate)
+            {
+                ResetAnimation(animationDuration);
+            }
+            Rect = rect;
+            Mode = CameraMode.Rect;
         }
     }
 }
