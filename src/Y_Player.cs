@@ -520,8 +520,8 @@ namespace YGR
         protected virtual void DrawOverheadString(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)
         {
             string str = "P" + (int)PlayerIndex + ": " + LifePoints.ToString();
-            float str_width = Fonts.Normal.MeasureString(str).X;
-            spriteBatch.DrawString(Fonts.Normal, str, new Vector2(_rect.Location.X + _rect.Width / 2 - str_width / 2, _rect.Location.Y - 16), Color.Wheat);
+            float str_width = Fonts.Small.MeasureString(str).X;
+            spriteBatch.DrawString(Fonts.Small, str, new Vector2(_rect.Location.X + _rect.Width / 2 - str_width / 2, _rect.Location.Y - 16), Color.Wheat);
         }
 
         protected virtual void DrawHealthbar(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)

@@ -219,7 +219,7 @@ namespace YGR
             string fps = string.Format("FPS: {0:0}", _frameCounter.AverageFramesPerSecond);
             var fpsColor = Color.BlanchedAlmond;
             _spriteBatch.Begin(SpriteSortMode.Immediate, null, null, null, null, null, null);
-            _spriteBatch.DrawString(Fonts.Normal, fps, new Vector2(1, 1), fpsColor);
+            _spriteBatch.DrawString(Fonts.Small, fps, new Vector2(1, 1), fpsColor);
             Notifications.Draw(gameTime, zero, _spriteBatch);
             _spriteBatch.End();
             base.Draw(gameTime);

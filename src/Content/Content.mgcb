@@ -20,12 +20,26 @@
 /processorParam:TextureFormat=Compressed
 /build:Fonts/font_large.spritefont
 
-#begin Fonts/font_normal.spritefont
+#begin Fonts/font_large.spritefont
 /importer:FontDescriptionImporter
 /processor:FontDescriptionProcessor
 /processorParam:PremultiplyAlpha=True
 /processorParam:TextureFormat=Compressed
-/build:Fonts/font_normal.spritefont
+/build:Fonts/font_large.spritefont
+
+#begin Fonts/font_medium.spritefont
+/importer:FontDescriptionImporter
+/processor:FontDescriptionProcessor
+/processorParam:PremultiplyAlpha=True
+/processorParam:TextureFormat=Compressed
+/build:Fonts/font_medium.spritefont
+
+#begin Fonts/font_small.spritefont
+/importer:FontDescriptionImporter
+/processor:FontDescriptionProcessor
+/processorParam:PremultiplyAlpha=True
+/processorParam:TextureFormat=Compressed
+/build:Fonts/font_small.spritefont
 
 #begin Shader/Illuminator.fx
 /importer:EffectImporter

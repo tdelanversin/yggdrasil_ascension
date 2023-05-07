@@ -61,8 +61,8 @@ namespace YGR
         protected override void DrawOverheadString(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)
         {
             string str = "P" + (int)PlayerIndex + ": " + (IsActive ? "Entered" : "Move to register");
-            Vector2 str_size = Fonts.Normal.MeasureString(str);
-            spriteBatch.DrawString(Fonts.Normal, str, new Vector2(_rect.Location.X + _rect.Width / 2 - str_size.X / 2, _rect.Location.Y - str_size.Y + GhostOffset.Y), Color.Wheat);
+            Vector2 str_size = Fonts.Small.MeasureString(str);
+            spriteBatch.DrawString(Fonts.Small, str, new Vector2(_rect.Location.X + _rect.Width / 2 - str_size.X / 2, _rect.Location.Y - str_size.Y + GhostOffset.Y), Color.Wheat);
         }
 
         public override void Draw(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)

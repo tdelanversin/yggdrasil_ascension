@@ -48,9 +48,9 @@ namespace YGR
         public virtual void Draw(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)
         {
             DrawOutline(gameTime, globalOffset, spriteBatch);
-            Vector2 str_size = Fonts.Normal.MeasureString(Label);
+            Vector2 str_size = Fonts.Small.MeasureString(Label);
             Vector2 str_pos = new Vector2(Rect.X + (Rect.Width - str_size.X) / 2, Rect.Y + Rect.Height / 2 - str_size.Y / 2);
-            spriteBatch.DrawString(Fonts.Normal, Label, str_pos, Color);
+            spriteBatch.DrawString(Fonts.Small, Label, str_pos, Color);
         }
 
         public virtual void DrawOutline(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)
@@ -79,7 +79,7 @@ namespace YGR
 
             DrawOutline(gameTime, globalOffset, spriteBatch);
 
-            int y = Rect.Height / 5 - (int)(Fonts.Normal.MeasureString("0").Y / 2);
+            int y = Rect.Height / 5 - (int)(Fonts.Small.MeasureString("0").Y / 2);
             List<string> text = new List<string> { };
             foreach (IPlayer p in Manager_Players.Players)
             {
@@ -106,9 +106,9 @@ namespace YGR
                     c = Color.LimeGreen;
                 }
 
-                Vector2 str_size = Fonts.Normal.MeasureString(str);
+                Vector2 str_size = Fonts.Small.MeasureString(str);
                 Vector2 str_pos = new Vector2(Rect.X, Rect.Y + y);
-                spriteBatch.DrawString(Fonts.Normal, str, str_pos, Color.Lerp(c, Color.Wheat, 0.5f));
+                spriteBatch.DrawString(Fonts.Small, str, str_pos, Color.Lerp(c, Color.Wheat, 0.5f));
                 y += Rect.Height / 5;
             }
         }

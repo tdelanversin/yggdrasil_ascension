@@ -633,7 +633,7 @@ namespace YGR
 
         public void DrawPlayerStatusUI(GameTime gameTime, SpriteBatch spriteBatch)
         {
-            SpriteFont font = Fonts.Large;
+            SpriteFont font = Fonts.GetDecentlySizedFont();
             Vector2 pos = new Vector2((Camera.Bounds.Width) / 128, Camera.Bounds.Height / 16);
             float spacing = 1.25f;
 
@@ -642,7 +642,7 @@ namespace YGR
                 string indexString = "Player " + (int)p.PlayerIndex + ": ";
                 string infoString = "";
 
-                infoString += string.Format("\n HP: {0,-3}/{1,-3} ", p.LifePoints, p.LifePointsMax);
+                infoString += string.Format("\n HP: {0,-3}/{1,-3}", p.LifePoints, p.LifePointsMax);
                 // infoString += string.Format("\n Class:  {0}", p.Name);
                 // infoString += string.Format("\n Weapon: {0}", p.Gun.Name);
                 infoString += string.Format("\n Class:");
@@ -655,14 +655,13 @@ namespace YGR
                 int margin = 5;
                 Vector2 totalSize = font.MeasureString(indexString + infoString);
                 Rectangle rect = new Rectangle((int)pos.X - margin, (int)pos.Y - margin, (int)totalSize.X + 2 * margin, (int)totalSize.Y + 2 * margin);
-                spriteBatch.Draw(Manager_Sprites.White, destinationRectangle: rect, null, playerColor * 0.5f, 0, Vector2.Zero, SpriteEffects.None, 0);
-
+                spriteBatch.Draw(Manager_Sprites.White, destinationRectangle: rect, null, playerColor * 0.4f, 0, Vector2.Zero, SpriteEffects.None, 0);
 
                 // Draw the player sprite
                 AnimatedSprite charSprite = p.GetSprite();
                 int height = (int)indexStringSize.Y;
                 int width = (int)(charSprite.SpriteDimension.X / charSprite.SpriteDimension.Y * height);
-                int x = rect.X + rect.Width - (int)indexStringSize.Y * 2 - width / 2;
+                int x = rect.X + rect.Width - (int)(indexStringSize.Y * 1.5) - width / 2;
                 int y = (int)(rect.Y + margin + indexStringSize.Y * 2);
                 Rectangle charRect = new Rectangle(x, y, width, height);
                 spriteBatch.Draw(charSprite.Texture, charRect, charSprite.SourceRectangle, Color.White, 0, Vector2.Zero, SpriteEffects.None, 0);
