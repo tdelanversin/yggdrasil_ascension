@@ -741,6 +741,7 @@ namespace YGR
                 }
             }
             Illuminate(this);
+            SetVisible(true);
         }
 
         public void Illuminate(IWalkable room)

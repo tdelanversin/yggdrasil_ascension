@@ -67,6 +67,13 @@ namespace YGR
             Color = Color.White; // neutral
 
             // TODO: we could probably get rid of the global scale and simplify this at one point
+            /* this one is NEEDED for initialization purpose if the start room is not at (0,0) */
+            _rect = new Rectangle(
+                (int)position.X - (int)(_size.X / 2.0f),
+                (int)position.Y - (int)(_size.Y / 2.0f),
+                (int)(_size.X),
+                (int)(_size.Y));
+
             Room = Level.GetRoom(this, Room);
             Scale = _scale * Room.Scale;
             _size = Scale  * _sprite.SpriteDimension;
