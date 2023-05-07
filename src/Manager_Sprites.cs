@@ -62,9 +62,9 @@ namespace YGR
             HealthbarInfill = contentManager.Load<Texture2D>("SpritesOther/healthbar_infill");
             White = contentManager.Load<Texture2D>("SpritesOther/white");
 
-            ButtonOut = contentManager.Load<Texture2D>("SpritesOther/Button_Out");
-            ButtonHalf = contentManager.Load<Texture2D>("SpritesOther/Button_Half");
-            ButtonIn = contentManager.Load<Texture2D>("SpritesOther/Button_In");
+            ButtonOut = contentManager.Load<Texture2D>("SpritesOther/Button_Out_2");
+            ButtonHalf = contentManager.Load<Texture2D>("SpritesOther/Button_Half_2");
+            ButtonIn = contentManager.Load<Texture2D>("SpritesOther/Button_In_2");
 
             Enemy_Basic = Player_Simple;
             Enemy_Slime = contentManager.Load<Texture2D>("SpritesCharacters/slime");

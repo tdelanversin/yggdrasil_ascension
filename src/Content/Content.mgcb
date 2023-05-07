@@ -364,7 +364,7 @@
 /processorParam:TextureFormat=Color
 /build:SpritesOther/bark2.png
 
-#begin SpritesOther/Button_Half.png
+#begin SpritesOther/Button_Half_2.png
 /importer:TextureImporter
 /processor:TextureProcessor
 /processorParam:ColorKeyColor=255,0,255,255
@@ -374,9 +374,9 @@
 /processorParam:ResizeToPowerOfTwo=False
 /processorParam:MakeSquare=False
 /processorParam:TextureFormat=Color
-/build:SpritesOther/Button_Half.png
+/build:SpritesOther/Button_Half_2.png
 
-#begin SpritesOther/Button_In.png
+#begin SpritesOther/Button_In_2.png
 /importer:TextureImporter
 /processor:TextureProcessor
 /processorParam:ColorKeyColor=255,0,255,255
@@ -386,9 +386,9 @@
 /processorParam:ResizeToPowerOfTwo=False
 /processorParam:MakeSquare=False
 /processorParam:TextureFormat=Color
-/build:SpritesOther/Button_In.png
+/build:SpritesOther/Button_In_2.png
 
-#begin SpritesOther/Button_Out.png
+#begin SpritesOther/Button_Out_2.png
 /importer:TextureImporter
 /processor:TextureProcessor
 /processorParam:ColorKeyColor=255,0,255,255
@@ -398,7 +398,7 @@
 /processorParam:ResizeToPowerOfTwo=False
 /processorParam:MakeSquare=False
 /processorParam:TextureFormat=Color
-/build:SpritesOther/Button_Out.png
+/build:SpritesOther/Button_Out_2.png
 
 #begin SpritesOther/fence_h.png
 /importer:TextureImporter
@@ -507,6 +507,18 @@
 /processorParam:MakeSquare=False
 /processorParam:TextureFormat=Color
 /build:SpritesOther/heart.png
+
+#begin SpritesOther/Level_Background.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:SpritesOther/Level_Background.png
 
 #begin SpritesOther/projectile.png
 /importer:TextureImporter

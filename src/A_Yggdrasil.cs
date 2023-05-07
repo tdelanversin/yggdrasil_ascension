@@ -47,7 +47,8 @@ namespace YGR
             Manager_Players.Initialize();
             Manager_Particles.Initialize();
             Manager_Light2.Initialize("./Levels/" + level + "/simplified", Content, GraphicsDevice);
-            X_AutoTiler.Initialize("./Doors/", "data.json", GraphicsDevice, Y_Door.MapJsonName);
+            X_AutoTiler.Initialize("./Doors/", "data-brown.json", GraphicsDevice, Y_Door.MapJsonName);
+            X_AutoTiler.Initialize("./Doors/", "data-green.json", GraphicsDevice, Y_Door.MapJsonName);
             Y_Door.Initialize(Content);
 
             GraphicsDevice_ = GraphicsDevice;

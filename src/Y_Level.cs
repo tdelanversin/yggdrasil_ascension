@@ -97,11 +97,6 @@ namespace YGR
                 _data = JsonConvert.DeserializeObject<Y_Level.Data>(array.ToString());
             }
 
-            //foreach (var dk in _data.Level.Keys)
-            //{
-            //    _data.Level[dk] = _data.Level[dk].OrderBy(x => x.Index).ToList();
-            //}
-
             var categoryFolders = Directory.GetDirectories(Util.PathOsNormalization(_levelResourceFolder + _name));
             List<Tuple<string, string>> files = new List<Tuple<string, string>>();
             foreach (var folder in categoryFolders)
@@ -147,10 +142,10 @@ namespace YGR
 
             Rooms = new Dictionary<int, IWalkable>();
 
-            _background = content.Load<Texture2D>("SpritesOther/title_image");
+            _background = content.Load<Texture2D>("SpritesOther/Level_Background");
             int width = (int)(_background.Width * 3.5f);
             int height = (int)(_background.Height * 3.5f);
-            Point startLocation = new Point((int)(width / 1.87f), (int)(height / 1.137f));
+            Point startLocation = new Point((int)(width / 1.96f), (int)(height / 1.137f));
             _backgroundRect = new Rectangle(-startLocation.X, -startLocation.Y, width, height);
 
         }
@@ -192,6 +187,7 @@ namespace YGR
             var random = new Random();
             // randomly select one level tree
             var key = _data.Level.Keys.ToArray()[random.Next(0, _data.Level.Keys.Count)];
+            //var key = _data.Level.Keys.ToArray()[0];
             var tree = _data.Level[key];
 
             var watch = new Stopwatch();
@@ -203,14 +199,7 @@ namespace YGR
                 int index = random.Next(0, type.Count);
 
                 // some hack to make sure that the first room is always the chosen one
-                //var special = type.Where(x => (x.Item1 != null && x.Item1.Name == "World_Level_0") || (x.Item2 != null && x.Item2.Name == "World_Level_0")).FirstOrDefault();
-
                 var n = type[index];
-                //if (special != null)
-                //{
-                //    n = special;
-                //    index = type.IndexOf(special);
-                //}
 
                 if (n.Item2 == null)
                 {
@@ -223,8 +212,8 @@ namespace YGR
                 float h = 1.0f;
                 float w = (float)room.Rect.Width / (float)room.Rect.Height;
                 Point p = new Point(
-                    (int)(node.Value.X * w * offset - room.Rect.Width / 2),   // + _backgroundRect.Width / 1.87f),
-                    (int)(node.Value.Y * h * offset - room.Rect.Height / 2)); // + _backgroundRect.Height / 1.137f));
+                    (int)(node.Value.X * w * offset - room.Rect.Width / 2),
+                    (int)(node.Value.Y * h * offset - room.Rect.Height / 2));
                 p.X = p.X + (TileWidth - p.X % TileWidth);
                 p.Y = p.Y + (TileHeight - p.Y % TileHeight);
                 room.MoveTo(p);
@@ -275,15 +264,35 @@ namespace YGR
                         TileHeight,
                         out direction, out numTilesLength, out tileOffset);
 
-                    var connector = new Y_Door(
-                        direction,
-                        numTilesLength,
-                        TileWidth,
-                        TileHeight,
-                        tileOffset,
-                        graphicsDevice,
-                        "./Doors",
-                        "data.json");
+                    Y_Door connector;
+                    if(
+                        ((Y_CMRoom)fromRoom).Category == "Leaf" && ((Y_CMRoom)toRoom).Category == "Leaf" ||
+                        ((Y_CMRoom)fromRoom).Category == "Leaf" && ((Y_CMRoom)toRoom).Category == "Gold" ||
+                        ((Y_CMRoom)fromRoom).Category == "Gold" && ((Y_CMRoom)toRoom).Category == "Leaf"
+                    )
+                    {
+                        connector = new Y_Door(
+                            direction,
+                            numTilesLength,
+                            TileWidth,
+                            TileHeight,
+                            tileOffset,
+                            graphicsDevice,
+                            "./Doors",
+                            "data-green.json");
+                    }
+                    else
+                    {
+                        connector = new Y_Door(
+                            direction,
+                            numTilesLength,
+                            TileWidth,
+                            TileHeight,
+                            tileOffset,
+                            graphicsDevice,
+                            "./Doors",
+                            "data-brown.json");
+                    }
 
                     connectors.Add(connector.Connect(fromRoom, fromConnectorPoint, toRoom, toConnectorPoint, direction));
                     //if (b != null) _barks.Add(b);
@@ -375,8 +384,6 @@ namespace YGR
             }
 
             _startRoom.SetVisible(true);
-            //_goldRoom.SetVisible(true);
-            //_goldRoom.Illuminate();
             Manager_Sound.PlayFreeRoamMusic();
 
             if (Settings.DynamicShades)
@@ -391,8 +398,6 @@ namespace YGR
             {
                 Manager_Light2.IlluminateSync(Rooms.Values.Where(c => c.WhatAreYou() == X_LevelElements.Room).ToList());
             }
-
-            //Manager_Light2.IlluminateSync(new List<IWalkable> { _startRoom });
         }
 
         public IWalkable GetRoom(IGameElement elem, IWalkable currentRoom)
