@@ -142,10 +142,10 @@ namespace YGR
 
             Rooms = new Dictionary<int, IWalkable>();
 
-            _background = content.Load<Texture2D>("SpritesOther/title_image");
+            _background = content.Load<Texture2D>("SpritesOther/Level_Background");
             int width = (int)(_background.Width * 3.5f);
             int height = (int)(_background.Height * 3.5f);
-            Point startLocation = new Point((int)(width / 1.87f), (int)(height / 1.137f));
+            Point startLocation = new Point((int)(width / 1.96f), (int)(height / 1.137f));
             _backgroundRect = new Rectangle(-startLocation.X, -startLocation.Y, width, height);
 
         }
@@ -187,7 +187,7 @@ namespace YGR
             var random = new Random();
             // randomly select one level tree
             var key = _data.Level.Keys.ToArray()[random.Next(0, _data.Level.Keys.Count)];
-            //var key = _data.Level.Keys.ToArray()[3];
+            //var key = _data.Level.Keys.ToArray()[0];
             var tree = _data.Level[key];
 
             var watch = new Stopwatch();
