@@ -330,7 +330,7 @@ namespace YGR
                     return;
                 }
 
-                if (Input.IsKeyDown(Keybinds.ActionOne) || Input.IsButtonDown(PlayerIndex, Keybinds.GamePadAction))
+                if ((ControlLayout != ControlLayout.ControllerOnly && Input.IsKeyDown(Keybinds.ActionOne)) || Input.IsButtonDown(PlayerIndex, Keybinds.GamePadAction))
                 {
                     Manager_Sound.Sound_Dash.Play();
 
