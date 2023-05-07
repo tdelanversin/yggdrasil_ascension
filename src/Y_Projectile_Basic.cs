@@ -113,6 +113,7 @@ namespace YGR
                     // Hit players and enemies
                     if (obj is IVictim)
                     {
+                        Manager_Particles._particleEffects[5].Trigger(new Vector2(_rect.Location.X + _rect.Width / 2, _rect.Location.Y + _rect.Height / 2));
                         ((IVictim)obj).Hit(this);
                     }
                 }

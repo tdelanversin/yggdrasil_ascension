@@ -20,10 +20,8 @@ namespace YGR
     public static class Manager_Particles
     {
         private static ParticleEffect _particleEffect_dust;
-        private static ParticleEffect _particleEffect_dust_cloud;
         private static ParticleEffect _particleEffect_dust_cloud_light;
         private static Texture2D _particleTexture_dust;
-        private static Texture2D _particleTexture_dust_cloud;
         private static Texture2D _particleTexture_dust_cloud_light;
         private static ParticleEffect _particleEffect_fire;
         private static ParticleEffect _particleEffect_dash;
@@ -43,7 +41,6 @@ namespace YGR
             //_particleEffects = new Dictionary<string,ParticleEffect>();
             _particleEffect_dust = new ParticleEffect();
             _particleEffect_dust_cloud_light = new ParticleEffect();
-            _particleEffect_dust_cloud = new ParticleEffect();
             _particleEffect_fire = new ParticleEffect();
             _particleEffect_dash = new ParticleEffect();
             _particleEffect_impact = new ParticleEffect();
@@ -51,15 +48,15 @@ namespace YGR
 
         public static void LoadContent(ContentManager contentManager, GraphicsDevice graphicsDevice)
         {
-            _particleTexture_dust = contentManager.Load<Texture2D>("SpritesEffects/dust_particle");
-            _particleTexture_dust_cloud = contentManager.Load<Texture2D>("SpritesEffects/dust_cloud");
-            _particleTexture_dust_cloud_light = contentManager.Load<Texture2D>("SpritesEffects/big_dust_cloud");
-            _particleTexture_fire = new Texture2D(graphicsDevice,1,1);
+            //_particleTexture_dust = contentManager.Load<Texture2D>("SpritesEffects/dust_particle");
+       _particleTexture_fire = new Texture2D(graphicsDevice,1,1);
             _particleTexture_dash = new Texture2D(graphicsDevice, 1, 1);
             _particleTexture_dash.SetData(new[] { Color.Cyan });
             _particleTexture_impact = new Texture2D(graphicsDevice, 1, 1);
             _particleTexture_impact.SetData(new[] { Color.DarkRed });
             _particleTexture_dust_cloud_light = new Texture2D(graphicsDevice, 1, 1);
+            _particleTexture_dust = new Texture2D(graphicsDevice, 1, 1);
+            _particleTexture_dust.SetData(new[] { Color.Black * 0.5f });
             _particleTexture_dust_cloud_light.SetData(new[] { Color.Black * 0.5f });
             Vector2 pos = new Vector2(10333, 22332);
             GenParticleEffectBase(pos);
@@ -155,25 +152,38 @@ namespace YGR
             TextureRegion2D textureRegion = new TextureRegion2D(_particleTexture_dust);
             _particleEffect_dust = new ParticleEffect(autoTrigger: false)
             {
-                //Position = new Vector2(33330, 3330),
+                //Position = new Vector2(20060, 23005),
                 Position = pos,
                 Emitters = new List<ParticleEmitter>
                 {
-                    new ParticleEmitter(textureRegion, 1000, TimeSpan.FromSeconds(0.5f),
-                        Profile.Point())
-                        //Profile.BoxFill(15,15))
+                    new ParticleEmitter(textureRegion, 25000, TimeSpan.FromSeconds(0.25),
+                        //Profile.Spray(new Vector2(-0.95f,-1f), 1f ))
+                        Profile.Circle(30, Profile.CircleRadiation.Out))
+                        //Profile.Point())
                     {
                         Parameters = new ParticleReleaseParameters
                         {
-                            Speed = new Range<float>(0f, 40f),
-                            Quantity = 30,
+                            Speed = new Range<float>(1f, 10f),
+                            Quantity = 15,
+                            Opacity =0.7f,//new Range<float>(0.1f, f),
                             Rotation = new Range<float>(-1f, 1f),
-                            Scale = new Range<float>(0.05f, 0.1f),
-                            Opacity = 0.2f
+                            Scale = new Range<float>(2.0f, 4.0f),
+                            Mass = 1.25f,
                         },
-                       
-                      
-                        
+                        Modifiers =
+                        {
+                            new AgeModifier
+                            {
+                                Interpolators = new List<Interpolator>()
+                                {
+                                    new OpacityInterpolator { StartValue = 0.9f, EndValue = 0.1f },
+                                    //new ScaleInterpolator { StartValue = new Vector2(1,1), EndValue = new Vector2(2,2) }
+                                }
+                            },
+                            //new RotationModifier {RotationRate = -3f},
+                            new OpacityFastFadeModifier(),
+                            //new DragModifier { Density = 0.5f, DragCoefficient = 1f }
+                        }
                     }
                 }
             };
