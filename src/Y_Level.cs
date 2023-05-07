@@ -191,8 +191,7 @@ namespace YGR
 
             var random = new Random();
             // randomly select one level tree
-            //var key = _data.Level.Keys.ToArray()[random.Next(0, _data.Level.Keys.Count)];
-            var key = _data.Level.Keys.ToArray()[_data.Level.Keys.ToArray().Length-1];
+            var key = _data.Level.Keys.ToArray()[random.Next(0, _data.Level.Keys.Count)];
             var tree = _data.Level[key];
 
             var watch = new Stopwatch();
