@@ -154,18 +154,39 @@ namespace YGR
             bool tryTrigger = false;
             bool ready = true;
 
-            foreach (IPlayer p in Manager_Players.Players)
-            {
-                // Don't care about disconnected players
-                if (p.ControlLayout == ControlLayout.ControllerOnly && !GamePad.GetState(p.PlayerIndex).IsConnected)
-                    continue;
+            /* One active player can activate as long as others chose their character */
+            // foreach (IPlayer p in Manager_Players.Players)
+            // {
+            //     // Don't care about disconnected players
+            //     if (p.ControlLayout == ControlLayout.ControllerOnly && !GamePad.GetState(p.PlayerIndex).IsConnected)
+            //         continue;
 
-                // One player needs to trigger the field
+            //     // One player needs to trigger the field
+            //     if (Rect.Contains(p.Rect.Center))
+            //         tryTrigger = true;
+
+            //     // Participating players need to choose a character
+            //     if (p.IsActive && p is Player_Ghost)
+            //         ready = false;
+            // }
+
+
+            /* All active players need to be inside and have picked a character */
+            var activePlayers = Manager_Players.Players.FindAll(p => p.IsActive);
+
+            if (activePlayers.Count < 1)
+            {
+                return;
+            }
+
+            foreach (var p in activePlayers)
+            {
                 if (Rect.Contains(p.Rect.Center))
                     tryTrigger = true;
+                else
+                    ready = false;
 
-                // Participating players need to choose a character
-                if (p.IsActive && p is Player_Ghost)
+                if (p is Player_Ghost)
                     ready = false;
             }
 
