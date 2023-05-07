@@ -1,5 +1,6 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using MonoGame.Extended;
 using System.Collections.Generic;
 #nullable enable
 
@@ -65,6 +66,7 @@ namespace YGR
             Velocity = _speed * direction;
             Collision = new X_CollisionModel_Projectile(_mass, 1.0f);
             Color = Color.White; // neutral
+                                 //Manager_Particles.GenParticleEffectProjectileTrails(new Vector2(_rect.Location.X + _rect.Width / 2, _rect.Location.Y + _rect.Height / 2), Color);
 
             // TODO: we could probably get rid of the global scale and simplify this at one point
             /* this one is NEEDED for initialization purpose if the start room is not at (0,0) */
@@ -76,7 +78,7 @@ namespace YGR
 
             Room = Level.GetRoom(this, Room);
             Scale = _scale * Room.Scale;
-            _size = Scale  * _sprite.SpriteDimension;
+            _size = Scale * _sprite.SpriteDimension;
 
             // Center on the initial position
             // Note that the position is only affected by the global scale, not the internal one
@@ -85,6 +87,9 @@ namespace YGR
                 (int)position.Y - (int)(_size.Y / 2.0f),
                 (int)(_size.X * Room.Scale),
                 (int)(_size.Y * Room.Scale));
+           // Manager_Particles._particleEffects[2].Trigger
+           //(new Vector2(_rect.Location.X + _rect.Width / 2, _rect.Location.Y + _rect.Height / 2));
+
             _position = _rect.Location.ToVector2();
         }
 
@@ -115,6 +120,7 @@ namespace YGR
                     // Hit players and enemies
                     if (obj is IVictim)
                     {
+                        Manager_Particles._particleEffects[5].Trigger(new Vector2(_rect.Location.X + _rect.Width / 2, _rect.Location.Y + _rect.Height / 2));
                         ((IVictim)obj).Hit(this);
                     }
                 }
@@ -127,10 +133,13 @@ namespace YGR
             _sprite.Update(gameTime, AnimationState.Idle);
 
             /* Particle handling */
-            Manager_Particles._particleEffects[2].Trigger(new Vector2(_rect.Location.X + _rect.Width / 2, _rect.Location.Y + _rect.Height));
-            // Not sure about this, but it is surely better than calling Manager_Particles.Update() here
-            Manager_Particles._particleEffects[2].Update((float)gameTime.ElapsedGameTime.TotalSeconds);
-        }
+            Manager_Particles._particleEffects[2].Emitters.ForEach(emitter => { emitter.Parameters.Color = Color.ToHsl(); });//new MonoGame.Extended.Range<HslColor>(Color.ToHsl());
+            Manager_Particles._particleEffects[2].Trigger(new Vector2(_rect.Location.X + _rect.Width / 2, _rect.Location.Y + _rect.Height / 2));
+        
+            
+
+    }
+   
 
         public virtual void Draw(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)
         {
