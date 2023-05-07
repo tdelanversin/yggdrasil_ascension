@@ -68,8 +68,8 @@ namespace YGR
         public static int LightOffsetY;
         public static int LightOffsetZ;
 
-        Texture2D _background;
-        Rectangle _backgroundRect;
+        // Texture2D _background;
+        // Rectangle _backgroundRect;
 
         // Gameplay state objects
         public IWalkable ActiveRoom;
@@ -150,11 +150,11 @@ namespace YGR
 
             Rooms = new Dictionary<int, IWalkable>();
 
-            _background = content.Load<Texture2D>("SpritesOther/Level_Background");
-            int width = (int)(_background.Width * 3.8f);
-            int height = (int)(_background.Height * 3.8f);
-            Point startLocation = new Point((int)(width / 1.96f), (int)(height / 1.12f));
-            _backgroundRect = new Rectangle(-startLocation.X, -startLocation.Y, width, height);
+            // _background = content.Load<Texture2D>("SpritesOther/Level_Background");
+            // int width = (int)(_background.Width * 3.8f);
+            // int height = (int)(_background.Height * 3.8f);
+            // Point startLocation = new Point((int)(width / 1.96f), (int)(height / 1.12f));
+            // _backgroundRect = new Rectangle(-startLocation.X, -startLocation.Y, width, height);
 
         }
 
@@ -736,7 +736,6 @@ namespace YGR
 
         public void Draw(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)
         {
-            spriteBatch.Draw(_background, _backgroundRect, Color.White);
             foreach (var room in Rooms)
             {
                 room.Value.Draw(gameTime, globalOffset, spriteBatch);

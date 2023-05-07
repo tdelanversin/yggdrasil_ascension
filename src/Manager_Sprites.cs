@@ -30,6 +30,11 @@ namespace YGR
         public static Texture2D HealthbarInfill { get; private set; }
         public static Texture2D White { get; private set; }
 
+        // Background
+        public static Texture2D BackgroundYggdrasil { get; private set; }
+        public static Texture2D BackgroundSky { get; private set; }
+        public static Texture2D BackgroundTitleText { get; private set; }
+
         // Level elements
         public static Texture2D ButtonOut { get; private set; }
         public static Texture2D ButtonHalf { get; private set; }
@@ -63,6 +68,10 @@ namespace YGR
             HealthbarEmpty = contentManager.Load<Texture2D>("SpritesOther/healthbar_empty");
             HealthbarInfill = contentManager.Load<Texture2D>("SpritesOther/healthbar_infill");
             White = contentManager.Load<Texture2D>("SpritesOther/white");
+
+            BackgroundYggdrasil = contentManager.Load<Texture2D>("SpritesOther/background_yggdrasil");
+            BackgroundSky = contentManager.Load<Texture2D>("SpritesOther/background_sky");
+            BackgroundTitleText = contentManager.Load<Texture2D>("SpritesOther/background_text");
 
             ButtonOut = contentManager.Load<Texture2D>("SpritesOther/Button_Out_2");
             ButtonHalf = contentManager.Load<Texture2D>("SpritesOther/Button_Half_2");
