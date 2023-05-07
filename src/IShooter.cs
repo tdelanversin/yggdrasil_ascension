@@ -11,5 +11,7 @@ namespace YGR
         public void Shoot(GameTime gametime, Vector2 origin, Vector2 direction, Y_Level level, IGameElement who);
 
         public void Update(GameTime gameTime);
+
+        public string Name { get; }
     }
 }

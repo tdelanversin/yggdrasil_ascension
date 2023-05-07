@@ -8,6 +8,7 @@ namespace YGR
     // Basic gun, does nothing special, shoots fast
     public class Gun_Basic : IShooter
     {
+        public string Name { get; protected set; } = "Pistol";
         protected double NextShotCooldown = 0.0f;
         protected int ShotDelay = 240;
 
@@ -34,6 +35,7 @@ namespace YGR
     {
         public Gun_BasicEnemy()
         {
+            Name = "Slow Pistol";
             ShotDelay = 1000;
         }
 
@@ -60,6 +62,7 @@ namespace YGR
             ShotDelay = 1200;
             ShotCount = 5;
             ShotSpread = .3 / ShotCount;
+            Name = string.Format("Shotgun ({} bullets)", ShotCount);
         }
 
         public Gun_ShotGun(int shotCount) : this()
@@ -93,6 +96,9 @@ namespace YGR
 
     public class Gun_Funky : IShooter
     {
+        // TODO: possibly find better name, but this one matches the power level and texture
+        public string Name { get; protected set; } = "Red Devil";
+
         double timeSinceShot = 1001;
         Vector2 _origin = new Vector2(0, 0);
         Vector2 _direction = new Vector2(0, 0);
@@ -173,6 +179,8 @@ namespace YGR
 
     public class Gun_Wide : IShooter
     {
+        public string Name { get; protected set; } = "Fat Cannon"; // TODO: pick a name
+
         double timeSinceShot = 1001;
         Vector2 _origin = new Vector2(0, 0);
         Vector2 _direction = new Vector2(0, 0);
@@ -257,6 +265,7 @@ namespace YGR
             ShotCount = 256;
             ShotDelay = 5000;
             ShotSpread = 2 * Math.PI / ShotCount;
+            Name = "Giga Gun";
         }
 
         public override void Shoot(GameTime gameTime, Vector2 origin, Vector2 direction, Y_Level level, IGameElement who)
@@ -296,12 +305,15 @@ namespace YGR
             ShotCount = 128;
             ShotDelay = 100;
             ShotSpread = 2 * Math.PI / ShotCount;
+            Name = "LoL";
         }
     }
 
     // Gun for ghosts. Does absolutely nothing. Just there to make other code simpler.
     public class Gun_Ghost : IShooter
     {
+        public string Name { get { return ""; } }
+
         public void Shoot(GameTime gametime, Vector2 origin, Vector2 direction, Y_Level level, IGameElement who) { }
 
         public void Update(GameTime gameTime) { }
