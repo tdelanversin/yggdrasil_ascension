@@ -28,12 +28,14 @@ namespace YGR
         public Vector2 Velocity { get; set; }
         public Y_Level Level { get; set; }
         public IWalkable Room { get; set; }
+        public string Name { get; set; }
 
         // IPLayer fields
         public ControlLayout ControlLayout { get; set; }
         public IShooter Gun { get; set; }
         public PlayerIndex PlayerIndex { get; }
         public bool IsActive { get; protected set; }
+        public PlayerType Type { get; }
 
         // Class fields
         public float VelocityMax;
@@ -82,6 +84,7 @@ namespace YGR
             AnimatedSprite sprite,
             Y_Level level,
             IShooter gun,
+            PlayerType type,
             ControlLayout controlLayout = ControlLayout.ControllerOnly,
             float scale = 1.0f
             )
@@ -92,8 +95,23 @@ namespace YGR
             Position = initialPosition;
             CharacterSprite = sprite;
             Gun = gun;
+            Type = type;
             ControlLayout = controlLayout;
             Scale = scale;
+
+            // Set Name
+            if (type == PlayerType.Nerd)
+            {
+                Name = "Nerdy Girl";
+            }
+            else if (type == PlayerType.Ninja)
+            {
+                Name = "Ninja";
+            }
+            else
+            {
+                Name = "undef";
+            }
 
             // Balancing knobs
             LifePointsMax = 15;

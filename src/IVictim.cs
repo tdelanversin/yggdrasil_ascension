@@ -21,5 +21,6 @@ namespace YGR
         public Y_Level Level { get; set; }
         public IWalkable Room { get; set; }
         void Hit(IProjectile projectile);
+        public string Name { get; set; }
     }
 }

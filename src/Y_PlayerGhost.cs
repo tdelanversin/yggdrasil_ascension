@@ -11,8 +11,9 @@ namespace YGR
             Y_Level level,
             ControlLayout controlLayout = ControlLayout.ControllerOnly,
             float scale = 1.0f
-            ) : base(playerIndex, initialPosition, Manager_Sprites.NewAnimatedSprite_Ghost(), level, new Gun_Ghost(), controlLayout)
+            ) : base(playerIndex, initialPosition, Manager_Sprites.NewAnimatedSprite_Ghost(), level, new Gun_Ghost(), PlayerType.Ghost, controlLayout)
         {
+            Name = "Ghost";
             VelocityMax *= 1.5f;
             IsActive = false;
         }
