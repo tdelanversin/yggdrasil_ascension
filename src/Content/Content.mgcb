@@ -256,6 +256,18 @@
 /processorParam:TextureFormat=Color
 /build:SpritesCharacters/tester_60.png
 
+#begin SpritesEffects/arrowhead.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:SpritesEffects/arrowhead.png
+
 #begin SpritesEffects/big_dust_cloud.png
 /importer:TextureImporter
 /processor:TextureProcessor
@@ -267,6 +279,18 @@
 /processorParam:MakeSquare=False
 /processorParam:TextureFormat=Color
 /build:SpritesEffects/big_dust_cloud.png
+
+#begin SpritesEffects/dust_cloud.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:SpritesEffects/dust_cloud.png
 
 #begin SpritesEffects/dust_particle_red.png
 /importer:TextureImporter
@@ -291,6 +315,18 @@
 /processorParam:MakeSquare=False
 /processorParam:TextureFormat=Color
 /build:SpritesEffects/dust_particle.png
+
+#begin SpritesEffects/fire_trail.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:SpritesEffects/fire_trail.png
 
 #begin SpritesEffects/small_dust_cloud.png
 /importer:TextureImporter

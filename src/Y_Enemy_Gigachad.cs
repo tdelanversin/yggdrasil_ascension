@@ -1,4 +1,5 @@
 using Microsoft.Xna.Framework;
+using System;
 using System.Collections.Generic;
 
 namespace YGR
@@ -6,6 +7,7 @@ namespace YGR
     public class Enemy_Gigachad : Enemy_Basic
     {
         IShooter Gun2; // Gigachad needs moar guns
+        public float VelocityMax;
 
         public Enemy_Gigachad(
             Vector2 position,
@@ -46,6 +48,8 @@ namespace YGR
             // Set the drawing scale to make the character fit into the collision bounds
             CharacterScale = Util.GetSpriteScale(_rect, CharacterSprite.SpriteDimension);
             CharacterOffset = Vector2.Zero;
+            VelocityMax = 0.35f;
+
         }
 
         public override void Update(GameTime gameTime)
@@ -76,7 +80,6 @@ namespace YGR
 
             UpdateVelocity(movement, gameTime);
             UpdateCollision(gameTime);
-            Manager_Particles.Update(gameTime);
             Gun.Update(gameTime);
             Gun2.Update(gameTime);
 
@@ -95,6 +98,34 @@ namespace YGR
 
             // Gigachad shoot Big Gun no matter what (as long as there are players in the same room)
             Gun2.Shoot(gameTime, _rect.Center.ToVector2(), Vector2.One, Level, this);
+        }
+        protected virtual void UpdateVelocity(Vector2 input, GameTime gameTime)
+        {
+            int timeStepMS = gameTime.ElapsedGameTime.Milliseconds;
+
+            /* ##########################################################################
+             * Speed and velocity handling based on control input
+             *  => must happen before collision handling <=
+             * ########################################################################## */
+            if (input != Vector2.Zero)
+            {
+                //Manager_Particles.GenParticleEffectDustCloudLight(new Vector2(_rect.Location.X + _rect.Width / 2, _rect.Location.Y + _rect.Height));
+                Manager_Particles._particleEffects[1].Trigger(new Vector2(_rect.Location.X + _rect.Width / 2, _rect.Location.Y + _rect.Height));
+
+                if (input.LengthSquared() > 1)
+                {
+                    input.Normalize();
+                }
+                Velocity += input * _acceleration * timeStepMS;
+            }
+            else
+            {
+                Velocity = new Vector2(
+                    Math.Sign(Velocity.X) * Math.Max(0.0f, Math.Abs(Velocity.X) - _deceleration * timeStepMS),
+                    Math.Sign(Velocity.Y) * Math.Max(0.0f, Math.Abs(Velocity.Y) - _deceleration * timeStepMS));
+            }
+
+            Velocity = Util.ClampMagnitude(Velocity, VelocityMax);
         }
     }
 }
