@@ -529,6 +529,7 @@ namespace YGR
             if (!_isDashing && (ControlLayout != ControlLayout.ControllerOnly && Input.IsKeyDown(Keybinds.ActionOne) || Input.IsButtonDown(PlayerIndex, Keybinds.GamePadAction)) && _dashCooldownTimer >= _dashCooldown)
             {
                 Manager_Sound.Sound_Dash.Play();
+                Manager_Particles._particleEffects[4].Trigger(new Vector2(_rect.Location.X + _rect.Width / 2 +50, _rect.Location.Y + _rect.Height+50));
                 _isDashing = true;
                 _dashTimer = 0;
                 _dashCooldownTimer = 0; // Reset timer

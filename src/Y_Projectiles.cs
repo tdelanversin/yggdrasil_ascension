@@ -105,6 +105,7 @@ namespace YGR
             Vector2 newVelocity = Velocity;
             if (Collision.Intersect(this, timeStepMS, out newVelocity, out contactPoint, out contactNormal, out who))
             {
+
                 //Logger.Debug("Collided with something");
                 foreach (var obj in who)
                 {
@@ -120,7 +121,9 @@ namespace YGR
                     // If victim, tell it what it was hit by
                     if (obj is IVictim)
                     {
-                       ((IVictim)obj).Hit(this);
+                        Manager_Particles._particleEffects[6].Trigger(new Vector2(_rect.Location.X + _rect.Width / 2, _rect.Location.Y + _rect.Height / 2));
+
+                        ((IVictim)obj).Hit(this);
                     }
 
                     Velocity = newVelocity;
@@ -131,7 +134,7 @@ namespace YGR
             _position += newVelocity * timeStepMS;
             _rect.Location = _position.ToPoint();
             _animationIndex = (int)(5 - (gameTime.TotalGameTime.TotalMilliseconds - TimeCreated) / 500);
-            Manager_Particles._particleEffects[2].Trigger(new Vector2(_rect.Location.X + _rect.Width / 2, _rect.Location.Y + _rect.Height/2));
+            Manager_Particles._particleEffects[1].Trigger(new Vector2(_rect.Location.X + _rect.Width / 2, _rect.Location.Y + _rect.Height/2));
 
            
 
