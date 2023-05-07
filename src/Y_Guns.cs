@@ -69,7 +69,7 @@ namespace YGR
 
         public Gun_ShotGun()
         {
-            ShotDelay = 1200;
+            ShotDelay = 800;
             ShotCount = 5;
             ShotSpread = .3 / ShotCount;
             Name = string.Format("Shotgun ({0})", ShotCount);

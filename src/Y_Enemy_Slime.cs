@@ -22,7 +22,7 @@ namespace YGR
             Y_Level level
         ) : base(position, sprite, level)
         {
-            LifePointsMax = 15;
+            LifePointsMax = 9;
             LifePoints = LifePointsMax;
             fleeingHPTreshold = 0; // Gigachad never flees
 
