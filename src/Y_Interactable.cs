@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Timers;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using Microsoft.Xna.Framework.Input;
 
 namespace YGR
 {
@@ -34,6 +35,11 @@ namespace YGR
             );
         }
 
+        public virtual List<IPlayer> GetPlayersInside()
+        {
+            return Manager_Players.Players.FindAll(p => Rectangle.Intersect(Rect, p.Rect) != Rectangle.Empty);
+        }
+
         public virtual X_LevelElements WhatAreYou() { return X_LevelElements.Interactable; }
 
         public virtual void Update(GameTime gameTime) { }
@@ -42,9 +48,9 @@ namespace YGR
         public virtual void Draw(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)
         {
             DrawOutline(gameTime, globalOffset, spriteBatch);
-            Vector2 str_size = Fonts.Normal.MeasureString(Label);
+            Vector2 str_size = Fonts.Small.MeasureString(Label);
             Vector2 str_pos = new Vector2(Rect.X + (Rect.Width - str_size.X) / 2, Rect.Y + Rect.Height / 2 - str_size.Y / 2);
-            spriteBatch.DrawString(Fonts.Normal, Label, str_pos, Color);
+            spriteBatch.DrawString(Fonts.Small, Label, str_pos, Color);
         }
 
         public virtual void DrawOutline(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)
@@ -53,48 +59,57 @@ namespace YGR
         }
     }
 
-
-    // Simple field for players to stand in
-    public class Interactable_PlayerField : Interactable_Basic
+    // Tutorial field, guiding the players through the start process
+    public class Interactable_Tutorialfield : Interactable_Basic
     {
-        public List<IVictim> PlayersInside = new List<IVictim> { };
-        private string BaseLabel = "Move here!";
-
-        public Interactable_PlayerField(
+        public Interactable_Tutorialfield(
             Rectangle bounds,
             Y_Level level,
             Y_CMRoom room
         ) : base(bounds, level, room)
         {
-            Label = BaseLabel;
+            Color = Color.GhostWhite;
         }
 
-        public virtual List<IVictim> GetPlayersInside()
+        // Just draw the outline and the Label inside it
+        public override void Draw(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)
         {
-            return ((List<IVictim>)Manager_Players.Players).FindAll(p => Rectangle.Intersect(Rect, p.Rect) != Rectangle.Empty);
-        }
+            if (Level.State != Y_Level.GamePlayState.Start)
+                return;
 
-        public override void Update(GameTime gameTime)
-        {
-            var playersInside = GetPlayersInside();
+            DrawOutline(gameTime, globalOffset, spriteBatch);
 
-            if (playersInside.FindAll(p => !PlayersInside.Contains(p)).Count > 0)
+            int y = Rect.Height / 5 - (int)(Fonts.Small.MeasureString("0").Y / 2);
+            List<string> text = new List<string> { };
+            foreach (IPlayer p in Manager_Players.Players)
             {
-                // Play sound effect when a new player enters the field
-                Manager_Sound.Sound_GunCocking.Play();
-            }
+                string str = " P" + (int)p.PlayerIndex + ": ";
+                Color c;
+                if (p.ControlLayout == ControlLayout.ControllerOnly && !GamePad.GetState(p.PlayerIndex).IsConnected)
+                {
+                    str += "n/a";
+                    c = Color.White;
+                }
+                else if (!p.IsActive)
+                {
+                    str += "Inactive (move to register)";
+                    c = Color.Orange;
+                }
+                else if (p is Player_Ghost)
+                {
+                    str += "Active (select character)";
+                    c = Color.HotPink;
+                }
+                else
+                {
+                    str += "Ready";
+                    c = Color.LimeGreen;
+                }
 
-            PlayersInside = playersInside;
-            Label = BaseLabel + "\nPlayers: " + PlayersInside.Count;
-
-            // Light up if any player stands inside
-            if (PlayersInside.Count > 0)
-            {
-                Color = Color.Azure;
-            }
-            else
-            {
-                Color = Color.DarkGoldenrod;
+                Vector2 str_size = Fonts.Small.MeasureString(str);
+                Vector2 str_pos = new Vector2(Rect.X, Rect.Y + y);
+                spriteBatch.DrawString(Fonts.Small, str, str_pos, Color.Lerp(c, Color.Wheat, 0.5f));
+                y += Rect.Height / 5;
             }
         }
     }
@@ -103,30 +118,38 @@ namespace YGR
     // RoomOpener allows opening a room's doors when shot
     public class Interactable_RoomOpener : Interactable_Basic
     {
-        public Interactable_PlayerField PlayerField;
+        enum ButtonState
+        {
+            Out,
+            Half,
+            In,
+        }
+
+        ButtonState state = ButtonState.Out;
 
         public Interactable_RoomOpener(
             Rectangle bounds,
             Y_Level level,
-            Y_CMRoom room,
-            Interactable_PlayerField playerField
+            Y_CMRoom room
             ) : base(bounds, level, room)
         {
-            Color = Color.DarkGoldenrod;
-            Label = "Shoot me when all\n players ready! ";
-            PlayerField = playerField;
+            Color = Color.Wheat;
+            Label = "Move here to start";
         }
 
         public void TriggerInteraction(GameTime gameTime)
         {
-            List<IVictim> selectedPlayers = PlayerField.PlayersInside;
+            // Remove all non-participating players
+            Manager_Players.Players.RemoveAll(p => !p.IsActive || (p.ControlLayout == ControlLayout.ControllerOnly && !GamePad.GetState(p.PlayerIndex).IsConnected));
 
-            // If not a single player manages to stand in the field, we're not starting the game
-            if (selectedPlayers.Count < 1) { return; }
+            // Disable all character chooser pickups in the starter room
+            foreach (var pu in Room.GetPickUps())
+            {
+                // HACK: too lazy to implement it differently
+                if (pu.Type.ToString().StartsWith("Chooser")) pu.Active = false;
+            }
 
-            Manager_Players.Players.RemoveAll(p => !selectedPlayers.Contains(p));
-            Room.OpenAllUnlockedRoomDoors();
-            Label = "Go get 'em! :)";
+            Label = "Have fun! :)";
             Color = Color.SpringGreen;
             Manager_Sound.Sound_PlatformActivate.Play(1, 0, 0);
             InteractionComplete = true;
@@ -136,39 +159,93 @@ namespace YGR
         {
             if (InteractionComplete) { return; }
 
-            bool hitByPlayerNotInField = false;
+            bool tryTrigger = false;
+            bool ready = true;
 
-            // Amazing "collision detection"
-            foreach (var projectile in Manager_Projectile.GetProjectiles())
+            /* One active player can activate as long as others chose their character */
+            // foreach (IPlayer p in Manager_Players.Players)
+            // {
+            //     // Don't care about disconnected players
+            //     if (p.ControlLayout == ControlLayout.ControllerOnly && !GamePad.GetState(p.PlayerIndex).IsConnected)
+            //         continue;
+
+            //     // One player needs to trigger the field
+            //     if (Rect.Contains(p.Rect.Center))
+            //         tryTrigger = true;
+
+            //     // Participating players need to choose a character
+            //     if (p.IsActive && p is Player_Ghost)
+            //         ready = false;
+            // }
+
+
+            /* All active players need to be inside and have picked a character */
+            var activePlayers = Manager_Players.Players.FindAll(p => p.IsActive);
+
+            if (activePlayers.Count < 1)
             {
-                if (!Rect.Contains(projectile.Rect))
-                {
-                    continue;
-                }
-                // Can only be triggered by a player standing in the field
-                if (projectile.WhoFiredMe is not IVictim)
-                {
-                    continue;
-                }
-
-                if (!PlayerField.PlayersInside.Contains((IVictim)projectile.WhoFiredMe))
-                {
-                    hitByPlayerNotInField = true;
-                    continue;
-                }
-
-                TriggerInteraction(gameTime);
                 return;
             }
 
-            if (hitByPlayerNotInField)
+            foreach (var p in activePlayers)
             {
-                Color = Color.Red;
+                if (Rect.Contains(p.Rect.Center + new Point(0, p.Rect.Height / 2)))
+                    tryTrigger = true;
+                else
+                    ready = false;
+
+                if (p is Player_Ghost)
+                    ready = false;
+            }
+
+
+            ButtonState statePrev = state;
+            if (tryTrigger)
+            {
+                if (!ready)
+                {
+                    state = ButtonState.Half;
+                    Color = Color.OrangeRed;
+                }
+                else
+                {
+                    state = ButtonState.In;
+                    TriggerInteraction(gameTime);
+                }
             }
             else
             {
-                Color = Color.DarkGoldenrod;
+                state = ButtonState.Out;
+                Color = Color.Wheat;
             }
+            if (state != statePrev)
+            {
+                Manager_Sound.Sound_PlatformActivate.Play();
+            }
+        }
+
+        public override void Draw(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)
+        {
+            Texture2D buttonSprite = Manager_Sprites.ButtonOut;
+            if (state == ButtonState.In)
+            {
+                buttonSprite = Manager_Sprites.ButtonIn;
+            }
+            else if (state == ButtonState.Half)
+            {
+                buttonSprite = Manager_Sprites.ButtonHalf;
+            }
+
+            spriteBatch.Draw(
+                texture: buttonSprite,
+                position: Rect.Location.ToVector2(),
+                sourceRectangle: null,
+                color: Color.White,
+                rotation: 0,
+                origin: Vector2.Zero,
+                scale: 1,
+                effects: SpriteEffects.None,
+                layerDepth: 0);
         }
     }
 }

@@ -131,7 +131,7 @@ namespace YGR
             {
                 foreach (var p in Manager_Players.Players)
                 {
-                    ((SimplePlayer)p).Gun = new Gun_Godmode();
+                    p.Gun = new Gun_Godmode();
                     ((SimplePlayer)p).VelocityMax = 0.6f;
                     p.LifePoints = 9999;
                 }
@@ -199,6 +199,10 @@ namespace YGR
                         Manager_Enemies.DrawOutline(gameTime, zero, _spriteBatch);
                     }
                     _spriteBatch.End();
+
+                    _spriteBatch.Begin(SpriteSortMode.Immediate, null, null, null, null, null, null);
+                    _level.DrawUI(gameTime, _spriteBatch);
+                    _spriteBatch.End();
                     break;
 
                 case GameState.Menu:
@@ -215,7 +219,7 @@ namespace YGR
             string fps = string.Format("FPS: {0:0}", _frameCounter.AverageFramesPerSecond);
             var fpsColor = Color.BlanchedAlmond;
             _spriteBatch.Begin(SpriteSortMode.Immediate, null, null, null, null, null, null);
-            _spriteBatch.DrawString(Fonts.Normal, fps, new Vector2(1, 1), fpsColor);
+            _spriteBatch.DrawString(Fonts.Small, fps, new Vector2(1, 1), fpsColor);
             Notifications.Draw(gameTime, zero, _spriteBatch);
             _spriteBatch.End();
             base.Draw(gameTime);

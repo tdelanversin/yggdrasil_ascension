@@ -18,6 +18,5 @@ namespace YGR
         public EnemyState State { get; set; }
 
         public IShooter Gun { get; set; }
-        public string Name { get; set; }
     }
 }

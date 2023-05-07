@@ -27,6 +27,12 @@ namespace YGR
         // UI
         public static Texture2D HealthbarEmpty { get; private set; }
         public static Texture2D HealthbarInfill { get; private set; }
+        public static Texture2D White { get; private set; }
+
+        // Level elements
+        public static Texture2D ButtonOut { get; private set; }
+        public static Texture2D ButtonHalf { get; private set; }
+        public static Texture2D ButtonIn { get; private set; }
 
         // Power Ups
         public static Texture2D SpinningHeart { get; private set; }
@@ -54,6 +60,11 @@ namespace YGR
 
             HealthbarEmpty = contentManager.Load<Texture2D>("SpritesOther/healthbar_empty");
             HealthbarInfill = contentManager.Load<Texture2D>("SpritesOther/healthbar_infill");
+            White = contentManager.Load<Texture2D>("SpritesOther/white");
+
+            ButtonOut = contentManager.Load<Texture2D>("SpritesOther/Button_Out");
+            ButtonHalf = contentManager.Load<Texture2D>("SpritesOther/Button_Half");
+            ButtonIn = contentManager.Load<Texture2D>("SpritesOther/Button_In");
 
             Enemy_Basic = Player_Simple;
             Enemy_Slime = contentManager.Load<Texture2D>("SpritesCharacters/slime");

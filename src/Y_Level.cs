@@ -2,6 +2,7 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
+using Microsoft.Xna.Framework.Input;
 using Newtonsoft.Json;
 using SharpFont.Cache;
 using System;
@@ -163,7 +164,7 @@ namespace YGR
                 {
                     var watch = new Stopwatch();
                     watch.Start();
-                    if(Y_CMRoom.PreprocessRoom(room.Item1, cat, _data.LdtkRoomTypes, graphicsDevice))
+                    if (Y_CMRoom.PreprocessRoom(room.Item1, cat, _data.LdtkRoomTypes, graphicsDevice))
                     {
                         Logger.Info("Preprocessed level [" + watch.ElapsedMilliseconds + "ms]" + room.Item1.ResourceFolder);
                     }
@@ -201,10 +202,10 @@ namespace YGR
             {
                 var type = _availableRooms[node.Value.Type];
                 int index = random.Next(0, type.Count);
-                
+
                 // some hack to make sure that the first room is always the chosen one
                 //var special = type.Where(x => (x.Item1 != null && x.Item1.Name == "World_Level_0") || (x.Item2 != null && x.Item2.Name == "World_Level_0")).FirstOrDefault();
-                
+
                 var n = type[index];
                 //if (special != null)
                 //{
@@ -311,24 +312,21 @@ namespace YGR
 
             _interactables.Clear();
 
-            // Useless box were all to be participating players should go in
-            Interactable_PlayerField playerField = new Interactable_PlayerField(
-                new Rectangle(5, 5, 8, 8), this, (Y_CMRoom)_startRoom
-            );
-            _interactables.Add(playerField);
+            // Place a tutorial field that guides the players
+            // _interactables.Add(new Interactable_Tutorialfield(
+            //     new Rectangle(16, 12, 11, 8), this, (Y_CMRoom)_startRoom)
+            // );
 
-            // Room opener to start the game with all players standing in the field
+            // Room opener field that can trigger the game start
             _interactables.Add(new Interactable_RoomOpener(
-                new Rectangle(29, 5, 8, 8), this, (Y_CMRoom)_startRoom, playerField)
+                new Rectangle(16, 2, 11, 7), this, (Y_CMRoom)_startRoom)
             );
 
             // Gameplay state
             State = GamePlayState.Start;
             ActiveRoom = _startRoom;
             Camera.SetFocusRoom(_startRoom, animate: false);
-            // Camera.SetFocusManual();
 
-            Camera.Players = Manager_Players.Players;
             Manager_Enemies.ClearEnemies();
             foreach (var room in Rooms)
             {
@@ -340,40 +338,42 @@ namespace YGR
                 foreach (var spr in enemies)
                 {
                     Vector2 pos = new Vector2(spr.x, spr.y);
-                    if(EnemyEntity.GetType(spr) == Manager_Enemies.EnemyType.SimpleEnemy)
-                        Manager_Enemies.AddEnemy_Slime(pos, this, Manager_Players.Players);
-                    else if(EnemyEntity.GetType(spr) == Manager_Enemies.EnemyType.BossEnemy)
-                        Manager_Enemies.AddEnemy_Gigachad(pos, this, Manager_Players.Players);
+
+                    if (EnemyEntity.GetType(spr) == Manager_Enemies.EnemyType.SimpleEnemy)
+                        Manager_Enemies.AddEnemy_SimpleEnemy(pos, this);
+                    else if (EnemyEntity.GetType(spr) == Manager_Enemies.EnemyType.SlimeEnemy)
+                        Manager_Enemies.AddEnemy_Slime(pos, this);
+                    else if (EnemyEntity.GetType(spr) == Manager_Enemies.EnemyType.BossEnemy)
+                        Manager_Enemies.AddEnemy_Gigachad(pos, this);
                 }
 
-                /**
-                 * TODO: make the selection of the spawning point for players potentially random
-                 */
                 var players = r.GetPlayerSpawningPoints();
                 int playerIndex = 0;
                 foreach (var spr in players)
                 {
-                    if (playerIndex == 4) break;
+                    Vector2 pos = new Vector2(spr.x, spr.y);
                     if (PlayerEntity.GetPointType(spr) == PlayerSpawningPointType.Spawner)
                     {
-                        Vector2 pos = new Vector2(spr.x, spr.y);
-                        if (PlayerEntity.GetType(spr) == Manager_Players.PlayerType.Random)
-                            Manager_Players.AddPlayer_Random((PlayerIndex)playerIndex, position: pos, this);
-                        if (PlayerEntity.GetType(spr) == Manager_Players.PlayerType.Nerd)
-                            Manager_Players.AddPlayer_Ninja((PlayerIndex)playerIndex, position: pos, this);
-                        if (PlayerEntity.GetType(spr) == Manager_Players.PlayerType.Ninja)
-                            Manager_Players.AddPlayer_Ninja((PlayerIndex)playerIndex, position: pos, this);
+                        if (playerIndex == 4) break;
+                        if (PlayerEntity.GetType(spr) == PlayerType.Nerd)
+                            Manager_Players.AddPlayer(PlayerType.Nerd, (PlayerIndex)playerIndex, position: pos, this);
+                        if (PlayerEntity.GetType(spr) == PlayerType.Ninja)
+                            Manager_Players.AddPlayer(PlayerType.Ninja, (PlayerIndex)playerIndex, position: pos, this);
+                        if (PlayerEntity.GetType(spr) == PlayerType.Ghost)
+                            Manager_Players.AddPlayer(PlayerType.Ghost, (PlayerIndex)playerIndex, position: pos, this);
                         playerIndex++;
                     }
-                    else
+                    else if (PlayerEntity.GetPointType(spr) == PlayerSpawningPointType.Chooser)
                     {
-                        // do the CHOOSER part...
+                        if (PlayerEntity.GetType(spr) == PlayerType.Nerd)
+                            r.PickUps.Add(PickUp.Factory(Y_PowerUps.ChooserNerd, pos.ToPoint(), spr.width, spr.height, Scale));
+                        if (PlayerEntity.GetType(spr) == PlayerType.Ninja)
+                            r.PickUps.Add(PickUp.Factory(Y_PowerUps.ChooserNinja, pos.ToPoint(), spr.width, spr.height, Scale));
                     }
                 }
 
                 // Make the last one controllable by keyboard
             }
-            ((SimplePlayer)Manager_Players.Players[3]).ControlLayout = ControlLayout.KeyboardWASD;
 
             _startRoom.SetVisible(true);
             //_goldRoom.SetVisible(true);
@@ -475,9 +475,10 @@ namespace YGR
             switch (State)
             {
                 case GamePlayState.Start:
-                    if (_interactables[1].InteractionComplete)
+                    if (_interactables[0].InteractionComplete)
                     {
                         State = GamePlayState.FreeRoam;
+                        _startRoom.OpenAllUnlockedRoomDoors();
                         Camera.SetFocusPlayers();
                     }
                     break;
@@ -595,11 +596,122 @@ namespace YGR
             }
         }
 
+        public void DrawPlayerSelectionUI(GameTime gameTime, SpriteBatch spriteBatch)
+        {
+            SpriteFont font = Fonts.Large;
+            float spacing = 1.5f;
+            string longest_str = "P1: [JOINED] Pick character"; // Used to center the text
+            Vector2 size = font.MeasureString(longest_str);
+            Vector2 pos = new Vector2((Camera.Bounds.Width - size.X) / 2, (Camera.Bounds.Height - size.Y * (1f + 3f * spacing)) / 2);
+            pos.Y += 10; // Feels like CSS...
+
+            foreach (IPlayer p in Manager_Players.Players)
+            {
+                string indexString = "P" + (int)p.PlayerIndex + ": ";
+                string statusString = "";
+                Color statusColor;
+                if (p.ControlLayout == ControlLayout.ControllerOnly && !GamePad.GetState(p.PlayerIndex).IsConnected)
+                {
+                    statusString += "[  --  ] Disconnected";
+                    statusColor = Color.DimGray;
+                }
+                else if (!p.IsActive)
+                {
+                    statusString += "[  --  ] Move to join";
+                    statusColor = Color.LightPink;
+                }
+                else if (p is Player_Ghost)
+                {
+                    statusString += "[JOINED] Pick character";
+                    statusColor = Color.LightBlue;
+                }
+                else
+                {
+                    statusString += "[JOINED] Ready";
+                    statusColor = Color.LimeGreen;
+                }
+
+                float indexStringWidth = font.MeasureString(indexString).X;
+                // Draw text shadow
+                spriteBatch.DrawString(font, indexString + statusString, pos + Vector2.One, Color.Black);
+
+                // Draw text line itself
+                Vector2 offset = new Vector2(font.MeasureString(indexString).X, 0);
+                spriteBatch.DrawString(font, indexString, pos, Color.Lerp(p.Color, Color.Wheat, 0.5f));
+                spriteBatch.DrawString(font, statusString, pos + offset, Color.Lerp(statusColor, Color.Wheat, 0.2f));
+                pos.Y += size.Y * spacing;
+            }
+        }
+
+        public void DrawPlayerStatusUI(GameTime gameTime, SpriteBatch spriteBatch)
+        {
+            SpriteFont font = Fonts.GetDecentlySizedFont();
+            Vector2 pos = new Vector2((Camera.Bounds.Width) / 128, Camera.Bounds.Height / 16);
+            float spacing = 1.25f;
+
+            foreach (IPlayer p in Manager_Players.Players)
+            {
+                string indexString = "Player " + (int)p.PlayerIndex + ": ";
+                string infoString = "";
+
+                infoString += string.Format("\n HP: {0,-3}/{1,-3}", p.LifePoints, p.LifePointsMax);
+                // infoString += string.Format("\n Class:  {0}", p.Name);
+                // infoString += string.Format("\n Weapon: {0}", p.Gun.Name);
+                infoString += string.Format("\n Class:");
+                infoString += string.Format("\n Weapon:");
+
+                Vector2 indexStringSize = font.MeasureString(indexString);
+                Color playerColor = Color.Lerp(p.Color, Color.Wheat, 0.5f);
+
+                // Draw a semi transparent background box
+                int margin = 5;
+                Vector2 totalSize = font.MeasureString(indexString + infoString);
+                Rectangle rect = new Rectangle((int)pos.X - margin, (int)pos.Y - margin, (int)totalSize.X + 2 * margin, (int)totalSize.Y + 2 * margin);
+                spriteBatch.Draw(Manager_Sprites.White, destinationRectangle: rect, null, playerColor * 0.4f, 0, Vector2.Zero, SpriteEffects.None, 0);
+
+                // Draw the player sprite
+                AnimatedSprite charSprite = p.GetSprite();
+                int height = (int)indexStringSize.Y;
+                int width = (int)(charSprite.SpriteDimension.X / charSprite.SpriteDimension.Y * height);
+                int x = rect.X + rect.Width - (int)(indexStringSize.Y * 1.5) - width / 2;
+                int y = (int)(rect.Y + margin + indexStringSize.Y * 2);
+                Rectangle charRect = new Rectangle(x, y, width, height);
+                spriteBatch.Draw(charSprite.Texture, charRect, charSprite.SourceRectangle, Color.White, 0, Vector2.Zero, SpriteEffects.None, 0);
+
+                // Draw the weapon sprite
+                Texture2D weaponSprite = p.Gun.Sprite;
+                width = (int)(weaponSprite.Width / weaponSprite.Height * height);
+                y = (int)(rect.Y + margin + indexStringSize.Y * 3);
+                Rectangle weaponRect = new Rectangle(x, y, width, height);
+                if (p.Gun is not Gun_Ghost)
+                    spriteBatch.Draw(weaponSprite, weaponRect, null, Color.White, 0, Vector2.Zero, SpriteEffects.None, 0);
+
+                // Draw text itself
+                Vector2 offset = new Vector2(0, font.MeasureString(infoString).Y);
+                Util.DrawString(font, indexString, pos, playerColor, spriteBatch);
+                Util.DrawString(font, infoString, pos, Color.Wheat, spriteBatch);
+                pos.Y += totalSize.Y * spacing;
+            }
+        }
+
+        public void DrawUI(GameTime gameTime, SpriteBatch spriteBatch)
+        {
+            if (State == Y_Level.GamePlayState.Start)
+                DrawPlayerSelectionUI(gameTime, spriteBatch);
+
+            DrawPlayerStatusUI(gameTime, spriteBatch);
+        }
+
         public void DrawOutline(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)
         {
             foreach (var room in Rooms)
             {
                 room.Value.DrawOutline(gameTime, globalOffset, spriteBatch);
+            }
+
+            foreach (var interactable in _interactables)
+            {
+                interactable.DrawOutline(gameTime, globalOffset, spriteBatch);
             }
         }
 
