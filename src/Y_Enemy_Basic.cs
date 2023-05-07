@@ -51,8 +51,8 @@ namespace YGR
 
         public string Identifier;
 
-        protected float _dropProbabilityPercent = 10;
-        protected float _dropProbabilityPercentLifeSaving = 60;
+        protected float _dropProbabilityPercent = 5;
+        protected float _dropProbabilityPercentLifeSaving = 30;
 
         public Enemy_Basic(
             Vector2 position,
@@ -503,7 +503,7 @@ namespace YGR
 
         public X_LevelElements WhatAreYou() => X_LevelElements.Enemy;
 
-        virtual public void DropSomethingJucyMaybe()
+        virtual public void DropSomethingJuicyMaybe()
         {
             if(WhoKilledMe != null)
             {

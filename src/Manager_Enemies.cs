@@ -59,7 +59,7 @@ namespace YGR
             // drop, or maybe not, something jucy
             foreach(var enemy in list)
             {
-                enemy.DropSomethingJucyMaybe();
+                enemy.DropSomethingJuicyMaybe();
             }
             _enemies.RemoveAll(enemy => enemy.LifePoints <= 0);
         }
