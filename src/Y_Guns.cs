@@ -1,6 +1,7 @@
 using Microsoft.Xna.Framework;
 using System.Linq;
 using System;
+using Microsoft.Xna.Framework.Graphics;
 #nullable enable
 
 namespace YGR
@@ -8,9 +9,17 @@ namespace YGR
     // Basic gun, does nothing special, shoots fast
     public class Gun_Basic : IShooter
     {
-        public string Name { get; protected set; } = "Pistol";
+        public string Name { get; protected set; }
+        public Texture2D Sprite { get; protected set; }
+
         protected double NextShotCooldown = 0.0f;
         protected int ShotDelay = 240;
+
+        public Gun_Basic()
+        {
+            Name = "Pistol";
+            Sprite = Manager_Sprites.Weapon_Pistol;
+        }
 
         public virtual void Shoot(GameTime gameTime, Vector2 origin, Vector2 direction, Y_Level level, IGameElement who)
         {
@@ -36,6 +45,7 @@ namespace YGR
         public Gun_BasicEnemy()
         {
             Name = "Slow Pistol";
+            Sprite = Manager_Sprites.Weapon_Pistol;
             ShotDelay = 1000;
         }
 
@@ -62,7 +72,8 @@ namespace YGR
             ShotDelay = 1200;
             ShotCount = 5;
             ShotSpread = .3 / ShotCount;
-            Name = string.Format("Shotgun ({} bullets)", ShotCount);
+            Name = string.Format("Shotgun ({0})", ShotCount);
+            Sprite = Manager_Sprites.Weapon_Shotgun;
         }
 
         public Gun_ShotGun(int shotCount) : this()
@@ -96,14 +107,21 @@ namespace YGR
 
     public class Gun_Funky : IShooter
     {
-        // TODO: possibly find better name, but this one matches the power level and texture
-        public string Name { get; protected set; } = "Red Devil";
+        public string Name { get; protected set; }
+        public Texture2D Sprite { get; protected set; }
 
         double timeSinceShot = 1001;
         Vector2 _origin = new Vector2(0, 0);
         Vector2 _direction = new Vector2(0, 0);
         Y_Level? _level;
         IGameElement? _who;
+
+        public Gun_Funky()
+        {
+            // TODO: possibly find better name, but this one matches the power level and texture
+            Name = "Red Devil";
+            Sprite = Manager_Sprites.Weapon_RedGun;
+        }
 
         static int shotDelay = 1000;
         static double shotSpread = .1;
@@ -179,13 +197,21 @@ namespace YGR
 
     public class Gun_Wide : IShooter
     {
-        public string Name { get; protected set; } = "Fat Cannon"; // TODO: pick a name
+        public string Name { get; protected set; }
+        public Texture2D Sprite { get; protected set; }
 
         double timeSinceShot = 1001;
         Vector2 _origin = new Vector2(0, 0);
         Vector2 _direction = new Vector2(0, 0);
         Y_Level? _level;
         IGameElement? _who;
+
+        public Gun_Wide()
+        {
+            // TODO: find name
+            Name = "Cannon";
+            Sprite = Manager_Sprites.Weapon_RedGun;
+        }
 
         static int shotDelay = 1000;
         static bool[,] bulletArray = {{ false, false, true, false, false },
@@ -305,6 +331,7 @@ namespace YGR
             ShotCount = 128;
             ShotDelay = 100;
             ShotSpread = 2 * Math.PI / ShotCount;
+            Sprite = Manager_Sprites.Weapon_Keyboard; // TODO
             Name = "LoL";
         }
     }
@@ -313,6 +340,8 @@ namespace YGR
     public class Gun_Ghost : IShooter
     {
         public string Name { get { return ""; } }
+
+        public Texture2D Sprite { get { return Manager_Sprites.White; } }
 
         public void Shoot(GameTime gametime, Vector2 origin, Vector2 direction, Y_Level level, IGameElement who) { }
 
