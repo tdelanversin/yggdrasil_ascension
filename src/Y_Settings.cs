@@ -14,7 +14,7 @@ namespace YGR
         static GraphicsDeviceManager Gdm;
         static GameWindow Window;
         public static bool Fullscreen;
-        public static bool Lighting;
+        public static bool DynamicShades;
         public static bool Outlines;
         public static bool DrawFPS;
         public static bool Sound;
@@ -31,20 +31,20 @@ namespace YGR
             Sound = true;
 #if DEBUG
             Fullscreen = false;
-            Lighting = true;
+            DynamicShades = false;
             Outlines = false;
             Toggle_Volume();
 #else
             Fullscreen = true;
-            Lighting = false; // Off by default for now, since it's very slow
+            DynamicShades = false; // Off by default, not because they are slow (they are in fact very quick) but because Monogame sucks so much!!!
             Outlines = false;
 #endif
         }
 
-        internal static bool ToggleLighting()
+        internal static bool ToggleShades()
         {
-            Lighting = !Lighting;
-            return Lighting;
+            DynamicShades = !DynamicShades;
+            return DynamicShades;
         }
 
         internal static bool ToggleOutlines()
