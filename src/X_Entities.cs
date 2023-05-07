@@ -6,11 +6,13 @@ namespace YGR
     public sealed class EnemyEntity
     {
         public const string SimpleEnemy = "SimpleEnemy";
+        public const string SlimeEnemy = "SlimeEnemy";
         public const string BossEnemy = "BossEnemy";
 
         public static Manager_Enemies.EnemyType GetType(EnemyEntity enemy)
         {
-            if (enemy.customFields["Type"] == EnemyEntity.SimpleEnemy) return Manager_Enemies.EnemyType.SimpleEnemy;
+            if (enemy.customFields["Type"] == EnemyEntity.SimpleEnemy) return Manager_Enemies.EnemyType.SlimeEnemy;
+            if (enemy.customFields["Type"] == EnemyEntity.SlimeEnemy) return Manager_Enemies.EnemyType.SlimeEnemy;
             if (enemy.customFields["Type"] == EnemyEntity.BossEnemy) return Manager_Enemies.EnemyType.BossEnemy;
 
             return Manager_Enemies.EnemyType.SimpleEnemy;
@@ -74,6 +76,15 @@ namespace YGR
 
     public sealed class PowerUp
     {
+        public const string Life = "Life";
+        public const string Revive = "Revive";
+
+        // Weapons
+        public const string WeaponPistol = "WeaponPistol";
+        public const string WeaponShotgun = "WeaponShotgun";
+        public const string WeaponKeyboard = "WeaponKeyboard";
+        public const string WeaponFunky = "WeaponFunky";
+
         public string id;
         public string iid;
         public string layer;

@@ -1,5 +1,4 @@
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -12,7 +11,8 @@ namespace YGR
         public enum EnemyType
         {
             SimpleEnemy = 0,
-            BossEnemy
+            SlimeEnemy,
+            BossEnemy,
         };
 
         private static List<IEnemy> _enemies = new List<IEnemy>();

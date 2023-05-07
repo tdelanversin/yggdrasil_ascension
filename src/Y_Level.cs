@@ -153,7 +153,7 @@ namespace YGR
                 {
                     var watch = new Stopwatch();
                     watch.Start();
-                    if(Y_CMRoom.PreprocessRoom(room.Item1, cat, _data.LdtkRoomTypes, graphicsDevice))
+                    if (Y_CMRoom.PreprocessRoom(room.Item1, cat, _data.LdtkRoomTypes, graphicsDevice))
                     {
                         Logger.Info("Preprocessed level [" + watch.ElapsedMilliseconds + "ms]" + room.Item1.ResourceFolder);
                     }
@@ -190,10 +190,10 @@ namespace YGR
             {
                 var type = _availableRooms[node.Type];
                 int index = random.Next(0, type.Count);
-                
+
                 // some hack to make sure that the first room is always the chosen one
                 //var special = type.Where(x => (x.Item1 != null && x.Item1.Name == "World_Level_0") || (x.Item2 != null && x.Item2.Name == "World_Level_0")).FirstOrDefault();
-                
+
                 var n = type[index];
                 //if (special != null)
                 //{
@@ -336,40 +336,42 @@ namespace YGR
                 foreach (var spr in enemies)
                 {
                     Vector2 pos = new Vector2(spr.x, spr.y);
-                    if(EnemyEntity.GetType(spr) == Manager_Enemies.EnemyType.SimpleEnemy)
+
+                    if (EnemyEntity.GetType(spr) == Manager_Enemies.EnemyType.SimpleEnemy)
+                        Manager_Enemies.AddEnemy_SimpleEnemy(pos, this, Manager_Players.Players);
+                    else if (EnemyEntity.GetType(spr) == Manager_Enemies.EnemyType.SlimeEnemy)
                         Manager_Enemies.AddEnemy_Slime(pos, this, Manager_Players.Players);
-                    else if(EnemyEntity.GetType(spr) == Manager_Enemies.EnemyType.BossEnemy)
+                    else if (EnemyEntity.GetType(spr) == Manager_Enemies.EnemyType.BossEnemy)
                         Manager_Enemies.AddEnemy_Gigachad(pos, this, Manager_Players.Players);
                 }
 
-                /**
-                 * TODO: make the selection of the spawning point for players potentially random
-                 */
                 var players = r.GetPlayerSpawningPoints();
                 int playerIndex = 0;
                 foreach (var spr in players)
                 {
-                    if (playerIndex == 4) break;
+                    Vector2 pos = new Vector2(spr.x, spr.y);
                     if (PlayerEntity.GetPointType(spr) == PlayerSpawningPointType.Spawner)
                     {
-                        Vector2 pos = new Vector2(spr.x, spr.y);
-                        if (PlayerEntity.GetType(spr) == Manager_Players.PlayerType.Random)
-                            Manager_Players.AddPlayer_Random((PlayerIndex)playerIndex, position: pos, this);
+                        if (playerIndex == 4) break;
                         if (PlayerEntity.GetType(spr) == Manager_Players.PlayerType.Nerd)
-                            Manager_Players.AddPlayer_Ninja((PlayerIndex)playerIndex, position: pos, this);
+                            Manager_Players.AddPlayer(Manager_Players.PlayerType.Nerd, (PlayerIndex)playerIndex, position: pos, this);
                         if (PlayerEntity.GetType(spr) == Manager_Players.PlayerType.Ninja)
-                            Manager_Players.AddPlayer_Ninja((PlayerIndex)playerIndex, position: pos, this);
+                            Manager_Players.AddPlayer(Manager_Players.PlayerType.Ninja, (PlayerIndex)playerIndex, position: pos, this);
+                        if (PlayerEntity.GetType(spr) == Manager_Players.PlayerType.Ghost)
+                            Manager_Players.AddPlayer(Manager_Players.PlayerType.Ghost, (PlayerIndex)playerIndex, position: pos, this);
                         playerIndex++;
                     }
-                    else
+                    else if (PlayerEntity.GetPointType(spr) == PlayerSpawningPointType.Chooser)
                     {
-                        // do the CHOOSER part...
+                        if (PlayerEntity.GetType(spr) == Manager_Players.PlayerType.Nerd)
+                            r.PickUps.Add(PickUp.Factory(Y_PowerUps.ChooserNerd, pos.ToPoint(), spr.width, spr.height, Scale));
+                        if (PlayerEntity.GetType(spr) == Manager_Players.PlayerType.Ninja)
+                            r.PickUps.Add(PickUp.Factory(Y_PowerUps.ChooserNinja, pos.ToPoint(), spr.width, spr.height, Scale));
                     }
                 }
 
                 // Make the last one controllable by keyboard
             }
-            ((SimplePlayer)Manager_Players.Players[3]).ControlLayout = ControlLayout.KeyboardWASD;
 
             _startRoom.SetVisible(true);
             //_goldRoom.SetVisible(true);

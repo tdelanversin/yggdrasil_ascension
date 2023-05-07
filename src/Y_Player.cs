@@ -113,6 +113,10 @@ namespace YGR
                     break;
                 case 3:
                     Color = Color.Yellow;
+                    // Keep the last player keyboard/mouse controllable, that
+                    // way one extra person can participate if players don't
+                    // have four controllers.
+                    ControlLayout = ControlLayout.KeyboardWASD;
                     break;
                 default:
                     Color = Color.White;
