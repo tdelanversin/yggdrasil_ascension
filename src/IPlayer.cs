@@ -7,6 +7,8 @@ namespace YGR
     {
         Nerd = 0,
         Ninja,
+        Mailman,
+        Professor,
         Random,
         Ghost
     };

@@ -196,7 +196,7 @@ namespace YGR
         public static AnimatedSprite NewAnimatedSprite_Mailman()
         {
             return new AnimatedSprite(
-                texture: Player_NerdyGirl,
+                texture: Player_Mailman,
                 spriteDimension: new Vector2(563, 911),
                 animations: new Dictionary<AnimationState, int[,]> {
                     { AnimationState.WalkLeft, new int[,] { {1,7}, {1,6}, {1,7}, {1,5}, {1,4}, {1,3}, {1,4}, {1,5} } },

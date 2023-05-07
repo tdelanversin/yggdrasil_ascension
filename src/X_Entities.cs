@@ -38,6 +38,8 @@ namespace YGR
     public sealed class PlayerEntity
     {
         public const string Nerd = "Nerd";
+        public const string Professor = "Professor";
+        public const string Mailman = "Mailman";
         public const string Ninja = "Ninja";
         public const string Random = "Random";
         public const string Ghost = "Ghost";
@@ -48,6 +50,8 @@ namespace YGR
         public static PlayerType GetType(PlayerEntity player)
         {
             if (player.customFields["Type"] == PlayerEntity.Nerd) return PlayerType.Nerd;
+            if (player.customFields["Type"] == PlayerEntity.Mailman) return PlayerType.Mailman;
+            if (player.customFields["Type"] == PlayerEntity.Professor) return PlayerType.Professor;
             if (player.customFields["Type"] == PlayerEntity.Ninja) return PlayerType.Ninja;
             if (player.customFields["Type"] == PlayerEntity.Random) return PlayerType.Random;
             if (player.customFields["Type"] == PlayerEntity.Ghost) return PlayerType.Ghost;
