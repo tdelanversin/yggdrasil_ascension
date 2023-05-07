@@ -8,14 +8,6 @@ namespace YGR
 {
     public static class Manager_Players
     {
-        public enum PlayerType
-        {
-            Nerd = 0,
-            Ninja,
-            Random,
-            Ghost
-        };
-
         // Player list
         public static List<IPlayer> Players { get; private set; }
 

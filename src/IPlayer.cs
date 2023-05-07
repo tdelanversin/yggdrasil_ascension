@@ -2,6 +2,15 @@ using Microsoft.Xna.Framework;
 
 namespace YGR
 {
+
+    public enum PlayerType
+    {
+        Nerd = 0,
+        Ninja,
+        Random,
+        Ghost
+    };
+
     public interface IPlayer : IVictim
     {
         public ControlLayout ControlLayout { get; set; }

@@ -343,19 +343,19 @@ namespace YGR
                     if (PlayerEntity.GetPointType(spr) == PlayerSpawningPointType.Spawner)
                     {
                         if (playerIndex == 4) break;
-                        if (PlayerEntity.GetType(spr) == Manager_Players.PlayerType.Nerd)
-                            Manager_Players.AddPlayer(Manager_Players.PlayerType.Nerd, (PlayerIndex)playerIndex, position: pos, this);
-                        if (PlayerEntity.GetType(spr) == Manager_Players.PlayerType.Ninja)
-                            Manager_Players.AddPlayer(Manager_Players.PlayerType.Ninja, (PlayerIndex)playerIndex, position: pos, this);
-                        if (PlayerEntity.GetType(spr) == Manager_Players.PlayerType.Ghost)
-                            Manager_Players.AddPlayer(Manager_Players.PlayerType.Ghost, (PlayerIndex)playerIndex, position: pos, this);
+                        if (PlayerEntity.GetType(spr) == PlayerType.Nerd)
+                            Manager_Players.AddPlayer(PlayerType.Nerd, (PlayerIndex)playerIndex, position: pos, this);
+                        if (PlayerEntity.GetType(spr) == PlayerType.Ninja)
+                            Manager_Players.AddPlayer(PlayerType.Ninja, (PlayerIndex)playerIndex, position: pos, this);
+                        if (PlayerEntity.GetType(spr) == PlayerType.Ghost)
+                            Manager_Players.AddPlayer(PlayerType.Ghost, (PlayerIndex)playerIndex, position: pos, this);
                         playerIndex++;
                     }
                     else if (PlayerEntity.GetPointType(spr) == PlayerSpawningPointType.Chooser)
                     {
-                        if (PlayerEntity.GetType(spr) == Manager_Players.PlayerType.Nerd)
+                        if (PlayerEntity.GetType(spr) == PlayerType.Nerd)
                             r.PickUps.Add(PickUp.Factory(Y_PowerUps.ChooserNerd, pos.ToPoint(), spr.width, spr.height, Scale));
-                        if (PlayerEntity.GetType(spr) == Manager_Players.PlayerType.Ninja)
+                        if (PlayerEntity.GetType(spr) == PlayerType.Ninja)
                             r.PickUps.Add(PickUp.Factory(Y_PowerUps.ChooserNinja, pos.ToPoint(), spr.width, spr.height, Scale));
                     }
                 }

@@ -71,7 +71,7 @@ namespace YGR
                         {
                             if (player is Player_Ghost)
                             {
-                                Manager_Players.SetPlayerType(player.PlayerIndex, Manager_Players.PlayerType.Nerd);
+                                Manager_Players.SetPlayerType(player.PlayerIndex, PlayerType.Nerd);
                                 Manager_Sound.Sound_GunCocking.Play();
                             }
                             return false;
@@ -82,7 +82,7 @@ namespace YGR
                         {
                             if (player is Player_Ghost)
                             {
-                                Manager_Players.SetPlayerType(player.PlayerIndex, Manager_Players.PlayerType.Ninja);
+                                Manager_Players.SetPlayerType(player.PlayerIndex, PlayerType.Ninja);
                                 Manager_Sound.Sound_GunCocking.Play();
                             }
                             return false;
