@@ -16,6 +16,7 @@ namespace YGR
             Name = "Ghost";
             VelocityMax *= 1.5f;
             IsActive = false;
+            LifePoints = LifePointsMax = 0;
         }
 
         public override X_LevelElements WhatAreYou()

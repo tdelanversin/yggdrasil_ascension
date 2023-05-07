@@ -262,6 +262,14 @@ namespace YGR
             }
         }
 
+        public virtual AnimatedSprite GetSprite()
+        {
+            if (IsAlive())
+                return CharacterSprite;
+            else
+                return GhostSprite;
+        }
+
         protected virtual void UpdateColor(GameTime gameTime)
         {
             if (_invincible)
