@@ -1,7 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Content;
+using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Media;
 
 namespace YGR
@@ -26,9 +29,12 @@ namespace YGR
         public static SoundEffect Sound_Shotgun;
         public static SoundEffect Sound_VikingHorn;
         public static SoundEffect Sound_CashIn; // https://freesound.org/people/kiddpark/sounds/201159/
+        public static SoundEffect Sound_StoneWall;
 
         // private static SoundEffect bogus_sound;
         public static Dictionary<IGameElement, SoundEffectInstance> playing_sound_effects;
+
+        private static Dictionary<Func<bool>, Tuple<Stopwatch, SoundEffect>> _registry;
 
         public static void LoadContent(ContentManager contentManager)
         {
@@ -50,6 +56,7 @@ namespace YGR
             Sound_Shotgun = contentManager.Load<SoundEffect>("Sounds/shotgun");
             Sound_VikingHorn = contentManager.Load<SoundEffect>("Sounds/viking_horn");
             Sound_CashIn = contentManager.Load<SoundEffect>("Sounds/cash-in");
+            Sound_StoneWall = contentManager.Load<SoundEffect>("Sounds/stonewall");
 
             // Set up media player
             MediaPlayer.IsRepeating = true;
@@ -60,6 +67,34 @@ namespace YGR
             //bogus_sound = new SoundEffect(buffer , 0, channels);
 
             playing_sound_effects = new Dictionary<IGameElement, SoundEffectInstance>();
+
+            _registry = new Dictionary<Func<bool>, Tuple<Stopwatch, SoundEffect>>();
+        }
+
+        public static void PlaySoundWhile(Func<bool> condition, ref SoundEffect effect)
+        {
+            var watch = new Stopwatch();
+            if (_registry.TryAdd(condition, new Tuple<Stopwatch, SoundEffect>(watch, effect)))
+            {
+                watch.Start();
+                effect.Play();
+            }
+        }
+
+        public static void Update(GameTime gameTime)
+        {
+            foreach (var eff in _registry)
+            {
+                if (eff.Key() && eff.Value.Item1.ElapsedMilliseconds > eff.Value.Item2.Duration.Milliseconds)
+                {
+                    eff.Value.Item2.Play();
+                    eff.Value.Item1.Reset();
+                }
+                else if(!eff.Key())
+                {
+                    _registry.Remove(eff.Key);
+                }
+            }
         }
 
         internal static void PlayMainMenuMusic()

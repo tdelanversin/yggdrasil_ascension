@@ -149,6 +149,7 @@ namespace YGR
                     Manager_Enemies.Update(gameTime);
                     Manager_Light2.Update(gameTime);
                     Manager_Particles.Update(gameTime);
+                    Manager_Sound.Update(gameTime);
                     _level.Update(gameTime);
                     break;
                 case GameState.Menu:
