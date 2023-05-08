@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace YGR
 {
-    public class Enemy_Gigachad : Enemy_Basic
+    public class Enemy_Gigachad : Enemy_Basic, IEnemyBoss
     {
         IShooter Gun2; // Gigachad needs moar guns
 

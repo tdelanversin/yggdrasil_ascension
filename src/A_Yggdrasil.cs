@@ -163,6 +163,11 @@ namespace YGR
                 }
             }
 
+            if (Input.IsKeyTriggered(Keybinds.KillAllEnemies))
+            {
+                Manager_Enemies.KillAllNormalEnemies();
+            }
+
             Camera.Update(_graphics.GraphicsDevice.Viewport, gameTime);
             _background.Update(gameTime);
             // Update all entities in current game state
