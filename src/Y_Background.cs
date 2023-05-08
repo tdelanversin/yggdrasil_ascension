@@ -29,7 +29,7 @@ namespace YGR
             Rect = new Rectangle(-startLocation.X, -startLocation.Y, width, height);
 
             // Update the camera ASAP
-            Camera.SetFocusRect(Rect, animate: false);
+            Camera.SetFocusMenu(Rect, animate: false);
         }
 
         public void DrawYggdrasil(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)
@@ -57,20 +57,28 @@ namespace YGR
 
         public void DrawTitleText(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)
         {
+
             Color c = Color.White;
 
-            // Fade title text in and out depending on camera transition
-            if (Camera.InAnimation)
+            if (Camera.Mode == CameraMode.Menu)
             {
-                if (Camera.Mode == CameraMode.Rect)
+                if (Camera.InAnimation)
                 {
-                    c *= Camera.AnimationPerc;
+                    c *= (float)Camera.EaseInOut(Camera.AnimationPerc, 6d);
+                }
+            }
+            else
+            {
+                if (Camera.ModePrev == CameraMode.Menu && Camera.InAnimation)
+                {
+                    c *= (float)Camera.EaseInOut(1f - Camera.AnimationPerc, 6d);
                 }
                 else
                 {
-                    c *= 1f - Camera.AnimationPerc;
+                    return;
                 }
             }
+
             spriteBatch.Draw(SpriteTitleText, Rect, c);
         }
 

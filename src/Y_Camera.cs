@@ -10,7 +10,7 @@ namespace YGR
     {
         Follow = 0, // Follow players
         Room,       // Focus on a room
-        Rect,       // Focus on a rect
+        Menu,       // Focus on menu
         Manual      // Control pos and zoom with keybinds
     }
     public static class Camera
@@ -157,7 +157,7 @@ namespace YGR
             UpdateZoom(.95f / stretch); // Show a bit more than just the room
         }
 
-        private static void focusOnRect()
+        private static void focusOnMenu()
         {
             Position = new Vector2(Rect.X + Rect.Width / 2, Rect.Y + Rect.Height / 2);
             var stretch = Math.Max((float)Rect.Width / Bounds.Width, (float)Rect.Height / Bounds.Height);
@@ -187,7 +187,7 @@ namespace YGR
             return (1d / (1 + Math.Exp(-a * t)) - 0.5d);
         }
 
-        private static double EaseInOut(double t, double k)
+        public static double EaseInOut(double t, double k)
         {
             return (0.5d / SigmoidCentered(1, k)) * SigmoidCentered(2 * t - 1, k) + 0.5d;
         }
@@ -241,8 +241,8 @@ namespace YGR
                     focusOnRoom();
                     break;
 
-                case CameraMode.Rect:
-                    focusOnRect();
+                case CameraMode.Menu:
+                    focusOnMenu();
                     break;
             }
             UpdateAnimation(gameTime);
@@ -265,15 +265,29 @@ namespace YGR
                 Mode = ModePrev;
         }
 
+        public static void RestorePreviousMode(bool animate = true, float animationDuration = 1000)
+        {
+            if (Mode != CameraMode.Menu)
+            {
+                return;
+            }
+
+            if (animate)
+            {
+                ResetAnimation(animationDuration);
+            }
+            var tmp = Mode;
+            Mode = ModePrev;
+            ModePrev = tmp;
+        }
+
         public static void SetFocusManual()
         {
-            ModePrev = Mode;
             Mode = CameraMode.Manual;
         }
 
         public static void SetFocusPlayers(bool animate = true, float animationDuration = 1000)
         {
-            ModePrev = Mode;
             if (animate)
             {
                 ResetAnimation(animationDuration);
@@ -283,7 +297,6 @@ namespace YGR
 
         public static void SetFocusRoom(IWalkable room, bool animate = true, float animationDuration = 1000)
         {
-            ModePrev = Mode;
             if (animate)
             {
                 ResetAnimation(animationDuration);
@@ -292,7 +305,7 @@ namespace YGR
             Mode = CameraMode.Room;
         }
 
-        public static void SetFocusRect(Rectangle rect, bool animate = true, float animationDuration = 1000)
+        public static void SetFocusMenu(Rectangle rect, bool animate = true, float animationDuration = 1000)
         {
             ModePrev = Mode;
             if (animate)
@@ -300,7 +313,7 @@ namespace YGR
                 ResetAnimation(animationDuration);
             }
             Rect = rect;
-            Mode = CameraMode.Rect;
+            Mode = CameraMode.Menu;
         }
     }
 }

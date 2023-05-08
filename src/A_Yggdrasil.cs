@@ -116,15 +116,25 @@ namespace YGR
             {
                 if (DesiredState == GameState.InGame)
                 {
-                    if (_level.State == Y_Level.GamePlayState.FreeRoam)
-                        Camera.SetFocusPlayers(animate: true);
-                    else if (_level.State == Y_Level.GamePlayState.Encounter)
-                        Camera.SetFocusRoom(_level.ActiveRoom, animate: true);
-                    else if (_level.State == Y_Level.GamePlayState.Start && Camera.Mode == CameraMode.Rect)
-                        Camera.SetFocusRoom(_level.ActiveRoom, animate: true);
+                    if (_level.State == Y_Level.GamePlayState.Start && Camera.Mode == CameraMode.Room)
+                    {
+                        // Don't override the slow camera transition on game starts
+                    }
+                    else
+                    {
+                        Camera.RestorePreviousMode();
+                    }
+                    // if (_level.State == Y_Level.GamePlayState.FreeRoam)
+                    //     Camera.SetFocusPlayers(animate: true);
+                    // else if (_level.State == Y_Level.GamePlayState.Encounter)
+                    //     Camera.SetFocusRoom(_level.ActiveRoom, animate: true);
+                    // else if (_level.State == Y_Level.GamePlayState.Start && Camera.Mode == CameraMode.Menu)
+                    //     Camera.SetFocusRoom(_level.ActiveRoom, animate: true);
                 }
                 if (DesiredState == GameState.Menu)
-                    Camera.SetFocusRect(_background.Rect, animate: true, animationDuration: 750);
+                {
+                    Camera.SetFocusMenu(_background.Rect, animate: true, animationDuration: 750);
+                }
             }
 
             // Only switch actual state during Update(), otherwise you can mess up the Draw call
@@ -201,6 +211,7 @@ namespace YGR
 
                 case GameState.InGame:
                     _level.Draw(gameTime, Vector2.Zero, _spriteBatch);
+                    _background.DrawTitleText(gameTime, Vector2.Zero, _spriteBatch);
 
                     Manager_Particles.Draw(gameTime, _spriteBatch);
                     Manager_Projectile.Draw(gameTime, zero, _spriteBatch);

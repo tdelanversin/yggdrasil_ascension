@@ -342,7 +342,7 @@ namespace YGR
             ActiveRoom = _startRoom;
 
             // Slowly transition on game start, to show players that we're inside Yggdrasil
-            Camera.SetFocusRoom(_startRoom, animate: true, animationDuration: 2000);
+            Camera.SetFocusRoom(_startRoom, animate: true, animationDuration: 4000);
 
             Manager_Enemies.ClearEnemies();
             foreach (var room in Rooms)
@@ -618,7 +618,7 @@ namespace YGR
 
         public void DrawPlayerSelectionUI(GameTime gameTime, SpriteBatch spriteBatch)
         {
-            if (Camera.InAnimation)
+            if (Camera.InAnimation || Camera.Mode != CameraMode.Room)
             {
                 return;
             }
