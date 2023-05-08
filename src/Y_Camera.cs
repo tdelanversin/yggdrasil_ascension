@@ -160,7 +160,11 @@ namespace YGR
         private static void focusOnMenu()
         {
             Position = new Vector2(Rect.X + Rect.Width / 2, Rect.Y + Rect.Height / 2);
-            var stretch = Math.Max((float)Rect.Width / Bounds.Width, (float)Rect.Height / Bounds.Height);
+
+            // Actually take the Min here. Unlike with room focus, the goal is
+            // not to show the entire Title Image no matter the price, but
+            // instead we prefer not to have ugly borders on a non-16:9 aspect ratio.
+            var stretch = Math.Min((float)Rect.Width / Bounds.Width, (float)Rect.Height / Bounds.Height);
             UpdateZoom(1.0f / stretch);
         }
 
