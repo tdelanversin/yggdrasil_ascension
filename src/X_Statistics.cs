@@ -8,12 +8,15 @@ namespace YGR
     public sealed class Statistics
     {
         public int Kills;
+        public int Deaths;
         public int DamageDealt;
         public int DamageTaken;
-        public int Deaths;
         public int TimesFired;
         public int TimesHit;
         public int TimesDashed;
-        public int PowerUpsPickedUp;
+        public int PowerUpsUsed;
+        public int AmountHealed;
+        public float DistanceTravelled;
+
     }
 }

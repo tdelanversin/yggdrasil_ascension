@@ -1,3 +1,4 @@
+#pragma warning disable
 using System;
 using JetBrains.Annotations;
 using Microsoft.Xna.Framework;

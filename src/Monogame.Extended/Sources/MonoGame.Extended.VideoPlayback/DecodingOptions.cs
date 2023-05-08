@@ -1,3 +1,4 @@
+#pragma warning disable
 ﻿using JetBrains.Annotations;
 using MonoGame.Extended.VideoPlayback.VideoDecoding;
 

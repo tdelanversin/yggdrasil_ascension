@@ -170,12 +170,7 @@ namespace YGR
 
             if (Input.IsKeyTriggered(Keybinds.GodMode))
             {
-                foreach (var p in Manager_Players.Players)
-                {
-                    p.Gun = new Gun_Godmode();
-                    ((SimplePlayer)p).VelocityMax = 0.6f;
-                    p.LifePoints = 9999;
-                }
+                foreach (var p in Manager_Players.Players) { p.Godmode(); }
             }
 
             if (Input.IsKeyTriggered(Keybinds.KillAllEnemies))

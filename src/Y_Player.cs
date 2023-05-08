@@ -23,7 +23,7 @@ namespace YGR
         public IGameElement WhoKilledMe { get; set; }
 
         // IVictim fields
-        public int LifePoints { get; set; }
+        public int LifePoints { get; protected set; }
         public int LifePointsMax { get; set; }
         public Color Color { get; set; }
         public X_CollisionModel_Victim Collision { get; }
@@ -194,6 +194,7 @@ namespace YGR
             _aimDirection = new Vector2(1, 0);
             _invincible = false;
             IsActive = true;
+            Stats = new Statistics();
 
             Room = Level.GetRoom(this, Room);
         }
@@ -232,6 +233,13 @@ namespace YGR
             LifePoints = LifePointsMax;
         }
 
+        public virtual void Godmode()
+        {
+            LifePoints = LifePointsMax = 999;
+            Gun = new Gun_Godmode();
+            VelocityMax = 0.6f;
+        }
+
         /* Deal with being hit by projectile, basically physical therapy */
         public virtual void Hit(IProjectile projectile)
         {
@@ -241,8 +249,12 @@ namespace YGR
             _invincible = true;
             _invincibleTimer = 0;
 
-            if (LifePoints <= 0)
+            // @statistics
+            Stats.DamageTaken += projectile.Damage;
+            if (LifePoints <= 0) {
                 Manager_Sound.Sound_PlayerDeath.Play();
+                Stats.Deaths++;
+            }
         }
 
         protected virtual void UpdateRoom(GameTime gameTime)
@@ -335,11 +347,12 @@ namespace YGR
                 if ((ControlLayout != ControlLayout.ControllerOnly && Input.IsKeyDown(Keybinds.ActionOne)) || Input.IsButtonDown(PlayerIndex, Keybinds.GamePadAction))
                 {
                     Manager_Sound.Sound_Dash.Play();
-
                     _dashing = true;
                     _dashTimer = 0;
                     _dashCooldownTimer = 0; // Reset timer
 
+                    // @statistics
+                    Stats.TimesDashed++;
                 }
             }
         }
@@ -476,6 +489,7 @@ namespace YGR
             }
 
             Position += Velocity * timeStepMS;
+            Stats.DistanceTravelled += Velocity.Length() * timeStepMS;
             _rect.Location = Position.ToPoint();
         }
 

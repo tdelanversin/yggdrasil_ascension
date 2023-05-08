@@ -1,3 +1,4 @@
+#pragma warning disable
 ﻿using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using Sdcb.FFmpeg.Raw;

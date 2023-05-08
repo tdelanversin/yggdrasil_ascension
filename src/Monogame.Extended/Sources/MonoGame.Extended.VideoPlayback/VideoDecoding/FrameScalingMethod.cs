@@ -1,3 +1,4 @@
+#pragma warning disable
 ﻿using Sdcb.FFmpeg.Raw;
 
 namespace MonoGame.Extended.VideoPlayback.VideoDecoding;

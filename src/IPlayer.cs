@@ -25,5 +25,6 @@ namespace YGR
         public AnimatedSprite GetSprite();
         public bool IsAlive();
         public void Revive();
+        public void Godmode();
     }
 }
