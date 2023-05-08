@@ -168,6 +168,7 @@ namespace YGR
             var p = (IPlayer)projectile.WhoFiredMe;
             p.Stats.DamageDealt += projectile.Damage;
             p.Stats.TimesHit++;
+            if (this is IEnemyBoss) { p.Stats.BossDamageDealt += projectile.Damage; }
             if (LifePoints < 0) { p.Stats.Kills++; }
         }
 

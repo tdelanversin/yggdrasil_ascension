@@ -220,17 +220,43 @@ namespace YGR
             return LifePoints > 0;
         }
 
-        public virtual void Heal(int healAmount = 999)
-        {
-            // Don't heal a dead player
-            if (!IsAlive()) { return; }
 
-            LifePoints = Math.Min(LifePoints + healAmount, LifePointsMax);
+        // Private heal method, this does NOT check if player is alive
+        protected virtual void heal(int healAmount)
+        {
+            if (LifePointsMax - LifePoints < healAmount)
+            {
+                healAmount = LifePointsMax - LifePoints;
+            }
+            LifePoints += healAmount;
+            Stats.AmountHealed += healAmount;
+        }
+
+        public virtual void Heal()
+        {
+            if (!IsAlive()) { return; } // Don't heal a dead player
+            heal(LifePointsMax);
+        }
+
+        public virtual void Heal(int healAmount)
+        {
+            if (!IsAlive()) { return; } // Don't heal a dead player
+            heal(healAmount);
         }
 
         public virtual void Revive()
         {
+            if (IsAlive()) { return; }
             LifePoints = LifePointsMax;
+            Stats.Revives++;
+            heal(LifePointsMax / 2);
+        }
+
+        public virtual void Revive(int healAmount)
+        {
+            if (IsAlive()) { return; }
+            Stats.Revives++;
+            heal(healAmount);
         }
 
         public virtual void Godmode()
@@ -251,9 +277,12 @@ namespace YGR
 
             // @statistics
             Stats.DamageTaken += projectile.Damage;
-            if (LifePoints <= 0) {
+            if (projectile.WhoFiredMe is IEnemyBoss) { Stats.BossDamageTaken += projectile.Damage; }
+            if (LifePoints <= 0)
+            {
                 Manager_Sound.Sound_PlayerDeath.Play();
                 Stats.Deaths++;
+                LifePoints = 0;
             }
         }
 
@@ -392,6 +421,7 @@ namespace YGR
                     _isAiming = true; // Show the aim indicator when firing
                     _currentAimInput = InputType.Controller;
                     Gun.Shoot(gameTime, Rect.Center.ToVector2(), _aimDirection, Level, this);
+                    Stats.TimesFired++;
                 }
             }
         }
@@ -434,6 +464,7 @@ namespace YGR
                 if (Input.IsLeftMousePressed() && IsAlive())
                 {
                     Gun.Shoot(gameTime, playerCenter, _aimDirection, Level, this);
+                    Stats.TimesFired++;
                 }
 
                 if (Input.HasMouseStateChanged())

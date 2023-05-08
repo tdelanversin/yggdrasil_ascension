@@ -24,7 +24,10 @@ namespace YGR
 
         public AnimatedSprite GetSprite();
         public bool IsAlive();
+        public void Heal();
+        public void Heal(int healAmount);
         public void Revive();
+        public void Revive(int healAmount);
         public void Godmode();
     }
 }
