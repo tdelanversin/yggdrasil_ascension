@@ -19,4 +19,6 @@ namespace YGR
         public IShooter Gun { get; set; }
         public void DropSomethingJuicyMaybe();
     }
+
+    public interface IEnemyBoss : IEnemy { }
 }

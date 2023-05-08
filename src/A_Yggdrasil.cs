@@ -19,6 +19,7 @@ namespace YGR
         public GraphicsDeviceManager _graphics;
         public SpriteBatch _spriteBatch;
         private FrameCounter _frameCounter = new FrameCounter();
+        private Background _background;
 
         public static GraphicsDevice GraphicsDevice_;
 
@@ -34,7 +35,6 @@ namespace YGR
 
         protected override void Initialize()
         {
-            State = GameState.PreGame;
             Settings.Initialize(this);
             Input.Initialize(this);
             Util.Initialize(this);
@@ -52,8 +52,11 @@ namespace YGR
             Y_Door.Initialize(Content);
 
             GraphicsDevice_ = GraphicsDevice;
-
+            _background = new Background();
             _level = new Y_Level(level, 32, 32, "./Levels/", "./Doors", Content);
+
+            State = GameState.PreGame;
+
             base.Initialize();
         }
 
@@ -67,22 +70,20 @@ namespace YGR
             Manager_Particles.LoadContent(Content, GraphicsDevice);
             Manager_Sound.PlayMainMenuMusic();
 
+            _background.LoadContent(Content);
             _level.Preprocess(GraphicsDevice);
         }
 
         internal void StartNewGame()
         {
             // Stop any playing songs and play a viking horn, just because
-            Manager_Sound.StopMusic();
+            // Manager_Sound.StopMusic();
             Manager_Sound.Sound_VikingHorn.Play();
 
             Notifications.Clear();
 
             Manager_Light2.Platform = Manager_Light2.Type.GPU;
             _level.Create(GraphicsDevice);
-            //Manager_Particles.Dispose();
-            //Manager_Particles.Initialize();
-            //Manager_Particles.LoadContent();
 
             // Once everything is in place, inform Update() of the new desired state
             DesiredState = GameState.InGame;
@@ -107,6 +108,32 @@ namespace YGR
                 if (State == GameState.PreGame)
                 {
                     // Nothing for now
+                }
+            }
+
+            // Transition the camera when switching from in-game to menu and vice versa
+            if (State != DesiredState)
+            {
+                if (DesiredState == GameState.InGame)
+                {
+                    if (_level.State == Y_Level.GamePlayState.Start && Camera.Mode == CameraMode.Room)
+                    {
+                        // Don't override the slow camera transition on game starts
+                    }
+                    else
+                    {
+                        Camera.RestorePreviousMode();
+                    }
+                    // if (_level.State == Y_Level.GamePlayState.FreeRoam)
+                    //     Camera.SetFocusPlayers(animate: true);
+                    // else if (_level.State == Y_Level.GamePlayState.Encounter)
+                    //     Camera.SetFocusRoom(_level.ActiveRoom, animate: true);
+                    // else if (_level.State == Y_Level.GamePlayState.Start && Camera.Mode == CameraMode.Menu)
+                    //     Camera.SetFocusRoom(_level.ActiveRoom, animate: true);
+                }
+                if (DesiredState == GameState.Menu)
+                {
+                    Camera.SetFocusMenu(_background.Rect, animate: true, animationDuration: 750);
                 }
             }
 
@@ -136,6 +163,13 @@ namespace YGR
                 }
             }
 
+            if (Input.IsKeyTriggered(Keybinds.KillAllEnemies))
+            {
+                Manager_Enemies.KillAllNormalEnemies();
+            }
+
+            Camera.Update(_graphics.GraphicsDevice.Viewport, gameTime);
+            _background.Update(gameTime);
             // Update all entities in current game state
             switch (State)
             {
@@ -143,7 +177,6 @@ namespace YGR
                     Menu.Update();
                     break;
                 case GameState.InGame:
-                    Camera.Update(_graphics.GraphicsDevice.Viewport, gameTime);
                     Manager_Players.Update(gameTime);
                     Manager_Projectile.Update(gameTime);
                     Manager_Enemies.Update(gameTime);
@@ -154,6 +187,7 @@ namespace YGR
                     break;
                 case GameState.Menu:
                     Menu.Update();
+                    _level.Update(gameTime);
                     break;
             }
 
@@ -166,25 +200,23 @@ namespace YGR
             float deltaTime = (float)gameTime.ElapsedGameTime.TotalMilliseconds;
             Vector2 zero = Vector2.Zero;
 
+            GraphicsDevice.Clear(Color.CornflowerBlue);
+
+            /* ### Draw everything that is an in-game level element and zoomable, e.g. not UI / text ### */
+            _spriteBatch.Begin(
+                       SpriteSortMode.Immediate, null, null, null, null, null,
+                       Camera.Transform);
+
+            _background.Draw(gameTime, zero, _spriteBatch);
             switch (State)
             {
                 case GameState.PreGame:
-                    GraphicsDevice.Clear(Color.CornflowerBlue);
-                    _spriteBatch.Begin(
-                            SpriteSortMode.Immediate, null, null, null, null, null,
-                            null);
-                    Menu.Draw(_spriteBatch);
-                    _spriteBatch.End();
+                    _background.DrawTitleText(gameTime, Vector2.Zero, _spriteBatch);
                     break;
 
                 case GameState.InGame:
-                    GraphicsDevice.Clear(_level.OutsideColor);
-
-                    _spriteBatch.Begin(
-                        SpriteSortMode.Immediate, null, null, null, null, null,
-                        Camera.Transform);
-
                     _level.Draw(gameTime, Vector2.Zero, _spriteBatch);
+                    _background.DrawTitleText(gameTime, Vector2.Zero, _spriteBatch);
 
                     Manager_Particles.Draw(gameTime, _spriteBatch);
                     Manager_Projectile.Draw(gameTime, zero, _spriteBatch);
@@ -199,29 +231,44 @@ namespace YGR
                         Manager_Players.DrawOutline(gameTime, zero, _spriteBatch);
                         Manager_Enemies.DrawOutline(gameTime, zero, _spriteBatch);
                     }
-                    _spriteBatch.End();
-
-                    _spriteBatch.Begin(SpriteSortMode.Immediate, null, null, null, null, null, null);
-                    _level.DrawUI(gameTime, _spriteBatch);
-                    _spriteBatch.End();
                     break;
 
                 case GameState.Menu:
-                    GraphicsDevice.Clear(Color.CornflowerBlue);
-                    _spriteBatch.Begin(
-                            SpriteSortMode.Immediate, null, null, null, null, null,
-                            null);
-                    Menu.Draw(_spriteBatch);
-                    _spriteBatch.End();
+                    _level.Draw(gameTime, Vector2.Zero, _spriteBatch);
+                    _background.DrawTitleText(gameTime, Vector2.Zero, _spriteBatch);
                     break;
             }
+            _spriteBatch.End();
 
+            /* ### Draw everything that is NOT an in-game level element ### */
+            _spriteBatch.Begin(SpriteSortMode.Immediate, null, null, null, null, null, null);
+
+            // Fps Counter
             _frameCounter.Update((float)gameTime.ElapsedGameTime.TotalSeconds);
             string fps = string.Format("FPS: {0:0}", _frameCounter.AverageFramesPerSecond);
             var fpsColor = Color.BlanchedAlmond;
-            _spriteBatch.Begin(SpriteSortMode.Immediate, null, null, null, null, null, null);
             _spriteBatch.DrawString(Fonts.Small, fps, new Vector2(1, 1), fpsColor);
+
+            // Level- / Menu UI
+            switch (State)
+            {
+                case GameState.PreGame:
+                    Menu.Draw(_spriteBatch);
+                    break;
+
+                case GameState.InGame:
+                    _level.DrawUI(gameTime, _spriteBatch);
+                    break;
+
+                case GameState.Menu:
+                    _level.DrawPlayerStatusUI(gameTime, _spriteBatch);
+                    Menu.Draw(_spriteBatch);
+                    break;
+            }
+
+            // Finally, notifications
             Notifications.Draw(gameTime, zero, _spriteBatch);
+
             _spriteBatch.End();
             base.Draw(gameTime);
         }

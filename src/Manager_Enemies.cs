@@ -22,6 +22,11 @@ namespace YGR
             _enemies.Clear();
         }
 
+        public static void KillAllNormalEnemies()
+        {
+            _enemies.RemoveAll(e => e is not IEnemyBoss);
+        }
+
         public static void AddEnemy_SimpleEnemy(Vector2 position, Y_Level level)
         {
             _enemies.Add(new Enemy_Basic(position, Manager_Sprites.NewAnimatedSprite_TestCharacter(), level));

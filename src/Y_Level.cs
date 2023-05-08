@@ -68,8 +68,8 @@ namespace YGR
         public static int LightOffsetY;
         public static int LightOffsetZ;
 
-        Texture2D _background;
-        Rectangle _backgroundRect;
+        // Texture2D _background;
+        // Rectangle _backgroundRect;
 
         // Gameplay state objects
         public IWalkable ActiveRoom;
@@ -149,12 +149,6 @@ namespace YGR
             Logger.Info("room finalize time for " + list.Count() + " rooms: " + elapsed + " which is " + elapsed / list.Count() + " ms per room");
 
             Rooms = new Dictionary<int, IWalkable>();
-
-            _background = content.Load<Texture2D>("SpritesOther/Level_Background");
-            int width = (int)(_background.Width * 3.8f);
-            int height = (int)(_background.Height * 3.8f);
-            Point startLocation = new Point((int)(width / 1.96f), (int)(height / 1.12f));
-            _backgroundRect = new Rectangle(-startLocation.X, -startLocation.Y, width, height);
 
         }
 
@@ -278,7 +272,7 @@ namespace YGR
                         out direction, out numTilesLength, out tileOffset);
 
                     Y_Door connector;
-                    if(
+                    if (
                         ((Y_CMRoom)fromRoom).Category == "Leaf" && ((Y_CMRoom)toRoom).Category == "Leaf" ||
                         ((Y_CMRoom)fromRoom).Category == "Leaf" && ((Y_CMRoom)toRoom).Category == "Gold" ||
                         ((Y_CMRoom)fromRoom).Category == "Gold" && ((Y_CMRoom)toRoom).Category == "Leaf"
@@ -322,7 +316,7 @@ namespace YGR
                 }
             }
 
-            int connectorIndex = Rooms.Max(x => x.Key)+1;
+            int connectorIndex = Rooms.Max(x => x.Key) + 1;
             foreach (var c in connectors)
             {
                 Rooms.Add(connectorIndex, c);
@@ -346,7 +340,9 @@ namespace YGR
             // Gameplay state
             State = GamePlayState.Start;
             ActiveRoom = _startRoom;
-            Camera.SetFocusRoom(_startRoom, animate: false);
+
+            // Slowly transition on game start, to show players that we're inside Yggdrasil
+            Camera.SetFocusRoom(_startRoom, animate: true, animationDuration: 3000);
 
             Manager_Enemies.ClearEnemies();
             foreach (var room in Rooms)
@@ -491,6 +487,10 @@ namespace YGR
                 interactable.Update(gameTime);
             }
 
+            // Just sample what room for any player right now. For an encounter
+            // to start, will check anyway if everyone is inside.
+            ActiveRoom = Manager_Players.Players[0].Room;
+
             switch (State)
             {
                 case GamePlayState.Start:
@@ -503,9 +503,6 @@ namespace YGR
                     break;
 
                 case GamePlayState.FreeRoam:
-                    // Just sample the first room the first player is in right now
-                    ActiveRoom = Manager_Players.Players[0].Room;
-
                     if (ActiveRoom.WhatAreYou() != X_LevelElements.Room)
                     {
                         break;
@@ -523,9 +520,10 @@ namespace YGR
                         break;
                     }
 
-                    if (cmroom.GetEnemiesInside().Count < 1)
+
+                    // If an uncleared room does not contain any enemies, just mark as cleared an move on
+                    if (cmroom.GetEnemiesInside().Count < 1 && !cmroom.Cleared)
                     {
-                        // Room does not contain any enemies, so just mark as cleared an move on
                         cmroom.Cleared = true;
                         cmroom.OpenAllUnlockedRoomDoors();
                         break;
@@ -558,12 +556,15 @@ namespace YGR
                     // a room, otherwise we wouldn't be here
                     var encounterRoom = (Y_CMRoom)ActiveRoom;
 
+                    // Duration for Win/Lose message to be shown
+                    int gameEndNotificationLength = 15000;
+
                     // Check if players died
                     if (encounterRoom.GetPlayersInside().FindAll(p => p.LifePoints > 0).Count < 1)
                     {
-                        Notifications.New("\n\n\n\n", Color.Wheat, 60000);
-                        Notifications.New("Fighting to the bitter end, our heroes couldn't prove", Color.Wheat, 60000, Fonts.Large);
-                        Notifications.New("themselves worthy of fighting alongside the gods...", Color.Wheat, 60000, Fonts.Large);
+                        Notifications.New("\n\n\n\n", Color.Wheat, gameEndNotificationLength);
+                        Notifications.New("Fighting to the bitter end, our heroes couldn't prove", Color.Wheat, gameEndNotificationLength, Fonts.Large);
+                        Notifications.New("themselves worthy of fighting alongside the gods...", Color.Wheat, gameEndNotificationLength, Fonts.Large);
                         Manager_Sound.PlayFreeRoamMusic();
                         State = GamePlayState.End;
                         break;
@@ -591,9 +592,9 @@ namespace YGR
 
                     if (encounterRoom.Name.StartsWith("Gold"))
                     {
-                        Notifications.New("\n\n\n\n", Color.Wheat, 60000);
-                        Notifications.New("Overcoming the final challenge, glory awaits our heroes", Color.Wheat, 60000, Fonts.Large);
-                        Notifications.New("when they fight alongside the gods in Ragnarok...", Color.Wheat, 60000, Fonts.Large);
+                        Notifications.New("\n\n\n\n", Color.Wheat, gameEndNotificationLength);
+                        Notifications.New("Overcoming the final challenge, glory awaits our heroes", Color.Wheat, gameEndNotificationLength, Fonts.Large);
+                        Notifications.New("when they fight alongside the gods in Ragnarok...", Color.Wheat, gameEndNotificationLength, Fonts.Large);
                         Manager_Sound.PlayFreeRoamMusic();
                         encounterRoom.OpenAllUnlockedRoomDoors();
                         Camera.SetFocusPlayers();
@@ -617,6 +618,11 @@ namespace YGR
 
         public void DrawPlayerSelectionUI(GameTime gameTime, SpriteBatch spriteBatch)
         {
+            if (Camera.InAnimation || Camera.Mode != CameraMode.Room)
+            {
+                return;
+            }
+
             SpriteFont font = Fonts.Large;
             float spacing = 1.5f;
             string longest_str = "P1: [JOINED] Pick character"; // Used to center the text
@@ -736,7 +742,6 @@ namespace YGR
 
         public void Draw(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)
         {
-            spriteBatch.Draw(_background, _backgroundRect, Color.White);
             foreach (var room in Rooms)
             {
                 room.Value.Draw(gameTime, globalOffset, spriteBatch);

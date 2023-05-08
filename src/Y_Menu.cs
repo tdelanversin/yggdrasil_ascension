@@ -260,7 +260,6 @@ namespace YGR
         public static void Draw(SpriteBatch spriteBatch)
         {
             Rectangle Bounds = Game._graphics.GraphicsDevice.Viewport.Bounds;
-            spriteBatch.Draw(TitleImage, Bounds, Color.White);
             foreach (var item in SelectableItems)
             {
                 item.Draw(spriteBatch, Bounds);

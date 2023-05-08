@@ -25,9 +25,11 @@ namespace YGR
         public static Keys CameraMoveDown = Keys.G;
         public static Keys CameraMoveRight = Keys.H;
 
+        /* Debug Area */
         public static Keys CycleCameraMode = Keys.F10;
         public static Keys ToggleFullscreen = Keys.F11;
-        public static Keys GodMode = Keys.Delete;
+        public static Keys KillAllEnemies = Keys.Delete;
+        public static Keys GodMode = Keys.Back;
 
         public static Keys OpenAllDoors = Keys.F1;
         public static Keys CloseAllDoors = Keys.F2;
