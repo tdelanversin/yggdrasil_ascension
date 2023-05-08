@@ -297,6 +297,7 @@ namespace YGR
 
         public static void SetFocusRoom(IWalkable room, bool animate = true, float animationDuration = 1000)
         {
+            ModePrev = Mode;
             if (animate)
             {
                 ResetAnimation(animationDuration);
