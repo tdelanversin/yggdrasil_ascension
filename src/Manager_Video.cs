@@ -3,11 +3,6 @@ using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Media;
 using MonoGame.Extended.Framework.Media;
 using MonoGame.Extended.VideoPlayback;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace YGR
 {
@@ -15,31 +10,49 @@ namespace YGR
     {
         private static VideoPlayer VideoPlayer;
         private static Video Video;
+        public static bool VideoPlaybackNotSupported;
 
         public static void Initialize(GraphicsDevice graphicsDevice, string videoPath)
         {
-            VideoPlayer = new VideoPlayer(graphicsDevice);
-            Video = VideoHelper.LoadFromFile(videoPath);
+            try
+            {
+                VideoPlayer = new VideoPlayer(graphicsDevice);
+                Video = VideoHelper.LoadFromFile(videoPath);
+            }
+            catch (System.DllNotFoundException)
+            {
+                // HACK: we want the game to run without the video in this case
+                VideoPlaybackNotSupported = true;
+                VideoPlayer.Dispose();
+            }
         }
 
         public static void Play()
         {
+            if (VideoPlaybackNotSupported)
+                return;
             VideoPlayer.Play(Video);
         }
 
         public static void Stop()
         {
+            if (VideoPlaybackNotSupported)
+                return;
             VideoPlayer.Stop();
         }
 
         public static void Dispose()
         {
+            if (VideoPlaybackNotSupported)
+                return;
             Video.Dispose();
             VideoPlayer.Dispose();
         }
 
         public static bool Draw(GameTime gameTime, SpriteBatch spriteBatch)
         {
+            if (VideoPlaybackNotSupported)
+                return true;
             try
             {
                 if (VideoPlayer.State == MediaState.Playing)

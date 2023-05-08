@@ -1364,7 +1364,15 @@ internal sealed unsafe class DecodeContext : DisposableBase
 
         // Clear the staging data in buffer audio frame.
         // Do NOT free the audio frame here.
-        ffmpeg.av_frame_unref(_audioFrame);
+        try
+        {
+            ffmpeg.av_frame_unref(_audioFrame);
+        }
+        catch (System.DllNotFoundException)
+        {
+            return; // HACK
+        }
+
         // The point is the same. But since video frames are managed by a frame pool, we just need to set this to null.
         _currentVideoFrame = null;
 

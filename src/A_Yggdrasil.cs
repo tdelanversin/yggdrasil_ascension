@@ -1,9 +1,6 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
-using MonoGame.Extended.VideoPlayback;
-using Video = MonoGame.Extended.Framework.Media.Video;
-using VideoPlayer = MonoGame.Extended.Framework.Media.VideoPlayer;
 
 namespace YGR
 {
@@ -101,7 +98,7 @@ namespace YGR
             // Keybind to switch in and out of the menu screen
             if (Input.IsKeyTriggered(Keys.Escape) || Input.IsButtonTriggeredAny(Buttons.Start))
             {
-                if(State == GameState.Intro)
+                if (State == GameState.Intro)
                 {
                     DesiredState = GameState.PreGame;
                 }
@@ -126,7 +123,7 @@ namespace YGR
             // Transition the camera when switching from in-game to menu and vice versa
             if (State != DesiredState)
             {
-                if(State == GameState.Intro)
+                if (State == GameState.Intro)
                 {
                     Manager_Video.Stop();
                     Manager_Video.Dispose();
@@ -187,11 +184,12 @@ namespace YGR
             }
 
             Camera.Update(_graphics.GraphicsDevice.Viewport, gameTime);
-            
+
             // Update all entities in current game state
             switch (State)
             {
                 case GameState.Intro:
+                    // Handled entirely in Draw()
                     break;
                 case GameState.PreGame:
                     _background.Update(gameTime);
@@ -225,62 +223,45 @@ namespace YGR
             GraphicsDevice.Clear(Color.CornflowerBlue);
 
             /* ### Draw everything that is an in-game level element and zoomable, e.g. not UI / text ### */
+            _spriteBatch.Begin(
+                   SpriteSortMode.Immediate, null, null, null, null, null,
+                   Camera.Transform);
 
-            if(State == GameState.Intro)
+            switch (State)
             {
-                /*
-                 * Sorry... need to bypass the camera transform for this one, otherwise the video
-                 * will be a tiny square somewhere...
-                 */
-                _spriteBatch.Begin();
-                bool finished = Manager_Video.Draw(gameTime, _spriteBatch);
-                if (finished)
-                {
-                    DesiredState = GameState.PreGame;
-                }
-                _spriteBatch.End();
+                case GameState.PreGame:
+                    _background.Draw(gameTime, zero, _spriteBatch);
+                    _background.DrawTitleText(gameTime, Vector2.Zero, _spriteBatch);
+                    break;
+
+                case GameState.InGame:
+                    _background.Draw(gameTime, zero, _spriteBatch);
+                    _level.Draw(gameTime, Vector2.Zero, _spriteBatch);
+                    _background.DrawTitleText(gameTime, Vector2.Zero, _spriteBatch);
+
+                    Manager_Particles.Draw(gameTime, _spriteBatch);
+                    Manager_Projectile.Draw(gameTime, zero, _spriteBatch);
+
+                    Manager_Enemies.Draw(gameTime, zero, _spriteBatch);
+                    Manager_Players.Draw(gameTime, zero, _spriteBatch);
+
+                    if (Settings.Outlines)
+                    {
+                        _level.DrawOutline(gameTime, Vector2.Zero, _spriteBatch);
+                        Manager_Projectile.DrawOutline(gameTime, zero, _spriteBatch);
+                        Manager_Players.DrawOutline(gameTime, zero, _spriteBatch);
+                        Manager_Enemies.DrawOutline(gameTime, zero, _spriteBatch);
+                    }
+                    break;
+
+                case GameState.Menu:
+                    _background.Draw(gameTime, zero, _spriteBatch);
+                    _level.Draw(gameTime, Vector2.Zero, _spriteBatch);
+                    _background.DrawTitleText(gameTime, Vector2.Zero, _spriteBatch);
+                    break;
             }
-            else
-            {
-                _spriteBatch.Begin(
-                       SpriteSortMode.Immediate, null, null, null, null, null,
-                       Camera.Transform);
+            _spriteBatch.End();
 
-                switch (State)
-                {
-                    case GameState.PreGame:
-                        _background.Draw(gameTime, zero, _spriteBatch);
-                        _background.DrawTitleText(gameTime, Vector2.Zero, _spriteBatch);
-                        break;
-
-                    case GameState.InGame:
-                        _background.Draw(gameTime, zero, _spriteBatch);
-                        _level.Draw(gameTime, Vector2.Zero, _spriteBatch);
-                        _background.DrawTitleText(gameTime, Vector2.Zero, _spriteBatch);
-
-                        Manager_Particles.Draw(gameTime, _spriteBatch);
-                        Manager_Projectile.Draw(gameTime, zero, _spriteBatch);
-
-                        Manager_Enemies.Draw(gameTime, zero, _spriteBatch);
-                        Manager_Players.Draw(gameTime, zero, _spriteBatch);
-
-                        if (Settings.Outlines)
-                        {
-                            _level.DrawOutline(gameTime, Vector2.Zero, _spriteBatch);
-                            Manager_Projectile.DrawOutline(gameTime, zero, _spriteBatch);
-                            Manager_Players.DrawOutline(gameTime, zero, _spriteBatch);
-                            Manager_Enemies.DrawOutline(gameTime, zero, _spriteBatch);
-                        }
-                        break;
-
-                    case GameState.Menu:
-                        _background.Draw(gameTime, zero, _spriteBatch);
-                        _level.Draw(gameTime, Vector2.Zero, _spriteBatch);
-                        _background.DrawTitleText(gameTime, Vector2.Zero, _spriteBatch);
-                        break;
-                }
-                _spriteBatch.End();
-            }
 
             /* ### Draw everything that is NOT an in-game level element ### */
             _spriteBatch.Begin(SpriteSortMode.Immediate, null, null, null, null, null, null);
@@ -291,9 +272,16 @@ namespace YGR
             var fpsColor = Color.BlanchedAlmond;
             _spriteBatch.DrawString(Fonts.Small, fps, new Vector2(1, 1), fpsColor);
 
-            // Level- / Menu UI
+            // Level- / Menu UI / Intro Video
             switch (State)
             {
+                case GameState.Intro:
+                    bool finished = Manager_Video.Draw(gameTime, _spriteBatch);
+                    if (finished)
+                    {
+                        DesiredState = GameState.PreGame;
+                    }
+                    break;
                 case GameState.PreGame:
                     Menu.Draw(_spriteBatch);
                     break;
