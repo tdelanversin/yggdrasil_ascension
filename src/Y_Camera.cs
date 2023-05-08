@@ -21,9 +21,11 @@ namespace YGR
         public static Rectangle VisibleArea { get; private set; }
         public static Matrix Transform { get; private set; }
         public static CameraMode Mode { get; private set; }
+        public static CameraMode ModePrev { get; private set; }
         public static IWalkable Room { get; private set; } // Room to focus on
         public static Rectangle Rect { get; private set; } // Rect to focus on
         public static bool InAnimation { get { return _animationTimer < _animationDuration; } }
+        public static float AnimationPerc { get { return _animationTimer / _animationDuration; } }
 
         private static float _animationDuration = 1000;
         private static float _animationTimer = _animationDuration;
@@ -255,13 +257,23 @@ namespace YGR
             _animationTimer = 0;
         }
 
+        public static void ToggleManualMode()
+        {
+            if (Mode != CameraMode.Manual)
+                SetFocusManual();
+            else
+                Mode = ModePrev;
+        }
+
         public static void SetFocusManual()
         {
+            ModePrev = Mode;
             Mode = CameraMode.Manual;
         }
 
         public static void SetFocusPlayers(bool animate = true, float animationDuration = 1000)
         {
+            ModePrev = Mode;
             if (animate)
             {
                 ResetAnimation(animationDuration);
@@ -271,6 +283,7 @@ namespace YGR
 
         public static void SetFocusRoom(IWalkable room, bool animate = true, float animationDuration = 1000)
         {
+            ModePrev = Mode;
             if (animate)
             {
                 ResetAnimation(animationDuration);
@@ -281,6 +294,7 @@ namespace YGR
 
         public static void SetFocusRect(Rectangle rect, bool animate = true, float animationDuration = 1000)
         {
+            ModePrev = Mode;
             if (animate)
             {
                 ResetAnimation(animationDuration);
