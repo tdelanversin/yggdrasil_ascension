@@ -37,6 +37,8 @@ namespace YGR
         public IShooter Gun { get; set; }
         public PlayerIndex PlayerIndex { get; }
         public bool IsActive { get; protected set; }
+        public bool IsInvincible { get; protected set; }
+        public bool IsDashing { get; protected set; }
         public PlayerType Type { get; }
         public Statistics Stats { get; set; }
 
@@ -58,7 +60,6 @@ namespace YGR
         protected Vector2 Position;
         protected ParticleEffect pE;
         protected bool _isAiming;
-        protected bool _invincible;
         protected float _invincibleDuration;
         protected float _invincibleTimer;
         protected float _cr;
@@ -68,7 +69,6 @@ namespace YGR
         protected float _actionTreshold;
 
         // Dash
-        protected bool _dashing;
         protected int _dashDuration;
         protected float _dashSpeed;
         protected int _dashTimer;
@@ -178,7 +178,7 @@ namespace YGR
             _deceleration = 0.004f;
 
             // Dash
-            _dashing = false;
+            IsDashing = false;
             _dashDuration = 200; // Dash duration in ms
             _dashSpeed = 4f; // Dash speed multiplier
             _dashTimer = _dashDuration;
@@ -192,7 +192,7 @@ namespace YGR
             // Character state
             _isAiming = false;
             _aimDirection = new Vector2(1, 0);
-            _invincible = false;
+            IsInvincible = false;
             IsActive = true;
             Stats = new Statistics();
 
@@ -201,7 +201,7 @@ namespace YGR
 
         public virtual X_LevelElements WhatAreYou()
         {
-            if (_invincible || _dashing)
+            if (IsInvincible || IsDashing)
             {
                 return X_LevelElements.Invincible;
             }
@@ -269,10 +269,10 @@ namespace YGR
         /* Deal with being hit by projectile, basically physical therapy */
         public virtual void Hit(IProjectile projectile)
         {
-            if (_invincible || !IsAlive()) { return; }
+            if (IsInvincible || !IsAlive()) { return; }
 
             LifePoints -= projectile.Damage;
-            _invincible = true;
+            IsInvincible = true;
             _invincibleTimer = 0;
 
             // @statistics
@@ -296,11 +296,11 @@ namespace YGR
 
         protected virtual void UpdateInvincibility(GameTime gameTime)
         {
-            if (_invincible)
+            if (IsInvincible)
             {
                 if (_invincibleTimer > _invincibleDuration)
                 {
-                    _invincible = false;
+                    IsInvincible = false;
                 }
                 else
                 {
@@ -319,12 +319,12 @@ namespace YGR
 
         protected virtual void UpdateColor(GameTime gameTime)
         {
-            if (_invincible)
+            if (IsInvincible)
             {
                 // Blinking while invincible
                 _characterColor = Color.DimGray * (float)((Math.Sin(_invincibleTimer / 50) + 1) / 2);
             }
-            else if (_dashing)
+            else if (IsDashing)
             {
                 // Transient invisibility while dashing
                 _characterColor = Color.White * (_dashTimer / (float)_dashDuration);
@@ -337,13 +337,13 @@ namespace YGR
 
         protected virtual void UpdateDash(GameTime gameTime)
         {
-            if (_dashing)
+            if (IsDashing)
             {
                 Manager_Particles._particleEffects[(int)Manager_Particles.Effect.Dash].Trigger(new Vector2(_rect.Location.X + _rect.Width / 2, _rect.Location.Y + _rect.Height));
                 //Manager_Particles.GenParticleEffectDash(new Vector2(_rect.Location.X+_rect.Width/2, _rect.Location.Y+_rect.Height));
                 if (_dashTimer > _dashDuration)
                 {
-                    _dashing = false;
+                    IsDashing = false;
                 }
                 else
                 {
@@ -376,7 +376,7 @@ namespace YGR
                 if ((ControlLayout != ControlLayout.ControllerOnly && Input.IsKeyDown(Keybinds.ActionOne)) || Input.IsButtonDown(PlayerIndex, Keybinds.GamePadAction))
                 {
                     Manager_Sound.Sound_Dash.Play();
-                    _dashing = true;
+                    IsDashing = true;
                     _dashTimer = 0;
                     _dashCooldownTimer = 0; // Reset timer
 

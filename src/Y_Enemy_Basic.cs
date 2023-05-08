@@ -160,6 +160,9 @@ namespace YGR
         {
             if (State == EnemyState.Inactive) { return; }
 
+            // Return if alread dead, otherwise player kill stats are inaccurate
+            if (LifePoints <= 0) { return; }
+
             LifePoints -= projectile.Damage;
             _hitFramesCounter = 1;
             _currentColor = Color.Lerp(_hitColor, Color, 0.1f);

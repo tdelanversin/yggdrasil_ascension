@@ -19,6 +19,8 @@ namespace YGR
         public IShooter Gun { get; set; }
         public PlayerIndex PlayerIndex { get; }
         public bool IsActive { get; }
+        public bool IsInvincible { get; }
+        public bool IsDashing { get; }
         public PlayerType Type { get; }
         public Statistics Stats { get; set; }
 
