@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Reflection;
+using System.Text.RegularExpressions;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
@@ -109,6 +111,67 @@ namespace YGR
                 // Draw text itself
                 Vector2 offset = new Vector2(0, font.MeasureString(infoString).Y);
                 Util.DrawString(font, indexString, pos, playerColor, spriteBatch);
+                Util.DrawString(font, infoString, pos, Color.Wheat, spriteBatch);
+                pos.Y += totalSize.Y * spacing;
+            }
+        }
+
+        public static void DrawPlayerStatistics(GameTime gameTime, SpriteBatch spriteBatch, bool printAll = false)
+        {
+            SpriteFont font = Fonts.Medium; // Fonts.GetDecentlySizedFont();
+            Vector2 pos = new Vector2((Camera.Bounds.Width) / 4, Camera.Bounds.Height / 16);
+            float spacing = 1.25f;
+
+            for (int i = 0; i < Manager_Players.Players.Count; i++)
+            {
+                if (i == 2)
+                {
+                    pos = new Vector2((Camera.Bounds.Width) * 2 / 4, Camera.Bounds.Height / 16);
+                }
+
+                IPlayer p = Manager_Players.Players[i];
+                string indexString = "Player " + (int)p.PlayerIndex + ": ";
+                string infoString = "";
+
+                var stats = p.Stats;
+
+                if (printAll)
+                {
+                    // Use some reflection hacker-y... too lazy to hard code print everything
+                    var type = stats.GetType();
+                    var fields = type.GetFields(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly);
+                    foreach (var field in fields)
+                    {
+                        var description = field.Name;
+                        description = Regex.Replace(description, "(\\B[A-Z])", " $1");
+                        var value = field.GetValue(stats).GetType() == typeof(float) ? /* HAACK */ (float)field.GetValue(stats) / 32 : field.GetValue(stats);
+                        infoString += string.Format("\n {0,-20} {1,-8:0}", description, value);
+                    }
+                }
+                else
+                {
+                    // Never mind, let's do it by hand as well
+                    infoString += string.Format("\n {0,-20} {1,-8:0}", "Kills", stats.Kills);
+                    infoString += string.Format("\n {0,-20} {1,-8:0}", "Damage Dealt", stats.DamageDealt);
+                    infoString += string.Format("\n {0,-20} {1,-8:0}", "Damage Taken", stats.DamageTaken);
+                    infoString += string.Format("\n {0,-20} {1,-8:0}", "Times fired", stats.TimesFired);
+                    infoString += string.Format("\n {0,-20} {1,-8:0}", "Distance Walked", stats.DistanceTravelled / 32);
+                    infoString += string.Format("\n {0,-20} {1,-8:0}", "Bullets Dodged", stats.ProjectilesDodged);
+                }
+
+                Vector2 indexStringSize = font.MeasureString(indexString);
+                Color playerColorLight = Color.Lerp(p.Color, Color.Wheat, 0.5f);
+                Color playerColorDark = Color.DarkSlateGray;
+
+                // Draw a semi transparent background box
+                int margin = 5;
+                Vector2 totalSize = font.MeasureString(indexString + infoString);
+                Rectangle rect = new Rectangle((int)pos.X - margin, (int)pos.Y - margin, (int)totalSize.X + 2 * margin, (int)totalSize.Y + 2 * margin);
+                spriteBatch.Draw(Manager_Sprites.White, destinationRectangle: rect, null, playerColorDark * 0.75f, 0, Vector2.Zero, SpriteEffects.None, 0);
+
+                // Draw text itself
+                Vector2 offset = new Vector2(0, font.MeasureString(infoString).Y);
+                Util.DrawString(font, indexString, pos, playerColorLight, spriteBatch);
                 Util.DrawString(font, infoString, pos, Color.Wheat, spriteBatch);
                 pos.Y += totalSize.Y * spacing;
             }
