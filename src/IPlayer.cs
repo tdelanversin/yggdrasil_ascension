@@ -20,6 +20,7 @@ namespace YGR
         public PlayerIndex PlayerIndex { get; }
         public bool IsActive { get; }
         public PlayerType Type { get; }
+        public Statistics Stats { get; set; }
 
         public AnimatedSprite GetSprite();
         public bool IsAlive();

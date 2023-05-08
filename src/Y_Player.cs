@@ -38,6 +38,7 @@ namespace YGR
         public PlayerIndex PlayerIndex { get; }
         public bool IsActive { get; protected set; }
         public PlayerType Type { get; }
+        public Statistics Stats { get; set; }
 
         // Class fields
         public float VelocityMax;
