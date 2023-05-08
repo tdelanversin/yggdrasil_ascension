@@ -12,6 +12,9 @@ namespace YGR
         Texture2D SpriteSky;
         Texture2D SpriteTitleText;
 
+        float SkyAnimationDuration = 90000;
+        float SkyAnimationTimer = 0;
+
         public Background() { }
 
         public void LoadContent(Microsoft.Xna.Framework.Content.ContentManager content)
@@ -36,13 +39,39 @@ namespace YGR
 
         public void DrawSky(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)
         {
-            spriteBatch.Draw(SpriteSky, Rect, Color.White);
-            // TODO: moving sky / clouds
+            // spriteBatch.Draw(SpriteSky, Rect, Color.White);
+            float f = 1f - SkyAnimationTimer / SkyAnimationDuration;
+            int w1 = SpriteSky.Width;
+            int w2 = Rect.Width;
+            int x1 = (int)(f * w1);
+            int x2 = (int)(f * w2);
+            Rectangle sr1 = new Rectangle(x1, 0, w1 - x1, SpriteSky.Height);
+            Rectangle sr2 = new Rectangle(0, 0, x1, SpriteSky.Height);
+            Rectangle dr1 = new Rectangle(Rect.X, Rect.Y, w2 - x2, Rect.Height);
+            Rectangle dr2 = new Rectangle(Rect.X + w2 - x2, Rect.Y, x2, Rect.Height);
+            // dr1.Offset(Rect.Location);
+            // dr2.Offset(Rect.Location);
+            spriteBatch.Draw(SpriteSky, dr1, sr1, Color.White);
+            spriteBatch.Draw(SpriteSky, dr2, sr2, Color.White);
         }
 
         public void DrawTitleText(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)
         {
-            spriteBatch.Draw(SpriteTitleText, Rect, Color.White);
+            Color c = Color.White;
+
+            // Fade title text in and out depending on camera transition
+            if (Camera.InAnimation)
+            {
+                if (Camera.Mode == CameraMode.Rect)
+                {
+                    c *= Camera.AnimationPerc;
+                }
+                else
+                {
+                    c *= 1f - Camera.AnimationPerc;
+                }
+            }
+            spriteBatch.Draw(SpriteTitleText, Rect, c);
         }
 
         public void Draw(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)
@@ -53,7 +82,11 @@ namespace YGR
 
         public void Update(GameTime gameTime)
         {
-            // TODO: moving sky / clouds
+            SkyAnimationTimer += gameTime.ElapsedGameTime.Milliseconds;
+            if (SkyAnimationTimer >= SkyAnimationDuration)
+            {
+                SkyAnimationTimer = 0;
+            }
         }
 
         public void DrawOutline(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)

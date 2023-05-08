@@ -154,6 +154,7 @@ namespace YGR
             }
 
             Camera.Update(_graphics.GraphicsDevice.Viewport, gameTime);
+            _background.Update(gameTime);
             // Update all entities in current game state
             switch (State)
             {
