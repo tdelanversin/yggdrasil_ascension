@@ -282,11 +282,15 @@ namespace YGR
                     break;
 
                 case GameState.InGame:
-                    _level.DrawUI(gameTime, _spriteBatch);
+                    if (_level.State == Y_Level.GamePlayState.Start)
+                    {
+                        UI.DrawPlayerSelection(gameTime, _spriteBatch);
+                    }
+                    UI.DrawPlayerStatus(gameTime, _spriteBatch);
                     break;
 
                 case GameState.Menu:
-                    _level.DrawPlayerStatusUI(gameTime, _spriteBatch);
+                    UI.DrawPlayerStatus(gameTime, _spriteBatch);
                     Menu.Draw(_spriteBatch);
                     break;
             }
