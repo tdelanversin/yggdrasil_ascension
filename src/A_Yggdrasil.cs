@@ -115,9 +115,16 @@ namespace YGR
             if (State != DesiredState)
             {
                 if (DesiredState == GameState.InGame)
-                    Camera.SetFocusRoom(Camera.Room, animate: true, animationDuration: 1000);
+                {
+                    if (_level.State == Y_Level.GamePlayState.FreeRoam)
+                        Camera.SetFocusPlayers(animate: true);
+                    else if (_level.State == Y_Level.GamePlayState.Encounter)
+                        Camera.SetFocusRoom(_level.ActiveRoom, animate: true);
+                    else if (_level.State == Y_Level.GamePlayState.Start && Camera.Mode == CameraMode.Rect)
+                        Camera.SetFocusRoom(_level.ActiveRoom, animate: true);
+                }
                 if (DesiredState == GameState.Menu)
-                    Camera.SetFocusRect(_background.Rect, animate: true, animationDuration: 500);
+                    Camera.SetFocusRect(_background.Rect, animate: true, animationDuration: 750);
             }
 
             // Only switch actual state during Update(), otherwise you can mess up the Draw call
@@ -164,6 +171,7 @@ namespace YGR
                     break;
                 case GameState.Menu:
                     Menu.Update();
+                    _level.Update(gameTime);
                     break;
             }
 
@@ -236,6 +244,7 @@ namespace YGR
                     break;
 
                 case GameState.Menu:
+                    _level.DrawPlayerStatusUI(gameTime, _spriteBatch);
                     Menu.Draw(_spriteBatch);
                     break;
             }
