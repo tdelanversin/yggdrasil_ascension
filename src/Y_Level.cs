@@ -150,12 +150,6 @@ namespace YGR
 
             Rooms = new Dictionary<int, IWalkable>();
 
-            // _background = content.Load<Texture2D>("SpritesOther/Level_Background");
-            // int width = (int)(_background.Width * 3.8f);
-            // int height = (int)(_background.Height * 3.8f);
-            // Point startLocation = new Point((int)(width / 1.96f), (int)(height / 1.12f));
-            // _backgroundRect = new Rectangle(-startLocation.X, -startLocation.Y, width, height);
-
         }
 
         public void Preprocess(GraphicsDevice graphicsDevice)
@@ -278,7 +272,7 @@ namespace YGR
                         out direction, out numTilesLength, out tileOffset);
 
                     Y_Door connector;
-                    if(
+                    if (
                         ((Y_CMRoom)fromRoom).Category == "Leaf" && ((Y_CMRoom)toRoom).Category == "Leaf" ||
                         ((Y_CMRoom)fromRoom).Category == "Leaf" && ((Y_CMRoom)toRoom).Category == "Gold" ||
                         ((Y_CMRoom)fromRoom).Category == "Gold" && ((Y_CMRoom)toRoom).Category == "Leaf"
@@ -322,7 +316,7 @@ namespace YGR
                 }
             }
 
-            int connectorIndex = Rooms.Max(x => x.Key)+1;
+            int connectorIndex = Rooms.Max(x => x.Key) + 1;
             foreach (var c in connectors)
             {
                 Rooms.Add(connectorIndex, c);
@@ -346,7 +340,9 @@ namespace YGR
             // Gameplay state
             State = GamePlayState.Start;
             ActiveRoom = _startRoom;
-            Camera.SetFocusRoom(_startRoom, animate: false);
+
+            // Slowly transition on game start, to show players that we're inside Yggdrasil
+            Camera.SetFocusRoom(_startRoom, animate: true, animationDuration: 2000);
 
             Manager_Enemies.ClearEnemies();
             foreach (var room in Rooms)
