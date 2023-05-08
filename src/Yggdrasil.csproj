@@ -9,6 +9,7 @@
   <PropertyGroup>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <ApplicationIcon>Icon.ico</ApplicationIcon>
+    <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
   </PropertyGroup>
   <ItemGroup>
     <None Remove="Doors\roof - Copy.png" />
@@ -61,14 +62,20 @@
     <EmbeddedResource Include="Icon.bmp" />
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="JetBrains.Annotations" Version="2022.3.1" />
     <PackageReference Include="LDtkMonogame" Version="1.0.1" />
     <PackageReference Include="LDtkMonogame.ContentPipeline" Version="1.0.1" />
+    <PackageReference Include="LibTessDotNet" Version="1.1.15" />
     <PackageReference Include="MonoGame.Content.Builder.Task.Compute" Version="3.8.2" />
     <PackageReference Include="MonoGame.Extended.Particles" Version="3.8.0" />
     <PackageReference Include="MonoGame.Framework.Compute.DesktopGL" Version="3.8.2" />
     <PackageReference Include="MonoGame.Framework.DesktopGL" Version="3.8.1.303" />
     <PackageReference Include="MonoGame.Content.Builder.Task" Version="3.8.1.303" />
+    <PackageReference Include="NETStandard.Library" Version="2.0.3" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+    <PackageReference Include="Sdcb.FFmpeg" Version="5.1.2" />
+    <PackageReference Include="Sdcb.FFmpeg.runtime.windows-x64" Version="5.1.2" />
+    <PackageReference Include="SkiaSharp" Version="2.88.3" />
   </ItemGroup>
   <ItemGroup>
     <Compile Update="Properties\Resources.Designer.cs">
@@ -90,6 +97,11 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="Doors\**">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Intro\**">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>

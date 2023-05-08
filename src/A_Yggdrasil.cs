@@ -1,15 +1,15 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
-using System.Diagnostics;
 
 namespace YGR
 {
     public enum GameState
     {
+        Intro,
         PreGame,
         InGame,
-        Menu,
+        Menu
     }
 
     public class A_Yggdrasil : Game
@@ -26,6 +26,7 @@ namespace YGR
         Y_Level _level;
         public GameState State;
         public GameState DesiredState;
+
         public A_Yggdrasil()
         {
             _graphics = new GraphicsDeviceManager(this);
@@ -41,6 +42,7 @@ namespace YGR
             Menu.Initialize(this);
             Settings.ApplyScreenConfiguration();
             Camera.Initialize(_graphics, CameraMode.Follow);
+            Manager_Video.Initialize(GraphicsDevice, "./Intro/Intro.mp4");
 
             string level = "Level_3";
             Factory_Debug.Initialize(Content);
@@ -55,8 +57,6 @@ namespace YGR
             _background = new Background();
             _level = new Y_Level(level, 32, 32, "./Levels/", "./Doors", Content);
 
-            State = GameState.PreGame;
-
             base.Initialize();
         }
 
@@ -68,7 +68,8 @@ namespace YGR
             Manager_Sprites.LoadContent(Content);
             _spriteBatch = new SpriteBatch(GraphicsDevice);
             Manager_Particles.LoadContent(Content, GraphicsDevice);
-            Manager_Sound.PlayMainMenuMusic();
+
+            Manager_Video.Play();
 
             _background.LoadContent(Content);
             _level.Preprocess(GraphicsDevice);
@@ -97,23 +98,37 @@ namespace YGR
             // Keybind to switch in and out of the menu screen
             if (Input.IsKeyTriggered(Keys.Escape) || Input.IsButtonTriggeredAny(Buttons.Start))
             {
-                if (State == GameState.InGame)
+                if (State == GameState.Intro)
+                {
+                    DesiredState = GameState.PreGame;
+                }
+                else if (State == GameState.InGame)
                 {
                     DesiredState = GameState.Menu;
                 }
-                if (State == GameState.Menu)
+                else if (State == GameState.Menu)
                 {
                     DesiredState = GameState.InGame;
                 }
-                if (State == GameState.PreGame)
+                else if (State == GameState.PreGame)
                 {
                     // Nothing for now
+                }
+                else
+                {
+                    Logger.Error("Invalid state requested");
                 }
             }
 
             // Transition the camera when switching from in-game to menu and vice versa
             if (State != DesiredState)
             {
+                if (State == GameState.Intro)
+                {
+                    Manager_Video.Stop();
+                    Manager_Video.Dispose();
+                    Manager_Sound.PlayMainMenuMusic();
+                }
                 if (DesiredState == GameState.InGame)
                 {
                     if (_level.State == Y_Level.GamePlayState.Start && Camera.Mode == CameraMode.Room)
@@ -169,14 +184,19 @@ namespace YGR
             }
 
             Camera.Update(_graphics.GraphicsDevice.Viewport, gameTime);
-            _background.Update(gameTime);
+
             // Update all entities in current game state
             switch (State)
             {
+                case GameState.Intro:
+                    // Handled entirely in Draw()
+                    break;
                 case GameState.PreGame:
+                    _background.Update(gameTime);
                     Menu.Update();
                     break;
                 case GameState.InGame:
+                    _background.Update(gameTime);
                     Manager_Players.Update(gameTime);
                     Manager_Projectile.Update(gameTime);
                     Manager_Enemies.Update(gameTime);
@@ -186,8 +206,8 @@ namespace YGR
                     _level.Update(gameTime);
                     break;
                 case GameState.Menu:
+                    _background.Update(gameTime);
                     Menu.Update();
-                    _level.Update(gameTime);
                     break;
             }
 
@@ -204,17 +224,18 @@ namespace YGR
 
             /* ### Draw everything that is an in-game level element and zoomable, e.g. not UI / text ### */
             _spriteBatch.Begin(
-                       SpriteSortMode.Immediate, null, null, null, null, null,
-                       Camera.Transform);
+                   SpriteSortMode.Immediate, null, null, null, null, null,
+                   Camera.Transform);
 
-            _background.Draw(gameTime, zero, _spriteBatch);
             switch (State)
             {
                 case GameState.PreGame:
+                    _background.Draw(gameTime, zero, _spriteBatch);
                     _background.DrawTitleText(gameTime, Vector2.Zero, _spriteBatch);
                     break;
 
                 case GameState.InGame:
+                    _background.Draw(gameTime, zero, _spriteBatch);
                     _level.Draw(gameTime, Vector2.Zero, _spriteBatch);
                     _background.DrawTitleText(gameTime, Vector2.Zero, _spriteBatch);
 
@@ -234,11 +255,13 @@ namespace YGR
                     break;
 
                 case GameState.Menu:
+                    _background.Draw(gameTime, zero, _spriteBatch);
                     _level.Draw(gameTime, Vector2.Zero, _spriteBatch);
                     _background.DrawTitleText(gameTime, Vector2.Zero, _spriteBatch);
                     break;
             }
             _spriteBatch.End();
+
 
             /* ### Draw everything that is NOT an in-game level element ### */
             _spriteBatch.Begin(SpriteSortMode.Immediate, null, null, null, null, null, null);
@@ -249,9 +272,16 @@ namespace YGR
             var fpsColor = Color.BlanchedAlmond;
             _spriteBatch.DrawString(Fonts.Small, fps, new Vector2(1, 1), fpsColor);
 
-            // Level- / Menu UI
+            // Level- / Menu UI / Intro Video
             switch (State)
             {
+                case GameState.Intro:
+                    bool finished = Manager_Video.Draw(gameTime, _spriteBatch);
+                    if (finished)
+                    {
+                        DesiredState = GameState.PreGame;
+                    }
+                    break;
                 case GameState.PreGame:
                     Menu.Draw(_spriteBatch);
                     break;
