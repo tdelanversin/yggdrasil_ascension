@@ -60,23 +60,17 @@ namespace YGR
 
             Color c = Color.White;
 
-            if (Camera.Mode == CameraMode.Menu)
+            if (Camera.InTransitionToMenu)
             {
-                if (Camera.InAnimation)
-                {
-                    c *= (float)Camera.EaseInOut(Camera.AnimationPerc, 6d);
-                }
+                c *= (float)Camera.EaseInOut(Camera.AnimationFraction, 6d);
             }
-            else
+            else if (Camera.InTransitionFromMenu)
             {
-                if (Camera.ModePrev == CameraMode.Menu && Camera.InAnimation)
-                {
-                    c *= (float)Camera.EaseInOut(1f - Camera.AnimationPerc, 6d);
-                }
-                else
-                {
-                    return;
-                }
+                c *= (float)Camera.EaseInOut(1f - Camera.AnimationFraction, 6d);
+            }
+            else if (Camera.Mode != CameraMode.Menu)
+            {
+                return;
             }
 
             spriteBatch.Draw(SpriteTitleText, Rect, c);

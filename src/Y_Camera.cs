@@ -24,12 +24,18 @@ namespace YGR
         public static CameraMode ModePrev { get; private set; }
         public static IWalkable Room { get; private set; } // Room to focus on
         public static Rectangle Rect { get; private set; } // Rect to focus on
-        public static bool InAnimation { get { return _animationTimer < _animationDuration; } }
-        public static float AnimationPerc { get { return _animationTimer / _animationDuration; } }
+
+        // Animation related fields useful for other classes to decide when and what to draw
+        public static float AnimationFraction { get; private set; }
+        public static bool InAnimation { get; private set; }
+        public static bool InTransitionToMenu { get; private set; }
+        public static bool InTransitionFromMenu { get; set; }
 
         private static float _animationDuration = 1000;
         private static float _animationTimer = _animationDuration;
         private static float _transitionalZoom;
+
+
         private static Vector2 _transitionalPosition;
         private static float _previousZoom;
         private static Vector2 _previousPosition;
@@ -214,10 +220,10 @@ namespace YGR
 
                 // Even better version that works for low factors of k too
                 // https://www.wolframalpha.com/input?i=plot+%28%280.5+%2F+%281%2F%281%2Bexp%28-k%29%29-0.5%29%29*%281%2F%281%2Bexp%28-k*%282x-1%29%29%29-0.5%29%2B0.5%29+x+from+-0.2+to+1.2%2C+k+%3D+8
-                float animationFraction = (float)EaseInOut(t: _animationTimer / _animationDuration, k: 6d);
+                AnimationFraction = (float)EaseInOut(t: _animationTimer / _animationDuration, k: 6d);
 
-                _transitionalPosition = (Position * animationFraction) + _previousPosition * (1f - animationFraction);
-                _transitionalZoom = (Zoom * animationFraction) + _previousZoom * (1f - animationFraction);
+                _transitionalPosition = (Position * AnimationFraction) + _previousPosition * (1f - AnimationFraction);
+                _transitionalZoom = (Zoom * AnimationFraction) + _previousZoom * (1f - AnimationFraction);
 
                 _animationTimer += gameTime.ElapsedGameTime.Milliseconds;
             }
@@ -225,6 +231,9 @@ namespace YGR
             {
                 _transitionalPosition = Position;
                 _transitionalZoom = Zoom;
+                InAnimation = false;
+                InTransitionFromMenu = false;
+                InTransitionToMenu = false;
             }
         }
 
@@ -259,6 +268,7 @@ namespace YGR
             _previousPosition = _transitionalPosition;
             _previousZoom = _transitionalZoom;
             _animationTimer = 0;
+            InAnimation = true;
         }
 
         public static void ToggleManualMode()
@@ -275,6 +285,7 @@ namespace YGR
             {
                 return;
             }
+            InTransitionFromMenu = true;
 
             if (animate)
             {
@@ -317,6 +328,7 @@ namespace YGR
             {
                 ResetAnimation(animationDuration);
             }
+            InTransitionToMenu = true;
             Rect = rect;
             Mode = CameraMode.Menu;
         }

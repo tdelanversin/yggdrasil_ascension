@@ -243,7 +243,7 @@ namespace YGR
                     Manager_Enemies.Draw(gameTime, zero, _spriteBatch);
                     Manager_Players.Draw(gameTime, zero, _spriteBatch);
 
-                    if (Settings.Outlines)
+                    if (Settings.Outlines && !Camera.InTransitionFromMenu && !Camera.InTransitionToMenu)
                     {
                         _level.DrawOutline(gameTime, Vector2.Zero, _spriteBatch);
                         Manager_Projectile.DrawOutline(gameTime, zero, _spriteBatch);
