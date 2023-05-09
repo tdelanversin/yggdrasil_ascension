@@ -15,7 +15,7 @@ namespace YGR
         public IGameElement WhoKilledMe { get; set; }
 
         public EnemyState State { get; set; } = EnemyState.Inactive;
-        protected int fleeingHPTreshold = 2; // Flee if at this treshold or lower
+        protected int fleeingHPTreshold; // Flee if at this treshold or lower
         protected float safetyDistance { get; set; }
 
         public Vector2 Velocity { get; set; }
@@ -63,15 +63,16 @@ namespace YGR
             Name = "Mob";
             LifePointsMax = 8;
             LifePoints = LifePointsMax;
+            fleeingHPTreshold = LifePointsMax / 2;
 
             CharacterSprite = sprite;
 
             Velocity = Vector2.Zero;
             _acceleration = 0.006f;
             _deceleration = 0.04f;
-            _maxVelocity = 0.10f;
+            _maxVelocity = 0.06f;
 
-            safetyDistance = 600f;
+            safetyDistance = 300f;
             FacingDirection = new Vector2(1, 0);
             Collision = new X_CollisionModel_Victim(1.0f, 0.0f);
             _position = position;
@@ -288,7 +289,8 @@ namespace YGR
             }
             else
             {
-                // Just stand still, I guess?
+                // Just stand still, I guess? -> Nope, let's not make it too easy for the players
+                return Wander(gameTime);
             }
 
             return movement;
@@ -298,8 +300,15 @@ namespace YGR
         {
             Vector2 movement = Vector2.Zero;
 
+            // No need to flee if target is super far away
+            if (Target != null && Vector2.Distance(Target.Rect.Center.ToVector2(), Rect.Center.ToVector2()) > safetyDistance * 2)
+            {
+                return Wander(gameTime);
+            }
+
             // Face away from closest player
             FacingDirection = Rect.Center.ToVector2() - Target.Rect.Center.ToVector2();
+            FacingDirection = Vector2.Normalize(FacingDirection);
 
             // If we're running into an obstacle, try and face away from it, like we do when wandering
             // _steeringDirection = (float)Math.Tan(FacingDirection.X / FacingDirection.Y);
@@ -412,7 +421,7 @@ namespace YGR
 
         protected virtual void DrawOverheadString(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)
         {
-            string str = String.Format("{0} {1}", Name, LifePoints);
+            string str = String.Format("{0} {1} {2}", Name, LifePoints, State);
             Vector2 str_size = Fonts.Small.MeasureString(str);
             Vector2 str_pos = new Vector2(_rect.Location.X + _rect.Width / 2 - str_size.X / 2, _rect.Location.Y - str_size.Y - 2) + CharacterOffset;
             spriteBatch.DrawString(Fonts.Small, str, str_pos, Color.Wheat);
