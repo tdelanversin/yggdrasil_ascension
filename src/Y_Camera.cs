@@ -301,6 +301,18 @@ namespace YGR
             Mode = CameraMode.Manual;
         }
 
+        /// <summary> Center the camera on position. </summary>
+        public static void SetFocusManual(Vector2 position, float zoom, bool animate = true, float animationDuration = 1000)
+        {
+            if (animate)
+            {
+                ResetAnimation(animationDuration);
+            }
+            Position = position;
+            UpdateZoom(zoom);
+            Mode = CameraMode.Manual;
+        }
+
         public static void SetFocusPlayers(bool animate = true, float animationDuration = 1000)
         {
             if (animate)
