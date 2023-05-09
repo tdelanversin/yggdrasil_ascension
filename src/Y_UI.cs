@@ -154,7 +154,8 @@ namespace YGR
                     infoString += string.Format("\n {0,-20} {1,-8:0}", "Kills", stats.Kills);
                     infoString += string.Format("\n {0,-20} {1,-8:0}", "Damage Dealt", stats.DamageDealt);
                     infoString += string.Format("\n {0,-20} {1,-8:0}", "Damage Taken", stats.DamageTaken);
-                    infoString += string.Format("\n {0,-20} {1,-8:0}", "Times fired", stats.TimesFired);
+                    infoString += string.Format("\n {0,-20} {1,-8:0}", "Times Fired", stats.TimesFired);
+                    infoString += string.Format("\n {0,-20} {1,-8:0}", "Times Dashed", stats.TimesDashed);
                     infoString += string.Format("\n {0,-20} {1,-8:0}", "Distance Walked", stats.DistanceTravelled / 32);
                     infoString += string.Format("\n {0,-20} {1,-8:0}", "Bullets Dodged", stats.ProjectilesDodged);
                 }

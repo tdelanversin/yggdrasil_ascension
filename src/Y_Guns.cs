@@ -21,16 +21,17 @@ namespace YGR
             Sprite = Manager_Sprites.Weapon_Pistol;
         }
 
-        public virtual void Shoot(GameTime gameTime, Vector2 origin, Vector2 direction, Y_Level level, IGameElement who)
+        public virtual bool Shoot(GameTime gameTime, Vector2 origin, Vector2 direction, Y_Level level, IGameElement who)
         {
             if (NextShotCooldown > 0.0f)
-                return;
+                return false;
 
             Manager_Sound.Sound_Fireball.Play(0.2f, 0, 0);
 
             NextShotCooldown = ShotDelay;
 
             Manager_Projectile.AddProjectile_StarterProjectile(origin, direction, level, who);
+            return true;
         }
 
         public virtual void Update(GameTime gameTime)
@@ -49,16 +50,17 @@ namespace YGR
             ShotDelay = 1000;
         }
 
-        public override void Shoot(GameTime gameTime, Vector2 origin, Vector2 direction, Y_Level level, IGameElement who)
+        public override bool Shoot(GameTime gameTime, Vector2 origin, Vector2 direction, Y_Level level, IGameElement who)
         {
             if (NextShotCooldown > 0.0f)
-                return;
+                return false;
 
             Manager_Sound.Sound_Fireball.Play(0.2f, 0, 0);
 
             NextShotCooldown = ShotDelay;
 
             Manager_Projectile.AddProjectile_EnemySlimeProjectile(origin, direction, level, who);
+            return true;
         }
     }
 
@@ -82,10 +84,10 @@ namespace YGR
             ShotSpread = .3 / ShotCount;
         }
 
-        public override void Shoot(GameTime gameTime, Vector2 origin, Vector2 direction, Y_Level level, IGameElement who)
+        public override bool Shoot(GameTime gameTime, Vector2 origin, Vector2 direction, Y_Level level, IGameElement who)
         {
             if (NextShotCooldown > 0.0f)
-                return;
+                return true;
 
             Manager_Sound.Sound_Shotgun.Play(0.3f, 0, 0);
 
@@ -102,6 +104,7 @@ namespace YGR
                 Manager_Projectile.AddProjectile_ShotGunProjectile(origin, new_dir, level, who);
                 spread += ShotSpread;
             }
+            return true;
         }
     }
 
@@ -140,16 +143,17 @@ namespace YGR
         // shotTimings is an array of doubles that represent the time in milliseconds that each bullet row should be fired
         static double[] shotTimings = { 0.0, 60.0, 120.0, 180.0, 240.0, 300.0, 360.0, 420.0 };
 
-        public virtual void Shoot(GameTime gameTime, Vector2 origin, Vector2 direction, Y_Level level, IGameElement who)
+        public virtual bool Shoot(GameTime gameTime, Vector2 origin, Vector2 direction, Y_Level level, IGameElement who)
         {
             if (timeSinceShot < shotDelay)
-                return;
+                return false;
 
             timeSinceShot = 0.0f;
             _origin = origin;
             _direction = direction;
             _level = level;
             _who = who;
+            return true;
         }
 
         public virtual void Update(GameTime gameTime)
@@ -227,17 +231,18 @@ namespace YGR
         static double[] positionShift = { 50, 20, 0, -20, -50 };
         static double[] shotSpread = { 0, 0, 0, 0, 0 };
 
-        public void Shoot(GameTime gameTime, Vector2 origin, Vector2 direction, Y_Level level, IGameElement who)
+        public bool Shoot(GameTime gameTime, Vector2 origin, Vector2 direction, Y_Level level, IGameElement who)
         {
 
             if (timeSinceShot < shotDelay)
-                return;
+                return false;
 
             timeSinceShot = 0.0f;
             _origin = origin;
             _direction = direction;
             _level = level;
             _who = who;
+            return true;
         }
 
         public void Update(GameTime gameTime)
@@ -294,11 +299,11 @@ namespace YGR
             Name = "Giga Gun";
         }
 
-        public override void Shoot(GameTime gameTime, Vector2 origin, Vector2 direction, Y_Level level, IGameElement who)
+        public override bool Shoot(GameTime gameTime, Vector2 origin, Vector2 direction, Y_Level level, IGameElement who)
         {
             // Override to make sure the direction is set, since gigachad shoots even without a target
             if (NextShotCooldown > 0.0f)
-                return;
+                return false;
 
             if (direction == Vector2.Zero)
             {
@@ -320,6 +325,7 @@ namespace YGR
                 Manager_Projectile.AddProjectile_ShotGunProjectile(origin, new_dir, level, who);
                 spread += ShotSpread;
             }
+            return true;
         }
     }
 
@@ -343,7 +349,7 @@ namespace YGR
 
         public Texture2D Sprite { get { return Manager_Sprites.White; } }
 
-        public void Shoot(GameTime gametime, Vector2 origin, Vector2 direction, Y_Level level, IGameElement who) { }
+        public bool Shoot(GameTime gametime, Vector2 origin, Vector2 direction, Y_Level level, IGameElement who) { return false; }
 
         public void Update(GameTime gameTime) { }
     }

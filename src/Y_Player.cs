@@ -420,8 +420,8 @@ namespace YGR
                 {
                     _isAiming = true; // Show the aim indicator when firing
                     _currentAimInput = InputType.Controller;
-                    Gun.Shoot(gameTime, Rect.Center.ToVector2(), _aimDirection, Level, this);
-                    Stats.TimesFired++;
+                    bool shot = Gun.Shoot(gameTime, Rect.Center.ToVector2(), _aimDirection, Level, this);
+                    if (shot) { Stats.TimesFired++; }
                 }
             }
         }
@@ -463,8 +463,8 @@ namespace YGR
                 }
                 if (Input.IsLeftMousePressed() && IsAlive())
                 {
-                    Gun.Shoot(gameTime, playerCenter, _aimDirection, Level, this);
-                    Stats.TimesFired++;
+                    bool shot = Gun.Shoot(gameTime, playerCenter, _aimDirection, Level, this);
+                    if (shot) { Stats.TimesFired++; }
                 }
 
                 if (Input.HasMouseStateChanged())

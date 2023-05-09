@@ -19,7 +19,7 @@ namespace YGR
         public int PowerUpsUsed; // TODO: We don't have powerups yet aside of Heal/Revive
         public int AmountHealed; // IPlayer.heal()
         public float DistanceTravelled; // IPlayer.UpdateCollision()
-        public int ProjectilesDodged;
+        public int ProjectilesDodged; // X_CollisionModel_Projectile.Intersect()
 
         private HashSet<WeakReference> ProjectilesTracked = new HashSet<WeakReference> { };
         public void TrackDodgedProjectile(IProjectile projectile)
