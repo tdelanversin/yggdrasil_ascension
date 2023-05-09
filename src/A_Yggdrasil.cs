@@ -266,9 +266,12 @@ namespace YGR
 
             // Fps Counter
             _frameCounter.Update((float)gameTime.ElapsedGameTime.TotalSeconds);
-            string fps = string.Format("FPS: {0:0}", _frameCounter.AverageFramesPerSecond);
-            var fpsColor = Color.BlanchedAlmond;
-            _spriteBatch.DrawString(Fonts.Small, fps, new Vector2(1, 1), fpsColor);
+            if (Settings.DrawFPS)
+            {
+                string fps = string.Format("FPS: {0:0}", _frameCounter.AverageFramesPerSecond);
+                var fpsColor = Color.BlanchedAlmond;
+                _spriteBatch.DrawString(Fonts.Small, fps, new Vector2(1, 1), fpsColor);
+            }
 
             // Level- / Menu UI / Intro Video
             switch (State)
