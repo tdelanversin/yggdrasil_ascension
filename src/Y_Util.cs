@@ -206,6 +206,24 @@ namespace YGR
             return ByteToColorArray(output.ToArray());
         }
 
+        public static string OSExitString()
+        {
+            string os_exit_string = Environment.OSVersion.ToString();
+            if (os_exit_string.Contains("Unix"))
+            {
+                os_exit_string = "Exit to Linux Desktop";
+            }
+            else if (os_exit_string.Contains("Windows"))
+            {
+                os_exit_string = "Exit to Windows";
+            }
+            else
+            {
+                os_exit_string = "Exit to Desktop"; // MacOS whatever
+            }
+            return os_exit_string;
+        }
+
         /// <summary>
         /// Draw a string. But with shadows. So that it's readable.
         /// </summary>

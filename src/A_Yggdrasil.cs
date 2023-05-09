@@ -63,7 +63,6 @@ namespace YGR
         protected override void LoadContent()
         {
             Fonts.LoadContent(Content);
-            Menu.LoadContent(Content);
             Manager_Sound.LoadContent(Content);
             Manager_Sprites.LoadContent(Content);
             _spriteBatch = new SpriteBatch(GraphicsDevice);
@@ -291,6 +290,7 @@ namespace YGR
 
                 case GameState.Menu:
                     UI.DrawPlayerStatus(gameTime, _spriteBatch);
+                    // UI.DrawPlayerStatistics(gameTime, _spriteBatch);
                     Menu.Draw(_spriteBatch);
                     break;
             }
