@@ -1,3 +1,4 @@
+#pragma warning disable
 ﻿using System.IO;
 using MonoGame.Extended.Framework.Media;
 

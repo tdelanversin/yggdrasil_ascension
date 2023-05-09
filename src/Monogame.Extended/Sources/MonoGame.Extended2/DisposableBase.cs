@@ -1,3 +1,4 @@
+#pragma warning disable
 ﻿using System;
 using System.Runtime.CompilerServices;
 using JetBrains.Annotations;

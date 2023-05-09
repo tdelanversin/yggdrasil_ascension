@@ -19,10 +19,17 @@ namespace YGR
         public IShooter Gun { get; set; }
         public PlayerIndex PlayerIndex { get; }
         public bool IsActive { get; }
+        public bool IsInvincible { get; }
+        public bool IsDashing { get; }
         public PlayerType Type { get; }
+        public Statistics Stats { get; set; }
 
         public AnimatedSprite GetSprite();
         public bool IsAlive();
+        public void Heal();
+        public void Heal(int healAmount);
         public void Revive();
+        public void Revive(int healAmount);
+        public void Godmode();
     }
 }

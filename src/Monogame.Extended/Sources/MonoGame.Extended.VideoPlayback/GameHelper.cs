@@ -1,3 +1,4 @@
+#pragma warning disable
 ﻿using System.Reflection;
 using Microsoft.Xna.Framework;
 

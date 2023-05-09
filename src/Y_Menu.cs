@@ -10,6 +10,70 @@ namespace YGR
 
     public static class Menu
     {
+
+        private class MenuTree : MenuItem
+        {
+            public MenuTree Parent;
+            public List<MenuItem> Children;
+            public int SelectedIndex;
+            public MenuItem Selected { get { return Children[SelectedIndex]; } }
+
+            public MenuTree(string name) : base(name, Menu.Descend)
+            {
+                Children = new List<MenuItem>(8);
+            }
+
+            public MenuTree(string name, MenuTree parent) : this(name)
+            {
+                Parent = parent;
+            }
+
+            public void AddChild(MenuItem item)
+            {
+                Children.Add(item);
+                if (Children.Count == 1) { Selected.IsSelected = true; }
+            }
+
+            public void AddChildren(IEnumerable<MenuItem> items)
+            {
+                bool wasEmpty = Children.Count == 0;
+                Children.AddRange(items);
+                if (wasEmpty) { Selected.IsSelected = true; }
+            }
+        }
+
+        private static void Descend()
+        {
+            if (CurrentSubmenu.Selected is MenuTree)
+            {
+                CurrentSubmenu = (MenuTree)CurrentSubmenu.Selected;
+                RepositionMenuItems();
+            }
+        }
+
+        private static void Ascend()
+        {
+            if (CurrentSubmenu.Parent != null)
+            {
+                CurrentSubmenu = CurrentSubmenu.Parent;
+                RepositionMenuItems();
+            }
+            else
+            {
+                ReturnToGame();
+            }
+        }
+
+        private static void ReturnToGame()
+        {
+            if (Game.State != GameState.Menu)
+            {
+                return;
+            }
+
+            Game.DesiredState = GameState.InGame;
+        }
+
         private class MenuItem
         {
             public Vector2 Position;
@@ -69,6 +133,8 @@ namespace YGR
                 if (IsActive && Handler != null)
                     Handler();
             }
+
+            internal virtual void Update() { }
         }
 
         private class SettingsItem : MenuItem
@@ -100,64 +166,70 @@ namespace YGR
 
         private static A_Yggdrasil Game;
         private static Rectangle Bounds;
-        private static Texture2D TitleImage;
-        private static int SelectedMenu;
-        private static IList<MenuItem> SelectableItems;
+
+        private static MenuTree MainMenu;
+        private static MenuTree StatsMenu;
+        private static MenuTree SettingsMenu;
+        private static MenuTree CurrentSubmenu;
+
+        internal static void Initialize(A_Yggdrasil game)
+        {
+            Game = game;
+            MainMenu = new MenuTree("Main Menu");
+            CurrentSubmenu = MainMenu;
+
+            SettingsMenu = new MenuTree("Settings", parent: MainMenu);
+            SettingsMenu.AddChildren(
+                new List<MenuItem>{
+                    new SettingsItem("Fullscreen: ", Settings.Fullscreen, toggleFunc: Settings.ToggleFullscreen),
+                    new SettingsItem("Dynamic Shades: ", Settings.DynamicShades, toggleFunc: Settings.ToggleShades),
+                    new SettingsItem("Outlines: ", Settings.Outlines, toggleFunc: Settings.ToggleOutlines),
+                    new SettingsItem("Sound Effects: ", Settings.Sound, toggleFunc: Settings.ToggleSoundEffects),
+                    new SettingsItem("Music: ", Settings.Music, toggleFunc: Settings.ToggleMusic),
+                    new MenuItem("Back", Menu.Ascend),
+                }
+            );
+
+            StatsMenu = new MenuTree("Statistics", parent: MainMenu);
+            StatsMenu.IsActive = false;
+            StatsMenu.AddChild(new MenuItem("Back", Menu.Ascend));
+
+            CurrentSubmenu.AddChildren(
+                new List<MenuItem>{
+                    new MenuItem("Play", NewGame),
+                    new MenuItem("Restart", NewGame, isActive: false),
+                    StatsMenu,
+                    SettingsMenu,
+                    new MenuItem(Util.OSExitString(), Util.Quit),
+                }
+            );
+
+            RepositionMenuItems();
+        }
 
         internal static void RepositionMenuItems()
         {
             Bounds = Game._graphics.GraphicsDevice.Viewport.Bounds;
             float x = Bounds.Width / 2;
             float y = Bounds.Height / 2;
-            for (int i = 0; i < SelectableItems.Count; i++)
+            for (int i = 0; i < CurrentSubmenu.Children.Count; i++)
             {
-                SelectableItems[i].Position = new Vector2(x, y + i * 40);
+                CurrentSubmenu.Children[i].Position = new Vector2(x, y + i * 40);
             }
-        }
-        internal static void Initialize(A_Yggdrasil game)
-        {
-            Game = game;
-            SelectedMenu = 0;
-
-            // Need to compensate here for all the times I had to click "Exit to Windows" on Linux 🤦‍♂️
-            string os_exit_string = Environment.OSVersion.ToString();
-            if (os_exit_string.Contains("Unix"))
-            {
-                os_exit_string = "Exit to Linux Desktop";
-            }
-            else if (os_exit_string.Contains("Windows"))
-            {
-                os_exit_string = "Exit to Windows";
-            }
-            else
-            {
-                os_exit_string = "Exit to Desktop"; // MacOS whatever
-            }
-
-            SelectableItems = new List<MenuItem> {
-                new MenuItem("Play", NewGame),
-                new MenuItem("Restart", NewGame, isActive: false),
-                new SettingsItem("Fullscreen: ", Settings.Fullscreen, toggleFunc: Settings.ToggleFullscreen),
-                new SettingsItem("Dynamic Shades: ", Settings.DynamicShades, toggleFunc: Settings.ToggleShades),
-                new SettingsItem("Outlines: ", Settings.Outlines, toggleFunc: Settings.ToggleOutlines),
-                new SettingsItem("Sound: ", Settings.Sound, toggleFunc: Settings.Toggle_Volume),
-                new MenuItem(os_exit_string, Util.Quit),
-            };
-            SelectableItems[SelectedMenu].IsSelected = true;
-            RepositionMenuItems();
         }
 
         private static void NewGame()
         {
             // Turn 'Play' into 'Continue'
-            SelectableItems[0] = new MenuItem("Continue", delegate () { Game.DesiredState = GameState.InGame; });
+            CurrentSubmenu.Children[0] = new MenuItem("Continue", delegate () { Game.DesiredState = GameState.InGame; });
 
-            // Enable the 'Restart' menu item
-            SelectableItems[1].IsActive = true;
+            // Enable the 'Restart' and 'Statistics' menu items
+            CurrentSubmenu.Children[1].IsActive = true;
+            StatsMenu.IsActive = true;
 
             // Don't leave the 'Restart' item selected
             SelectMenu(0);
-            SelectableItems[0].IsSelected = true;
+            CurrentSubmenu.Children[0].IsSelected = true;
 
             RepositionMenuItems();
 
@@ -166,13 +238,14 @@ namespace YGR
 
         private static void SelectMenu(int nextSelected)
         {
-            if (nextSelected == SelectedMenu) { return; }
-            SelectableItems[SelectedMenu].IsSelected = false;
+            if (CurrentSubmenu.Children.Count == 1) { return; }
+            if (nextSelected == CurrentSubmenu.SelectedIndex) { return; }
+            CurrentSubmenu.Children[CurrentSubmenu.SelectedIndex].IsSelected = false;
 
             // Wrap index around in both directions
-            SelectedMenu = Util.ProperMod(nextSelected, SelectableItems.Count);
-            SelectableItems[SelectedMenu].IsSelected = true;
-            if (SelectableItems[SelectedMenu].IsActive)
+            CurrentSubmenu.SelectedIndex = Util.ProperMod(nextSelected, CurrentSubmenu.Children.Count);
+            CurrentSubmenu.Selected.IsSelected = true;
+            if (CurrentSubmenu.Children[CurrentSubmenu.SelectedIndex].IsActive)
             {
                 Manager_Sound.Sound_MenuSelect.Play(1, 0, 0);
             }
@@ -182,16 +255,16 @@ namespace YGR
         {
             do
             {
-                SelectMenu(SelectedMenu + 1);
-            } while (!SelectableItems[SelectedMenu].IsActive);
+                SelectMenu(CurrentSubmenu.SelectedIndex + 1);
+            } while (!CurrentSubmenu.Children[CurrentSubmenu.SelectedIndex].IsActive);
         }
 
         private static void SelectMenuPrev()
         {
             do
             {
-                SelectMenu(SelectedMenu - 1);
-            } while (!SelectableItems[SelectedMenu].IsActive);
+                SelectMenu(CurrentSubmenu.SelectedIndex - 1);
+            } while (!CurrentSubmenu.Children[CurrentSubmenu.SelectedIndex].IsActive);
         }
 
         private static void DrawControllerState(SpriteBatch spriteBatch)
@@ -221,6 +294,11 @@ namespace YGR
 
         public static void Update()
         {
+            foreach (var item in CurrentSubmenu.Children)
+            {
+                item.Update();
+            }
+
             if (Input.IsKeyTriggered(Keybinds.P1Down) || Input.IsKeyTriggered(Keys.Down) ||
                 Input.IsButtonTriggeredAny(Buttons.DPadDown) || Input.IsButtonTriggeredAny(Buttons.LeftThumbstickDown))
             {
@@ -236,40 +314,48 @@ namespace YGR
             if (Input.IsKeyTriggered(Keybinds.Enter) || Input.IsKeyTriggered(Keys.Space) ||
                 Input.IsButtonTriggeredAny(Buttons.A))
             {
-                SelectableItems[SelectedMenu].Dispatch();
+                CurrentSubmenu.Selected.Dispatch();
+            }
+
+            if (Input.IsKeyTriggered(Keys.Escape) || Input.IsButtonTriggeredAny(Buttons.Back) ||
+                Input.IsButtonTriggeredAny(Buttons.B))
+            {
+                Ascend();
             }
 
             // Select item based on mouse hover only if it was moved
             if (Input.HasMouseMoved() || Input.IsLeftMouseClick())
             {
-                for (int i = 0; i < SelectableItems.Count; i++)
+                for (int i = 0; i < CurrentSubmenu.Children.Count; i++)
                 {
-                    if (SelectableItems[i].Bounds().Contains(Input.GetMousePosition()))
+                    if (CurrentSubmenu.Children[i].Bounds().Contains(Input.GetMousePosition()))
                     {
                         SelectMenu(i);
                         break;
                     }
                 }
             }
-            if (Input.IsLeftMouseClick() && SelectableItems[SelectedMenu].Bounds().Contains(Input.GetMousePosition()))
+            if (Input.IsLeftMouseClick() && CurrentSubmenu.Selected.Bounds().Contains(Input.GetMousePosition()))
             {
-                SelectableItems[SelectedMenu].Dispatch();
+                CurrentSubmenu.Selected.Dispatch();
             }
         }
 
-        public static void Draw(SpriteBatch spriteBatch)
+        public static void Draw(GameTime gameTime, SpriteBatch spriteBatch)
         {
             Rectangle Bounds = Game._graphics.GraphicsDevice.Viewport.Bounds;
-            foreach (var item in SelectableItems)
+            foreach (var item in CurrentSubmenu.Children)
             {
                 item.Draw(spriteBatch, Bounds);
             }
-            DrawControllerState(spriteBatch);
-        }
-
-        internal static void LoadContent(ContentManager content)
-        {
-            TitleImage = content.Load<Texture2D>("SpritesOther/title_image");
+            if (CurrentSubmenu == StatsMenu)
+            {
+                UI.DrawPlayerStatistics(gameTime, spriteBatch);
+            }
+            else
+            {
+                DrawControllerState(spriteBatch);
+            }
         }
     }
 }

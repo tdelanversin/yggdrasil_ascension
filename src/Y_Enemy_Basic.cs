@@ -160,9 +160,19 @@ namespace YGR
         {
             if (State == EnemyState.Inactive) { return; }
 
+            // Return if alread dead, otherwise player kill stats are inaccurate
+            if (LifePoints <= 0) { return; }
+
             LifePoints -= projectile.Damage;
             _hitFramesCounter = 1;
             _currentColor = Color.Lerp(_hitColor, Color, 0.1f);
+
+            // @statistics
+            var p = (IPlayer)projectile.WhoFiredMe;
+            p.Stats.DamageDealt += projectile.Damage;
+            p.Stats.TimesHit++;
+            if (this is IEnemyBoss) { p.Stats.BossDamageDealt += projectile.Damage; }
+            if (LifePoints <= 0) { p.Stats.Kills++; }
         }
 
         protected void UpdateHitCounters(GameTime gameTime)
@@ -505,7 +515,7 @@ namespace YGR
 
         virtual public void DropSomethingJuicyMaybe()
         {
-            if(WhoKilledMe != null)
+            if (WhoKilledMe != null)
             {
                 if (WhoKilledMe.WhatAreYou() == X_LevelElements.Victim)
                 {
@@ -515,7 +525,7 @@ namespace YGR
                         if (vic.LifePoints < 0.1f * (float)vic.LifePointsMax)
                         {
                             var next = Util.random.Next(0, 100);
-                            if(next < _dropProbabilityPercentLifeSaving)
+                            if (next < _dropProbabilityPercentLifeSaving)
                             {
                                 // drop a life saving goodie
                                 var room = (Y_CMRoom)Room;

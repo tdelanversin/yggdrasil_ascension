@@ -23,7 +23,7 @@ namespace YGR
         public IGameElement WhoKilledMe { get; set; }
 
         // IVictim fields
-        public int LifePoints { get; set; }
+        public int LifePoints { get; protected set; }
         public int LifePointsMax { get; set; }
         public Color Color { get; set; }
         public X_CollisionModel_Victim Collision { get; }
@@ -37,7 +37,10 @@ namespace YGR
         public IShooter Gun { get; set; }
         public PlayerIndex PlayerIndex { get; }
         public bool IsActive { get; protected set; }
+        public bool IsInvincible { get; protected set; }
+        public bool IsDashing { get; protected set; }
         public PlayerType Type { get; }
+        public Statistics Stats { get; set; }
 
         // Class fields
         public float VelocityMax;
@@ -57,7 +60,6 @@ namespace YGR
         protected Vector2 Position;
         protected ParticleEffect pE;
         protected bool _isAiming;
-        protected bool _invincible;
         protected float _invincibleDuration;
         protected float _invincibleTimer;
         protected float _cr;
@@ -67,7 +69,6 @@ namespace YGR
         protected float _actionTreshold;
 
         // Dash
-        protected bool _dashing;
         protected int _dashDuration;
         protected float _dashSpeed;
         protected int _dashTimer;
@@ -177,7 +178,7 @@ namespace YGR
             _deceleration = 0.004f;
 
             // Dash
-            _dashing = false;
+            IsDashing = false;
             _dashDuration = 200; // Dash duration in ms
             _dashSpeed = 4f; // Dash speed multiplier
             _dashTimer = _dashDuration;
@@ -191,15 +192,16 @@ namespace YGR
             // Character state
             _isAiming = false;
             _aimDirection = new Vector2(1, 0);
-            _invincible = false;
+            IsInvincible = false;
             IsActive = true;
+            Stats = new Statistics();
 
             Room = Level.GetRoom(this, Room);
         }
 
         public virtual X_LevelElements WhatAreYou()
         {
-            if (_invincible || _dashing)
+            if (IsInvincible || IsDashing)
             {
                 return X_LevelElements.Invincible;
             }
@@ -218,30 +220,70 @@ namespace YGR
             return LifePoints > 0;
         }
 
-        public virtual void Heal(int healAmount = 999)
-        {
-            // Don't heal a dead player
-            if (!IsAlive()) { return; }
 
-            LifePoints = Math.Min(LifePoints + healAmount, LifePointsMax);
+        // Private heal method, this does NOT check if player is alive
+        protected virtual void heal(int healAmount)
+        {
+            if (LifePointsMax - LifePoints < healAmount)
+            {
+                healAmount = LifePointsMax - LifePoints;
+            }
+            LifePoints += healAmount;
+            Stats.AmountHealed += healAmount;
+        }
+
+        public virtual void Heal()
+        {
+            if (!IsAlive()) { return; } // Don't heal a dead player
+            heal(LifePointsMax);
+        }
+
+        public virtual void Heal(int healAmount)
+        {
+            if (!IsAlive()) { return; } // Don't heal a dead player
+            heal(healAmount);
         }
 
         public virtual void Revive()
         {
+            if (IsAlive()) { return; }
             LifePoints = LifePointsMax;
+            Stats.Revives++;
+            heal(LifePointsMax / 2);
+        }
+
+        public virtual void Revive(int healAmount)
+        {
+            if (IsAlive()) { return; }
+            Stats.Revives++;
+            heal(healAmount);
+        }
+
+        public virtual void Godmode()
+        {
+            LifePoints = LifePointsMax = 999;
+            Gun = new Gun_Godmode();
+            VelocityMax = 0.6f;
         }
 
         /* Deal with being hit by projectile, basically physical therapy */
         public virtual void Hit(IProjectile projectile)
         {
-            if (_invincible || !IsAlive()) { return; }
+            if (IsInvincible || !IsAlive()) { return; }
 
             LifePoints -= projectile.Damage;
-            _invincible = true;
+            IsInvincible = true;
             _invincibleTimer = 0;
 
+            // @statistics
+            Stats.DamageTaken += projectile.Damage;
+            if (projectile.WhoFiredMe is IEnemyBoss) { Stats.BossDamageTaken += projectile.Damage; }
             if (LifePoints <= 0)
+            {
                 Manager_Sound.Sound_PlayerDeath.Play();
+                Stats.Deaths++;
+                LifePoints = 0;
+            }
         }
 
         protected virtual void UpdateRoom(GameTime gameTime)
@@ -254,11 +296,11 @@ namespace YGR
 
         protected virtual void UpdateInvincibility(GameTime gameTime)
         {
-            if (_invincible)
+            if (IsInvincible)
             {
                 if (_invincibleTimer > _invincibleDuration)
                 {
-                    _invincible = false;
+                    IsInvincible = false;
                 }
                 else
                 {
@@ -277,12 +319,12 @@ namespace YGR
 
         protected virtual void UpdateColor(GameTime gameTime)
         {
-            if (_invincible)
+            if (IsInvincible)
             {
                 // Blinking while invincible
                 _characterColor = Color.DimGray * (float)((Math.Sin(_invincibleTimer / 50) + 1) / 2);
             }
-            else if (_dashing)
+            else if (IsDashing)
             {
                 // Transient invisibility while dashing
                 _characterColor = Color.White * (_dashTimer / (float)_dashDuration);
@@ -295,13 +337,13 @@ namespace YGR
 
         protected virtual void UpdateDash(GameTime gameTime)
         {
-            if (_dashing)
+            if (IsDashing)
             {
                 Manager_Particles._particleEffects[(int)Manager_Particles.Effect.Dash].Trigger(new Vector2(_rect.Location.X + _rect.Width / 2, _rect.Location.Y + _rect.Height));
                 //Manager_Particles.GenParticleEffectDash(new Vector2(_rect.Location.X+_rect.Width/2, _rect.Location.Y+_rect.Height));
                 if (_dashTimer > _dashDuration)
                 {
-                    _dashing = false;
+                    IsDashing = false;
                 }
                 else
                 {
@@ -334,11 +376,12 @@ namespace YGR
                 if ((ControlLayout != ControlLayout.ControllerOnly && Input.IsKeyDown(Keybinds.ActionOne)) || Input.IsButtonDown(PlayerIndex, Keybinds.GamePadAction))
                 {
                     Manager_Sound.Sound_Dash.Play();
-
-                    _dashing = true;
+                    IsDashing = true;
                     _dashTimer = 0;
                     _dashCooldownTimer = 0; // Reset timer
 
+                    // @statistics
+                    Stats.TimesDashed++;
                 }
             }
         }
@@ -377,7 +420,8 @@ namespace YGR
                 {
                     _isAiming = true; // Show the aim indicator when firing
                     _currentAimInput = InputType.Controller;
-                    Gun.Shoot(gameTime, Rect.Center.ToVector2(), _aimDirection, Level, this);
+                    bool shot = Gun.Shoot(gameTime, Rect.Center.ToVector2(), _aimDirection, Level, this);
+                    if (shot) { Stats.TimesFired++; }
                 }
             }
         }
@@ -419,7 +463,8 @@ namespace YGR
                 }
                 if (Input.IsLeftMousePressed() && IsAlive())
                 {
-                    Gun.Shoot(gameTime, playerCenter, _aimDirection, Level, this);
+                    bool shot = Gun.Shoot(gameTime, playerCenter, _aimDirection, Level, this);
+                    if (shot) { Stats.TimesFired++; }
                 }
 
                 if (Input.HasMouseStateChanged())
@@ -475,6 +520,7 @@ namespace YGR
             }
 
             Position += Velocity * timeStepMS;
+            Stats.DistanceTravelled += Velocity.Length() * timeStepMS;
             _rect.Location = Position.ToPoint();
         }
 

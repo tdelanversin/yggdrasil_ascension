@@ -91,6 +91,12 @@ namespace YGR
             //(new Vector2(_rect.Location.X + _rect.Width / 2, _rect.Location.Y + _rect.Height / 2));
 
             _position = _rect.Location.ToVector2();
+
+            if (WhoFiredMe is IPlayer)
+            {
+                var p = (IPlayer)WhoFiredMe;
+                p.Stats.ProjectilesFired++;
+            }
         }
 
         public virtual void UpdateCollisionAndVelocity(GameTime gameTime)

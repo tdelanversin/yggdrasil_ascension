@@ -63,7 +63,6 @@ namespace YGR
         protected override void LoadContent()
         {
             Fonts.LoadContent(Content);
-            Menu.LoadContent(Content);
             Manager_Sound.LoadContent(Content);
             Manager_Sprites.LoadContent(Content);
             _spriteBatch = new SpriteBatch(GraphicsDevice);
@@ -90,36 +89,8 @@ namespace YGR
             DesiredState = GameState.InGame;
         }
 
-        protected override void Update(GameTime gameTime)
+        protected void UpdateState()
         {
-            Input.Update();
-            Notifications.Update(gameTime);
-
-            // Keybind to switch in and out of the menu screen
-            if (Input.IsKeyTriggered(Keys.Escape) || Input.IsButtonTriggeredAny(Buttons.Start))
-            {
-                if (State == GameState.Intro)
-                {
-                    DesiredState = GameState.PreGame;
-                }
-                else if (State == GameState.InGame)
-                {
-                    DesiredState = GameState.Menu;
-                }
-                else if (State == GameState.Menu)
-                {
-                    DesiredState = GameState.InGame;
-                }
-                else if (State == GameState.PreGame)
-                {
-                    // Nothing for now
-                }
-                else
-                {
-                    Logger.Error("Invalid state requested");
-                }
-            }
-
             // Transition the camera when switching from in-game to menu and vice versa
             if (State != DesiredState)
             {
@@ -154,6 +125,38 @@ namespace YGR
 
             // Only switch actual state during Update(), otherwise you can mess up the Draw call
             State = DesiredState;
+        }
+
+        protected override void Update(GameTime gameTime)
+        {
+            UpdateState();
+            Input.Update();
+            Notifications.Update(gameTime);
+
+            // Keybind to switch states
+            if (Input.IsKeyTriggered(Keys.Escape) || Input.IsButtonTriggeredAny(Buttons.Start))
+            {
+                if (State == GameState.Intro)
+                {
+                    DesiredState = GameState.PreGame;
+                }
+                else if (State == GameState.InGame)
+                {
+                    DesiredState = GameState.Menu;
+                }
+                else if (State == GameState.Menu)
+                {
+                    // Takes care of itself
+                }
+                else if (State == GameState.PreGame)
+                {
+                    // Nothing for now
+                }
+                else
+                {
+                    Logger.Error("Invalid state requested");
+                }
+            }
 
             // Keybind to toggle fullscreen
             if (Input.IsKeyTriggered(Keybinds.ToggleFullscreen))
@@ -170,12 +173,7 @@ namespace YGR
 
             if (Input.IsKeyTriggered(Keybinds.GodMode))
             {
-                foreach (var p in Manager_Players.Players)
-                {
-                    p.Gun = new Gun_Godmode();
-                    ((SimplePlayer)p).VelocityMax = 0.6f;
-                    p.LifePoints = 9999;
-                }
+                foreach (var p in Manager_Players.Players) { p.Godmode(); }
             }
 
             if (Input.IsKeyTriggered(Keybinds.KillAllEnemies))
@@ -283,16 +281,20 @@ namespace YGR
                     }
                     break;
                 case GameState.PreGame:
-                    Menu.Draw(_spriteBatch);
+                    Menu.Draw(gameTime, _spriteBatch);
                     break;
 
                 case GameState.InGame:
-                    _level.DrawUI(gameTime, _spriteBatch);
+                    if (_level.State == Y_Level.GamePlayState.Start)
+                    {
+                        UI.DrawPlayerSelection(gameTime, _spriteBatch);
+                    }
+                    UI.DrawPlayerStatus(gameTime, _spriteBatch);
                     break;
 
                 case GameState.Menu:
-                    _level.DrawPlayerStatusUI(gameTime, _spriteBatch);
-                    Menu.Draw(_spriteBatch);
+                    // UI.DrawPlayerStatus(gameTime, _spriteBatch);
+                    Menu.Draw(gameTime, _spriteBatch);
                     break;
             }
 

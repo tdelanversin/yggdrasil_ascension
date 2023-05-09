@@ -37,14 +37,14 @@ namespace YGR
             IWalkable room = me.Level.GetRoom(me, me.Room);
             me.Room = room;
             var whoFiredMe = (IVictim)me.WhoFiredMe;
-            if (whoFiredMe.WhatAreYou() == X_LevelElements.Victim || whoFiredMe.WhatAreYou() == X_LevelElements.Invincible)
+            if (whoFiredMe is IPlayer)
             {
                 // regular player shot the projectile
                 foreach (var enemy in Manager_Enemies.GetEnemies())
                 {
                     if (enemy == me.WhoFiredMe) continue;
 
-                    if(handlePotentialImpact(me, (IVictim)enemy, ref myRect, ref newVelocity, ref contactPoint, ref contactNormal, ref who, timeStepMS))
+                    if (handlePotentialImpact(me, (IVictim)enemy, ref myRect, ref newVelocity, ref contactPoint, ref contactNormal, ref who, timeStepMS))
                     {
                         result = true;
                         break;
@@ -60,9 +60,23 @@ namespace YGR
 
                     // Can't touch ghost
                     if (victim.WhatAreYou() == X_LevelElements.Ghost) continue;
-                    
+
                     // Pass through player if they are currently invincible
-                    if (victim.WhatAreYou() == X_LevelElements.Invincible) continue;
+                    if (victim.WhatAreYou() == X_LevelElements.Invincible)
+                    {
+                        // Bullets pass through dashing players, but we still
+                        // want to track how many a player doged through.
+                        // Dashing through bullets while being invincible
+                        // doesn't count, that's not very brave.
+                        var p = (IPlayer)victim;
+                        if (!p.IsDashing || p.IsInvincible) { continue; }
+
+                        Rectangle otherRect = victim.Rect;
+                        if (Manager_Collision.FastRectVsRect(ref myRect, newVelocity, timeStepMS, ref otherRect, out point, out normal))
+                            p.Stats.TrackDodgedProjectile(me);
+
+                        continue;
+                    }
 
                     if (handlePotentialImpact(me, victim, ref myRect, ref newVelocity, ref contactPoint, ref contactNormal, ref who, timeStepMS))
                     {
@@ -141,7 +155,7 @@ namespace YGR
                     point, Vector2.Zero, 0));
 
                 impactedObject.WhoKilledMe = me.WhoFiredMe;
-                
+
                 return true;
             }
             return false;

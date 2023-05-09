@@ -1,3 +1,4 @@
+#pragma warning disable
 ﻿namespace MonoGame.Extended.VideoPlayback;
 
 /// <summary>
