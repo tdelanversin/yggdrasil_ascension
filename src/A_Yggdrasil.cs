@@ -89,36 +89,8 @@ namespace YGR
             DesiredState = GameState.InGame;
         }
 
-        protected override void Update(GameTime gameTime)
+        protected void UpdateState()
         {
-            Input.Update();
-            Notifications.Update(gameTime);
-
-            // Keybind to switch in and out of the menu screen
-            if (Input.IsKeyTriggered(Keys.Escape) || Input.IsButtonTriggeredAny(Buttons.Start))
-            {
-                if (State == GameState.Intro)
-                {
-                    DesiredState = GameState.PreGame;
-                }
-                else if (State == GameState.InGame)
-                {
-                    DesiredState = GameState.Menu;
-                }
-                else if (State == GameState.Menu)
-                {
-                    DesiredState = GameState.InGame;
-                }
-                else if (State == GameState.PreGame)
-                {
-                    // Nothing for now
-                }
-                else
-                {
-                    Logger.Error("Invalid state requested");
-                }
-            }
-
             // Transition the camera when switching from in-game to menu and vice versa
             if (State != DesiredState)
             {
@@ -153,6 +125,38 @@ namespace YGR
 
             // Only switch actual state during Update(), otherwise you can mess up the Draw call
             State = DesiredState;
+        }
+
+        protected override void Update(GameTime gameTime)
+        {
+            UpdateState();
+            Input.Update();
+            Notifications.Update(gameTime);
+
+            // Keybind to switch states
+            if (Input.IsKeyTriggered(Keys.Escape) || Input.IsButtonTriggeredAny(Buttons.Start))
+            {
+                if (State == GameState.Intro)
+                {
+                    DesiredState = GameState.PreGame;
+                }
+                else if (State == GameState.InGame)
+                {
+                    DesiredState = GameState.Menu;
+                }
+                else if (State == GameState.Menu)
+                {
+                    // Takes care of itself
+                }
+                else if (State == GameState.PreGame)
+                {
+                    // Nothing for now
+                }
+                else
+                {
+                    Logger.Error("Invalid state requested");
+                }
+            }
 
             // Keybind to toggle fullscreen
             if (Input.IsKeyTriggered(Keybinds.ToggleFullscreen))

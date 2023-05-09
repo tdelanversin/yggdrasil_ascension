@@ -80,7 +80,7 @@ namespace YGR
                 // infoString += string.Format("\n Weapon: {0}", p.Gun.Name);
                 infoString += string.Format("\n Class:");
                 infoString += string.Format("\n Weapon:");
-                infoString += string.Format("\n Travel: {0:0}", p.Stats.DistanceTravelled);
+                infoString += string.Format("\n Kills: {0:0}", p.Stats.Kills);
 
                 Vector2 indexStringSize = font.MeasureString(indexString);
                 Color playerColor = Color.Lerp(p.Color, Color.Wheat, 0.5f);
@@ -143,7 +143,7 @@ namespace YGR
                     foreach (var field in fields)
                     {
                         var description = field.Name;
-                        description = Regex.Replace(description, "(\\B[A-Z])", " $1");
+                        description = Regex.Replace(description, "(\\B[A-Z])", " $1"); // Split Camelcase variable names into nice strings
                         var value = field.GetValue(stats).GetType() == typeof(float) ? /* HAACK */ (float)field.GetValue(stats) / 32 : field.GetValue(stats);
                         infoString += string.Format("\n {0,-20} {1,-8:0}", description, value);
                     }

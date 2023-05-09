@@ -181,7 +181,8 @@ namespace YGR
                     new SettingsItem("Fullscreen: ", Settings.Fullscreen, toggleFunc: Settings.ToggleFullscreen),
                     new SettingsItem("Dynamic Shades: ", Settings.DynamicShades, toggleFunc: Settings.ToggleShades),
                     new SettingsItem("Outlines: ", Settings.Outlines, toggleFunc: Settings.ToggleOutlines),
-                    new SettingsItem("Sound: ", Settings.Sound, toggleFunc: Settings.Toggle_Volume),
+                    new SettingsItem("Sound Effects: ", Settings.Sound, toggleFunc: Settings.ToggleSoundEffects),
+                    new SettingsItem("Music: ", Settings.Music, toggleFunc: Settings.ToggleMusic),
                     new MenuItem("Back", Menu.Ascend),
                 }
             );

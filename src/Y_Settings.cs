@@ -18,6 +18,7 @@ namespace YGR
         public static bool Outlines;
         public static bool DrawFPS;
         public static bool Sound;
+        public static bool Music;
 
         public static void Initialize(A_Yggdrasil game)
         {
@@ -25,15 +26,15 @@ namespace YGR
             Gdm = game._graphics;
             Window = game.Window;
 
-
             // Defaults
             DrawFPS = true; // Always on for now, shouldn't really bother anyone
             Sound = true;
+            Music = true;
 #if DEBUG
             Fullscreen = false;
             DynamicShades = false;
             Outlines = false;
-            Toggle_Volume();
+            ToggleMusic();
 #else
             Fullscreen = true;
             DynamicShades = false; // Off by default, not because they are slow (they are in fact very quick) but because Monogame sucks so much!!!
@@ -94,20 +95,31 @@ namespace YGR
             return Fullscreen;
         }
 
-        public static bool Toggle_Volume()
+        public static bool ToggleSoundEffects()
         {
             Sound = !Sound;
             if (!Sound)
             {
                 SoundEffect.MasterVolume = 0f;
-                MediaPlayer.IsMuted = true;
             }
             else
             {
                 SoundEffect.MasterVolume = 1f;
-                MediaPlayer.IsMuted = false;
             }
             return Sound;
+        }
+
+        public static bool ToggleMusic(){
+            Music = !Music;
+            if (!Music)
+            {
+                MediaPlayer.IsMuted = true;
+            }
+            else
+            {
+                MediaPlayer.IsMuted = false;
+            }
+            return Music;
         }
     }
 }
