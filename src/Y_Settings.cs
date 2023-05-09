@@ -58,8 +58,10 @@ namespace YGR
 #if DEBUG
             Fullscreen = false;
             Outlines = false;
+            Music = false;
 #endif
 
+            /*
             var LocalAppDataDir = System.Environment.GetFolderPath(System.Environment.SpecialFolder.LocalApplicationData);
             var GameDataDir = System.IO.Path.Combine(LocalAppDataDir, "YggdrasilAscension");
             var DirInfo = System.IO.Directory.CreateDirectory(GameDataDir);
@@ -74,6 +76,7 @@ namespace YGR
             {
                 SaveSettings();
             }
+            */
 
             ApplySoundSettings();
         }
@@ -90,16 +93,16 @@ namespace YGR
 
         private static void SaveSettings()
         {
-            SettingsObject settings = new SettingsObject();
-            settings.Fullscreen = Fullscreen;
-            settings.DynamicShades = DynamicShades;
-            settings.Outlines = Outlines;
-            settings.DrawFPS = DrawFPS;
-            settings.Sound = Sound;
-            settings.Music = Music;
+            // SettingsObject settings = new SettingsObject();
+            // settings.Fullscreen = Fullscreen;
+            // settings.DynamicShades = DynamicShades;
+            // settings.Outlines = Outlines;
+            // settings.DrawFPS = DrawFPS;
+            // settings.Sound = Sound;
+            // settings.Music = Music;
 
-            var settingsData = new List<SettingsObject> { settings };
-            Util.WriteJSON(SettingsPath, settingsData);
+            // var settingsData = new List<SettingsObject> { settings };
+            // Util.WriteJSON(SettingsPath, settingsData);
         }
 
         internal static void ApplySoundSettings()
