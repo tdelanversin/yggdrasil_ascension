@@ -281,7 +281,7 @@ namespace YGR
                     }
                     break;
                 case GameState.PreGame:
-                    Menu.Draw(_spriteBatch);
+                    Menu.Draw(gameTime, _spriteBatch);
                     break;
 
                 case GameState.InGame:
@@ -293,9 +293,8 @@ namespace YGR
                     break;
 
                 case GameState.Menu:
-                    UI.DrawPlayerStatus(gameTime, _spriteBatch);
-                    // UI.DrawPlayerStatistics(gameTime, _spriteBatch);
-                    Menu.Draw(_spriteBatch);
+                    // UI.DrawPlayerStatus(gameTime, _spriteBatch);
+                    Menu.Draw(gameTime, _spriteBatch);
                     break;
             }
 

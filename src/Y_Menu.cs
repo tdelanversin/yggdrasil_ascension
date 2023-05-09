@@ -44,18 +44,18 @@ namespace YGR
 
         private static void Descend()
         {
-            if (Tree.Selected is MenuTree)
+            if (CurrentSubmenu.Selected is MenuTree)
             {
-                Tree = (MenuTree)Tree.Selected;
+                CurrentSubmenu = (MenuTree)CurrentSubmenu.Selected;
                 RepositionMenuItems();
             }
         }
 
         private static void Ascend()
         {
-            if (Tree.Parent != null)
+            if (CurrentSubmenu.Parent != null)
             {
-                Tree = Tree.Parent;
+                CurrentSubmenu = CurrentSubmenu.Parent;
                 RepositionMenuItems();
             }
             else
@@ -167,15 +167,18 @@ namespace YGR
         private static A_Yggdrasil Game;
         private static Rectangle Bounds;
 
-        private static MenuTree Tree;
+        private static MenuTree MainMenu;
+        private static MenuTree StatsMenu;
+        private static MenuTree SettingsMenu;
+        private static MenuTree CurrentSubmenu;
 
         internal static void Initialize(A_Yggdrasil game)
         {
             Game = game;
+            MainMenu = new MenuTree("Main Menu");
+            CurrentSubmenu = MainMenu;
 
-            Tree = new MenuTree("Main Menu");
-
-            MenuTree SettingsMenu = new MenuTree("Settings", parent: Tree);
+            SettingsMenu = new MenuTree("Settings", parent: MainMenu);
             SettingsMenu.AddChildren(
                 new List<MenuItem>{
                     new SettingsItem("Fullscreen: ", Settings.Fullscreen, toggleFunc: Settings.ToggleFullscreen),
@@ -187,14 +190,15 @@ namespace YGR
                 }
             );
 
-            MenuTree StatsMenu = new MenuTree("Statistics", parent: Tree);
+            StatsMenu = new MenuTree("Statistics", parent: MainMenu);
+            StatsMenu.IsActive = false;
             StatsMenu.AddChild(new MenuItem("Back", Menu.Ascend));
 
-            Tree.AddChildren(
+            CurrentSubmenu.AddChildren(
                 new List<MenuItem>{
                     new MenuItem("Play", NewGame),
                     new MenuItem("Restart", NewGame, isActive: false),
-                    // StatsMenu, // TODO
+                    StatsMenu,
                     SettingsMenu,
                     new MenuItem(Util.OSExitString(), Util.Quit),
                 }
@@ -208,23 +212,24 @@ namespace YGR
             Bounds = Game._graphics.GraphicsDevice.Viewport.Bounds;
             float x = Bounds.Width / 2;
             float y = Bounds.Height / 2;
-            for (int i = 0; i < Tree.Children.Count; i++)
+            for (int i = 0; i < CurrentSubmenu.Children.Count; i++)
             {
-                Tree.Children[i].Position = new Vector2(x, y + i * 40);
+                CurrentSubmenu.Children[i].Position = new Vector2(x, y + i * 40);
             }
         }
 
         private static void NewGame()
         {
             // Turn 'Play' into 'Continue'
-            Tree.Children[0] = new MenuItem("Continue", delegate () { Game.DesiredState = GameState.InGame; });
+            CurrentSubmenu.Children[0] = new MenuItem("Continue", delegate () { Game.DesiredState = GameState.InGame; });
 
-            // Enable the 'Restart' menu item
-            Tree.Children[1].IsActive = true;
+            // Enable the 'Restart' and 'Statistics' menu items
+            CurrentSubmenu.Children[1].IsActive = true;
+            StatsMenu.IsActive = true;
 
             // Don't leave the 'Restart' item selected
             SelectMenu(0);
-            Tree.Children[0].IsSelected = true;
+            CurrentSubmenu.Children[0].IsSelected = true;
 
             RepositionMenuItems();
 
@@ -233,14 +238,14 @@ namespace YGR
 
         private static void SelectMenu(int nextSelected)
         {
-            if (Tree.Children.Count == 1) { return; }
-            if (nextSelected == Tree.SelectedIndex) { return; }
-            Tree.Children[Tree.SelectedIndex].IsSelected = false;
+            if (CurrentSubmenu.Children.Count == 1) { return; }
+            if (nextSelected == CurrentSubmenu.SelectedIndex) { return; }
+            CurrentSubmenu.Children[CurrentSubmenu.SelectedIndex].IsSelected = false;
 
             // Wrap index around in both directions
-            Tree.SelectedIndex = Util.ProperMod(nextSelected, Tree.Children.Count);
-            Tree.Selected.IsSelected = true;
-            if (Tree.Children[Tree.SelectedIndex].IsActive)
+            CurrentSubmenu.SelectedIndex = Util.ProperMod(nextSelected, CurrentSubmenu.Children.Count);
+            CurrentSubmenu.Selected.IsSelected = true;
+            if (CurrentSubmenu.Children[CurrentSubmenu.SelectedIndex].IsActive)
             {
                 Manager_Sound.Sound_MenuSelect.Play(1, 0, 0);
             }
@@ -250,16 +255,16 @@ namespace YGR
         {
             do
             {
-                SelectMenu(Tree.SelectedIndex + 1);
-            } while (!Tree.Children[Tree.SelectedIndex].IsActive);
+                SelectMenu(CurrentSubmenu.SelectedIndex + 1);
+            } while (!CurrentSubmenu.Children[CurrentSubmenu.SelectedIndex].IsActive);
         }
 
         private static void SelectMenuPrev()
         {
             do
             {
-                SelectMenu(Tree.SelectedIndex - 1);
-            } while (!Tree.Children[Tree.SelectedIndex].IsActive);
+                SelectMenu(CurrentSubmenu.SelectedIndex - 1);
+            } while (!CurrentSubmenu.Children[CurrentSubmenu.SelectedIndex].IsActive);
         }
 
         private static void DrawControllerState(SpriteBatch spriteBatch)
@@ -289,7 +294,7 @@ namespace YGR
 
         public static void Update()
         {
-            foreach (var item in Tree.Children)
+            foreach (var item in CurrentSubmenu.Children)
             {
                 item.Update();
             }
@@ -309,7 +314,7 @@ namespace YGR
             if (Input.IsKeyTriggered(Keybinds.Enter) || Input.IsKeyTriggered(Keys.Space) ||
                 Input.IsButtonTriggeredAny(Buttons.A))
             {
-                Tree.Selected.Dispatch();
+                CurrentSubmenu.Selected.Dispatch();
             }
 
             if (Input.IsKeyTriggered(Keys.Escape) || Input.IsButtonTriggeredAny(Buttons.Back) ||
@@ -321,29 +326,36 @@ namespace YGR
             // Select item based on mouse hover only if it was moved
             if (Input.HasMouseMoved() || Input.IsLeftMouseClick())
             {
-                for (int i = 0; i < Tree.Children.Count; i++)
+                for (int i = 0; i < CurrentSubmenu.Children.Count; i++)
                 {
-                    if (Tree.Children[i].Bounds().Contains(Input.GetMousePosition()))
+                    if (CurrentSubmenu.Children[i].Bounds().Contains(Input.GetMousePosition()))
                     {
                         SelectMenu(i);
                         break;
                     }
                 }
             }
-            if (Input.IsLeftMouseClick() && Tree.Selected.Bounds().Contains(Input.GetMousePosition()))
+            if (Input.IsLeftMouseClick() && CurrentSubmenu.Selected.Bounds().Contains(Input.GetMousePosition()))
             {
-                Tree.Selected.Dispatch();
+                CurrentSubmenu.Selected.Dispatch();
             }
         }
 
-        public static void Draw(SpriteBatch spriteBatch)
+        public static void Draw(GameTime gameTime, SpriteBatch spriteBatch)
         {
             Rectangle Bounds = Game._graphics.GraphicsDevice.Viewport.Bounds;
-            foreach (var item in Tree.Children)
+            foreach (var item in CurrentSubmenu.Children)
             {
                 item.Draw(spriteBatch, Bounds);
             }
-            DrawControllerState(spriteBatch);
+            if (CurrentSubmenu == StatsMenu)
+            {
+                UI.DrawPlayerStatistics(gameTime, spriteBatch);
+            }
+            else
+            {
+                DrawControllerState(spriteBatch);
+            }
         }
     }
 }

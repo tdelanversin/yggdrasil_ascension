@@ -118,15 +118,15 @@ namespace YGR
 
         public static void DrawPlayerStatistics(GameTime gameTime, SpriteBatch spriteBatch, bool printAll = false)
         {
-            SpriteFont font = Fonts.Medium; // Fonts.GetDecentlySizedFont();
-            Vector2 pos = new Vector2((Camera.Bounds.Width) / 4, Camera.Bounds.Height / 16);
+            SpriteFont font = Fonts.GetDecentlySizedFont();
+            Vector2 pos = new Vector2((Camera.Bounds.Width) / 5, Camera.Bounds.Height / 3);
             float spacing = 1.25f;
 
             for (int i = 0; i < Manager_Players.Players.Count; i++)
             {
                 if (i == 2)
                 {
-                    pos = new Vector2((Camera.Bounds.Width) * 2 / 4, Camera.Bounds.Height / 16);
+                    pos = new Vector2((Camera.Bounds.Width) * 3 / 5, Camera.Bounds.Height / 3);
                 }
 
                 IPlayer p = Manager_Players.Players[i];
