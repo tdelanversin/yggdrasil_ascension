@@ -7,6 +7,7 @@ namespace YGR
     public class Enemy_Gigachad : Enemy_Basic, IEnemyBoss
     {
         IShooter Gun2; // Gigachad needs moar guns
+        public BossAttack Attack { get; set; } = BossAttack.Scatter;
 
         public Enemy_Gigachad(
             Vector2 position,

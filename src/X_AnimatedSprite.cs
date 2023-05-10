@@ -16,6 +16,7 @@ namespace YGR
         WalkDown,
         Jump,
         Spawn,
+        Hide,
     }
 
     public class AnimatedSprite
