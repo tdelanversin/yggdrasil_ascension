@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using System.Timers;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -26,7 +27,7 @@ namespace YGR
 
             // Translate into global coordinates via the Room
             Rect = new Rectangle(
-                (int)(bounds.X*Y_Level.GlobalScale),
+                (int)(bounds.X * Y_Level.GlobalScale),
                 (int)(bounds.Y * Y_Level.GlobalScale),
                 (int)(bounds.Width * Y_Level.GlobalScale),
                 (int)(bounds.Height * Y_Level.GlobalScale)
@@ -184,6 +185,152 @@ namespace YGR
             //         ready = false;
             // }
 
+
+            /* All active players need to be inside and have picked a character */
+            var activePlayers = Manager_Players.Players.FindAll(p => p.IsActive);
+
+            if (activePlayers.Count < 1)
+            {
+                return;
+            }
+
+            foreach (var p in activePlayers)
+            {
+                if (Rect.Contains(p.Rect.Center + new Point(0, p.Rect.Height / 2)))
+                    tryTrigger = true;
+                else
+                    ready = false;
+
+                if (p is Player_Ghost)
+                    ready = false;
+            }
+
+
+            ButtonState statePrev = state;
+            if (tryTrigger)
+            {
+                if (!ready)
+                {
+                    state = ButtonState.Half;
+                    Color = Color.OrangeRed;
+                }
+                else
+                {
+                    state = ButtonState.In;
+                    TriggerInteraction(gameTime);
+                }
+            }
+            else
+            {
+                state = ButtonState.Out;
+                Color = Color.Wheat;
+            }
+            if (state != statePrev)
+            {
+                Manager_Sound.Sound_PlatformActivate.Play();
+            }
+        }
+
+        public override void Draw(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)
+        {
+            Texture2D buttonSprite = Manager_Sprites.ButtonOut;
+            if (state == ButtonState.In)
+            {
+                buttonSprite = Manager_Sprites.ButtonIn;
+            }
+            else if (state == ButtonState.Half)
+            {
+                buttonSprite = Manager_Sprites.ButtonHalf;
+            }
+
+            spriteBatch.Draw(
+                texture: buttonSprite,
+                position: Rect.Location.ToVector2(),
+                sourceRectangle: null,
+                color: Color.White,
+                rotation: 0,
+                origin: Vector2.Zero,
+                scale: 1,
+                effects: SpriteEffects.None,
+                layerDepth: 0);
+        }
+    }
+
+    // RoomOpener allows opening a room's doors when shot
+    public class Interactable_BossRoomEscaper : Interactable_Basic
+    {
+        enum ButtonState
+        {
+            Out,
+            Half,
+            In,
+        }
+
+        ButtonState state = ButtonState.Out;
+
+        public Interactable_BossRoomEscaper(
+            Rectangle bounds,
+            Y_CMRoom room
+            ) : base(bounds, room)
+        {
+            Color = Color.Green;
+            Label = "Get out";
+        }
+
+        public void TriggerInteraction(GameTime gameTime)
+        {
+            // Get all players inside the boss room
+            var alivePlayers = Manager_Players.Players.Where(x => x.IsAlive()).ToArray();
+
+            // find the nearest teleportation point in a room that has been discovered and cleared already
+            var teleportationTargets = Y_Level.Rooms.Values
+                                                    .Where(x => x.WhatAreYou() == X_LevelElements.Room && x.IsVisible() && x.Category != "Gold")
+                                                    .Select(x => ((Y_CMRoom)x).TeleporterTarget)
+                                                    .ToArray();
+            Vector2 midpoint = Room.Rect.Center.ToVector2();
+
+            float mindist = float.MaxValue;
+            int index = 0;
+            int minIndex = 0;
+            foreach(var tt in teleportationTargets)
+            {
+                var dist = (tt.ToVector2() - midpoint).Length();
+                if (dist < mindist)
+                {
+                    mindist = dist;
+                    minIndex = index;
+                }
+                index++;
+            }
+
+            // teleport all players there
+            var targetPoint = teleportationTargets[minIndex];
+            foreach(var p in alivePlayers)
+            {
+                p.TeleportTo(targetPoint);
+            }
+
+            // move camera slowly to new player location
+            Camera.SetFocusPlayers(animationDuration: 2000);
+
+            // change the state to FreeRoam
+            Y_Level.State = Y_Level.GamePlayState.FreeRoam;
+
+            // reset the boss room
+            Room.ResetRoom();
+
+            Label = "Coward!";
+            Color = Color.SpringGreen;
+            Manager_Sound.Sound_PlatformActivate.Play(1, 0, 0);
+            InteractionComplete = true;
+        }
+
+        public override void Update(GameTime gameTime)
+        {
+            if (InteractionComplete) { return; }
+
+            bool tryTrigger = false;
+            bool ready = true;
 
             /* All active players need to be inside and have picked a character */
             var activePlayers = Manager_Players.Players.FindAll(p => p.IsActive);
