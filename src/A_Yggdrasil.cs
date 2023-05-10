@@ -103,7 +103,7 @@ namespace YGR
                 }
                 if (DesiredState == GameState.InGame)
                 {
-                    if (_level.State == Y_Level.GamePlayState.Start && Camera.Mode == CameraMode.Room)
+                    if (Y_Level.State == Y_Level.GamePlayState.Start && Camera.Mode == CameraMode.Room)
                     {
                         // Don't override the slow camera transition on game starts
                     }
@@ -292,7 +292,7 @@ namespace YGR
                     break;
 
                 case GameState.InGame:
-                    if (_level.State == Y_Level.GamePlayState.Start)
+                    if (Y_Level.State == Y_Level.GamePlayState.Start)
                     {
                         UI.DrawPlayerSelection(gameTime, _spriteBatch);
                     }
