@@ -174,7 +174,10 @@ namespace YGR
 
             if (Input.IsKeyTriggered(Keybinds.GodMode))
             {
-                foreach (var p in Manager_Players.Players) { p.Godmode(); }
+                foreach (var p in Manager_Players.Players) { 
+                    p.Godmode();
+                    break;
+                }
             }
 
             if (Input.IsKeyTriggered(Keybinds.KillAllEnemies))
