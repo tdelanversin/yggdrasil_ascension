@@ -16,6 +16,8 @@ namespace YGR
         float SkyAnimationDuration = 90000;
         float SkyAnimationTimer = 0;
 
+        static Rectangle TextBounds;
+
         A_Yggdrasil Game;
         Y_Level Level;
 
@@ -27,10 +29,13 @@ namespace YGR
             SpriteTitleText = Manager_Sprites.BackgroundTitleText;
             SpriteSky = Manager_Sprites.BackgroundSky;
 
-            int width = (int)(SpriteYggdrasil.Width * 3.8f);
-            int height = (int)(SpriteYggdrasil.Height * 3.8f);
+            float scale = 3.8f;
+            int width = (int)(SpriteYggdrasil.Width * scale);
+            int height = (int)(SpriteYggdrasil.Height * scale);
             Point startLocation = new Point((int)(width / 1.96f), (int)(height / 1.12f));
             Rect = new Rectangle(-startLocation.X, -startLocation.Y, width, height);
+            var r = new Rectangle(816, 68, 2463, 738); // Rectangle inside the sprite
+            TextBounds = new Rectangle(Rect.X + (int)(r.X * scale), Rect.Y + (int)(r.Y * scale), (int)(r.Width * scale), (int)(r.Height*scale));
 
             // Update the camera ASAP
             Camera.SetFocusMenu(Rect, animate: false);
@@ -61,15 +66,17 @@ namespace YGR
 
         public void DrawTitleText(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)
         {
+            foreach (var (_, room) in Level.Rooms)
+            {
+                if (room.IsVisible() && TextBounds.Intersects(room.Rect))
+                {
+                    return;
+                }
+            }
 
             Color c = Color.White;
 
             var opacity = 1f;
-
-            if (Game.State != GameState.PreGame)
-            {
-                opacity *= 0.55f;
-            }
 
             if (Camera.InTransitionToMenu)
             {
@@ -104,7 +111,8 @@ namespace YGR
 
         public void DrawOutline(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)
         {
-            throw new System.NotImplementedException();
+            Factory_Debug.DrawRectangle(TextBounds, 5, Color.BlueViolet, spriteBatch);
+            Factory_Debug.DrawRectangle(Rect, 5, Color.BlueViolet, spriteBatch);
         }
 
         public X_LevelElements WhatAreYou()

@@ -7,6 +7,7 @@ namespace YGR
     public class Enemy_Gigachad : Enemy_Basic, IEnemyBoss
     {
         IShooter Gun2; // Gigachad needs moar guns
+        public BossAttack Attack { get; set; } = BossAttack.Scatter;
 
         public Enemy_Gigachad(
             Vector2 position,
@@ -20,7 +21,7 @@ namespace YGR
 
             Name = "Gigachad";
             Gun = new Gun_ShotGun(this, 13);
-            Gun2 = new Gun_Gigagun(this);
+            Gun2 = new Gun_BossAOE(this);
 
             _hitColor = Color.OrangeRed;
             Color = Color.White;

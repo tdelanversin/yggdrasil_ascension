@@ -42,6 +42,11 @@ namespace YGR
             _enemies.Add(new Enemy_Gigachad(position, Manager_Sprites.NewAnimatedSprite_Gigachad(), level));
         }
 
+        internal static void AddEnemy_Boss(Vector2 position, Y_Level level)
+        {
+            _enemies.Add(new Enemy_Boss(position, Manager_Sprites.NewAnimatedSprite_EnemyBoss(), level));
+        }
+
         public static ReadOnlyCollection<IEnemy> GetEnemies()
         {
             return _enemies.AsReadOnly();

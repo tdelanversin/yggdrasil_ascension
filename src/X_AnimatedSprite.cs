@@ -14,6 +14,9 @@ namespace YGR
         Idle,
         WalkUp,
         WalkDown,
+        Jump,
+        Spawn,
+        Hide,
     }
 
     public class AnimatedSprite
@@ -106,10 +109,22 @@ namespace YGR
 
             if (AnimationTimer > AnimationTreshold)
             {
-                DirectionalIndex = (DirectionalIndex + 1) % AnimationSourceRects[Direction].Length;
+                
+                if ((Direction == AnimationState.Spawn || Direction == AnimationState.Jump) 
+                    && DirectionalIndex == AnimationSourceRects[Direction].Length - 1)
+                {
+                    Direction = AnimationState.Idle;
+                    ResetAnimation();
+                }
+                else
+                {
+                    DirectionalIndex = (DirectionalIndex + 1) % AnimationSourceRects[Direction].Length;
+                }
+
                 AnimationTimer = 0;
                 SourceRectangle = AnimationSourceRects[Direction][DirectionalIndex];
             }
+
         }
 
         private AnimationState FlipDirection(AnimationState direction)

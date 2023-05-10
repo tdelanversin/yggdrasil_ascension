@@ -246,9 +246,13 @@ namespace YGR
                     Manager_Enemies.Draw(gameTime, zero, _spriteBatch);
                     Manager_Players.Draw(gameTime, zero, _spriteBatch);
 
-                    if (Settings.Outlines && !Camera.InTransitionFromMenu && !Camera.InTransitionToMenu)
+                    if (Settings.DebugOutlinesLevel)
                     {
                         _level.DrawOutline(gameTime, Vector2.Zero, _spriteBatch);
+                        _background.DrawOutline(gameTime, Vector2.Zero, _spriteBatch);
+                    }
+                    if (Settings.DebugOutlinesEntities)
+                    {
                         Manager_Projectile.DrawOutline(gameTime, zero, _spriteBatch);
                         Manager_Players.DrawOutline(gameTime, zero, _spriteBatch);
                         Manager_Enemies.DrawOutline(gameTime, zero, _spriteBatch);
@@ -260,6 +264,11 @@ namespace YGR
                     _background.Draw(gameTime, zero, _spriteBatch);
                     _level.Draw(gameTime, Vector2.Zero, _spriteBatch);
                     _background.DrawTitleText(gameTime, Vector2.Zero, _spriteBatch);
+                    if (Settings.DebugOutlinesLevel)
+                    {
+                        // _level.DrawOutline(gameTime, Vector2.Zero, _spriteBatch); // Makes even the settings menu lag
+                        _background.DrawOutline(gameTime, Vector2.Zero, _spriteBatch);
+                    }
                     break;
             }
             _spriteBatch.End();

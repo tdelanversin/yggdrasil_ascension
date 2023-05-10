@@ -359,7 +359,7 @@ namespace YGR
                     else if (EnemyEntity.GetType(spr) == Manager_Enemies.EnemyType.SlimeEnemy)
                         Manager_Enemies.AddEnemy_Slime(pos, this);
                     else if (EnemyEntity.GetType(spr) == Manager_Enemies.EnemyType.BossEnemy)
-                        Manager_Enemies.AddEnemy_Gigachad(pos, this);
+                        Manager_Enemies.AddEnemy_Boss(pos, this);
                 }
 
                 var players = r.GetPlayerSpawningPoints();
@@ -386,6 +386,8 @@ namespace YGR
                             r.PickUps.Add(PickUp.Factory(Y_PowerUps.ChooserMailman, pos.ToPoint(), spr.width, spr.height, GlobalScale));
                         if (PlayerEntity.GetType(spr) == PlayerType.Ninja)
                             r.PickUps.Add(PickUp.Factory(Y_PowerUps.ChooserNinja, pos.ToPoint(), spr.width, spr.height, GlobalScale));
+                        if (PlayerEntity.GetType(spr) == PlayerType.Professor) // TODO: for now place a mailman, not gonna take a detour in the starting room
+                            r.PickUps.Add(PickUp.Factory(Y_PowerUps.ChooserMailman, pos.ToPoint(), spr.width, spr.height, GlobalScale));
                     }
                 }
 
