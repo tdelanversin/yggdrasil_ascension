@@ -20,7 +20,7 @@ namespace YGR
 
             Name = "Gigachad";
             Gun = new Gun_ShotGun(13);
-            Gun2 = new Gun_Gigagun();
+            Gun2 = new Gun_BossCircle();
 
             _hitColor = Color.OrangeRed;
             Color = Color.White;
