@@ -668,6 +668,7 @@ namespace YGR
                 DrawCharacterSprite(gameTime, globalOffset, spriteBatch);
                 DrawAimIndicator(gameTime, globalOffset, spriteBatch);
                 DrawHealthbar(gameTime, globalOffset, spriteBatch);
+                Ability.Draw(gameTime, globalOffset, spriteBatch);
                 // DrawOverheadString(gameTime, globalOffset, spriteBatch);
             }
             else

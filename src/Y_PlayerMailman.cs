@@ -16,7 +16,7 @@ namespace YGR
             ) : base(playerIndex, initialPosition, sprite, level, gun, ability, type, controlLayout)
         {
             CharacterSprite = Manager_Sprites.NewAnimatedSprite_Mailman();
-            Ability = null;
+            Ability = new Ability_Shield();
             Type = PlayerType.Mailman;
             Name = "Mailman";
 
