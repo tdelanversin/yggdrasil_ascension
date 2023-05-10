@@ -374,7 +374,7 @@ namespace YGR
             if (NextShotCooldown > 0.0f)
                 return false;
 
-            Manager_Sound.Sound_Shotgun.Play(0.2f, 0, 0);
+            Manager_Sound.Sound_Confusion.Play(0.5f, 0, 0);
 
             NextShotCooldown = ShotDelay;
 

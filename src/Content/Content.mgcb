@@ -58,6 +58,12 @@
 /processorParam:Quality=Best
 /build:Sounds/cash-in.wav
 
+#begin Sounds/confusion.wav
+/importer:WavImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:Sounds/confusion.wav
+
 #begin Sounds/dash.wav
 /importer:WavImporter
 /processor:SoundEffectProcessor
