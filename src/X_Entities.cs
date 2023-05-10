@@ -18,6 +18,7 @@ namespace YGR
             return Manager_Enemies.EnemyType.SimpleEnemy;
         }
 
+#pragma warning disable 0649
         public string id;
         public string iid;
         public string layer;
@@ -27,6 +28,7 @@ namespace YGR
         public int height;
         public int color;
         public Dictionary<string, string> customFields;
+#pragma warning restore 0649
     }
 
     public enum PlayerSpawningPointType
@@ -67,6 +69,7 @@ namespace YGR
             return PlayerSpawningPointType.Spawner;
         }
 
+#pragma warning disable 0649
         public string id;
         public string iid;
         public string layer;
@@ -76,6 +79,7 @@ namespace YGR
         public int height;
         public int color;
         public Dictionary<string, string> customFields;
+#pragma warning restore 0649
     }
 
     public sealed class PowerUp
@@ -89,6 +93,7 @@ namespace YGR
         public const string WeaponKeyboard = "WeaponKeyboard";
         public const string WeaponFunky = "WeaponFunky";
 
+#pragma warning disable 0649
         public string id;
         public string iid;
         public string layer;
@@ -98,5 +103,20 @@ namespace YGR
         public int height;
         public int color;
         public Dictionary<string, string> customFields;
+#pragma warning restore 0649
+    }
+
+    public sealed class GenericLdtkEntity
+    {
+#pragma warning disable 0649
+        public string id;
+        public string iid;
+        public string layer;
+        public int x;
+        public int y;
+        public int width;
+        public int height;
+        public int color;
+#pragma warning restore 0649
     }
 }

@@ -42,20 +42,6 @@ namespace YGR
         }
     }
 
-    internal sealed class Door
-    {
-#pragma warning disable 0649
-        public string id;
-        public string iid;
-        public string layer;
-        public int x;
-        public int y;
-        public int width;
-        public int height;
-        public int color;
-#pragma warning restore 0649
-    }
-
     public enum X_RoomState
     {
         Visible = 0,
@@ -156,6 +142,8 @@ namespace YGR
         public X_IlluminationResources IlluminationResources { get; set; }
 
         private Dictionary<string, string> _ldtkRoomTypeProperties;
+
+        public Point TeleporterTarget { get; private set; }
 
         private byte[] _floorData;
         private Texture2D _floor;
@@ -354,7 +342,7 @@ namespace YGR
             {
                 if (array.entities.Door != null)
                 {
-                    IList<Door> doors = JsonConvert.DeserializeObject<List<Door>>(array.entities.Door.ToString());
+                    IList<GenericLdtkEntity> doors = JsonConvert.DeserializeObject<List<GenericLdtkEntity>>(array.entities.Door.ToString());
 
                     foreach (var door in doors)
                     {
@@ -396,6 +384,21 @@ namespace YGR
                     }
                 }
             });
+
+            if (array.entities.Teleportation_point != null)
+            {
+                var teleporter = JsonConvert.DeserializeObject<List<GenericLdtkEntity>>(array.entities.Teleportation_point.ToString());
+                foreach(var t in teleporter)
+                {
+                    TeleporterTarget = new Point(t.x + 16, t.y + 16);
+                    break;
+                }
+            }
+            else
+            {
+                // make sure there is at least one teleporter
+                TeleporterTarget = new Point(Rect.Width / 2, Rect.Height / 2);
+            }
 
             PickUps = new List<PickUp>();
             var t5 = Task.Run(() =>
@@ -932,6 +935,8 @@ namespace YGR
                 player.x += p.X;
                 player.y += p.Y;
             }
+
+            TeleporterTarget = new Point(TeleporterTarget.X + p.X, TeleporterTarget.Y + p.Y);
         }
 
         public X_ConnectorPoint GetConnectorPoint(X_ConnectorSide side)
@@ -1051,6 +1056,8 @@ namespace YGR
                     powerUp.DrawOutline(gameTime, globalOffset, spriteBatch);
                 }
             }
+
+            Factory_Debug.DrawRectangle(TeleporterTarget.X-16, TeleporterTarget.Y-16, 32, 32, 3, Color.Blue, spriteBatch);
         }
 
         /// <summary>
