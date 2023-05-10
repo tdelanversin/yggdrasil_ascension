@@ -529,8 +529,6 @@ namespace YGR
             if (NextShotCooldown > 0.0f)
                 return false;
 
-            Manager_Sound.Sound_Shotgun.Play(0.3f, 0, 0);
-
             NextShotCooldown = ShotDelay;
             direction = -direction;
 
@@ -566,8 +564,8 @@ namespace YGR
         public Gun_BossAOE(IVictim owner) : base(owner)
         {
             Name = "AOE boss gun";
-            ShotDelay = 5000;
-            ShotCount = 64;
+            ShotDelay = 300; //Boss regulates its own AOE shooting
+            ShotCount = 48;
             ShotSpread = 2 * Math.PI / ShotCount;
         }
 
