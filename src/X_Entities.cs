@@ -106,6 +106,24 @@ namespace YGR
 #pragma warning restore 0649
     }
 
+    public sealed class ButtonEntity
+    {
+        public const string EscapeButton = "EscapeButton";
+        public const string StartButton = "StartButton";
+
+#pragma warning disable 0649
+        public string id;
+        public string iid;
+        public string layer;
+        public int x;
+        public int y;
+        public int width;
+        public int height;
+        public int color;
+        public Dictionary<string, string> customFields;
+#pragma warning restore 0649
+    }
+
     public sealed class GenericLdtkEntity
     {
 #pragma warning disable 0649

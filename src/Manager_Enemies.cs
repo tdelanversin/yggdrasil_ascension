@@ -22,6 +22,16 @@ namespace YGR
             _enemies.Clear();
         }
 
+        public static void ClearEnemies(IWalkable room)
+        {
+            foreach(var enemy in _enemies)
+            {
+                if (enemy.Room == room) enemy.Kill();
+            }
+
+            _enemies.RemoveAll(enemy => enemy.LifePoints <= 0);
+        }
+
         public static void KillAllNormalEnemies()
         {
             _enemies.RemoveAll(e => e is not IEnemyBoss);

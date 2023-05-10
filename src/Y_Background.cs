@@ -66,7 +66,7 @@ namespace YGR
 
         public void DrawTitleText(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)
         {
-            foreach (var (_, room) in Level.Rooms)
+            foreach (var (_, room) in Y_Level.Rooms)
             {
                 if (room.IsVisible() && TextBounds.Intersects(room.Rect))
                 {

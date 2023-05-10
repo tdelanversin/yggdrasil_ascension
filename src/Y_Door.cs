@@ -70,6 +70,7 @@ namespace YGR
         public X_IlluminationResources IlluminationResources { get; set; }
         private X_DoorState State { get; set; }
         public int ElementLevel { get { return 1; } set { } }
+        public string Category { get; }
 
         public List<PickUp> PickUps { get; }
 
@@ -130,6 +131,7 @@ namespace YGR
             //_illuminated = null;
 
             Collision = new X_CollisionModel_Room(collision, tileWidth, tileHeight, isRoomCollisionModel: false);
+            Category = "";
 
             Rect = new Rectangle(0, 0, tileWidth * collision[0].Length, tileHeight * collision.Length);
             _doorCollisionRectangles = new Dictionary<X_DoorState, List<Rectangle>>();
@@ -1400,7 +1402,7 @@ namespace YGR
                     if (Doors.ContainsKey(X_ConnectorSide.Top))
                         p1 = Doors[X_ConnectorSide.Top].First().Point.ToVector2() - new Vector2(temp / 2, tileSize / 2.0f);
                     else
-                        p1 = Doors[X_ConnectorSide.Bottom].First().Point.ToVector2() - new Vector2(temp / 2, -tileSize / 2.0f);
+                        p1 = Doors[X_ConnectorSide.Bottom].First().Point.ToVector2() - new Vector2(temp / 2, tileSize / 2.0f);
 
                     if (Doors.ContainsKey(X_ConnectorSide.Left))
                         p2 = Doors[X_ConnectorSide.Left].First().Point.ToVector2() - new Vector2(tileSize / 2.0f, temp / 2);

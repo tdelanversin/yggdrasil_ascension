@@ -20,7 +20,7 @@ namespace YGR
         public string ResourceFolder { get; }
         
         public List<PickUp> PickUps { get; }
-
+        public string Category { get; }
         public void ResetRoom();
 
         public X_IlluminationResources IlluminationResources { get; set; }

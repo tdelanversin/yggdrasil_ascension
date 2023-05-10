@@ -43,11 +43,12 @@ namespace YGR
             Start, // Not completed starting room
             FreeRoam, // Not in an encounter, players can freely roam
             Encounter, // Players are in an encounter, room locked
+            Escaped,
             End,
         }
 
         public Rectangle Rect { get; set; }
-        public IDictionary<int, IWalkable> Rooms { get; private set; }
+        public static IDictionary<int, IWalkable> Rooms { get; private set; }
         public int TileWidth { get; }
         public int TileHeight { get; }
         public IList<IVictim> Victims { get; }
@@ -217,7 +218,7 @@ namespace YGR
 
                 if (n.Item2 == null)
                 {
-                    n = new Tuple<X_RoomStump, Y_CMRoom>(null, new Y_CMRoom(n.Item1));
+                    n = new Tuple<X_RoomStump, Y_CMRoom>(null, new Y_CMRoom(n.Item1, this));
                     n.Item2.FinalizeItem(graphicsDevice);
 
                 }
@@ -349,18 +350,7 @@ namespace YGR
 
                 var r = (Y_CMRoom)room.Value;
 
-                var enemies = r.GetEnemySpawningPoints();
-                foreach (var spr in enemies)
-                {
-                    Vector2 pos = new Vector2(spr.x, spr.y);
-
-                    if (EnemyEntity.GetType(spr) == Manager_Enemies.EnemyType.SimpleEnemy)
-                        Manager_Enemies.AddEnemy_SimpleEnemy(pos, this);
-                    else if (EnemyEntity.GetType(spr) == Manager_Enemies.EnemyType.SlimeEnemy)
-                        Manager_Enemies.AddEnemy_Slime(pos, this);
-                    else if (EnemyEntity.GetType(spr) == Manager_Enemies.EnemyType.BossEnemy)
-                        Manager_Enemies.AddEnemy_Boss(pos, this);
-                }
+                r.SpawnEnemies();
 
                 var players = r.GetPlayerSpawningPoints();
                 int playerIndex = 0;
@@ -547,7 +537,7 @@ namespace YGR
                     {
                         enemy.State = EnemyState.Idle;
                     }
-                    if (cmroom.Name == "Gold_0")
+                    if (cmroom.Category == "Gold")
                     {
                         Manager_Sound.PlayBossMusic();
                     }
@@ -599,7 +589,7 @@ namespace YGR
 
                     Manager_Sound.PlayFreeRoamMusic();
 
-                    if (encounterRoom.Name.StartsWith("Gold"))
+                    if (encounterRoom.Category == "Gold")
                     {
                         Notifications.New("\n\n\n\n", Color.Wheat, gameEndNotificationLength);
                         Notifications.New("Overcoming the final challenge, glory awaits our heroes", Color.Wheat, gameEndNotificationLength, Fonts.Large);
@@ -616,6 +606,15 @@ namespace YGR
                     }
                     break;
 
+                case GamePlayState.Escaped:
+                    // Check if players died
+                    int escapeNotificationLength = 15000;
+
+                    Notifications.New("\n\n\n\n", Color.Wheat, escapeNotificationLength);
+                    Notifications.New("Maybe you can find some more things to help you defeat the Big Boss", Color.Wheat, escapeNotificationLength, Fonts.Large);
+                    Manager_Sound.PlayFreeRoamMusic();
+                    State = GamePlayState.FreeRoam;
+                    break;
                 case GamePlayState.End:
                     // Nothing yet
                     break;
