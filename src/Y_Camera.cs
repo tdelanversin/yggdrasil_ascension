@@ -35,15 +35,14 @@ namespace YGR
         private static float _animationTimer = _animationDuration;
         private static float _transitionalZoom;
 
-
         private static Vector2 _transitionalPosition;
         private static float _previousZoom;
         private static Vector2 _previousPosition;
 
 
         // Zoom levels for...                     { Follow, Room, Rect, Manual }
-        private static readonly float[] minZoom = { 0.05f, 0.25f, 0.05f, 0.05f };
-        private static readonly float[] maxZoom = { 1.00f, 1.75f, 16.0f, 16.0f };
+        private static readonly float[] minZoom = { 0.05f, 0.15f, 0.05f, 0.05f };
+        private static readonly float[] maxZoom = { 4.00f, 4.00f, 16.0f, 16.0f };
         private const float zoomSpeed = 0.1f;
         private const float panSpeed = 1;
 
@@ -148,7 +147,11 @@ namespace YGR
 
             // Set zoom level to fit all players
             var stretch = Math.Max((float)(right - left) / Bounds.Width, (float)(bot - top) / Bounds.Height);
-            UpdateZoom(.55f / stretch);
+            var resolutionAdjustment = Bounds.Width / 1920f;
+            var zoomMarginFactor = Math.Min(0.85f, .55f * resolutionAdjustment);
+            var zoomFactor = zoomMarginFactor / stretch;
+            var zoomFactorMax = 1.25f * resolutionAdjustment;
+            UpdateZoom(Math.Min(zoomFactor, zoomFactorMax));
         }
 
         private static void focusOnRoom()
