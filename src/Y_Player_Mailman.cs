@@ -2,18 +2,16 @@ using Microsoft.Xna.Framework;
 
 namespace YGR
 {
-    public class Player_Mailman : SimplePlayer
+    public class Player_Mailman : Player_Basic
     {
         public Player_Mailman(
             PlayerIndex playerIndex,
             Vector2 initialPosition,
-            AnimatedSprite sprite,
             Y_Level level,
             IShooter gun,
-            IAbility ability,
             PlayerType type,
             ControlLayout controlLayout = ControlLayout.ControllerOnly
-            ) : base(playerIndex, initialPosition, sprite, level, gun, ability, type, controlLayout)
+            ) : base(playerIndex, initialPosition, level, gun,  type, controlLayout)
         {
             CharacterSprite = Manager_Sprites.NewAnimatedSprite_Mailman();
             Ability = new Ability_Shield();
@@ -25,14 +23,14 @@ namespace YGR
             LifePoints = LifePointsMax;
 
             // Carrying all those packages you ordered is not easy...
-            VelocityMax = IPlayer.PlayerBaseVelocity * 0.6f;
+            VelocityMax = IPlayer.PlayerBaseVelocity * 0.8f;
 
             // ...but we can still do a decent sprint if needed
-            _dashSpeed /= 0.6f;
+            _dashSpeed /= 0.8f;
 
             // Big guy. Tall. Heavy. What else it there to say.
-            SetupPlayerRect(height: IPlayer.PlayerBaseHeight * 1.5f);
-            _mass = IPlayer.PlayerBaseMass * 2.5f;
+            SetupPlayerRect(height: IPlayer.PlayerBaseHeight * 1.25f);
+            _mass = IPlayer.PlayerBaseMass * 2f;
             Collision = new X_CollisionModel_Victim(_mass, _cr);
         }
     }

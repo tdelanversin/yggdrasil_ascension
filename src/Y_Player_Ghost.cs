@@ -3,7 +3,7 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace YGR
 {
-    public class Player_Ghost : SimplePlayer
+    public class Player_Ghost : Player_Basic
     {
         public Player_Ghost(
             PlayerIndex playerIndex,
@@ -11,9 +11,10 @@ namespace YGR
             Y_Level level,
             ControlLayout controlLayout = ControlLayout.ControllerOnly,
             float scale = 1.0f
-            ) : base(playerIndex, initialPosition, Manager_Sprites.NewAnimatedSprite_Ghost(), level, null, new Ability_Ghost(), PlayerType.Ghost, controlLayout)
+            ) : base(playerIndex, initialPosition, level, null, PlayerType.Ghost, controlLayout)
         {
             Name = "Ghost";
+            Ability = new Ability_Ghost();
             VelocityMax = IPlayer.PlayerBaseVelocity * 2; // Compensate for not being able to dash
             IsActive = false;
             LifePoints = LifePointsMax = 0;

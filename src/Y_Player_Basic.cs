@@ -15,7 +15,7 @@ namespace YGR
         KeyboardArrows,
     }
 
-    public class SimplePlayer : IPlayer
+    public class Player_Basic : IPlayer
     {
         // IGameElement fields
         public float LocalScale { get; protected set; }
@@ -85,48 +85,37 @@ namespace YGR
             KeyboardMouse,
         }
 
-        public SimplePlayer(
+        public Player_Basic(
             PlayerIndex playerIndex,
             Vector2 initialPosition,
-            AnimatedSprite sprite,
             Y_Level level,
             IShooter gun,
-            IAbility ability,
             PlayerType type,
-            ControlLayout controlLayout = ControlLayout.ControllerOnly,
-            float scale = 1.0f
+            ControlLayout controlLayout = ControlLayout.ControllerOnly
             )
         {
-            // Use all constructor arguments
+            // Use constructor arguments
             Level = level;
             PlayerIndex = playerIndex;
             Position = initialPosition;
-            CharacterSprite = sprite;
+
+            // Set Name
+            Name = "Basic Dude";
+
+            // Yes, bring him back <3
+            CharacterSprite = Manager_Sprites.NewAnimatedSprite_TestCharacter();
+
             if (gun != null)
                 Gun = gun;
             else
                 Gun = Util.getRandomGun(this);
-            Ability = ability;
+            Ability = new Ability_Ghost();
             Type = type;
             ControlLayout = controlLayout;
-            LocalScale = scale * Y_Level.GlobalScale;
-
-            // Set Name
-            if (type == PlayerType.Nerd)
-            {
-                Name = "Nerdy Girl";
-            }
-            else if (type == PlayerType.Ninja)
-            {
-                Name = "Ninja";
-            }
-            else
-            {
-                Name = "undef";
-            }
+            LocalScale = Y_Level.GlobalScale;
 
             // Balancing knobs
-            LifePointsMax = 15;
+            LifePointsMax = IPlayer.PlayerBaseHealth;
             LifePoints = LifePointsMax;
             _invincibleDuration = 1250;
 
@@ -614,7 +603,7 @@ namespace YGR
         protected virtual void DrawHealthbar(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)
         {
             Vector2 dim = Manager_Sprites.HealthbarEmpty.Bounds.Size.ToVector2();
-            float scale = Rect.Height / dim.X;
+            float scale = IPlayer.PlayerBaseHeight / dim.X;
             dim *= scale;
             Vector2 offset = new Vector2((Rect.Width - dim.X) / 2, -dim.Y - 5);
             Vector2 pos = _rect.Location.ToVector2() + offset;

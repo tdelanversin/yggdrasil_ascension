@@ -118,7 +118,7 @@ namespace YGR
                     return new PickUp(type, location, width, height, scale * 1.0f, Manager_Sprites.NewAnimatedSprite_NerdyGirl(), lastOwner,
                         (player, self) =>
                         {
-                            if (player.Type != PlayerType.Nerd)
+                            if (player is not Player_NerdyGirl)
                             {
                                 Manager_Players.SetPlayerType(player.PlayerIndex, PlayerType.Nerd);
                                 Manager_Sound.Sound_GunCocking.Play();
@@ -129,7 +129,7 @@ namespace YGR
                     return new PickUp(type, location, width, height, scale * 1.0f, Manager_Sprites.NewAnimatedSprite_Mailman(), lastOwner,
                         (player, self) =>
                         {
-                            if (player.Type != PlayerType.Mailman)
+                            if (player is not Player_Mailman)
                             {
                                 Manager_Players.SetPlayerType(player.PlayerIndex, PlayerType.Mailman);
                                 Manager_Sound.Sound_GunCocking.Play();
@@ -140,7 +140,7 @@ namespace YGR
                     return new PickUp(type, location, width, height, scale * 1.0f, Manager_Sprites.NewAnimatedSprite_Ninja(), lastOwner,
                         (player, self) =>
                         {
-                            if (player.Type != PlayerType.Ninja)
+                            if (player is not Player_Ninja)
                             {
                                 Manager_Players.SetPlayerType(player.PlayerIndex, PlayerType.Ninja);
                                 Manager_Sound.Sound_GunCocking.Play();

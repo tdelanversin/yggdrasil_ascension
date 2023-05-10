@@ -16,7 +16,7 @@ namespace YGR
     public interface IPlayer : IVictim
     {
         public static int PlayerBaseHealth = 15;
-        public static int PlayerBaseHeight = 2 * Y_Level.InGameTileSize / Y_Level.TextureTileSize;
+        public static int PlayerBaseHeight = 2 * Y_Level.InGameTileSize;
         public static float PlayerBaseVelocity = 0.35f;
         public static float PlayerBaseMass = 0.35f;
 

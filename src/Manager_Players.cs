@@ -36,40 +36,40 @@ namespace YGR
         public static IPlayer Factory(PlayerType type, PlayerIndex playerIndex, Vector2 position, Y_Level level, ControlLayout controlLayout = ControlLayout.ControllerOnly)
         {
             if (type == PlayerType.Ninja)
-                return new SimplePlayer(
+                return new Player_Ninja(
                     playerIndex,
                     position,
-                    Manager_Sprites.NewAnimatedSprite_Ninja(),
                     level,
                     null,
-                    new Ability_Confusion(),
                     type,
-                    controlLayout,
-                    scale: 1.0f
+                    controlLayout
                 );
             if (type == PlayerType.Nerd)
-                return new SimplePlayer(
+                return new Player_NerdyGirl(
                     playerIndex,
                     position,
-                    Manager_Sprites.NewAnimatedSprite_NerdyGirl(),
                     level,
                     null,
-                    new Ability_Confusion(),
                     type,
-                    controlLayout,
-                    scale: 1.0f
+                    controlLayout
                 );
             if (type == PlayerType.Mailman)
-                return new SimplePlayer(
+                return new Player_Mailman(
                     playerIndex,
                     position,
-                    Manager_Sprites.NewAnimatedSprite_Mailman(),
                     level,
                     null,
-                    new Ability_Confusion(),
                     type,
-                    controlLayout,
-                    scale: 1.0f
+                    controlLayout
+                );
+            if (type == PlayerType.Professor)
+                return new Player_Professor(
+                    playerIndex,
+                    position,
+                    level,
+                    null,
+                    type,
+                    controlLayout
                 );
             else // if (type == PlayerType.Ghost)
             {
@@ -77,8 +77,7 @@ namespace YGR
                     playerIndex,
                     position,
                     level,
-                    controlLayout,
-                    scale: 1.0f
+                    controlLayout
                 );
                 return player;
             }
