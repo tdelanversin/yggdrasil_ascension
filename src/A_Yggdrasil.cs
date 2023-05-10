@@ -45,6 +45,7 @@ namespace YGR
             Manager_Video.Initialize(GraphicsDevice, "./Intro/Intro.mp4");
 
             string level = "Level_3";
+            Manager_Confusion.Initialize();
             Factory_Debug.Initialize(Content);
             Manager_Players.Initialize();
             Manager_Particles.Initialize();
@@ -198,6 +199,7 @@ namespace YGR
                     Manager_Players.Update(gameTime);
                     Manager_Projectile.Update(gameTime);
                     Manager_Enemies.Update(gameTime);
+                    Manager_Confusion.Update(gameTime);
                     Manager_Light2.Update(gameTime);
                     Manager_Particles.Update(gameTime);
                     Manager_Sound.Update(gameTime);
@@ -237,6 +239,7 @@ namespace YGR
                     _level.Draw(gameTime, Vector2.Zero, _spriteBatch);
                     _background.DrawTitleText(gameTime, Vector2.Zero, _spriteBatch);
 
+                    Manager_Confusion.Draw(gameTime, Vector2.Zero, _spriteBatch);
                     Manager_Particles.Draw(gameTime, _spriteBatch);
                     Manager_Projectile.Draw(gameTime, zero, _spriteBatch);
 
@@ -249,6 +252,7 @@ namespace YGR
                         Manager_Projectile.DrawOutline(gameTime, zero, _spriteBatch);
                         Manager_Players.DrawOutline(gameTime, zero, _spriteBatch);
                         Manager_Enemies.DrawOutline(gameTime, zero, _spriteBatch);
+                        Manager_Confusion.DrawOutline(gameTime, zero, _spriteBatch);
                     }
                     break;
 
