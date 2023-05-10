@@ -13,6 +13,7 @@ namespace YGR
         public int LifePointsMax { get; set; }
         public Color Color { get; set; }
         public IGameElement WhoKilledMe { get; set; }
+        public int ElementLevel { get { return 1; } set { } }
 
         public EnemyState State { get; set; } = EnemyState.Inactive;
         protected int fleeingHPTreshold = 2; // Flee if at this treshold or lower
@@ -38,6 +39,8 @@ namespace YGR
         public IShooter Gun { get; set; }
         protected IVictim Target = null;
         public float Scale { get; set; }
+        public bool Confused { get; set; }
+
         protected Vector2 _position;
         protected Color _hitColor;
         protected Color _currentColor;
@@ -89,7 +92,7 @@ namespace YGR
             // Set the drawing scale to make the character fit into the collision bounds
             CharacterScale = Util.GetSpriteScale(_rect, CharacterSprite.SpriteDimension);
             CharacterOffset = Vector2.Zero; // Not needed right now
-
+            Confused = false;
 
             Level = level;
             Room = Level.GetRoom(this, Room);
@@ -162,6 +165,11 @@ namespace YGR
 
             // Return if alread dead, otherwise player kill stats are inaccurate
             if (LifePoints <= 0) { return; }
+
+            if(projectile.WhatAreYou() == X_LevelElements.ConfusionProjectile)
+            {
+                Manager_Confusion.AddConfusion(this, ((Projectile_Confusion)projectile).ConfusionDuration);
+            }
 
             LifePoints -= projectile.Damage;
             _hitFramesCounter = 1;
