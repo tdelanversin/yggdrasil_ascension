@@ -1,5 +1,6 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using Microsoft.Xna.Framework.Content;
 
 namespace YGR
 {
@@ -20,7 +21,7 @@ namespace YGR
 
         public Background(A_Yggdrasil game, Y_Level level) { Game = game; Level = level; }
 
-        public void LoadContent(Microsoft.Xna.Framework.Content.ContentManager content)
+        public void LoadContent()
         {
             SpriteYggdrasil = Manager_Sprites.BackgroundYggdrasil;
             SpriteTitleText = Manager_Sprites.BackgroundTitleText;
