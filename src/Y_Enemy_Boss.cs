@@ -5,13 +5,16 @@ using System.Collections.Generic;
 namespace YGR
 {
     public class Enemy_Boss : Enemy_Basic, IEnemyBoss
-    {
-        IShooter Gun_Scatter;
-        IShooter Gun_Precise;
-        IShooter Gun_AOE;
-        IShooter Gun_AvoidPattern;
+    {        
         BossAttack Attack {get; set; } = BossAttack.Wait;
-        float[] GunWeightsPhase1 = { 0.5f, 0.25f, 0.25f, 0.0f }; // Weights for the gun selection
+        GameTime _attackTimer;
+        Dictionary<BossAttack, IShooter> _attacks = new Dictionary<BossAttack, IShooter>();
+        Dictionary<BossAttack, int> _attackLength = new Dictionary<BossAttack, int>();
+
+        int Phase = 1;
+        Dictionary<BossAttack, float> _attackWeightsPhase1 = new Dictionary<BossAttack, float>();
+        Dictionary<BossAttack, float> _attackWeightsPhase2 = new Dictionary<BossAttack, float>();
+
 
         public Enemy_Boss(
             Vector2 position,
@@ -25,10 +28,37 @@ namespace YGR
 
             Name = "Slime Boss";
             Gun = new Gun_BasicEnemy();
-            Gun_Scatter = new Gun_BossScatter();
-            Gun_Precise = new Gun_BossPrecise();
-            Gun_AOE = new Gun_BossAOE();
-            Gun_AvoidPattern = new Gun_BossAvoidPattern();
+
+            _attacks = new Dictionary<BossAttack, IShooter>() {
+                { BossAttack.Scatter, new Gun_BossScatter() },
+                { BossAttack.Precise, new Gun_BossPrecise() },
+                { BossAttack.AOE, new Gun_BossAOE() },
+                { BossAttack.AvoidPattern, new Gun_BossAvoidPattern() },
+                { BossAttack.Wait, new Gun_BasicEnemy() },
+            };
+            _attackLength = new Dictionary<BossAttack, int>() {
+                { BossAttack.Scatter, 5000 },
+                { BossAttack.Precise, 5000 },
+                { BossAttack.AOE, 10000 },
+                { BossAttack.AvoidPattern, 10000 },
+                { BossAttack.Wait, 3000 },
+            };
+
+            _attackWeightsPhase1 = new Dictionary<BossAttack, float>() {
+                { BossAttack.Scatter, 0.5f },
+                { BossAttack.Precise, 0.25f },
+                { BossAttack.AOE, 0.25f },
+                { BossAttack.AvoidPattern, 0.0f },
+                { BossAttack.Wait, 0.0f },
+            };
+            _attackWeightsPhase2 = new Dictionary<BossAttack, float>() {
+                { BossAttack.Scatter, 0.4f },
+                { BossAttack.Precise, 0.25f },
+                { BossAttack.AOE, 0.25f },
+                { BossAttack.AvoidPattern, 0.1f },
+                { BossAttack.Wait, 0.0f },
+            };
+
 
             _hitColor = Color.OrangeRed;
             Color = new Color(255, 255, 98);
@@ -67,64 +97,45 @@ namespace YGR
             UpdateState(gameTime);
 
             Vector2 movement = Vector2.Zero;
-            switch (State)
-            {
-                case EnemyState.Chase:
-                    movement = Chase(gameTime);
-                    break;
-                case EnemyState.Flee:
-                    movement = Flee(gameTime);
-                    break;
-                case EnemyState.Wander:
+            switch (Attack) {
+                case BossAttack.Scatter:
                     movement = Wander(gameTime);
                     break;
-                case EnemyState.Idle:
+                case BossAttack.Precise:
+                    movement = Chase(gameTime);
+                    break;
+                case BossAttack.AOE:
+                    break;
+                case BossAttack.AvoidPattern:
+                    break;
+                case BossAttack.Wait:
+                    movement = ForceChace(gameTime);
                     break;
                 default:
+                    movement = Vector2.Zero;
                     break;
             }
 
             UpdateVelocity(movement, gameTime);
             UpdateCollision(gameTime);
-            Gun.Update(gameTime);
-            Gun_Scatter.Update(gameTime);
-            Gun_Precise.Update(gameTime);
-            Gun_AOE.Update(gameTime);
-            Gun_AvoidPattern.Update(gameTime);
+
+            foreach (var attack in _attacks) {
+                attack.Value.Update(gameTime);
+            }
 
             CharacterSprite.Update(gameTime, movement);
 
-            switch (Attack)
-            {
-                case BossAttack.Scatter:
-                    Gun = Gun_Scatter;
-                    break;
-                case BossAttack.Precise:
-                    Gun = Gun_Precise;
-                    break;
-                case BossAttack.AOE:
-                    var playersInSameRoom = Manager_Players.Players.FindAll(x => x.LifePoints > 0 && x.Room == Room);
-                    if (playersInSameRoom.Count < 1) return;
-
-                    // Gigachad shoot Big Gun no matter what (as long as there are players in the same room)
-                    Gun_AOE.Shoot(gameTime, _rect.Center.ToVector2(), Vector2.One, Level, this);
-                    break;
-                case BossAttack.AvoidPattern:
-                    Gun = Gun_AvoidPattern;
-                    break;
-                case BossAttack.Wait:
-                    return;
-                default:
-                    return;
+            if (Attack == BossAttack.Wait) {
+                return;
             }
 
-
-            if (Target != null)
-            {
-                Vector2 targetDirection = Target.Rect.Center.ToVector2() - _rect.Center.ToVector2();
+            Vector2 targetDirection = Vector2.One;
+            if (Target != null) {
+                targetDirection = Target.Rect.Center.ToVector2() - _rect.Center.ToVector2();
                 targetDirection.Normalize();
-                Gun.Shoot(gameTime, _rect.Center.ToVector2(), targetDirection, Level, this);
             }
+
+            _attacks[Attack].Shoot(gameTime, _rect.Center.ToVector2(), targetDirection, Level, this);
         }
 
         protected override void UpdateVelocity(Vector2 input, GameTime gameTime)

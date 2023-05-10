@@ -304,6 +304,20 @@ namespace YGR
             return movement;
         }
 
+        protected virtual Vector2 ForceChace(GameTime gameTime)
+        {
+            // Move towards target no matter what
+            if (Target != null)
+            {
+                FacingDirection = Target.Rect.Center.ToVector2() - Rect.Center.ToVector2();
+                return FacingDirection;
+            }
+            else
+            {
+                return Chase(gameTime);
+            }
+        }
+
         protected virtual Vector2 Flee(GameTime gameTime)
         {
             Vector2 movement = Vector2.Zero;
