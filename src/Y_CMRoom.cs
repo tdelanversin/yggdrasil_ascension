@@ -60,7 +60,7 @@ namespace YGR
     {
         Visible = 0,
         Invisible,
-        Locked
+        InEncounter
     }
 
     public class Y_CMRoom : IWalkable
@@ -603,7 +603,7 @@ namespace YGR
 
         public bool IsVisible()
         {
-            return State == X_RoomState.Visible || State == X_RoomState.Locked;
+            return State == X_RoomState.Visible || State == X_RoomState.InEncounter;
         }
 
         public bool VisitedBeforeByPlayer()
@@ -613,13 +613,13 @@ namespace YGR
 
         public bool IsLocked()
         {
-            return State == X_RoomState.Locked;
+            return State == X_RoomState.InEncounter;
         }
 
         public void SetLocked(bool yes)
         {
-            if (yes) State = X_RoomState.Locked;
-            else State = X_RoomState.Locked;
+            if (yes) State = X_RoomState.InEncounter;
+            else State = X_RoomState.InEncounter;
         }
 
         public void SetVisited(bool yes)
