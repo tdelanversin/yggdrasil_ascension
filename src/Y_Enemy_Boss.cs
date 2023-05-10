@@ -6,7 +6,7 @@ namespace YGR
 {
     public class Enemy_Boss : Enemy_Basic, IEnemyBoss
     {        
-        BossAttack Attack {get; set; } = BossAttack.Wait;
+        public BossAttack Attack {get; set; } = BossAttack.Wait;
         GameTime _attackTimer;
         Dictionary<BossAttack, IShooter> _attacks = new Dictionary<BossAttack, IShooter>();
         Dictionary<BossAttack, int> _attackLength = new Dictionary<BossAttack, int>();
