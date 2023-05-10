@@ -46,7 +46,6 @@ namespace YGR
             End,
         }
 
-        public float Scale { get; }
         public Rectangle Rect { get; set; }
         public IDictionary<int, IWalkable> Rooms { get; private set; }
         public int TileWidth { get; }
@@ -69,13 +68,13 @@ namespace YGR
         public static int LightOffsetY;
         public static int LightOffsetZ;
 
-        // Texture2D _background;
-        // Rectangle _backgroundRect;
+        public static int TextureTileSize { get; set; }
+        public static int InGameTileSize { get; set; }
+        public static float GlobalScale { get; set; }
 
         // Gameplay state objects
         public IWalkable ActiveRoom;
-        public GamePlayState State;
-        private List<Interactable_Basic> _interactables = new List<Interactable_Basic> { };
+        public static GamePlayState State;
 
         Dictionary<string, List<Tuple<X_RoomStump, Y_CMRoom>>> _availableRooms;
         Y_Level.Data _data;
@@ -89,13 +88,22 @@ namespace YGR
             ContentManager content
         )
         {
+            /**
+             * Use these three sizes everywhere in the game unless a scale is supposed to be local!!
+             *   TextureTileSize = size in pixels of one actual tile in the physical textures
+             *   InGameTileSize = size of a tile on the screen (make bigger for zooming in, so-to-speak)
+             *   GlobalScale = if the two above are not the same, the GlobalScale will blow up the sizes of the textures to match things like collision rectangles
+             */
+            TextureTileSize = textureTileSize;
+            InGameTileSize = tileSize;
+            GlobalScale = (float)InGameTileSize / (float)TextureTileSize;
+
             _name = Util.PathOsNormalization(name);
             _levelResourceFolder = Util.PathOsNormalization(levelResourceFolder);
             _doorResourceFolder = Util.PathOsNormalization(doorResourceFolder);
 
             TileWidth = tileSize;
             TileHeight = tileSize;
-            Scale = 1.0f;
 
             var dataFile = _name.Split(Path.DirectorySeparatorChar)[1];
             var dataFilePath = _levelResourceFolder + "data.json";
@@ -126,7 +134,7 @@ namespace YGR
             foreach (var f in files)
             {
                 var roomName = f.Item2.Split(Path.DirectorySeparatorChar).Last();
-                var room = new X_RoomStump(f.Item1, roomName, TileWidth, TileHeight, textureTileSize, f.Item2, _data.LdtkRoomTypes[f.Item1]);
+                var room = new X_RoomStump(f.Item1, roomName, TileWidth, TileHeight, f.Item2, _data.LdtkRoomTypes[f.Item1]);
                 list.Add(room);
             }
 
@@ -326,18 +334,6 @@ namespace YGR
 
             Manager_Players.ClearPlayers();
 
-            _interactables.Clear();
-
-            // Place a tutorial field that guides the players
-            // _interactables.Add(new Interactable_Tutorialfield(
-            //     new Rectangle(16, 12, 11, 8), this, (Y_CMRoom)_startRoom)
-            // );
-
-            // Room opener field that can trigger the game start
-            _interactables.Add(new Interactable_RoomOpener(
-                new Rectangle(16, 2, 11, 7), this, (Y_CMRoom)_startRoom)
-            );
-
             // Gameplay state
             State = GamePlayState.Start;
             ActiveRoom = _startRoom;
@@ -385,11 +381,11 @@ namespace YGR
                     else if (PlayerEntity.GetPointType(spr) == PlayerSpawningPointType.Chooser)
                     {
                         if (PlayerEntity.GetType(spr) == PlayerType.Nerd)
-                            r.PickUps.Add(PickUp.Factory(Y_PowerUps.ChooserNerd, pos.ToPoint(), spr.width, spr.height, Scale));
+                            r.PickUps.Add(PickUp.Factory(Y_PowerUps.ChooserNerd, pos.ToPoint(), spr.width, spr.height, GlobalScale));
                         if (PlayerEntity.GetType(spr) == PlayerType.Mailman)
-                            r.PickUps.Add(PickUp.Factory(Y_PowerUps.ChooserMailman, pos.ToPoint(), spr.width, spr.height, Scale));
+                            r.PickUps.Add(PickUp.Factory(Y_PowerUps.ChooserMailman, pos.ToPoint(), spr.width, spr.height, GlobalScale));
                         if (PlayerEntity.GetType(spr) == PlayerType.Ninja)
-                            r.PickUps.Add(PickUp.Factory(Y_PowerUps.ChooserNinja, pos.ToPoint(), spr.width, spr.height, Scale));
+                            r.PickUps.Add(PickUp.Factory(Y_PowerUps.ChooserNinja, pos.ToPoint(), spr.width, spr.height, GlobalScale));
                     }
                 }
 
@@ -489,11 +485,6 @@ namespace YGR
                 room.Update(gameTime);
             }
 
-            foreach (var interactable in _interactables)
-            {
-                interactable.Update(gameTime);
-            }
-
             // Just sample what room for any player right now. For an encounter
             // to start, will check anyway if everyone is inside.
             ActiveRoom = Manager_Players.Players[0].Room;
@@ -501,7 +492,7 @@ namespace YGR
             switch (State)
             {
                 case GamePlayState.Start:
-                    if (_interactables[0].InteractionComplete)
+                    if (_startRoom.StartingPad().InteractionComplete)
                     {
                         State = GamePlayState.FreeRoam;
                         _startRoom.OpenAllUnlockedRoomDoors();
@@ -629,11 +620,6 @@ namespace YGR
             {
                 room.Value.DrawOutline(gameTime, globalOffset, spriteBatch);
             }
-
-            foreach (var interactable in _interactables)
-            {
-                interactable.DrawOutline(gameTime, globalOffset, spriteBatch);
-            }
         }
 
         public void Draw(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)
@@ -641,11 +627,6 @@ namespace YGR
             foreach (var room in Rooms)
             {
                 room.Value.Draw(gameTime, globalOffset, spriteBatch);
-            }
-
-            foreach (var interactable in _interactables)
-            {
-                interactable.Draw(gameTime, globalOffset, spriteBatch);
             }
         }
 
