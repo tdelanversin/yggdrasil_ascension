@@ -14,6 +14,8 @@ namespace YGR
 
         public void Update(GameTime gameTime);
 
+        public void Draw(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch);
+
         public string Name { get; }
 
         public Texture2D Sprite { get; }
