@@ -48,6 +48,7 @@ namespace YGR
         public static Texture2D Enemy_Basic { get; private set; }
         public static Texture2D Enemy_Slime { get; private set; }
         public static Texture2D Enemy_Gigachad { get; private set; }
+        public static Texture2D Enemy_Boss { get; private set; }
 
         // Effects
         public static Texture2D Effect_Confusion { get; private set; }
@@ -83,6 +84,7 @@ namespace YGR
             Enemy_Basic = Player_Simple;
             Enemy_Slime = contentManager.Load<Texture2D>("SpritesCharacters/slime");
             Enemy_Gigachad = contentManager.Load<Texture2D>("SpritesCharacters/gigachad");
+            Enemy_Boss = contentManager.Load<Texture2D>("SpritesCharacters/slime_boss_sheet");
 
             SpinningHeart = contentManager.Load<Texture2D>("SpritesOther/SpinningHeart");
             SpinningPlus = contentManager.Load<Texture2D>("SpritesOther/SpinningPlus");
@@ -186,6 +188,20 @@ namespace YGR
                         { AnimationState.IdleLeft, new int[] { 1 } },
                         { AnimationState.WalkRight, new int[] { 0 } },
                         { AnimationState.IdleRight, new int[] { 0 } },
+                    }
+                );
+        }
+
+        public static AnimatedSprite NewAnimatedSprite_EnemyBoss()
+        {
+            return new AnimatedSprite(
+                    texture: Enemy_Boss,
+                    spriteDimension: new Vector2(250, 250),
+                    animations: new Dictionary<AnimationState, int[,]> {
+                        { AnimationState.WalkLeft, new int[,] { {1,0}, {1,1}, {1,2} } },
+                        { AnimationState.IdleLeft, new int[,] { {1,1}, {1,2} } },
+                        { AnimationState.WalkRight, new int[,] { {1,0}, {1,1}, {1,2} } },
+                        { AnimationState.IdleRight, new int[,] { {1,1}, {1,2} } },
                     }
                 );
         }

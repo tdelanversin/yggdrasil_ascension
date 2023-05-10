@@ -4,11 +4,16 @@ using System.Collections.Generic;
 
 namespace YGR
 {
-    public class Enemy_Gigachad : Enemy_Basic, IEnemyBoss
+    public class Enemy_Boss : Enemy_Basic, IEnemyBoss
     {
-        IShooter Gun2; // Gigachad needs moar guns
+        IShooter Gun_Scatter;
+        IShooter Gun_Precise;
+        IShooter Gun_AOE;
+        IShooter Gun_AvoidPattern;
+        BossAttack Attack {get; set; } = BossAttack.Wait;
+        float[] GunWeightsPhase1 = { 0.5f, 0.25f, 0.25f, 0.0f }; // Weights for the gun selection
 
-        public Enemy_Gigachad(
+        public Enemy_Boss(
             Vector2 position,
             AnimatedSprite sprite,
             Y_Level level
@@ -18,12 +23,15 @@ namespace YGR
             LifePoints = LifePointsMax;
             fleeingHPTreshold = 0; // Gigachad never flees
 
-            Name = "Gigachad";
-            Gun = new Gun_ShotGun(13);
-            Gun2 = new Gun_BossAOE();
+            Name = "Slime Boss";
+            Gun = new Gun_BasicEnemy();
+            Gun_Scatter = new Gun_BossScatter();
+            Gun_Precise = new Gun_BossPrecise();
+            Gun_AOE = new Gun_BossAOE();
+            Gun_AvoidPattern = new Gun_BossAvoidPattern();
 
             _hitColor = Color.OrangeRed;
-            Color = Color.White;
+            Color = new Color(255, 255, 98);
             _currentColor = Color;
 
             _maxVelocity = 0.075f;
@@ -79,24 +87,46 @@ namespace YGR
             UpdateVelocity(movement, gameTime);
             UpdateCollision(gameTime);
             Gun.Update(gameTime);
-            Gun2.Update(gameTime);
+            Gun_Scatter.Update(gameTime);
+            Gun_Precise.Update(gameTime);
+            Gun_AOE.Update(gameTime);
+            Gun_AvoidPattern.Update(gameTime);
 
-            // Gigachad sees players, Gigachad shoots player
+            CharacterSprite.Update(gameTime, movement);
+
+            switch (Attack)
+            {
+                case BossAttack.Scatter:
+                    Gun = Gun_Scatter;
+                    break;
+                case BossAttack.Precise:
+                    Gun = Gun_Precise;
+                    break;
+                case BossAttack.AOE:
+                    var playersInSameRoom = Manager_Players.Players.FindAll(x => x.LifePoints > 0 && x.Room == Room);
+                    if (playersInSameRoom.Count < 1) return;
+
+                    // Gigachad shoot Big Gun no matter what (as long as there are players in the same room)
+                    Gun_AOE.Shoot(gameTime, _rect.Center.ToVector2(), Vector2.One, Level, this);
+                    break;
+                case BossAttack.AvoidPattern:
+                    Gun = Gun_AvoidPattern;
+                    break;
+                case BossAttack.Wait:
+                    return;
+                default:
+                    return;
+            }
+
+
             if (Target != null)
             {
                 Vector2 targetDirection = Target.Rect.Center.ToVector2() - _rect.Center.ToVector2();
                 targetDirection.Normalize();
                 Gun.Shoot(gameTime, _rect.Center.ToVector2(), targetDirection, Level, this);
             }
-
-            CharacterSprite.Update(gameTime, movement);
-
-            var playersInSameRoom = Manager_Players.Players.FindAll(x => x.LifePoints > 0 && x.Room == Room);
-            if (playersInSameRoom.Count < 1) return;
-
-            // Gigachad shoot Big Gun no matter what (as long as there are players in the same room)
-            Gun2.Shoot(gameTime, _rect.Center.ToVector2(), Vector2.One, Level, this);
         }
+
         protected override void UpdateVelocity(Vector2 input, GameTime gameTime)
         {
             int timeStepMS = gameTime.ElapsedGameTime.Milliseconds;
