@@ -24,7 +24,7 @@ namespace YGR
         {
             LifePointsMax = 9;
             LifePoints = LifePointsMax;
-            fleeingHPTreshold = 0; // Gigachad never flees
+            fleeingHPTreshold = LifePointsMax / 2;
 
             Name = "Slime";
             Gun = new Gun_BasicEnemy();
