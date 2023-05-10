@@ -27,14 +27,14 @@ namespace YGR
             fleeingHPTreshold = 0; // Gigachad never flees
 
             Name = "Slime Boss";
-            Gun = new Gun_BasicEnemy();
+            Gun = new Gun_BasicEnemy(this);
 
             _attacks = new Dictionary<BossAttack, IShooter>() {
-                { BossAttack.Scatter, new Gun_BossScatter() },
-                { BossAttack.Precise, new Gun_BossPrecise() },
-                { BossAttack.AOE, new Gun_BossAOE() },
-                { BossAttack.AvoidPattern, new Gun_BossAvoidPattern() },
-                { BossAttack.Wait, new Gun_BasicEnemy() },
+                { BossAttack.Scatter, new Gun_BossScatter(this) },
+                { BossAttack.Precise, new Gun_BossPrecise(this) },
+                { BossAttack.AOE, new Gun_BossAOE(this) },
+                { BossAttack.AvoidPattern, new Gun_BossAvoidPattern(this) },
+                { BossAttack.Wait, new Gun_BasicEnemy(this) },
             };
             _attackLength = new Dictionary<BossAttack, int>() {
                 { BossAttack.Scatter, 5000 },

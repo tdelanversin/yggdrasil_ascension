@@ -3,7 +3,7 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace YGR
 {
-    public class Player_Ghost : SimplePlayer
+    public class Player_Ghost : Player_Basic
     {
         public Player_Ghost(
             PlayerIndex playerIndex,
@@ -11,12 +11,14 @@ namespace YGR
             Y_Level level,
             ControlLayout controlLayout = ControlLayout.ControllerOnly,
             float scale = 1.0f
-            ) : base(playerIndex, initialPosition, Manager_Sprites.NewAnimatedSprite_Ghost(), level, new Gun_Ghost(), new Ability_Ghost(), PlayerType.Ghost, controlLayout)
+            ) : base(playerIndex, initialPosition, level, null, PlayerType.Ghost, controlLayout)
         {
             Name = "Ghost";
-            VelocityMax *= 1.5f;
+            Ability = new Ability_Ghost();
+            VelocityMax = IPlayer.PlayerBaseVelocity * 2; // Compensate for not being able to dash
             IsActive = false;
             LifePoints = LifePointsMax = 0;
+            Gun = new Gun_Ghost(this);
         }
 
         public override X_LevelElements WhatAreYou()
@@ -41,21 +43,6 @@ namespace YGR
             UpdateCollision(gameTime);
 
             UpdateColor(gameTime);
-        }
-
-        // Render ghosty 👻
-        protected override void DrawGhost(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)
-        {
-            spriteBatch.Draw(
-                texture: GhostSprite.Texture,
-                position: _rect.Location.ToVector2() + GhostOffset,
-                sourceRectangle: GhostSprite.SourceRectangle,
-                color: _ghostColor,
-                rotation: 0,
-                origin: Vector2.Zero,
-                scale: GhostScale,
-                effects: SpriteEffects.None,
-                layerDepth: 0);
         }
 
         protected override void DrawOverheadString(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)

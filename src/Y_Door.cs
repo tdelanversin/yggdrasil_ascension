@@ -52,7 +52,6 @@ namespace YGR
 
     public class Y_Door : IWalkable
     {
-        public float Scale { get; private set; }
         public Rectangle Rect { get; set; }
         public string Name { get; }
         public X_CollisionModel_Room Collision { get; }
@@ -61,7 +60,6 @@ namespace YGR
         public IList<IVictim> Victims { get; }
         public Dictionary<X_ConnectorSide, IList<X_ConnectorPoint>> Doors { get; set; }
         public Dictionary<X_ConnectorSide, IList<IWalkable>> DoorRooms { get; set; }
-        public int TextureTileSize { get; }
         public string ResourceFolder { get; }
         public Manager_Light2.X_Point3[] IlluminationModel { get; set; }
         public List<X_Light> Lights { get; set; }
@@ -72,6 +70,8 @@ namespace YGR
         public X_IlluminationResources IlluminationResources { get; set; }
         private X_DoorState State { get; set; }
         public int ElementLevel { get { return 1; } set { } }
+
+        public List<PickUp> PickUps { get; }
 
         private X_DoorDirection _direction;
         //private Texture2D _floor;
@@ -86,7 +86,7 @@ namespace YGR
         private int _currentDoorOpenOffset = 0;
         private float _doorOpeningTime = 2000.0f;
         private float _animationTime = 0.0f;
-        int _tileSize;
+
         bool _visited;
         //private Y_Door _door;
 
@@ -132,7 +132,6 @@ namespace YGR
             Collision = new X_CollisionModel_Room(collision, tileWidth, tileHeight, isRoomCollisionModel: false);
 
             Rect = new Rectangle(0, 0, tileWidth * collision[0].Length, tileHeight * collision.Length);
-            Scale = 1.0f;
             _doorCollisionRectangles = new Dictionary<X_DoorState, List<Rectangle>>();
             ResourceFolder = Util.PathOsNormalization(resourceFolder);
             Lights = new List<X_Light>();
@@ -144,16 +143,13 @@ namespace YGR
                 MapTexture,
                 out _tileTextures, out _tileColors);
 
-            Scale = (float)tileHeight / _tileTextures.First().Value.First().Texture().Height;
-            TextureTileSize = _tileTextures.First().Value.First().Texture().Height;
-            _tileSize = (int)(TextureTileSize * Scale);
             State = X_DoorState.Closed;
             _closingTheDoor = false;
             _openingTheDoor = false;
 
             int width = Collision.GetCollisionTemplate()[0].Length;
             int height = Collision.GetCollisionTemplate().Length;
-            Color[] trans = Enumerable.Repeat<Color>(Color.Transparent, _tileSize * _tileSize * width * height).ToArray();
+            Color[] trans = Enumerable.Repeat<Color>(Color.Transparent, Y_Level.TextureTileSize * Y_Level.TextureTileSize * width * height).ToArray();
             _visited = false;
 
             ShadeTexture = new Texture2D[] { 
@@ -162,6 +158,7 @@ namespace YGR
 
             IlluminationResources = new X_IlluminationResources();
             ShadeIndex = 0;
+            PickUps = new List<PickUp>();
 
             if (Settings.DynamicShades)
             {
@@ -171,7 +168,7 @@ namespace YGR
             {
                 Shade = Enumerable.Repeat<Color>(Color.Black, Rect.Width * Rect.Height).ToArray();
                 var template = Collision.GetCollisionTemplate();
-                int tileSize = TextureTileSize;
+                int tileSize = Y_Level.TextureTileSize;
                 Parallel.For(0, template.Length, h =>
                 {
                     for (int w = 0; w < template[0].Length; ++w)
@@ -392,10 +389,11 @@ namespace YGR
         {
             bool[] res = new bool[rect.Width*rect.Height];
 
+            int tileSize = Y_Level.TextureTileSize;
             int index = rect.Location.Y * Rect.Width + rect.Location.X;
-            for (int r = 0; r < res.Length; r+=_tileSize)
+            for (int r = 0; r < res.Length; r+=tileSize)
             {
-                for(int c=0; c<_tileSize; ++c)
+                for(int c=0; c<tileSize; ++c)
                 {
                     res[r+c] = lighted[index+c];
                 }
@@ -1293,19 +1291,20 @@ namespace YGR
 
         private bool doorAnimation(float dt, bool opening)
         {
+            int tileSize = Y_Level.TextureTileSize;
             _animationTime += dt;
             if (_animationTime < _doorOpeningTime)
             {
                 float percent = 1.0f / _doorOpeningTime * _animationTime;
                 if(opening)
-                    _currentDoorOpenOffset = (int)Math.Round(_tileSize*percent);
+                    _currentDoorOpenOffset = (int)Math.Round(tileSize*percent);
                 else
-                    _currentDoorOpenOffset = (int)Math.Round(_tileSize * (1.0f - percent));
+                    _currentDoorOpenOffset = (int)Math.Round(tileSize * (1.0f - percent));
             }
             if (_animationTime >= _doorOpeningTime)
             {
                 if(opening)
-                    _currentDoorOpenOffset = _tileSize;
+                    _currentDoorOpenOffset = tileSize;
                 else
                     _currentDoorOpenOffset = 0;
                 _animationTime = 0;
@@ -1321,20 +1320,21 @@ namespace YGR
             bool partial, 
             bool isFloor = false)
         {
-            var srcPos = Rect.Location.ToVector2() + new Vector2(TextureTileSize, TextureTileSize);
+            int tileSize = Y_Level.TextureTileSize;
+            var srcPos = Rect.Location.ToVector2() + new Vector2(tileSize, tileSize);
             var srcRect = new Rectangle(
-                    TextureTileSize,
-                    TextureTileSize,
-                    ShadeTexture[ShadeIndex].Width - 2 * TextureTileSize,
-                    ShadeTexture[ShadeIndex].Height - TextureTileSize);
+                    tileSize,
+                    tileSize,
+                    ShadeTexture[ShadeIndex].Width - 2 * tileSize,
+                    ShadeTexture[ShadeIndex].Height - tileSize);
 
-            var testOffset = Vector2.One * _tileSize / 2;
+            var testOffset = Vector2.One * tileSize / 2;
             foreach (var t in textures)
             {
                 int height = t.Texture().Height;
                 int width = t.Texture().Width;
                 
-                Vector2 tLocation = _tileSize * t.Location().ToVector2();
+                Vector2 tLocation = tileSize * t.Location().ToVector2();
                 if (isFloor && !srcRect.Contains(tLocation + testOffset)) continue;
 
                 Vector2 pos = position + tLocation;
@@ -1348,18 +1348,18 @@ namespace YGR
                 spriteBatch.Draw(
                     t.Texture(), pos,
                     new Rectangle(0, 0, width, height),
-                    Color.White, 0, Vector2.Zero, Scale, SpriteEffects.None, 0);
+                    Color.White, 0, Vector2.Zero, Y_Level.GlobalScale, SpriteEffects.None, 0);
             }
 
             // only draw the part of the shade that is actually on the connector
             if (isFloor)
             {
-                srcRect.Height = srcRect.Height - (_tileSize - _currentDoorOpenOffset);
+                srcRect.Height = srcRect.Height - (tileSize - _currentDoorOpenOffset);
                 spriteBatch.Draw(
                     ShadeTexture[ShadeIndex],
                     srcPos,
                     srcRect,
-                    Color.White * Manager_Light2.ShadeFloat, 0, Vector2.Zero, Scale, SpriteEffects.None, 0);
+                    Color.White * Manager_Light2.ShadeFloat, 0, Vector2.Zero, Y_Level.GlobalScale, SpriteEffects.None, 0);
             }
         }
 
@@ -1369,27 +1369,28 @@ namespace YGR
             Vector2 movePosition = position;
             movePosition.Y += _currentDoorOpenOffset;
 
+            int tileSize = Y_Level.TextureTileSize;
             if (_visited && (State == X_DoorState.Closed || State == X_DoorState.LockedClosed || State == X_DoorState.Opening || State == X_DoorState.Closing))
             {
                 Texture2D fence1, fence2;
                 Vector2 p1, p2;
                 float scale = 1.0f;
-                float temp = (float)(NumTilesDoorWidth / 2 + 1) * TextureTileSize;
+                float temp = (float)(NumTilesDoorWidth / 2 + 1) * tileSize;
                 if (_direction == X_DoorDirection.Vertical)
                 {
                     fence1 = _fenceH;
                     fence2 = _fenceH;
                     scale = temp / fence2.Width;
-                    p1 = Doors[X_ConnectorSide.Top].First().Point.ToVector2() - new Vector2(temp / 2, TextureTileSize / 2.0f);
-                    p2 = Doors[X_ConnectorSide.Bottom].First().Point.ToVector2() - new Vector2(temp / 2, TextureTileSize / 2.0f);
+                    p1 = Doors[X_ConnectorSide.Top].First().Point.ToVector2() - new Vector2(temp / 2, tileSize / 2.0f);
+                    p2 = Doors[X_ConnectorSide.Bottom].First().Point.ToVector2() - new Vector2(temp / 2, tileSize / 2.0f);
                 }
                 else if(_direction == X_DoorDirection.Horizontal)
                 {
                     fence1 = _fenceV;
                     fence2 = _fenceV;
                     scale = temp / fence2.Height;
-                    p1 = Doors[X_ConnectorSide.Left].First().Point.ToVector2() - new Vector2(TextureTileSize / 2.0f, temp / 2);
-                    p2 = Doors[X_ConnectorSide.Right].First().Point.ToVector2() - new Vector2(TextureTileSize / 2.0f, temp / 2);
+                    p1 = Doors[X_ConnectorSide.Left].First().Point.ToVector2() - new Vector2(tileSize / 2.0f, temp / 2);
+                    p2 = Doors[X_ConnectorSide.Right].First().Point.ToVector2() - new Vector2(tileSize / 2.0f, temp / 2);
                 }
                 else
                 {
@@ -1397,14 +1398,14 @@ namespace YGR
                     fence2 = _fenceV;
                     scale = temp / fence2.Height;
                     if (Doors.ContainsKey(X_ConnectorSide.Top))
-                        p1 = Doors[X_ConnectorSide.Top].First().Point.ToVector2() - new Vector2(temp / 2, TextureTileSize / 2.0f);
+                        p1 = Doors[X_ConnectorSide.Top].First().Point.ToVector2() - new Vector2(temp / 2, tileSize / 2.0f);
                     else
-                        p1 = Doors[X_ConnectorSide.Bottom].First().Point.ToVector2() - new Vector2(temp / 2, -TextureTileSize / 2.0f);
+                        p1 = Doors[X_ConnectorSide.Bottom].First().Point.ToVector2() - new Vector2(temp / 2, -tileSize / 2.0f);
 
                     if (Doors.ContainsKey(X_ConnectorSide.Left))
-                        p2 = Doors[X_ConnectorSide.Left].First().Point.ToVector2() - new Vector2(TextureTileSize / 2.0f, temp / 2);
+                        p2 = Doors[X_ConnectorSide.Left].First().Point.ToVector2() - new Vector2(tileSize / 2.0f, temp / 2);
                     else
-                        p2 = Doors[X_ConnectorSide.Right].First().Point.ToVector2() - new Vector2(TextureTileSize / 2.0f, temp / 2);
+                        p2 = Doors[X_ConnectorSide.Right].First().Point.ToVector2() - new Vector2(tileSize / 2.0f, temp / 2);
                 }
 
                 draw(_tileTextures[X_DoorTextureLayer.Floor], position, spriteBatch, false, true);
@@ -1450,7 +1451,7 @@ namespace YGR
         {
             var p = position - Rect.Location;
             Rect = new Rectangle(p.X, p.Y, Rect.Width, Rect.Height);
-            Offset = new Vector3(Rect.Location.X / Scale, Rect.Location.Y / Scale, 0);
+            Offset = new Vector3(Rect.Location.X / Y_Level.GlobalScale, Rect.Location.Y / Y_Level.GlobalScale, 0);
             foreach (var door in Doors)
             {
                 foreach(var d in door.Value)

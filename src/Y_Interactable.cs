@@ -11,34 +11,41 @@ namespace YGR
     public class Interactable_Basic : IGameElement
     {
         // IGameElement fields
-        public float Scale { get; }
         public Rectangle Rect { get; set; }
         public int ElementLevel { get { return 1; } set { } }
 
         // private fields
-        public Y_Level Level;
         public Y_CMRoom Room;
         public Color Color = Color.DarkOrchid;
         public string Label = "";
         public bool InteractionComplete = false;
 
-        public Interactable_Basic(Rectangle bounds, Y_Level level, Y_CMRoom room)
+        public Interactable_Basic(Rectangle bounds, Y_CMRoom room)
         {
-            Level = level;
             Room = room;
 
             // Translate into global coordinates via the Room
             Rect = new Rectangle(
-                Room.Rect.Location.X + bounds.X * Level.TileWidth,
-                Room.Rect.Location.Y + bounds.Y * Level.TileHeight,
-                bounds.Width * Level.TileWidth,
-                bounds.Height * Level.TileHeight
+                (int)(bounds.X*Y_Level.GlobalScale),
+                (int)(bounds.Y * Y_Level.GlobalScale),
+                (int)(bounds.Width * Y_Level.GlobalScale),
+                (int)(bounds.Height * Y_Level.GlobalScale)
             );
         }
 
         public virtual List<IPlayer> GetPlayersInside()
         {
             return Manager_Players.Players.FindAll(p => Rectangle.Intersect(Rect, p.Rect) != Rectangle.Empty);
+        }
+
+        public void MoveBy(Point offset)
+        {
+            Rect = new Rectangle(
+                Rect.Location.X + offset.X,
+                Rect.Location.Y + offset.Y,
+                Rect.Width,
+                Rect.Height
+            );
         }
 
         public virtual X_LevelElements WhatAreYou() { return X_LevelElements.Interactable; }
@@ -65,9 +72,8 @@ namespace YGR
     {
         public Interactable_Tutorialfield(
             Rectangle bounds,
-            Y_Level level,
             Y_CMRoom room
-        ) : base(bounds, level, room)
+        ) : base(bounds, room)
         {
             Color = Color.GhostWhite;
         }
@@ -75,7 +81,7 @@ namespace YGR
         // Just draw the outline and the Label inside it
         public override void Draw(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)
         {
-            if (Level.State != Y_Level.GamePlayState.Start)
+            if (Y_Level.State != Y_Level.GamePlayState.Start)
                 return;
 
             DrawOutline(gameTime, globalOffset, spriteBatch);
@@ -130,9 +136,8 @@ namespace YGR
 
         public Interactable_RoomOpener(
             Rectangle bounds,
-            Y_Level level,
             Y_CMRoom room
-            ) : base(bounds, level, room)
+            ) : base(bounds, room)
         {
             Color = Color.Wheat;
             Label = "Move here to start";

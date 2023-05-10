@@ -280,7 +280,7 @@ namespace YGR
         public static void Precompute(IWalkable room)
         {
             bool light = true;
-            var tileSize = room.TextureTileSize;
+            var tileSize = Y_Level.TextureTileSize;
             var template = room.Collision.GetCollisionTemplate();
 
             int width = template[0].Length * tileSize;
@@ -546,7 +546,7 @@ namespace YGR
             }
 
 
-            float scale = room.Scale;
+            float scale = Y_Level.GlobalScale;
             float elev = room.Collision.TileHeight / scale;
             int shift = 5;
             List<X_Point3> points = new List<X_Point3>();

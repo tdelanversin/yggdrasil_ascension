@@ -16,5 +16,9 @@ namespace YGR
         public string Name { get; }
 
         public Texture2D Sprite { get; }
+
+        IVictim Owner { get; set; }
+
+        public void DropAsPickUp(IVictim lastOwner, IWalkable room, Point location);
     }
 }

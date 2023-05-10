@@ -18,7 +18,6 @@ namespace YGR
         public string Name;
         public int TileWidth;
         public int TileHeight;
-        public int TextureTileSize;
         public string ResourceFolder;
         public Dictionary<string, string> LdtkRoomTypeProperties;
 
@@ -27,7 +26,6 @@ namespace YGR
             string name,
             int tileWidth,
             int tileHeight,
-            int textureTileSize,
             string resourceFolder,
             Dictionary<string, string> ldtkRoomTypeProperties
         )
@@ -36,7 +34,6 @@ namespace YGR
             Name = name;
             TileWidth = tileWidth;
             TileHeight = tileHeight;
-            TextureTileSize = textureTileSize;
             ResourceFolder = resourceFolder;
             LdtkRoomTypeProperties = ldtkRoomTypeProperties;
         }
@@ -120,7 +117,6 @@ namespace YGR
             }
         }
 
-        public float Scale { get; private set; }
         public string Name { get; set; }
         public X_CollisionModel_Room Collision { get; }
         public int ElementLevel { get { return 1; } set { } }
@@ -130,7 +126,6 @@ namespace YGR
         private Dictionary<X_ConnectorSide, IList<X_DoorMask>> _doorMasks;
         public Dictionary<X_ConnectorSide, IList<IWalkable>> DoorRooms { get; set; }
         private bool _doorsToggled;
-        public int TextureTileSize { get; }
         public string ResourceFolder { get; }
         public Color RegionColor { get; }
         public List<X_Light> Lights { get; set; }
@@ -140,6 +135,8 @@ namespace YGR
         public Vector3 Offset { get; set; }
         public Color[] Shade { get; set; }
         public X_IlluminationResources IlluminationResources { get; set; }
+
+        private List<Interactable_Basic> _interactables = new List<Interactable_Basic> { };
 
         private Dictionary<string, string> _ldtkRoomTypeProperties;
 
@@ -159,7 +156,8 @@ namespace YGR
 
         List<EnemyEntity> _enemies;
         List<PlayerEntity> _players;
-        public List<PickUp> PickUps;
+        public List<PickUp> PickUps { get; }
+        public List<PowerUp> _pUps;
 
         public bool Cleared;
 
@@ -172,7 +170,6 @@ namespace YGR
         {
             string name = initiator.Name;
             string category = initiator.Category;
-            int textureTileSize = initiator.TextureTileSize;
             string resourceFolder = Util.PathOsNormalization(initiator.ResourceFolder);
             bool preprocessed = false;
             foreach (var c in categories)
@@ -300,7 +297,6 @@ namespace YGR
         {
             Name = initiator.Name;
             Category = initiator.Category;
-            TextureTileSize = initiator.TextureTileSize;
             ResourceFolder = Util.PathOsNormalization(initiator.ResourceFolder);
             var files = Directory.GetFiles(ResourceFolder);
             string dataFileName = Path.GetFileName(files.Where(x => Path.GetFileName(x).Contains("data") && Path.GetFileName(x).EndsWith(".json")).First());
@@ -330,8 +326,6 @@ namespace YGR
             Doors = new Dictionary<X_ConnectorSide, IList<X_ConnectorPoint>>();
             DoorRooms = new Dictionary<X_ConnectorSide, IList<IWalkable>>();
             _doorMasks = new Dictionary<X_ConnectorSide, IList<X_DoorMask>>();
-
-            Scale = (float)initiator.TileHeight / TextureTileSize;
 
             List<string> layers;
             json.Wait();
@@ -401,30 +395,17 @@ namespace YGR
             }
 
             PickUps = new List<PickUp>();
+            _pUps = new List<PowerUp>();
             var t5 = Task.Run(() =>
             {
                 if (array.entities.PowerUp != null)
                 {
-                    var pups = JsonConvert.DeserializeObject<List<PowerUp>>(array.entities.PowerUp.ToString());
-                    foreach (var s in pups)
-                    {
-                        Point location = new Point(s.x + Rect.X, s.y + Rect.Y);
-                        if (s.customFields["Type"] == PowerUp.Life)
-                            PickUps.Add(PickUp.Factory(Y_PowerUps.Life, location, s.width, s.height, Scale));
-                        if (s.customFields["Type"] == PowerUp.Revive)
-                            PickUps.Add(PickUp.Factory(Y_PowerUps.Revive, location, s.width, s.height, Scale));
-
-                        // Weapons
-                        if (s.customFields["Type"] == PowerUp.WeaponPistol)
-                            PickUps.Add(PickUp.Factory(Y_PowerUps.WeaponPistol, location, s.width, s.height, Scale));
-                        if (s.customFields["Type"] == PowerUp.WeaponShotgun)
-                            PickUps.Add(PickUp.Factory(Y_PowerUps.WeaponShotgun, location, s.width, s.height, Scale));
-                        if (s.customFields["Type"] == PowerUp.WeaponFunky)
-                            PickUps.Add(PickUp.Factory(Y_PowerUps.WeaponFunky, location, s.width, s.height, Scale));
-                    }
+                    _pUps = JsonConvert.DeserializeObject<List<PowerUp>>(array.entities.PowerUp.ToString());
                 }
+                setPowerUps();
             });
 
+            int tileSize = Y_Level.TextureTileSize;
             Task.WaitAll(t1);
             foreach (var door in Doors)
             {
@@ -433,50 +414,66 @@ namespace YGR
                 {
                     var p = Doors[X_ConnectorSide.Top].First().Point;
                     var roi = new Rectangle(
-                        (int)((Math.Round(p.X - (X_DoorMask.RoiWidth / 2.0f * TextureTileSize)) / TextureTileSize) * TextureTileSize),
-                        (int)((Math.Round(p.Y + sf * TextureTileSize) / TextureTileSize) * TextureTileSize),
-                        X_DoorMask.RoiWidth * TextureTileSize, X_DoorMask.RoiDepth * TextureTileSize);
+                        (int)((Math.Round(p.X - (X_DoorMask.RoiWidth / 2.0f * tileSize)) / tileSize) * tileSize),
+                        (int)((Math.Round(p.Y + sf * tileSize) / tileSize) * tileSize),
+                        X_DoorMask.RoiWidth * tileSize, X_DoorMask.RoiDepth * tileSize);
 
                     _doorMasks.Add(door.Key, new List<X_DoorMask> {
-                            new X_DoorMask(roi, Rect, TextureTileSize)
+                            new X_DoorMask(roi, Rect, tileSize)
                         });
                 }
                 else if (door.Key == X_ConnectorSide.Left)
                 {
                     var p = Doors[X_ConnectorSide.Left].First().Point;
                     var roi = new Rectangle(
-                        (int)((Math.Round(p.X + sf * TextureTileSize) / TextureTileSize) * TextureTileSize),
-                        (int)((Math.Round(p.Y - (X_DoorMask.RoiWidth / 2.0f * TextureTileSize)) / TextureTileSize) * TextureTileSize),
-                        X_DoorMask.RoiDepth * TextureTileSize, X_DoorMask.RoiWidth * TextureTileSize);
+                        (int)((Math.Round(p.X + sf * tileSize) / tileSize) * tileSize),
+                        (int)((Math.Round(p.Y - (X_DoorMask.RoiWidth / 2.0f * tileSize)) / tileSize) * tileSize),
+                        X_DoorMask.RoiDepth * tileSize, X_DoorMask.RoiWidth * tileSize);
 
                     _doorMasks.Add(door.Key, new List<X_DoorMask> {
-                            new X_DoorMask(roi, Rect, TextureTileSize)
+                            new X_DoorMask(roi, Rect, tileSize)
                         });
                 }
                 else if (door.Key == X_ConnectorSide.Right)
                 {
                     var p = Doors[X_ConnectorSide.Right].First().Point;
                     var roi = new Rectangle(
-                        (int)((Math.Round(p.X - (sf + X_DoorMask.RoiDepth) * TextureTileSize) / TextureTileSize) * TextureTileSize),
-                        (int)((Math.Round(p.Y - (X_DoorMask.RoiWidth / 2.0f * TextureTileSize)) / TextureTileSize) * TextureTileSize),
-                        X_DoorMask.RoiDepth * TextureTileSize, X_DoorMask.RoiWidth * TextureTileSize);
+                        (int)((Math.Round(p.X - (sf + X_DoorMask.RoiDepth) * tileSize) / tileSize) * tileSize),
+                        (int)((Math.Round(p.Y - (X_DoorMask.RoiWidth / 2.0f * tileSize)) / tileSize) * tileSize),
+                        X_DoorMask.RoiDepth * tileSize, X_DoorMask.RoiWidth * tileSize);
 
                     _doorMasks.Add(door.Key, new List<X_DoorMask> {
-                            new X_DoorMask(roi, Rect, TextureTileSize)
+                            new X_DoorMask(roi, Rect, tileSize)
                         });
                 }
                 else // if (door.Key == X_ConnectorSide.Bottom)
                 {
                     var p = Doors[X_ConnectorSide.Bottom].First().Point;
                     var roi = new Rectangle(
-                        (int)((Math.Round(p.X - (X_DoorMask.RoiWidth / 2.0f * TextureTileSize)) / TextureTileSize) * TextureTileSize),
-                        (int)((Math.Round(p.Y - (sf + X_DoorMask.RoiDepth) * TextureTileSize) / TextureTileSize) * TextureTileSize),
-                        X_DoorMask.RoiWidth * TextureTileSize, X_DoorMask.RoiDepth * TextureTileSize);
+                        (int)((Math.Round(p.X - (X_DoorMask.RoiWidth / 2.0f * tileSize)) / tileSize) * tileSize),
+                        (int)((Math.Round(p.Y - (sf + X_DoorMask.RoiDepth) * tileSize) / tileSize) * tileSize),
+                        X_DoorMask.RoiWidth * tileSize, X_DoorMask.RoiDepth * tileSize);
 
                     _doorMasks.Add(X_ConnectorSide.Bottom, new List<X_DoorMask> {
-                            new X_DoorMask(roi, Rect, TextureTileSize)
+                            new X_DoorMask(roi, Rect, tileSize)
                         });
                 }
+            }
+
+            _interactables = new List<Interactable_Basic>();
+            if(Category == "Start")
+            {
+                _interactables.Clear();
+
+                // Place a tutorial field that guides the players
+                // _interactables.Add(new Interactable_Tutorialfield(
+                //     new Rectangle(16, 12, 11, 8), this, (Y_CMRoom)_startRoom)
+                // );
+
+                // Room opener field that can trigger the game start
+                _interactables.Add(new Interactable_RoomOpener(
+                    new Rectangle(512, 64, 352, 224), this)
+                );
             }
 
             State = X_RoomState.Invisible;
@@ -486,21 +483,51 @@ namespace YGR
             Task.WaitAll(readFloor, readRoof);
             _floorData = readFloor.Result;
             _roofData = readRoof.Result;
-            _width = Collision.GetCollisionTemplate()[0].Length * TextureTileSize;
-            _height = Collision.GetCollisionTemplate().Length * TextureTileSize;
+            _width = Collision.GetCollisionTemplate()[0].Length * tileSize;
+            _height = Collision.GetCollisionTemplate().Length * tileSize;
             _doorsToggled = false;
             _visited = false;
             IlluminationResources = new X_IlluminationResources();
+        }
+
+        public Interactable_Basic StartingPad()
+        {
+            if (_interactables.Count() > 0 && Category == "Start")
+            {
+                return _interactables[0];
+            }
+            else return null;
+        }
+
+        private void setPowerUps()
+        {
+            PickUps.Clear();
+            foreach (var s in _pUps)
+            {
+                Point location = new Point(s.x + Rect.X, s.y + Rect.Y);
+                if (s.customFields["Type"] == PowerUp.Life)
+                    PickUps.Add(PickUp.Factory(Y_PowerUps.Life, location, s.width, s.height, Y_Level.GlobalScale));
+                if (s.customFields["Type"] == PowerUp.Revive)
+                    PickUps.Add(PickUp.Factory(Y_PowerUps.Revive, location, s.width, s.height, Y_Level.GlobalScale));
+
+                // Weapons
+                if (s.customFields["Type"] == PowerUp.WeaponPistol)
+                    PickUps.Add(PickUp.Factory(Y_PowerUps.WeaponPistol, location, s.width, s.height, Y_Level.GlobalScale));
+                if (s.customFields["Type"] == PowerUp.WeaponShotgun)
+                    PickUps.Add(PickUp.Factory(Y_PowerUps.WeaponShotgun, location, s.width, s.height, Y_Level.GlobalScale));
+                if (s.customFields["Type"] == PowerUp.WeaponFunky)
+                    PickUps.Add(PickUp.Factory(Y_PowerUps.WeaponFunky, location, s.width, s.height, Y_Level.GlobalScale));
+            }
         }
 
         public void AddLight(int offsetX, int offsetY, int offsetZ)
         {
             Lights = new List<X_Light>() {
             new X_Light(
-                new Vector3(Rect.X + -offsetX*TextureTileSize,
-                Rect.Y + offsetY*TextureTileSize,
-                offsetZ * TextureTileSize),
-                Rect, Scale)
+                new Vector3(Rect.X + -offsetX * Y_Level.TextureTileSize,
+                Rect.Y + offsetY * Y_Level.TextureTileSize,
+                offsetZ * Y_Level.TextureTileSize),
+                Rect, Y_Level.GlobalScale)
             };
         }
 
@@ -575,6 +602,7 @@ namespace YGR
             State = X_RoomState.Invisible;
             MoveTo(new Point(0, 0));
             _visited = false;
+            setPowerUps();
 
             for (int i = 0; i < PickUps.Count(); ++i)
             {
@@ -593,12 +621,8 @@ namespace YGR
             {
                 if (PickUps[i].Active && player.Rect.Intersects(PickUps[i].Rect))
                 {
-                    bool powerupExpired = PickUps[i].Action((SimplePlayer)player);
-                    if (powerupExpired)
-                    {
-                        PickUps[i].Active = false;
-                        Manager_Sound.Sound_CashIn.Play();
-                    }
+                    bool powerupExpired = PickUps[i].Action((IPlayer)player, PickUps[i]);
+                   
                     return;
                 }
             }
@@ -778,7 +802,7 @@ namespace YGR
                 spriteBatch.Draw(
                 _floor, Rect.Location.ToVector2(),
                 new Rectangle(0, 0, _floor.Width, _floor.Height),
-                Color.White, 0, Vector2.Zero, Scale, SpriteEffects.None, 0);
+                Color.White, 0, Vector2.Zero, Y_Level.GlobalScale, SpriteEffects.None, 0);
             }
         }
 
@@ -923,7 +947,7 @@ namespace YGR
 
             //// needs to be done this way because properties return by value and not by ref
             Rect = new Rectangle(position.X, position.Y, Rect.Width, Rect.Height);
-            Offset = new Vector3(Rect.Location.X / Scale, Rect.Location.Y / Scale, 0);
+            Offset = new Vector3(Rect.Location.X / Y_Level.GlobalScale, Rect.Location.Y / Y_Level.GlobalScale, 0);
             foreach(var enemy in _enemies)
             {
                 enemy.x += p.X;
@@ -934,6 +958,11 @@ namespace YGR
             {
                 player.x += p.X;
                 player.y += p.Y;
+            }
+
+            foreach(var interact in _interactables)
+            {
+                interact.MoveBy(p);
             }
 
             TeleporterTarget = new Point(TeleporterTarget.X + p.X, TeleporterTarget.Y + p.Y);
@@ -1015,6 +1044,11 @@ namespace YGR
                 if (powerUp.Active)
                     powerUp.Update(gameTime);
             }
+
+            foreach (var interactable in _interactables)
+            {
+                interactable.Update(gameTime);
+            }
         }
 
         /// <summary>
@@ -1057,6 +1091,11 @@ namespace YGR
                 }
             }
 
+            foreach (var interactable in _interactables)
+            {
+                interactable.DrawOutline(gameTime, globalOffset, spriteBatch);
+            }
+
             Factory_Debug.DrawRectangle(TeleporterTarget.X-16, TeleporterTarget.Y-16, 32, 32, 3, Color.Blue, spriteBatch);
         }
 
@@ -1082,17 +1121,22 @@ namespace YGR
                 spriteBatch.Draw(
                     _floor, Rect.Location.ToVector2(),
                     new Rectangle(0, 0, _floor.Width, _floor.Height),
-                    Color.White, 0, Vector2.Zero, Scale, SpriteEffects.None, 0);
+                    Color.White, 0, Vector2.Zero, Y_Level.GlobalScale, SpriteEffects.None, 0);
 
                 spriteBatch.Draw(
                     ShadeTexture[ShadeIndex], Rect.Location.ToVector2(),
                     new Rectangle(0, 0, ShadeTexture[ShadeIndex].Width, ShadeTexture[ShadeIndex].Height),
-                    Color.White*Manager_Light2.ShadeFloat, 0, Vector2.Zero, Scale, SpriteEffects.None, 0);
+                    Color.White*Manager_Light2.ShadeFloat, 0, Vector2.Zero, Y_Level.GlobalScale, SpriteEffects.None, 0);
 
                 spriteBatch.Draw(
                     _roof, Rect.Location.ToVector2(),
                     new Rectangle(0, 0, _floor.Width, _floor.Height),
-                    Color.White, 0, Vector2.Zero, Scale, SpriteEffects.None, 0);
+                    Color.White, 0, Vector2.Zero, Y_Level.GlobalScale, SpriteEffects.None, 0);
+
+                foreach (var interactable in _interactables)
+                {
+                    interactable.Draw(gameTime, globalOffset, spriteBatch);
+                }
 
                 foreach (var powerUp in PickUps)
                 {

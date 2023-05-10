@@ -44,6 +44,8 @@ namespace YGR
         {
             NextShotCooldown = Math.Max(0, NextShotCooldown - gameTime.ElapsedGameTime.TotalMilliseconds);
         }
+
+        public void Draw(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch) { }
     }
 
     // Ability for Ghosts. Does as much as absolutely nothing but make lives easier for stupid programmers
@@ -56,5 +58,33 @@ namespace YGR
         public bool Trigger(GameTime gametime, Vector2 origin, Vector2 direction, Y_Level level, IGameElement who) { return false; }
 
         public void Update(GameTime gameTime) { }
+
+        public void Draw(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch) { }
+    }
+
+    public class Ability_Shield : IAbility
+    {
+        public string Name { get; protected set; }
+        public Texture2D Sprite { get; protected set; }
+
+        public Ability_Shield()
+        {
+            Name = "Shield";
+            Sprite = null;
+        }
+
+        public bool Trigger(GameTime gametime, Vector2 origin, Vector2 direction, Y_Level level, IGameElement who)
+        {
+            return false;
+        }
+
+        public void Update(GameTime gameTime)
+        {
+            // Some wonderful person will implement this later
+        }
+
+        public void Draw(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch) {
+            // That wonderful person will hopefully find a good sprite to draw too
+        }
     }
 }

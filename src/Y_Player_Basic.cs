@@ -15,10 +15,10 @@ namespace YGR
         KeyboardArrows,
     }
 
-    public class SimplePlayer : IPlayer
+    public class Player_Basic : IPlayer
     {
         // IGameElement fields
-        public float Scale { get; protected set; }
+        public float LocalScale { get; protected set; }
         public Rectangle Rect { get { return _rect; } set { _rect = value; } }
         public IGameElement WhoKilledMe { get; set; }
 
@@ -26,25 +26,25 @@ namespace YGR
         public int LifePoints { get; protected set; }
         public int LifePointsMax { get; set; }
         public Color Color { get; set; }
-        public X_CollisionModel_Victim Collision { get; }
+        public X_CollisionModel_Victim Collision { get; protected set; }
         public Vector2 Velocity { get; set; }
         public Y_Level Level { get; set; }
         public IWalkable Room { get; set; }
         public string Name { get; set; }
         public int ElementLevel { get { return 1; } set { } }
+        public bool Confused { get; set; }
 
         // IPLayer fields
         public ControlLayout ControlLayout { get; set; }
         public IShooter Gun { get; set; }
         public IAbility Ability { get; set; }
 
-        public PlayerIndex PlayerIndex { get; }
+        public PlayerIndex PlayerIndex { get; protected set; }
         public bool IsActive { get; protected set; }
         public bool IsInvincible { get; protected set; }
         public bool IsDashing { get; protected set; }
-        public PlayerType Type { get; }
+        public PlayerType Type { get; protected set; }
         public Statistics Stats { get; set; }
-        public bool Confused { get; set; }
 
         // Class fields
         public float VelocityMax;
@@ -53,8 +53,8 @@ namespace YGR
         protected AnimatedSprite CharacterSprite;
         protected Vector2 CharacterOffset;
         protected Vector2 GhostOffset;
-        protected float CharacterScale;
-        protected float GhostScale;
+        protected float CharacterDrawScale;
+        protected float GhostDrawScale;
         protected Color _characterColor;
         protected Color _ghostColor;
         protected Texture2D _spriteAimIndicator;
@@ -85,45 +85,37 @@ namespace YGR
             KeyboardMouse,
         }
 
-        public SimplePlayer(
+        public Player_Basic(
             PlayerIndex playerIndex,
             Vector2 initialPosition,
-            AnimatedSprite sprite,
             Y_Level level,
             IShooter gun,
-            IAbility ability,
             PlayerType type,
-            ControlLayout controlLayout = ControlLayout.ControllerOnly,
-            float scale = 1.0f
+            ControlLayout controlLayout = ControlLayout.ControllerOnly
             )
         {
-            // Use all constructor arguments
+            // Use constructor arguments
             Level = level;
             PlayerIndex = playerIndex;
             Position = initialPosition;
-            CharacterSprite = sprite;
-            Gun = gun;
-            Ability = ability;
-            Type = type;
-            ControlLayout = controlLayout;
-            Scale = scale;
 
             // Set Name
-            if (type == PlayerType.Nerd)
-            {
-                Name = "Nerdy Girl";
-            }
-            else if (type == PlayerType.Ninja)
-            {
-                Name = "Ninja";
-            }
+            Name = "Basic Dude";
+
+            // Yes, bring him back <3
+            CharacterSprite = Manager_Sprites.NewAnimatedSprite_TestCharacter();
+
+            if (gun != null)
+                Gun = gun;
             else
-            {
-                Name = "undef";
-            }
+                Gun = Util.getRandomGun(this);
+            Ability = new Ability_Ghost();
+            Type = type;
+            ControlLayout = controlLayout;
+            LocalScale = Y_Level.GlobalScale;
 
             // Balancing knobs
-            LifePointsMax = 15;
+            LifePointsMax = IPlayer.PlayerBaseHealth;
             LifePoints = LifePointsMax;
             _invincibleDuration = 1250;
 
@@ -156,33 +148,21 @@ namespace YGR
             _characterColor = Color.White;
             _ghostColor = Color.Lerp(Color.White, Color, 0.5f);
 
-            // Collision bounds
-            int height = 60;
-            int width = (int)(height / CharacterSprite.SpriteDimension.Y * CharacterSprite.SpriteDimension.X);
-            _rect = new Rectangle(
-                (int)Position.X,
-                (int)Position.Y,
-                width,
-                height
-            );
-
-            // Set the drawing scale to make the character fit into the collision bounds
-            CharacterScale = Scale * Util.GetSpriteScale(_rect, CharacterSprite.SpriteDimension);
-            CharacterOffset = Vector2.Zero; // Not needed right now
+            SetupPlayerRect(height: IPlayer.PlayerBaseHeight);
 
             // Set up animated sprite for the ghost
             // It will be slightly higher than players due to floating and shadows.
             GhostSprite = Manager_Sprites.NewAnimatedSprite_Ghost();
-            GhostScale = Scale * _rect.Width / GhostSprite.SpriteDimension.X;
+            GhostDrawScale = LocalScale * _rect.Width / GhostSprite.SpriteDimension.X;
             // Make the ghost peak out of the collision bounds at the top instead of bottom
-            GhostOffset = _rect.Size.ToVector2() - GhostSprite.SpriteDimension * GhostScale;
+            GhostOffset = _rect.Size.ToVector2() - GhostSprite.SpriteDimension * GhostDrawScale;
 
             // can be confused, but normally isn't
             Confused = false;
 
             // Movement related
             Velocity = Vector2.Zero;
-            VelocityMax = 0.35f;
+            VelocityMax = IPlayer.PlayerBaseVelocity;
             _acceleration = 0.008f;
             _deceleration = 0.004f;
 
@@ -194,7 +174,7 @@ namespace YGR
             _dashCooldown = 500 - _dashDuration; // Dash cooldown in ms
             _dashCooldownTimer = _dashCooldown;
 
-            _mass = 1.0f;
+            _mass = IPlayer.PlayerBaseMass;
             _cr = 0.0f; // elastic impact
             Collision = new X_CollisionModel_Victim(_mass, _cr);
 
@@ -228,6 +208,24 @@ namespace YGR
             {
                 return X_LevelElements.Ghost;
             }
+        }
+
+        /// <summary>
+        /// Set the player Rect and the CharacterScale while taking into account LocalScale
+        /// </summary>
+        protected virtual void SetupPlayerRect(float height)
+        {
+            height *= LocalScale;
+            float width = height / CharacterSprite.SpriteDimension.Y * CharacterSprite.SpriteDimension.X;
+            _rect = new Rectangle(
+                (int)Position.X,
+                (int)Position.Y,
+                (int)width,
+                (int)height
+            );
+
+            // Set the drawing scale to make the character fit into the collision bounds
+            CharacterDrawScale = LocalScale * Util.GetSpriteScale(_rect, CharacterSprite.SpriteDimension);
         }
 
         public virtual bool IsAlive()
@@ -277,7 +275,7 @@ namespace YGR
         public virtual void Godmode()
         {
             LifePoints = LifePointsMax = 999;
-            Gun = new Gun_Godmode();
+            Gun = new Gun_Godmode(this);
             VelocityMax = 0.6f;
         }
 
@@ -489,10 +487,10 @@ namespace YGR
                     bool shot = Gun.Shoot(gameTime, playerCenter, _aimDirection, Level, this);
                     if (shot) { Stats.TimesFired++; }
                 }
-                if(Input.IsRightMousePressed() && IsAlive())
+                if (Input.IsRightMousePressed() && IsAlive())
                 {
                     bool triggered = Ability.Trigger(gameTime, playerCenter, _aimDirection, Level, this);
-                    if(triggered) { Stats.TimesAbilitated++; }
+                    if (triggered) { Stats.TimesAbilitated++; }
                 }
 
                 if (Input.HasMouseStateChanged())
@@ -582,7 +580,7 @@ namespace YGR
                 color: _ghostColor,
                 rotation: 0,
                 origin: Vector2.Zero,
-                scale: GhostScale,
+                scale: GhostDrawScale,
                 effects: SpriteEffects.None,
                 layerDepth: 0);
         }
@@ -596,7 +594,7 @@ namespace YGR
                 color: _characterColor,
                 rotation: 0,
                 origin: Vector2.Zero,
-                scale: CharacterScale,
+                scale: CharacterDrawScale,
                 effects: SpriteEffects.None,
                 layerDepth: 0);
         }
@@ -611,7 +609,7 @@ namespace YGR
         protected virtual void DrawHealthbar(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)
         {
             Vector2 dim = Manager_Sprites.HealthbarEmpty.Bounds.Size.ToVector2();
-            float scale = Rect.Height / dim.X;
+            float scale = IPlayer.PlayerBaseHeight / dim.X;
             dim *= scale;
             Vector2 offset = new Vector2((Rect.Width - dim.X) / 2, -dim.Y - 5);
             Vector2 pos = _rect.Location.ToVector2() + offset;
@@ -665,6 +663,7 @@ namespace YGR
                 DrawCharacterSprite(gameTime, globalOffset, spriteBatch);
                 DrawAimIndicator(gameTime, globalOffset, spriteBatch);
                 DrawHealthbar(gameTime, globalOffset, spriteBatch);
+                Ability.Draw(gameTime, globalOffset, spriteBatch);
                 // DrawOverheadString(gameTime, globalOffset, spriteBatch);
             }
             else

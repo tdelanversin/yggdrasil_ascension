@@ -35,7 +35,7 @@ namespace YGR
             spriteBatch.Draw(
                 _sprite.Texture, _position + globalOffset,
                 _sprite.SourceRectangle,
-                Manager_Confusion.GetRandomConfusionColor(), 0, Vector2.Zero, Scale, SpriteEffects.None, 0);
+                Manager_Confusion.GetRandomConfusionColor(), 0, Vector2.Zero, LocalScale, SpriteEffects.None, 0);
         }
     }
 }
