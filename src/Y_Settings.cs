@@ -58,7 +58,6 @@ namespace YGR
 #if DEBUG
             Fullscreen = false;
             Outlines = false;
-            Music = false;
 #endif
 
             /*

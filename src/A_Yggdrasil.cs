@@ -70,7 +70,7 @@ namespace YGR
 
             Manager_Video.Play();
 
-            _background.LoadContent(Content);
+            _background.LoadContent();
             _level.Preprocess(GraphicsDevice);
         }
 
