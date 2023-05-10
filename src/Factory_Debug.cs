@@ -74,6 +74,15 @@ namespace YGR
             spriteBatch.Draw(_strokes[index], new Rectangle(x, y + height, width + lineWidth, lineWidth), color);
         }
 
+        public static void DrawRectangle(Rectangle r, int lineWidth, Color color, SpriteBatch spriteBatch)
+        {
+            int x = r.X;
+            int y = r.Y;
+            int width = r.Width;
+            int height = r.Height;
+            DrawRectangle(x, y, width, height, lineWidth, color, spriteBatch);
+        }
+
         /// <summary>
         /// Draw a line from (x,y) that is 'distance' long at 'angle' relative to horizontal (counter-clock-wise).
         /// </summary>
