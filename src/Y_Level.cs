@@ -487,10 +487,6 @@ namespace YGR
                 room.Update(gameTime);
             }
 
-            // Just sample what room for any player right now. For an encounter
-            // to start, will check anyway if everyone is inside.
-            ActiveRoom = Manager_Players.Players[0].Room;
-
             switch (State)
             {
                 case GamePlayState.Start:
@@ -503,6 +499,11 @@ namespace YGR
                     break;
 
                 case GamePlayState.FreeRoam:
+                    // Just sample what room for any player right now. For an encounter
+                    // to start, will check anyway if everyone is inside.
+                    var alivePlayers = Manager_Players.Players.Where(x => x.IsAlive()).ToArray();
+                    ActiveRoom = alivePlayers.First().Room;
+
                     if (ActiveRoom.WhatAreYou() != X_LevelElements.Room)
                     {
                         break;
@@ -515,7 +516,7 @@ namespace YGR
                     }
 
                     // Make sure all players are inside
-                    if (cmroom.GetPlayersInside().Count != Manager_Players.Players.Count)
+                    if (cmroom.GetPlayersInside().Count != alivePlayers.Count())
                     {
                         break;
                     }
@@ -531,6 +532,14 @@ namespace YGR
 
                     // At this point we have all players inside a room with
                     // enemies. Time to go in lock down and let the battle begin
+
+                    // transfer all the ghosts to the spawning point of the current room
+                    var allGhosts = Manager_Players.Players.Where(x => !x.IsAlive()).ToArray();
+                    foreach(var ghost in allGhosts)
+                    {
+                        ghost.TeleportTo(cmroom.TeleporterTarget);
+                    }
+
                     cmroom.CloseAllUnlockedRoomDoors();
                     cmroom.SetLocked(true);
                     Camera.SetFocusRoom(cmroom);

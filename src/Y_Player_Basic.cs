@@ -188,6 +188,12 @@ namespace YGR
             Room = Level.GetRoom(this, Room);
         }
 
+        public virtual void TeleportTo(Point target)
+        {
+            _rect.Location = target;
+            Position = target.ToVector2();
+        }
+
         public virtual X_LevelElements WhatAreYou()
         {
             if (IsInvincible || IsDashing)
