@@ -135,9 +135,9 @@ namespace YGR
             {
                 playerMeanPos += player.Rect.Location.ToVector2();
                 left = Math.Min(player.Rect.X, left);
-                right = Math.Max(player.Rect.X, right);
+                right = Math.Max(player.Rect.X + player.Rect.Width, right);
                 top = Math.Min(player.Rect.Y, top);
-                bot = Math.Max(player.Rect.Y, bot);
+                bot = Math.Max(player.Rect.Y + player.Rect.Height, bot);
             }
 
             // Update camera position
@@ -146,12 +146,14 @@ namespace YGR
             // Console.WriteLine(playerMeanPos);
 
             // Set zoom level to fit all players
-            var stretch = Math.Max((float)(right - left) / Bounds.Width, (float)(bot - top) / Bounds.Height);
+            var boundsStretchFactor = Math.Max((right - left) / (float)Bounds.Width, (bot - top) / (float)Bounds.Height);
             var resolutionAdjustment = Bounds.Width / 1920f;
-            var zoomMarginFactor = Math.Min(0.85f, .55f * resolutionAdjustment);
-            var zoomFactor = zoomMarginFactor / stretch;
-            var zoomFactorMax = 1.25f * resolutionAdjustment;
-            UpdateZoom(Math.Min(zoomFactor, zoomFactorMax));
+            var overStretch = 0.65f;
+            var zoomMarginFactor = Math.Min(overStretch, overStretch * resolutionAdjustment);
+            var zoomFactor = zoomMarginFactor / boundsStretchFactor;
+            var zoomFactorMax = 0.95f * resolutionAdjustment;
+            var zoom = Math.Min(zoomFactor, zoomFactorMax);
+            UpdateZoom(zoom);
         }
 
         private static void focusOnRoom()
