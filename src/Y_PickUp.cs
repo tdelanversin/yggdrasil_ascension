@@ -16,6 +16,9 @@ namespace YGR
         WeaponShotgun,
         WeaponKeyboard,
         WeaponFunky,
+        WeaponEnemySlowPistol,
+        WeaponWide,
+        WeaponGiga,
 
         // CharacterChoosers
         ChooserNerd,
@@ -25,7 +28,7 @@ namespace YGR
 
     public class PickUp : IGameElement
     {
-        public float Scale { get; set; }
+        public float LocalScale { get; set; }
 
         public Rectangle Rect { get; set; }
 
@@ -33,7 +36,7 @@ namespace YGR
 
         public Y_PowerUps Type { get; }
 
-        public Func<IPlayer, bool> Action { get; }
+        public Func<IPlayer, PickUp, bool> Action { get; }
         public int ElementLevel { get { return 1; } set { } }
 
         private AnimatedSprite _sprite;
@@ -41,39 +44,79 @@ namespace YGR
 
         private Texture2D _texture;
 
-        public PickUp(Y_PowerUps type, Point location, int width, int height, float scale, AnimatedSprite sprite, Func<IPlayer, bool> action)
+        private IVictim _lastOwner;
+
+        private static bool switchGun(IShooter gun, IPlayer player, PickUp self)
         {
-            Scale = scale;
+            // This one has to be set at switching time
+            // in the Update method of the PowerUp if _lastOwner != null then it will check if the two Rects
+            // of the PowerUp and the _lastOwner still intersect. If now, then _lastOwner will be set to null
+            // => prevent infinite chains of re-pickups of the old weapon
+            if (self._lastOwner == player)
+                return false;
+
+            if (player is Player_Ghost)
+                return false;
+
+            var oldGun = player.Gun;
+            player.Gun = gun;
+            player.Room.PickUps.Remove(self);
+            oldGun.DropAsPickUp(player, player.Room, self.Rect.Center);
+
+            Manager_Sound.Sound_GunCocking.Play();
+
+            return true;
+        }
+
+        public PickUp(Y_PowerUps type, Point location, int width, int height, float scale, AnimatedSprite sprite, IVictim lastOwner, Func<IPlayer, PickUp, bool> action)
+        {
+            LocalScale = scale * Y_Level.GlobalScale;
             Type = type;
-            float heightNew = (int)(height * 1.75);
-            float widthNew = (int)((heightNew * sprite.SpriteDimension.X / sprite.SpriteDimension.Y));
-            Rect = new Rectangle((int)(location.X * scale - (widthNew - width) / 2.0), (int)(location.Y * scale - (heightNew - height) - 10), (int)(scale * widthNew), (int)(scale * heightNew));
+            int heightNew = (int)(height * scale);
+            int widthNew = (int)((heightNew * sprite.SpriteDimension.X / sprite.SpriteDimension.Y));
+            //Rect = new Rectangle(
+            //    (int)(location.X * scale - (widthNew - width) / 2.0), 
+            //    (int)(location.Y * scale - (heightNew - height) - 10), 
+            //    (int)(scale * widthNew), 
+            //    (int)(scale * heightNew));
+
+            Rect = new Rectangle(location.X - widthNew/2, location.Y-heightNew/2, widthNew, heightNew);
             Action = action;
             Active = true;
             _sprite = sprite;
-            _spriteScale = Scale * Util.GetSpriteScale(Rect, _sprite.SpriteDimension);
+            _spriteScale = LocalScale * Util.GetSpriteScale(Rect, _sprite.SpriteDimension);
+
+            _lastOwner = lastOwner;
         }
 
-        public PickUp(Y_PowerUps type, Point location, int width, int height, float scale, Texture2D texture, Func<IPlayer, bool> action)
+        public PickUp(Y_PowerUps type, Point location, int width, int height, float scale, Texture2D texture, IVictim lastOwner, Func<IPlayer, PickUp, bool> action)
         {
-            Scale = scale;
+            LocalScale = scale*Y_Level.GlobalScale;
             Type = type;
-            float heightNew = (int)(height * 1.75);
-            float widthNew = (int)((heightNew * texture.Width / texture.Height));
-            Rect = new Rectangle((int)(location.X * scale - (widthNew - width) / 2.0), (int)(location.Y * scale - (heightNew - height) - 10), (int)(scale * widthNew), (int)(scale * heightNew));
+            int heightNew = (int)(height * scale);
+            int widthNew = (int)((heightNew * texture.Width / texture.Height));
+            //Rect = new Rectangle(
+            //    (int)(location.X * scale - (widthNew - width) / 2.0),
+            //    (int)(location.Y * scale - (heightNew - height) - 10),
+            //    (int)(scale * widthNew),
+            //    (int)(scale * heightNew));
+
+            Rect = new Rectangle(location.X-widthNew/2, location.Y-heightNew/2, widthNew, heightNew);
             Action = action;
             Active = true;
             _texture = texture;
-            _spriteScale = Scale * Util.GetSpriteScale(Rect, texture.Bounds.Size.ToVector2());
+            _spriteScale = LocalScale * Util.GetSpriteScale(Rect, texture.Bounds.Size.ToVector2());
+
+            _lastOwner = lastOwner;
         }
 
-        public static PickUp Factory(Y_PowerUps type, Point location, int width, int height, float scale)
+        public static PickUp Factory(Y_PowerUps type, Point location, int width, int height, float scale, IVictim lastOwner = null)
         {
             switch (type)
             {
                 case Y_PowerUps.ChooserNerd:
-                    return new PickUp(type, location, width, height, scale, Manager_Sprites.NewAnimatedSprite_NerdyGirl(),
-                        (player) =>
+                    return new PickUp(type, location, width, height, scale * 1.0f, Manager_Sprites.NewAnimatedSprite_NerdyGirl(), lastOwner,
+                        (player, self) =>
                         {
                             if (player.Type != PlayerType.Nerd)
                             {
@@ -83,8 +126,8 @@ namespace YGR
                             return false;
                         });
                 case Y_PowerUps.ChooserMailman:
-                    return new PickUp(type, location, width, height, scale, Manager_Sprites.NewAnimatedSprite_Mailman(),
-                        (player) =>
+                    return new PickUp(type, location, width, height, scale * 1.0f, Manager_Sprites.NewAnimatedSprite_Mailman(), lastOwner,
+                        (player, self) =>
                         {
                             if (player.Type != PlayerType.Mailman)
                             {
@@ -94,8 +137,8 @@ namespace YGR
                             return false;
                         });
                 case Y_PowerUps.ChooserNinja:
-                    return new PickUp(type, location, width, height, scale, Manager_Sprites.NewAnimatedSprite_Ninja(),
-                        (player) =>
+                    return new PickUp(type, location, width, height, scale * 1.0f, Manager_Sprites.NewAnimatedSprite_Ninja(), lastOwner,
+                        (player, self) =>
                         {
                             if (player.Type != PlayerType.Ninja)
                             {
@@ -104,76 +147,75 @@ namespace YGR
                             }
                             return false;
                         });
-                case Y_PowerUps.WeaponPistol:
-                    return new PickUp(type, location, width, height, scale, Manager_Sprites.Weapon_Pistol,
-                        (player) =>
-                        {
-                            if (player is Player_Ghost)
-                                return false;
 
+                case Y_PowerUps.WeaponPistol:
+                    return new PickUp(type, location, width, height, scale * 1.0f, Manager_Sprites.Weapon_Pistol, lastOwner,
+                        (player, self) => {
                             if (player.Gun.GetType() == typeof(Gun_Basic))
                                 return false;
 
-                            player.Gun = new Gun_Basic();
-                            Manager_Sound.Sound_GunCocking.Play();
-                            return false;
+                            return switchGun(new Gun_Basic(player), player, self);
                         });
-                case Y_PowerUps.WeaponShotgun:
-                    return new PickUp(type, location, width, height, scale, Manager_Sprites.Weapon_Shotgun,
-                        (player) =>
+                case Y_PowerUps.WeaponEnemySlowPistol:
+                    return new PickUp(type, location, width, height, scale * 1.0f, Manager_Sprites.Weapon_Pistol, lastOwner,
+                        (player, self) =>
                         {
-                            if (player is Player_Ghost)
+                            if (player.Gun.GetType() == typeof(Gun_BasicEnemy))
                                 return false;
 
+                            return switchGun(new Gun_BasicEnemy(player), player, self);
+                        });
+                case Y_PowerUps.WeaponWide:
+                    return new PickUp(type, location, width, height, scale * 1.0f, Manager_Sprites.Weapon_Pistol, lastOwner,
+                        (player, self) => {
+                            if (player.Gun.GetType() == typeof(Gun_Wide))
+                                return false;
+
+                            return switchGun(new Gun_Wide(player), player, self);
+                        });
+                case Y_PowerUps.WeaponShotgun:
+                    return new PickUp(type, location, width, height, scale * 1.0f, Manager_Sprites.Weapon_Shotgun, lastOwner,
+                        (player, self) => {
                             if (player.Gun.GetType() == typeof(Gun_ShotGun))
                                 return false;
 
-                            player.Gun = new Gun_ShotGun();
-                            Manager_Sound.Sound_GunCocking.Play();
-                            return false;
+                            return switchGun(new Gun_ShotGun(player), player, self);
                         });
                 case Y_PowerUps.WeaponFunky:
-                    return new PickUp(type, location, width, height, scale, Manager_Sprites.Weapon_RedGun,
-                        (player) =>
+                    return new PickUp(type, location, width, height, scale * 1.0f, Manager_Sprites.Weapon_RedGun, lastOwner,
+                        (player, self) =>
                         {
-                            if (player is Player_Ghost)
-                                return false;
-
                             if (player.Gun.GetType() == typeof(Gun_Funky))
                                 return false;
 
-                            player.Gun = new Gun_Funky();
-                            Manager_Sound.Sound_GunCocking.Play();
-                            return false;
+                            return switchGun(new Gun_Funky(player), player, self);
                         });
                 case Y_PowerUps.Life:
-                    return new PickUp(type, location, width, height, scale, Manager_Sprites.NewAnimatedSprite_SpinningHeart(),
-                        (player) =>
+                    return new PickUp(type, location, width, height, scale * 1.0f, Manager_Sprites.NewAnimatedSprite_SpinningHeart(), lastOwner,
+                        (player, self) =>
                         {
-                            var alives = Manager_Players.Players.Where(x => x.WhatAreYou() == X_LevelElements.Victim).ToArray();
-                            bool ret = false;
-                            foreach (SimplePlayer p in alives)
-                            {
-                                if (p.LifePoints < p.LifePointsMax)
-                                {
-                                    p.Heal();
-                                    ret = true; // consume powerup
-                                }
-                            }
-                            return ret;
+                            if (player.WhatAreYou() != X_LevelElements.Victim)
+                                return false;
+                            if (player.LifePoints >= player.LifePointsMax)
+                                return false;
+
+                            player.Heal();
+                            player.Room.PickUps.Remove(self);
+                            Manager_Sound.Sound_CashIn.Play();
+                            return true;
                         });
                 default: // case Y_PowerUps.Revive:
-                    return new PickUp(type, location, width, height, scale, Manager_Sprites.NewAnimatedSprite_SpinningPlus(),
-                        (player) =>
+                    return new PickUp(type, location, width, height, scale * 1.0f, Manager_Sprites.NewAnimatedSprite_SpinningPlus(), lastOwner,
+                        (player, self) =>
                         {
-                            var ghosts = Manager_Players.Players.Where(x => !x.IsAlive() && x is not Player_Ghost).ToArray();
-                            bool ret = false;
-                            foreach (var ghost in ghosts)
-                            {
-                                ghost.Revive();
-                                ret = true;
-                            }
-                            return ret;
+                            if (!(!player.IsAlive() && player is not Player_Ghost))
+                                return false;
+
+
+                            player.Room.PickUps.Remove(self);
+                            player.Revive();
+                            Manager_Sound.Sound_CashIn.Play();
+                            return true;
                         });
             }
         }
@@ -214,6 +256,14 @@ namespace YGR
             if (_sprite != null)
             {
                 _sprite.Update(gameTime, AnimationState.Idle);
+            }
+
+            if(_lastOwner != null)
+            {
+                if (!_lastOwner.Rect.Intersects(Rect))
+                {
+                    _lastOwner = null;
+                }
             }
         }
 
