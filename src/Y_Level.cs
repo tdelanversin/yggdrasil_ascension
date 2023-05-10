@@ -43,6 +43,7 @@ namespace YGR
             Start, // Not completed starting room
             FreeRoam, // Not in an encounter, players can freely roam
             Encounter, // Players are in an encounter, room locked
+            Escaped,
             End,
         }
 
@@ -536,7 +537,7 @@ namespace YGR
                     {
                         enemy.State = EnemyState.Idle;
                     }
-                    if (cmroom.Name == "Gold_0")
+                    if (cmroom.Category == "Gold")
                     {
                         Manager_Sound.PlayBossMusic();
                     }
@@ -588,7 +589,7 @@ namespace YGR
 
                     Manager_Sound.PlayFreeRoamMusic();
 
-                    if (encounterRoom.Name.StartsWith("Gold"))
+                    if (encounterRoom.Category == "Gold")
                     {
                         Notifications.New("\n\n\n\n", Color.Wheat, gameEndNotificationLength);
                         Notifications.New("Overcoming the final challenge, glory awaits our heroes", Color.Wheat, gameEndNotificationLength, Fonts.Large);
@@ -605,6 +606,15 @@ namespace YGR
                     }
                     break;
 
+                case GamePlayState.Escaped:
+                    // Check if players died
+                    int escapeNotificationLength = 15000;
+
+                    Notifications.New("\n\n\n\n", Color.Wheat, escapeNotificationLength);
+                    Notifications.New("Maybe you can find some more things to help you defeat the Big Boss", Color.Wheat, escapeNotificationLength, Fonts.Large);
+                    Manager_Sound.PlayFreeRoamMusic();
+                    State = GamePlayState.FreeRoam;
+                    break;
                 case GamePlayState.End:
                     // Nothing yet
                     break;

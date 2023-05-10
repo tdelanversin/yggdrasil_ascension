@@ -310,14 +310,17 @@ namespace YGR
                 p.TeleportTo(targetPoint);
             }
 
-            // move camera slowly to new player location
-            Camera.SetFocusPlayers(animationDuration: 2000);
+            // unlock all doors back
+            Room.OpenAllUnlockedRoomDoors();
 
-            // change the state to FreeRoam
-            Y_Level.State = Y_Level.GamePlayState.FreeRoam;
+            // move camera slowly to new player location
+            Camera.SetFocusPlayers(animationDuration: 4000);
+
+            // change the state to FreeRoam (do this before the teleport, otherwise the game ends)
+            Y_Level.State = Y_Level.GamePlayState.Escaped;
 
             // reset the boss room
-            Room.ResetRoom();
+            Room.InGameReset();
 
             Label = "Coward!";
             Color = Color.SpringGreen;

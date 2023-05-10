@@ -630,6 +630,7 @@ namespace YGR
 
         public void SpawnEnemies()
         {
+            Manager_Enemies.ClearEnemies(this);
             var enemies = GetEnemySpawningPoints();
             foreach (var spr in enemies)
             {
