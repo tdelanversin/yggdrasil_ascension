@@ -353,4 +353,42 @@ namespace YGR
 
         public void Update(GameTime gameTime) { }
     }
+
+    // Basic gun, does nothing special, shoots fast
+    public class Gun_Confusion : IShooter
+    {
+        public string Name { get; protected set; }
+        public Texture2D Sprite { get; protected set; }
+
+        protected double NextShotCooldown = 0.0f;
+        protected int ShotDelay = 240;
+
+        public Gun_Confusion()
+        {
+            Name = "Confusion";
+            Sprite = Manager_Sprites.Effect_Confusion;
+        }
+
+        public virtual bool Shoot(GameTime gameTime, Vector2 origin, Vector2 direction, Y_Level level, IGameElement who)
+        {
+            if (NextShotCooldown > 0.0f)
+                return false;
+
+            Manager_Sound.Sound_Shotgun.Play(0.2f, 0, 0);
+
+            NextShotCooldown = ShotDelay;
+
+            var duration = 0;
+            if (who.ElementLevel == 1) duration = 3000;
+            else if (who.ElementLevel == 2) duration = 5000;
+            else duration = 8000;
+            Manager_Projectile.AddProjectile_Confusion(origin, direction, duration, level, who);
+            return true;
+        }
+
+        public virtual void Update(GameTime gameTime)
+        {
+            NextShotCooldown = Math.Max(0, NextShotCooldown - gameTime.ElapsedGameTime.TotalMilliseconds);
+        }
+    }
 }

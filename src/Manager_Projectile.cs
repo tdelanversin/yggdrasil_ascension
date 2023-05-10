@@ -1,7 +1,9 @@
+using Assimp.Configs;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Threading;
 
 namespace YGR
 {
@@ -117,6 +119,25 @@ namespace YGR
                     mass: 0.8f
                 )
             );
+        }
+
+        public static void AddProjectile_Confusion(Vector2 startPosition, Vector2 direction, int confusionDuration, Y_Level level, IGameElement who)
+        {
+            _projectiles.Add(
+                new Projectile_Confusion(
+                    position: startPosition,
+                    direction: direction,
+                    Manager_Sprites.NewAnimatedSprite_Confusion(),
+                    confusionDuration: confusionDuration,
+                    level: level,
+                    who: who,
+                    scale: 0.55f,
+                    damage: 0,
+                    maxAge: 2500,
+                    speed: 0.4f,
+                    mass: 0.0f
+                 )
+             );
         }
 
         public static void Update(GameTime gameTime)
