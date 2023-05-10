@@ -518,7 +518,7 @@ namespace YGR
             }
 
             DrawCharacterSprite(gameTime, globalOffset, spriteBatch);
-            if (Settings.Outlines)
+            if (Settings.DebugOutlinesEntities)
             {
                 DrawFaceDirectionIndicator(gameTime, globalOffset, spriteBatch);
             }

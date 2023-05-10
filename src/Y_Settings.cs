@@ -35,7 +35,8 @@ namespace YGR
         static GameWindow Window;
         public static bool Fullscreen;
         public static bool DynamicShades;
-        public static bool Outlines;
+        public static bool DebugOutlinesLevel;
+        public static bool DebugOutlinesEntities;
         public static bool DrawFPS;
         public static bool Sound;
         public static bool Music;
@@ -52,12 +53,12 @@ namespace YGR
             Fullscreen = true;
             DrawFPS = true; // Always on for now, shouldn't really bother anyone
             DynamicShades = false; // Off by default, not because they are slow (they are in fact very quick) but because Monogame sucks so much!!!
-            Outlines = false;
+            DebugOutlinesLevel = false;
             Sound = true;
             Music = true;
 #if DEBUG
             Fullscreen = false;
-            Outlines = false;
+            DebugOutlinesLevel = false;
 #endif
 
             /*
@@ -84,7 +85,7 @@ namespace YGR
         {
             Fullscreen = so.Fullscreen;
             DynamicShades = so.DynamicShades;
-            Outlines = so.Outlines;
+            DebugOutlinesLevel = so.Outlines;
             DrawFPS = so.DrawFPS;
             Sound = so.Sound;
             Music = so.Music;
@@ -124,11 +125,18 @@ namespace YGR
             return DynamicShades;
         }
 
-        internal static bool ToggleOutlines()
+        internal static bool ToggleDebugOutlinesLevel()
         {
-            Outlines = !Outlines;
+            DebugOutlinesLevel = !DebugOutlinesLevel;
             SaveSettings();
-            return Outlines;
+            return DebugOutlinesLevel;
+        }
+
+        internal static bool ToggleDebugOutlinesEntities()
+        {
+            DebugOutlinesEntities = !DebugOutlinesEntities;
+            SaveSettings();
+            return DebugOutlinesEntities;
         }
 
         internal static bool ToggleDrawFPS()

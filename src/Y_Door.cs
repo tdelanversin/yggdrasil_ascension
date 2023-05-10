@@ -1441,6 +1441,11 @@ namespace YGR
             }
         }
 
+        public bool IsVisible()
+        {
+            return State == X_DoorState.Opening || State == X_DoorState.Closing || State == X_DoorState.Open || _visited;
+        }
+
         public void MoveTo(Point position)
         {
             var p = position - Rect.Location;
