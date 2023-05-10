@@ -112,6 +112,11 @@ namespace YGR
             return currentMouseState.LeftButton == ButtonState.Pressed;
         }
 
+        public static bool IsRightMousePressed()
+        {
+            return currentMouseState.RightButton == ButtonState.Pressed;
+        }
+
         public static bool IsLeftMouseClick()
         {
             return currentMouseState.LeftButton == ButtonState.Pressed && previousMouseState.LeftButton != ButtonState.Pressed;

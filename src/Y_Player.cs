@@ -36,6 +36,8 @@ namespace YGR
         // IPLayer fields
         public ControlLayout ControlLayout { get; set; }
         public IShooter Gun { get; set; }
+        public IAbility Ability { get; set; }
+
         public PlayerIndex PlayerIndex { get; }
         public bool IsActive { get; protected set; }
         public bool IsInvincible { get; protected set; }
@@ -89,6 +91,7 @@ namespace YGR
             AnimatedSprite sprite,
             Y_Level level,
             IShooter gun,
+            IAbility ability,
             PlayerType type,
             ControlLayout controlLayout = ControlLayout.ControllerOnly,
             float scale = 1.0f
@@ -100,6 +103,7 @@ namespace YGR
             Position = initialPosition;
             CharacterSprite = sprite;
             Gun = gun;
+            Ability = ability;
             Type = type;
             ControlLayout = controlLayout;
             Scale = scale;
@@ -428,6 +432,14 @@ namespace YGR
                     bool shot = Gun.Shoot(gameTime, Rect.Center.ToVector2(), _aimDirection, Level, this);
                     if (shot) { Stats.TimesFired++; }
                 }
+
+                if (Input.IsButtonDown(PlayerIndex, Keybinds.GamePadAbility) && IsAlive())
+                {
+                    _isAiming = true; // Show the aim indicator when firing
+                    _currentAimInput = InputType.Controller;
+                    bool triggered = Ability.Trigger(gameTime, Rect.Center.ToVector2(), _aimDirection, Level, this);
+                    if (triggered) { Stats.TimesAbilitated++; }
+                }
             }
         }
 
@@ -470,6 +482,11 @@ namespace YGR
                 {
                     bool shot = Gun.Shoot(gameTime, playerCenter, _aimDirection, Level, this);
                     if (shot) { Stats.TimesFired++; }
+                }
+                if(Input.IsRightMousePressed() && IsAlive())
+                {
+                    bool triggered = Ability.Trigger(gameTime, playerCenter, _aimDirection, Level, this);
+                    if(triggered) { Stats.TimesAbilitated++; }
                 }
 
                 if (Input.HasMouseStateChanged())
@@ -546,6 +563,7 @@ namespace YGR
 
             UpdateColor(gameTime);
             Gun.Update(gameTime);
+            Ability.Update(gameTime);
         }
 
         // Render ghosty 👻
