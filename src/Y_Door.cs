@@ -70,6 +70,7 @@ namespace YGR
         public X_IlluminationResources IlluminationResources { get; set; }
         private X_DoorState State { get; set; }
         public int ElementLevel { get { return 1; } set { } }
+        public string Category { get; }
 
         public List<PickUp> PickUps { get; }
 
@@ -130,6 +131,7 @@ namespace YGR
             //_illuminated = null;
 
             Collision = new X_CollisionModel_Room(collision, tileWidth, tileHeight, isRoomCollisionModel: false);
+            Category = "";
 
             Rect = new Rectangle(0, 0, tileWidth * collision[0].Length, tileHeight * collision.Length);
             _doorCollisionRectangles = new Dictionary<X_DoorState, List<Rectangle>>();
