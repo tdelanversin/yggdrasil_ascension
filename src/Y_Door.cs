@@ -71,6 +71,7 @@ namespace YGR
         public Color[] Shade { get; set; }
         public X_IlluminationResources IlluminationResources { get; set; }
         private X_DoorState State { get; set; }
+        public int ElementLevel { get { return 1; } set { } }
 
         private X_DoorDirection _direction;
         //private Texture2D _floor;

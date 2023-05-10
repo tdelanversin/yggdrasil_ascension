@@ -18,6 +18,7 @@ namespace YGR
         public IGameElement WhoFiredMe { get; set; }
         public int Damage { get; set; }
         public Color Color { get; set; }
+        public int ElementLevel { get { return 1; } set { } }
 
         public float Scale { get; protected set; }
         public Rectangle Rect { get { return _rect; } set { _rect = value; } }

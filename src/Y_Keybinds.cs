@@ -17,6 +17,7 @@ namespace YGR
 
         public static Buttons GamePadShoot = Buttons.RightTrigger;
         public static Buttons GamePadAction = Buttons.LeftTrigger;
+        public static Buttons GamePadAbility = Buttons.RightShoulder;
 
         public static Keys Enter = Keys.Enter;
 

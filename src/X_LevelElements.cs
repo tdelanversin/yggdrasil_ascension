@@ -17,6 +17,8 @@
         Interactable,
         PowerUp,
         MultiPowerUp,
-        Bark
+        Bark,
+        Confusion,
+        ConfusionProjectile
     }
 }

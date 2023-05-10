@@ -20,6 +20,7 @@ namespace YGR
         public int AmountHealed; // IPlayer.heal()
         public float DistanceTravelled; // IPlayer.UpdateCollision()
         public int ProjectilesDodged; // X_CollisionModel_Projectile.Intersect()
+        public int TimesAbilitated; // Ability.Triggered()
 
         private HashSet<WeakReference> ProjectilesTracked = new HashSet<WeakReference> { };
         public void TrackDodgedProjectile(IProjectile projectile)

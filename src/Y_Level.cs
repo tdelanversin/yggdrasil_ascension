@@ -53,6 +53,7 @@ namespace YGR
         public int TileHeight { get; }
         public IList<IVictim> Victims { get; }
         public Color OutsideColor { get; set; }
+        public int ElementLevel { get { return 1; } set { } }
 
         private string _name;
         private string _levelResourceFolder;
@@ -410,6 +411,11 @@ namespace YGR
             {
                 Manager_Light2.IlluminateSync(Rooms.Values.Where(c => c.WhatAreYou() == X_LevelElements.Room).ToList());
             }
+
+            //foreach(var enemy in Manager_Enemies.GetEnemies())
+            //{
+            //    Manager_Confusion.AddConfusion(enemy, 1000000);
+            //}
         }
 
         public IWalkable GetRoom(IGameElement elem, IWalkable currentRoom)

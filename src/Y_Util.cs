@@ -58,9 +58,9 @@ namespace YGR
         {
             List<Type> gunTypes = new List<Type> {
                 typeof(Gun_Basic),
-                // typeof(Gun_Wide), // Make game child friendly for now
+                // typeof(Gun_Wide), // Make game child friendly for now (:-D)
                 // typeof(Gun_Funky),
-                typeof(Gun_ShotGun),
+                typeof(Gun_ShotGun)
             };
             return (IShooter)Activator.CreateInstance(
                 gunTypes[random.Next(gunTypes.Count)]

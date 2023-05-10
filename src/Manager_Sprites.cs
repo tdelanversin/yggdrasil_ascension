@@ -49,6 +49,9 @@ namespace YGR
         public static Texture2D Enemy_Slime { get; private set; }
         public static Texture2D Enemy_Gigachad { get; private set; }
 
+        // Effects
+        public static Texture2D Effect_Confusion { get; private set; }
+
         public static void LoadContent(ContentManager contentManager)
         {
             Player_Ninja = contentManager.Load<Texture2D>("SpritesCharacters/charaset");
@@ -83,6 +86,20 @@ namespace YGR
 
             SpinningHeart = contentManager.Load<Texture2D>("SpritesOther/SpinningHeart");
             SpinningPlus = contentManager.Load<Texture2D>("SpritesOther/SpinningPlus");
+
+            Effect_Confusion = contentManager.Load<Texture2D>("SpritesEffects/noise");
+        }
+
+        public static AnimatedSprite NewAnimatedSprite_Confusion()
+        {
+            return new AnimatedSprite(
+                texture: Effect_Confusion,
+                spriteDimension: new Vector2(128, 128),
+                animations: new Dictionary<AnimationState, int[]> {
+                    { AnimationState.Idle, new int[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14 } },
+                },
+                animationDuration: 500
+            );
         }
 
         public static AnimatedSprite NewAnimatedSprite_SpinningHeart()

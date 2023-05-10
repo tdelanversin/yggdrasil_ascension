@@ -31,16 +31,20 @@ namespace YGR
         public Y_Level Level { get; set; }
         public IWalkable Room { get; set; }
         public string Name { get; set; }
+        public int ElementLevel { get { return 1; } set { } }
 
         // IPLayer fields
         public ControlLayout ControlLayout { get; set; }
         public IShooter Gun { get; set; }
+        public IAbility Ability { get; set; }
+
         public PlayerIndex PlayerIndex { get; }
         public bool IsActive { get; protected set; }
         public bool IsInvincible { get; protected set; }
         public bool IsDashing { get; protected set; }
         public PlayerType Type { get; }
         public Statistics Stats { get; set; }
+        public bool Confused { get; set; }
 
         // Class fields
         public float VelocityMax;
@@ -87,6 +91,7 @@ namespace YGR
             AnimatedSprite sprite,
             Y_Level level,
             IShooter gun,
+            IAbility ability,
             PlayerType type,
             ControlLayout controlLayout = ControlLayout.ControllerOnly,
             float scale = 1.0f
@@ -98,6 +103,7 @@ namespace YGR
             Position = initialPosition;
             CharacterSprite = sprite;
             Gun = gun;
+            Ability = ability;
             Type = type;
             ControlLayout = controlLayout;
             Scale = scale;
@@ -170,6 +176,9 @@ namespace YGR
             GhostScale = Scale * _rect.Width / GhostSprite.SpriteDimension.X;
             // Make the ghost peak out of the collision bounds at the top instead of bottom
             GhostOffset = _rect.Size.ToVector2() - GhostSprite.SpriteDimension * GhostScale;
+
+            // can be confused, but normally isn't
+            Confused = false;
 
             // Movement related
             Velocity = Vector2.Zero;
@@ -423,6 +432,14 @@ namespace YGR
                     bool shot = Gun.Shoot(gameTime, Rect.Center.ToVector2(), _aimDirection, Level, this);
                     if (shot) { Stats.TimesFired++; }
                 }
+
+                if (Input.IsButtonDown(PlayerIndex, Keybinds.GamePadAbility) && IsAlive())
+                {
+                    _isAiming = true; // Show the aim indicator when firing
+                    _currentAimInput = InputType.Controller;
+                    bool triggered = Ability.Trigger(gameTime, Rect.Center.ToVector2(), _aimDirection, Level, this);
+                    if (triggered) { Stats.TimesAbilitated++; }
+                }
             }
         }
 
@@ -465,6 +482,11 @@ namespace YGR
                 {
                     bool shot = Gun.Shoot(gameTime, playerCenter, _aimDirection, Level, this);
                     if (shot) { Stats.TimesFired++; }
+                }
+                if(Input.IsRightMousePressed() && IsAlive())
+                {
+                    bool triggered = Ability.Trigger(gameTime, playerCenter, _aimDirection, Level, this);
+                    if(triggered) { Stats.TimesAbilitated++; }
                 }
 
                 if (Input.HasMouseStateChanged())
@@ -541,6 +563,7 @@ namespace YGR
 
             UpdateColor(gameTime);
             Gun.Update(gameTime);
+            Ability.Update(gameTime);
         }
 
         // Render ghosty 👻

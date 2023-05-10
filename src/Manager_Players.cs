@@ -42,6 +42,7 @@ namespace YGR
                     Manager_Sprites.NewAnimatedSprite_Ninja(),
                     level,
                     Util.getRandomGun(),
+                    new Ability_Confusion(),
                     type,
                     controlLayout,
                     scale: 1.0f
@@ -53,6 +54,7 @@ namespace YGR
                     Manager_Sprites.NewAnimatedSprite_NerdyGirl(),
                     level,
                     Util.getRandomGun(),
+                    new Ability_Confusion(),
                     type,
                     controlLayout,
                     scale: 1.0f
@@ -64,6 +66,7 @@ namespace YGR
                     Manager_Sprites.NewAnimatedSprite_Mailman(),
                     level,
                     Util.getRandomGun(),
+                    new Ability_Confusion(),
                     type,
                     controlLayout,
                     scale: 1.0f

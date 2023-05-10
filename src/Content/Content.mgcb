@@ -58,6 +58,12 @@
 /processorParam:Quality=Best
 /build:Sounds/cash-in.wav
 
+#begin Sounds/confusion.wav
+/importer:WavImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:Sounds/confusion.wav
+
 #begin Sounds/dash.wav
 /importer:WavImporter
 /processor:SoundEffectProcessor
@@ -345,6 +351,18 @@
 /processorParam:MakeSquare=False
 /processorParam:TextureFormat=Color
 /build:SpritesEffects/fire_trail.png
+
+#begin SpritesEffects/noise.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:SpritesEffects/noise.png
 
 #begin SpritesEffects/small_dust_cloud.png
 /importer:TextureImporter
