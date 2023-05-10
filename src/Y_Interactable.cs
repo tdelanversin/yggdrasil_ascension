@@ -13,6 +13,7 @@ namespace YGR
         // IGameElement fields
         public float Scale { get; }
         public Rectangle Rect { get; set; }
+        public int ElementLevel { get { return 1; } set { } }
 
         // private fields
         public Y_Level Level;

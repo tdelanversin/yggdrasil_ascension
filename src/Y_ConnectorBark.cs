@@ -11,7 +11,7 @@ namespace YGR
     public class Y_ConnectorBark : IGameElement
     {
         public float Scale { get; set; }
-
+        public int ElementLevel { get { return 1; } set { } }
         public Rectangle Rect { get; set; }
 
         private Texture2D _barkTexture;

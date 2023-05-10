@@ -7,6 +7,7 @@ namespace YGR
     {
         public float Scale { get; set; }
         public Rectangle Rect { get; set; }
+        public int ElementLevel { get { return 1; } set { } }
 
         Texture2D SpriteYggdrasil;
         Texture2D SpriteSky;

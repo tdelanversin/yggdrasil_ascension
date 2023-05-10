@@ -31,6 +31,7 @@ namespace YGR
         public Y_Level Level { get; set; }
         public IWalkable Room { get; set; }
         public string Name { get; set; }
+        public int ElementLevel { get { return 1; } set { } }
 
         // IPLayer fields
         public ControlLayout ControlLayout { get; set; }
@@ -41,6 +42,7 @@ namespace YGR
         public bool IsDashing { get; protected set; }
         public PlayerType Type { get; }
         public Statistics Stats { get; set; }
+        public bool Confused { get; set; }
 
         // Class fields
         public float VelocityMax;
@@ -170,6 +172,9 @@ namespace YGR
             GhostScale = Scale * _rect.Width / GhostSprite.SpriteDimension.X;
             // Make the ghost peak out of the collision bounds at the top instead of bottom
             GhostOffset = _rect.Size.ToVector2() - GhostSprite.SpriteDimension * GhostScale;
+
+            // can be confused, but normally isn't
+            Confused = false;
 
             // Movement related
             Velocity = Vector2.Zero;

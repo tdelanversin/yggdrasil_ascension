@@ -34,6 +34,7 @@ namespace YGR
         public Y_PowerUps Type { get; }
 
         public Func<IPlayer, bool> Action { get; }
+        public int ElementLevel { get { return 1; } set { } }
 
         private AnimatedSprite _sprite;
         private float _spriteScale;
