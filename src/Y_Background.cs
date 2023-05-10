@@ -15,7 +15,10 @@ namespace YGR
         float SkyAnimationDuration = 90000;
         float SkyAnimationTimer = 0;
 
-        public Background() { }
+        A_Yggdrasil Game;
+        Y_Level Level;
+
+        public Background(A_Yggdrasil game, Y_Level level) { Game = game; Level = level; }
 
         public void LoadContent(Microsoft.Xna.Framework.Content.ContentManager content)
         {
@@ -60,20 +63,27 @@ namespace YGR
 
             Color c = Color.White;
 
+            var opacity = 1f;
+
+            if (Game.State != GameState.PreGame)
+            {
+                opacity *= 0.55f;
+            }
+
             if (Camera.InTransitionToMenu)
             {
-                c *= (float)Camera.EaseInOut(Camera.AnimationFraction, 6d);
+                opacity *= (float)Camera.EaseInOut(Camera.AnimationFraction, 6d);
             }
             else if (Camera.InTransitionFromMenu)
             {
-                c *= (float)Camera.EaseInOut(1f - Camera.AnimationFraction, 6d);
+                opacity *= (float)Camera.EaseInOut(1f - Camera.AnimationFraction, 6d);
             }
             else if (Camera.Mode != CameraMode.Menu)
             {
                 return;
             }
 
-            spriteBatch.Draw(SpriteTitleText, Rect, c);
+            spriteBatch.Draw(SpriteTitleText, Rect, c * opacity);
         }
 
         public void Draw(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)

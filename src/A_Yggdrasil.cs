@@ -54,8 +54,8 @@ namespace YGR
             Y_Door.Initialize(Content);
 
             GraphicsDevice_ = GraphicsDevice;
-            _background = new Background();
             _level = new Y_Level(level, 32, 32, "./Levels/", "./Doors", Content);
+            _background = new Background(this, _level);
 
             base.Initialize();
         }
