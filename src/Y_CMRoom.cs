@@ -130,7 +130,7 @@ namespace YGR
         public Color RegionColor { get; }
         public List<X_Light> Lights { get; set; }
         private X_RoomState State { get; set; }
-        public string Category { get; set; }
+        public string Category { get; }
         public List<Rectangle> ResetRects { get; }
         public Vector3 Offset { get; set; }
         public Color[] Shade { get; set; }
@@ -150,6 +150,7 @@ namespace YGR
         int _width;
         int _height;
         bool _visited;
+        Y_Level _level;
 
         public Texture2D[] ShadeTexture { get; set; }
         public int ShadeIndex { get; set; }
@@ -292,7 +293,8 @@ namespace YGR
         }
 
         public Y_CMRoom(
-            X_RoomStump initiator
+            X_RoomStump initiator,
+            Y_Level level
         )
         {
             Name = initiator.Name;
@@ -302,6 +304,7 @@ namespace YGR
             string dataFileName = Path.GetFileName(files.Where(x => Path.GetFileName(x).Contains("data") && Path.GetFileName(x).EndsWith(".json")).First());
             string collisionsFileName = Path.GetFileName(files.Where(x => Path.GetFileName(x).Contains("Collision") && Path.GetFileName(x).EndsWith(".csv")).First());
             _ldtkRoomTypeProperties = initiator.LdtkRoomTypeProperties;
+            _level = level;
 
             var lines = File.ReadAllLinesAsync(ResourceFolder + collisionsFileName);
             var readFloor = File.ReadAllBytesAsync(ResourceFolder + Category + "_Floor.Color");
@@ -378,6 +381,34 @@ namespace YGR
                     }
                 }
             });
+
+            _interactables = new List<Interactable_Basic>();
+            if (array.entities.Button != null)
+            {
+                var buttonEntities = JsonConvert.DeserializeObject<List<ButtonEntity>>(array.entities.Button.ToString());
+                // Place a tutorial field that guides the players
+                // _interactables.Add(new Interactable_Tutorialfield(
+                //     new Rectangle(16, 12, 11, 8), this, (Y_CMRoom)_startRoom)
+                // );
+
+                foreach (var button in buttonEntities)
+                {
+                    if (button.customFields["Type"] == ButtonEntity.EscapeButton)
+                    {
+                        // Room opener field that can trigger the game start
+                        _interactables.Add(new Interactable_BossRoomEscaper(
+                            new Rectangle(button.x, button.y, button.width, button.height), this)
+                        );
+                    }
+                    else if(button.customFields["Type"] == ButtonEntity.StartButton)
+                    {
+                        // Room opener field that can trigger the game start
+                        _interactables.Add(new Interactable_RoomOpener(
+                            new Rectangle(button.x, button.y, button.width, button.height), this)
+                        );
+                    }
+                }
+            }
 
             if (array.entities.Teleportation_point != null)
             {
@@ -458,22 +489,6 @@ namespace YGR
                             new X_DoorMask(roi, Rect, tileSize)
                         });
                 }
-            }
-
-            _interactables = new List<Interactable_Basic>();
-            if(Category == "Start")
-            {
-                _interactables.Clear();
-
-                // Place a tutorial field that guides the players
-                // _interactables.Add(new Interactable_Tutorialfield(
-                //     new Rectangle(16, 12, 11, 8), this, (Y_CMRoom)_startRoom)
-                // );
-
-                // Room opener field that can trigger the game start
-                _interactables.Add(new Interactable_RoomOpener(
-                    new Rectangle(512, 64, 352, 224), this)
-                );
             }
 
             State = X_RoomState.Invisible;
@@ -603,10 +618,29 @@ namespace YGR
             MoveTo(new Point(0, 0));
             _visited = false;
             setPowerUps();
+        }
 
-            for (int i = 0; i < PickUps.Count(); ++i)
+        public void InGameReset()
+        {
+
+            _visited = false;
+            setPowerUps();
+            SpawnEnemies();
+        }
+
+        public void SpawnEnemies()
+        {
+            var enemies = GetEnemySpawningPoints();
+            foreach (var spr in enemies)
             {
-                PickUps[i].Active = true;
+                Vector2 pos = new Vector2(spr.x, spr.y);
+
+                if (EnemyEntity.GetType(spr) == Manager_Enemies.EnemyType.SimpleEnemy)
+                    Manager_Enemies.AddEnemy_SimpleEnemy(pos, _level);
+                else if (EnemyEntity.GetType(spr) == Manager_Enemies.EnemyType.SlimeEnemy)
+                    Manager_Enemies.AddEnemy_Slime(pos, _level);
+                else if (EnemyEntity.GetType(spr) == Manager_Enemies.EnemyType.BossEnemy)
+                    Manager_Enemies.AddEnemy_Boss(pos, _level);
             }
         }
 

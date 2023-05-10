@@ -47,7 +47,7 @@ namespace YGR
         }
 
         public Rectangle Rect { get; set; }
-        public IDictionary<int, IWalkable> Rooms { get; private set; }
+        public static IDictionary<int, IWalkable> Rooms { get; private set; }
         public int TileWidth { get; }
         public int TileHeight { get; }
         public IList<IVictim> Victims { get; }
@@ -217,7 +217,7 @@ namespace YGR
 
                 if (n.Item2 == null)
                 {
-                    n = new Tuple<X_RoomStump, Y_CMRoom>(null, new Y_CMRoom(n.Item1));
+                    n = new Tuple<X_RoomStump, Y_CMRoom>(null, new Y_CMRoom(n.Item1, this));
                     n.Item2.FinalizeItem(graphicsDevice);
 
                 }
@@ -349,18 +349,7 @@ namespace YGR
 
                 var r = (Y_CMRoom)room.Value;
 
-                var enemies = r.GetEnemySpawningPoints();
-                foreach (var spr in enemies)
-                {
-                    Vector2 pos = new Vector2(spr.x, spr.y);
-
-                    if (EnemyEntity.GetType(spr) == Manager_Enemies.EnemyType.SimpleEnemy)
-                        Manager_Enemies.AddEnemy_SimpleEnemy(pos, this);
-                    else if (EnemyEntity.GetType(spr) == Manager_Enemies.EnemyType.SlimeEnemy)
-                        Manager_Enemies.AddEnemy_Slime(pos, this);
-                    else if (EnemyEntity.GetType(spr) == Manager_Enemies.EnemyType.BossEnemy)
-                        Manager_Enemies.AddEnemy_Boss(pos, this);
-                }
+                r.SpawnEnemies();
 
                 var players = r.GetPlayerSpawningPoints();
                 int playerIndex = 0;
