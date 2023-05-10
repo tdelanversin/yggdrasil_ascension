@@ -136,7 +136,7 @@ namespace YGR
                     who: who,
                     scale: 1f,
                     damage: 2,
-                    maxAge: 3500,
+                    maxAge: 8000,
                     speed: speed,
                     mass: 0.8f
                 )

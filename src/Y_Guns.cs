@@ -588,7 +588,7 @@ namespace YGR
                     (float)(direction.X * Math.Sin(spread) + direction.Y * Math.Cos(spread))
                 );
 
-                Manager_Projectile.AddProjectile_EnemySlimeProjectile(origin, new_dir, level, who);
+                Manager_Projectile.AddProjectile_BossProjectile(origin, new_dir, level, who, 0.30f);
                 spread += ShotSpread;
             }
 

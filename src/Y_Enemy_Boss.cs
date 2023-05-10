@@ -6,7 +6,7 @@ namespace YGR
 {
     public class Enemy_Boss : Enemy_Basic, IEnemyBoss
     {
-        public BossAttack Attack { get; set; } = BossAttack.Wait;
+        public BossAttack Attack { get; set; } = BossAttack.Spawn;
         int _attackTimer = 0;
         Dictionary<BossAttack, IShooter> _attacks = new Dictionary<BossAttack, IShooter>();
         Dictionary<BossAttack, int> _attackLength = new Dictionary<BossAttack, int>();
@@ -16,7 +16,7 @@ namespace YGR
         Dictionary<BossAttack, float> _attackWeightsPhase1 = new Dictionary<BossAttack, float>();
         Dictionary<BossAttack, float> _attackWeightsPhase2 = new Dictionary<BossAttack, float>();
 
-        Vector2 _savedTargetDirection = Vector2.Zero;
+        Vector2 _savedTargetDirection = new Vector2(1, 0);
 
 
         public Enemy_Boss(
@@ -38,6 +38,7 @@ namespace YGR
                 { BossAttack.AOE, new Gun_BossAOE(this) },
                 { BossAttack.AvoidPattern, new Gun_BossAvoidPattern(this) },
                 { BossAttack.Wait, new Gun_BasicEnemy(this) },
+                { BossAttack.Spawn, new Gun_BasicEnemy(this) },
             };
             _attackLength = new Dictionary<BossAttack, int>() {
                 { BossAttack.Scatter, 5000 },
@@ -45,6 +46,7 @@ namespace YGR
                 { BossAttack.AOE, 10000 },
                 { BossAttack.AvoidPattern, 10000 },
                 { BossAttack.Wait, 3000 },
+                { BossAttack.Spawn, 3000 },
             };
 
             _attackWeightsPhase1 = new Dictionary<BossAttack, float>() {
@@ -53,6 +55,7 @@ namespace YGR
                 { BossAttack.AOE, 0.30f },
                 { BossAttack.AvoidPattern, 0.0f },
                 { BossAttack.Wait, 0.0f },
+                { BossAttack.Spawn, 0.0f}
             };
             _attackWeightsPhase2 = new Dictionary<BossAttack, float>() {
                 { BossAttack.Scatter, 0.25f },
@@ -60,6 +63,7 @@ namespace YGR
                 { BossAttack.AOE, 0.25f },
                 { BossAttack.AvoidPattern, 0.25f },
                 { BossAttack.Wait, 0.0f },
+                { BossAttack.Spawn, 0.0f}
             };
 
             _attackWeights = _attackWeightsPhase1;
@@ -75,7 +79,7 @@ namespace YGR
             Collision = new X_CollisionModel_Victim(_mass, 0.0f);
 
             // Collision bounds
-            int height = 250;
+            int height = 150;
             int width = (int)(height / CharacterSprite.SpriteDimension.Y * CharacterSprite.SpriteDimension.X);
 
             // Offset the boss to center it on the spawner tile that is only 32x32
@@ -96,6 +100,17 @@ namespace YGR
         public override void Update(GameTime gameTime)
         {
             if (State == EnemyState.Inactive) { return; }
+
+            if (Attack == BossAttack.Spawn)
+            {
+                CharacterSprite.Update(gameTime, AnimationState.Spawn);
+                if (CharacterSprite.Direction != AnimationState.Spawn)
+                {
+                    Attack = BossAttack.Wait;
+                } else {
+                    return;
+                }
+            }
 
             if (LifePoints < 0.5 * LifePointsMax && Phase == 1)
             {
@@ -139,28 +154,29 @@ namespace YGR
             if (_attackLength[Attack] < _attackTimer + gameTime.ElapsedGameTime.Milliseconds)
             {
                 _attackTimer = 0;
-                if (Attack == BossAttack.Wait)
+                if (Attack != BossAttack.Wait)
+                {
+                    Attack = BossAttack.Wait;
+                }
+                else
                 {
                     var rand = new Random();
                     float randVal = (float)rand.NextDouble();
                     foreach (var attack in _attackWeights)
                     {
-                        if (randVal < attack.Value)
+                        if (randVal >= attack.Value)
                         {
-                            Attack = attack.Key;
-                            if (Attack == BossAttack.AvoidPattern)
-                            {
-                                _savedTargetDirection = Target.Rect.Center.ToVector2() - _rect.Center.ToVector2();
-                                _savedTargetDirection.Normalize();
-                            }
-                            break;
+                            randVal -= attack.Value;
+                            continue;
                         }
-                        randVal -= attack.Value;
+                        Attack = attack.Key;
+                        if (Attack == BossAttack.AvoidPattern && Target != null)
+                        {
+                            _savedTargetDirection = Target.Rect.Center.ToVector2() - _rect.Center.ToVector2();
+                            _savedTargetDirection.Normalize();
+                        }
+                        break;
                     }
-                }
-                else
-                {
-                    Attack = BossAttack.Wait;
                 }
             }
             else

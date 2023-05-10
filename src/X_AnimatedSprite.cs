@@ -110,15 +110,12 @@ namespace YGR
             if (AnimationTimer > AnimationTreshold)
             {
                 
-                if ((Direction == AnimationState.Spawn || Direction == AnimationState.Jump) 
-                    && DirectionalIndex == AnimationSourceRects[Direction].Length - 1)
+                DirectionalIndex = (DirectionalIndex + 1) % AnimationSourceRects[Direction].Length;
+
+                if (Direction == AnimationState.Spawn && DirectionalIndex == 0)
                 {
-                    Direction = AnimationState.Idle;
+                    Direction = GetFallbackDirection(AnimationState.Idle);
                     ResetAnimation();
-                }
-                else
-                {
-                    DirectionalIndex = (DirectionalIndex + 1) % AnimationSourceRects[Direction].Length;
                 }
 
                 AnimationTimer = 0;
