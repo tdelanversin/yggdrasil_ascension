@@ -27,7 +27,7 @@ namespace YGR
             fleeingHPTreshold = LifePointsMax / 2;
 
             Name = "Slime";
-            Gun = new Gun_BasicEnemy();
+            Gun = new Gun_BasicEnemy(this);
 
             Color = SlimeyColors[Util.random.Next(SlimeyColors.Count)]; // Slimey green, picked from the colored png files
             _currentColor = Color;

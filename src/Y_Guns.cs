@@ -2,6 +2,8 @@ using Microsoft.Xna.Framework;
 using System.Linq;
 using System;
 using Microsoft.Xna.Framework.Graphics;
+using Assimp;
+using MonoGame.OpenGL;
 #nullable enable
 
 namespace YGR
@@ -11,14 +13,16 @@ namespace YGR
     {
         public string Name { get; protected set; }
         public Texture2D Sprite { get; protected set; }
+        public IVictim Owner { get; set; }
 
         protected double NextShotCooldown = 0.0f;
         protected int ShotDelay = 240;
 
-        public Gun_Basic()
+        public Gun_Basic(IVictim owner)
         {
             Name = "Pistol";
             Sprite = Manager_Sprites.Weapon_Pistol;
+            Owner = owner;
         }
 
         public virtual bool Shoot(GameTime gameTime, Vector2 origin, Vector2 direction, Y_Level level, IGameElement who)
@@ -38,12 +42,20 @@ namespace YGR
         {
             NextShotCooldown = Math.Max(0, NextShotCooldown - gameTime.ElapsedGameTime.TotalMilliseconds);
         }
+
+        public virtual void DropAsPickUp(IVictim lastOwner, IWalkable room, Point location)
+        {
+            room.PickUps.Add(PickUp.Factory(
+                Y_PowerUps.WeaponPistol,
+                location,
+                Y_Level.TextureTileSize, Y_Level.TextureTileSize, Y_Level.GlobalScale, lastOwner));
+        }
     }
 
     // Slower version of basic gun for basic enemies
     public class Gun_BasicEnemy : Gun_Basic
     {
-        public Gun_BasicEnemy()
+        public Gun_BasicEnemy(IVictim owner) : base(owner)
         {
             Name = "Slow Pistol";
             Sprite = Manager_Sprites.Weapon_Pistol;
@@ -62,6 +74,18 @@ namespace YGR
             Manager_Projectile.AddProjectile_EnemySlimeProjectile(origin, direction, level, who);
             return true;
         }
+
+        public override void DropAsPickUp(IVictim lastOwner, IWalkable room, Point location)
+        {
+            /*
+             * TODO: add low probability for this one
+             */
+
+            room.PickUps.Add(PickUp.Factory(
+                Y_PowerUps.WeaponEnemySlowPistol,
+                location,
+                Y_Level.TextureTileSize, Y_Level.TextureTileSize, Y_Level.GlobalScale, lastOwner));
+        }
     }
 
     public class Gun_ShotGun : Gun_Basic
@@ -69,7 +93,7 @@ namespace YGR
         protected int ShotCount;
         protected double ShotSpread;
 
-        public Gun_ShotGun()
+        public Gun_ShotGun(IVictim owner) : base(owner)
         {
             ShotDelay = 800;
             ShotCount = 5;
@@ -78,7 +102,7 @@ namespace YGR
             Sprite = Manager_Sprites.Weapon_Shotgun;
         }
 
-        public Gun_ShotGun(int shotCount) : this()
+        public Gun_ShotGun(IVictim owner, int shotCount) : this(owner)
         {
             ShotCount = shotCount;
             ShotSpread = .3 / ShotCount;
@@ -106,12 +130,21 @@ namespace YGR
             }
             return true;
         }
+
+        public override void DropAsPickUp(IVictim lastOwner, IWalkable room, Point location)
+        {
+            room.PickUps.Add(PickUp.Factory(
+                Y_PowerUps.WeaponShotgun,
+                location,
+                Y_Level.TextureTileSize, Y_Level.TextureTileSize, Y_Level.GlobalScale, lastOwner));
+        }
     }
 
     public class Gun_Funky : IShooter
     {
         public string Name { get; protected set; }
         public Texture2D Sprite { get; protected set; }
+        public IVictim Owner { get; set; }
 
         double timeSinceShot = 1001;
         Vector2 _origin = new Vector2(0, 0);
@@ -119,11 +152,12 @@ namespace YGR
         Y_Level? _level;
         IGameElement? _who;
 
-        public Gun_Funky()
+        public Gun_Funky(IVictim owner)
         {
             // TODO: possibly find better name, but this one matches the power level and texture
             Name = "Red Devil";
             Sprite = Manager_Sprites.Weapon_RedGun;
+            Owner = owner;
         }
 
         static int shotDelay = 1000;
@@ -197,12 +231,25 @@ namespace YGR
                 }
             }
         }
+
+        public virtual void DropAsPickUp(IVictim lastOwner, IWalkable room, Point location)
+        {
+            /*
+             * TODO: add low probability for this one
+             */
+
+            room.PickUps.Add(PickUp.Factory(
+                Y_PowerUps.WeaponFunky,
+                location,
+                Y_Level.TextureTileSize, Y_Level.TextureTileSize, Y_Level.GlobalScale, lastOwner));
+        }
     }
 
     public class Gun_Wide : IShooter
     {
         public string Name { get; protected set; }
         public Texture2D Sprite { get; protected set; }
+        public IVictim Owner { get; set; }
 
         double timeSinceShot = 1001;
         Vector2 _origin = new Vector2(0, 0);
@@ -210,11 +257,12 @@ namespace YGR
         Y_Level? _level;
         IGameElement? _who;
 
-        public Gun_Wide()
+        public Gun_Wide(IVictim owner)
         {
             // TODO: find name
             Name = "Cannon";
             Sprite = Manager_Sprites.Weapon_RedGun;
+            Owner = owner;
         }
 
         static int shotDelay = 1000;
@@ -286,12 +334,20 @@ namespace YGR
                 }
             }
         }
+
+        public virtual void DropAsPickUp(IVictim lastOwner, IWalkable room, Point location)
+        {
+            room.PickUps.Add(PickUp.Factory(
+                Y_PowerUps.WeaponWide,
+                location,
+                Y_Level.TextureTileSize, Y_Level.TextureTileSize, Y_Level.GlobalScale, lastOwner));
+        }
     }
 
     // Gun for Gigachad
     public class Gun_Gigagun : Gun_ShotGun
     {
-        public Gun_Gigagun()
+        public Gun_Gigagun(IVictim owner) : base(owner)
         {
             ShotCount = 256;
             ShotDelay = 5000;
@@ -327,12 +383,20 @@ namespace YGR
             }
             return true;
         }
+
+        public override void DropAsPickUp(IVictim lastOwner, IWalkable room, Point location)
+        {
+            room.PickUps.Add(PickUp.Factory(
+                Y_PowerUps.WeaponGiga,
+                location,
+                Y_Level.TextureTileSize, Y_Level.TextureTileSize, Y_Level.GlobalScale, lastOwner));
+        }
     }
 
     // Become the one
     public class Gun_Godmode : Gun_Gigagun
     {
-        public Gun_Godmode()
+        public Gun_Godmode(IVictim owner) : base(owner)
         {
             ShotCount = 128;
             ShotDelay = 100;
@@ -345,12 +409,24 @@ namespace YGR
     // Gun for ghosts. Does absolutely nothing. Just there to make other code simpler.
     public class Gun_Ghost : IShooter
     {
+        public Gun_Ghost(IVictim owner)
+        {
+            Owner = owner;
+        }
+
         public string Name { get { return ""; } }
 
         public Texture2D Sprite { get { return Manager_Sprites.White; } }
 
+        public IVictim Owner { get; set; }
+
         public bool Shoot(GameTime gametime, Vector2 origin, Vector2 direction, Y_Level level, IGameElement who) { return false; }
 
         public void Update(GameTime gameTime) { }
+
+        public void DropAsPickUp(IVictim lastOwner, IWalkable room, Point location)
+        {
+            return;
+        }
     }
 }

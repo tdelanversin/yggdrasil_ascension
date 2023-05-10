@@ -54,7 +54,7 @@ namespace YGR
             return r;
         }
 
-        public static IShooter getRandomGun()
+        public static IShooter getRandomGun(IVictim owner)
         {
             List<Type> gunTypes = new List<Type> {
                 typeof(Gun_Basic),
@@ -62,9 +62,8 @@ namespace YGR
                 // typeof(Gun_Funky),
                 typeof(Gun_ShotGun)
             };
-            return (IShooter)Activator.CreateInstance(
-                gunTypes[random.Next(gunTypes.Count)]
-            );
+            var newGun = (IShooter)(Activator.CreateInstance(gunTypes[random.Next(gunTypes.Count)], owner));
+            return newGun;
         }
 
         public static string PathOsNormalization(string path)

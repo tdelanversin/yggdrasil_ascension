@@ -11,12 +11,13 @@ namespace YGR
             Y_Level level,
             ControlLayout controlLayout = ControlLayout.ControllerOnly,
             float scale = 1.0f
-            ) : base(playerIndex, initialPosition, Manager_Sprites.NewAnimatedSprite_Ghost(), level, new Gun_Ghost(), new Ability_Ghost(), PlayerType.Ghost, controlLayout)
+            ) : base(playerIndex, initialPosition, Manager_Sprites.NewAnimatedSprite_Ghost(), level, null, new Ability_Ghost(), PlayerType.Ghost, controlLayout)
         {
             Name = "Ghost";
             VelocityMax *= 1.5f;
             IsActive = false;
             LifePoints = LifePointsMax = 0;
+            Gun = new Gun_Ghost(this);
         }
 
         public override X_LevelElements WhatAreYou()
