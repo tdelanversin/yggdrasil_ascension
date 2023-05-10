@@ -50,7 +50,7 @@ namespace YGR
                 texture: GhostSprite.Texture,
                 position: _rect.Location.ToVector2() + GhostOffset,
                 sourceRectangle: GhostSprite.SourceRectangle,
-                color: _ghostColor * (IsActive ? 1f : 0.5f),
+                color: _ghostColor,
                 rotation: 0,
                 origin: Vector2.Zero,
                 scale: GhostScale,

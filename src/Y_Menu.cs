@@ -182,8 +182,9 @@ namespace YGR
             SettingsMenu.AddChildren(
                 new List<MenuItem>{
                     new SettingsItem("Fullscreen: ", Settings.Fullscreen, toggleFunc: Settings.ToggleFullscreen),
+                    new SettingsItem("Show FPS: ", Settings.DrawFPS, toggleFunc: Settings.ToggleDrawFPS),
                     new SettingsItem("Dynamic Shades: ", Settings.DynamicShades, toggleFunc: Settings.ToggleShades),
-                    new SettingsItem("Outlines: ", Settings.Outlines, toggleFunc: Settings.ToggleOutlines),
+                    new SettingsItem("Debug Outlines: ", Settings.Outlines, toggleFunc: Settings.ToggleOutlines),
                     new SettingsItem("Sound Effects: ", Settings.Sound, toggleFunc: Settings.ToggleSoundEffects),
                     new SettingsItem("Music: ", Settings.Music, toggleFunc: Settings.ToggleMusic),
                     new MenuItem("Back", Menu.Ascend),
@@ -200,7 +201,7 @@ namespace YGR
                     new MenuItem("Restart", NewGame, isActive: false),
                     StatsMenu,
                     SettingsMenu,
-                    new MenuItem(Util.OSExitString(), Util.Quit),
+                    new MenuItem("Quit", Util.Quit),
                 }
             );
 
@@ -352,7 +353,7 @@ namespace YGR
             {
                 UI.DrawPlayerStatistics(gameTime, spriteBatch);
             }
-            else
+            else if (CurrentSubmenu == SettingsMenu || Game.State == GameState.PreGame)
             {
                 DrawControllerState(spriteBatch);
             }

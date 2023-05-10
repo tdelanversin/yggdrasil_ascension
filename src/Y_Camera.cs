@@ -24,20 +24,25 @@ namespace YGR
         public static CameraMode ModePrev { get; private set; }
         public static IWalkable Room { get; private set; } // Room to focus on
         public static Rectangle Rect { get; private set; } // Rect to focus on
-        public static bool InAnimation { get { return _animationTimer < _animationDuration; } }
-        public static float AnimationPerc { get { return _animationTimer / _animationDuration; } }
+
+        // Animation related fields useful for other classes to decide when and what to draw
+        public static float AnimationFraction { get; private set; }
+        public static bool InAnimation { get; private set; }
+        public static bool InTransitionToMenu { get; private set; }
+        public static bool InTransitionFromMenu { get; set; }
 
         private static float _animationDuration = 1000;
         private static float _animationTimer = _animationDuration;
         private static float _transitionalZoom;
+
         private static Vector2 _transitionalPosition;
         private static float _previousZoom;
         private static Vector2 _previousPosition;
 
 
         // Zoom levels for...                     { Follow, Room, Rect, Manual }
-        private static readonly float[] minZoom = { 0.05f, 0.25f, 0.05f, 0.05f };
-        private static readonly float[] maxZoom = { 1.00f, 1.75f, 16.0f, 16.0f };
+        private static readonly float[] minZoom = { 0.05f, 0.15f, 0.05f, 0.05f };
+        private static readonly float[] maxZoom = { 4.00f, 4.00f, 16.0f, 16.0f };
         private const float zoomSpeed = 0.1f;
         private const float panSpeed = 1;
 
@@ -130,9 +135,9 @@ namespace YGR
             {
                 playerMeanPos += player.Rect.Location.ToVector2();
                 left = Math.Min(player.Rect.X, left);
-                right = Math.Max(player.Rect.X, right);
+                right = Math.Max(player.Rect.X + player.Rect.Width, right);
                 top = Math.Min(player.Rect.Y, top);
-                bot = Math.Max(player.Rect.Y, bot);
+                bot = Math.Max(player.Rect.Y + player.Rect.Height, bot);
             }
 
             // Update camera position
@@ -141,8 +146,14 @@ namespace YGR
             // Console.WriteLine(playerMeanPos);
 
             // Set zoom level to fit all players
-            var stretch = Math.Max((float)(right - left) / Bounds.Width, (float)(bot - top) / Bounds.Height);
-            UpdateZoom(.55f / stretch);
+            var boundsStretchFactor = Math.Max((right - left) / (float)Bounds.Width, (bot - top) / (float)Bounds.Height);
+            var resolutionAdjustment = Bounds.Width / 1920f;
+            var overStretch = 0.65f;
+            var zoomMarginFactor = Math.Min(overStretch, overStretch * resolutionAdjustment);
+            var zoomFactor = zoomMarginFactor / boundsStretchFactor;
+            var zoomFactorMax = 0.95f * resolutionAdjustment;
+            var zoom = Math.Min(zoomFactor, zoomFactorMax);
+            UpdateZoom(zoom);
         }
 
         private static void focusOnRoom()
@@ -214,10 +225,10 @@ namespace YGR
 
                 // Even better version that works for low factors of k too
                 // https://www.wolframalpha.com/input?i=plot+%28%280.5+%2F+%281%2F%281%2Bexp%28-k%29%29-0.5%29%29*%281%2F%281%2Bexp%28-k*%282x-1%29%29%29-0.5%29%2B0.5%29+x+from+-0.2+to+1.2%2C+k+%3D+8
-                float animationFraction = (float)EaseInOut(t: _animationTimer / _animationDuration, k: 6d);
+                AnimationFraction = (float)EaseInOut(t: _animationTimer / _animationDuration, k: 6d);
 
-                _transitionalPosition = (Position * animationFraction) + _previousPosition * (1f - animationFraction);
-                _transitionalZoom = (Zoom * animationFraction) + _previousZoom * (1f - animationFraction);
+                _transitionalPosition = (Position * AnimationFraction) + _previousPosition * (1f - AnimationFraction);
+                _transitionalZoom = (Zoom * AnimationFraction) + _previousZoom * (1f - AnimationFraction);
 
                 _animationTimer += gameTime.ElapsedGameTime.Milliseconds;
             }
@@ -225,6 +236,9 @@ namespace YGR
             {
                 _transitionalPosition = Position;
                 _transitionalZoom = Zoom;
+                InAnimation = false;
+                InTransitionFromMenu = false;
+                InTransitionToMenu = false;
             }
         }
 
@@ -259,6 +273,7 @@ namespace YGR
             _previousPosition = _transitionalPosition;
             _previousZoom = _transitionalZoom;
             _animationTimer = 0;
+            InAnimation = true;
         }
 
         public static void ToggleManualMode()
@@ -275,6 +290,7 @@ namespace YGR
             {
                 return;
             }
+            InTransitionFromMenu = true;
 
             if (animate)
             {
@@ -287,6 +303,18 @@ namespace YGR
 
         public static void SetFocusManual()
         {
+            Mode = CameraMode.Manual;
+        }
+
+        /// <summary> Center the camera on position. </summary>
+        public static void SetFocusManual(Vector2 position, float zoom, bool animate = true, float animationDuration = 1000)
+        {
+            if (animate)
+            {
+                ResetAnimation(animationDuration);
+            }
+            Position = position;
+            UpdateZoom(zoom);
             Mode = CameraMode.Manual;
         }
 
@@ -317,6 +345,7 @@ namespace YGR
             {
                 ResetAnimation(animationDuration);
             }
+            InTransitionToMenu = true;
             Rect = rect;
             Mode = CameraMode.Menu;
         }

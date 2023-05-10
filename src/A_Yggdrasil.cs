@@ -54,8 +54,8 @@ namespace YGR
             Y_Door.Initialize(Content);
 
             GraphicsDevice_ = GraphicsDevice;
-            _background = new Background();
             _level = new Y_Level(level, 32, 32, "./Levels/", "./Doors", Content);
+            _background = new Background(this, _level);
 
             base.Initialize();
         }
@@ -243,7 +243,7 @@ namespace YGR
                     Manager_Enemies.Draw(gameTime, zero, _spriteBatch);
                     Manager_Players.Draw(gameTime, zero, _spriteBatch);
 
-                    if (Settings.Outlines)
+                    if (Settings.Outlines && !Camera.InTransitionFromMenu && !Camera.InTransitionToMenu)
                     {
                         _level.DrawOutline(gameTime, Vector2.Zero, _spriteBatch);
                         Manager_Projectile.DrawOutline(gameTime, zero, _spriteBatch);
@@ -266,9 +266,12 @@ namespace YGR
 
             // Fps Counter
             _frameCounter.Update((float)gameTime.ElapsedGameTime.TotalSeconds);
-            string fps = string.Format("FPS: {0:0}", _frameCounter.AverageFramesPerSecond);
-            var fpsColor = Color.BlanchedAlmond;
-            _spriteBatch.DrawString(Fonts.Small, fps, new Vector2(1, 1), fpsColor);
+            if (Settings.DrawFPS)
+            {
+                string fps = string.Format("FPS: {0:0}", _frameCounter.AverageFramesPerSecond);
+                var fpsColor = Color.BlanchedAlmond;
+                _spriteBatch.DrawString(Fonts.Small, fps, new Vector2(1, 1), fpsColor);
+            }
 
             // Level- / Menu UI / Intro Video
             switch (State)

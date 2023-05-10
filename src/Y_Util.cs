@@ -8,6 +8,7 @@ using Microsoft.VisualBasic;
 using System.Collections.Generic;
 using System.Reflection;
 using System.IO.Compression;
+using Newtonsoft.Json;
 
 /*
  * Useful static methods
@@ -204,6 +205,26 @@ namespace YGR
             MemoryStream output = new MemoryStream();
             decompressor.CopyTo(output);
             return ByteToColorArray(output.ToArray());
+        }
+
+        public static List<T> LoadJSON<T>(string path)
+        {
+            using (StreamReader r = new StreamReader(path))
+            {
+                string json = r.ReadToEnd();
+                List<T> items = JsonConvert.DeserializeObject<List<T>>(json);
+                return items;
+            }
+        }
+
+        public static void WriteJSON<T>(string path, List<T> data)
+        {
+            using (StreamWriter file = File.CreateText(path))
+            {
+                JsonSerializer serializer = new JsonSerializer();
+                // Serialize object directly into file stream
+                serializer.Serialize(file, data);
+            }
         }
 
         public static string OSExitString()
