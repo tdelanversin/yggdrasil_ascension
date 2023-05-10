@@ -133,6 +133,11 @@ namespace YGR
             }
         }
 
+        public virtual void Kill()
+        {
+            LifePoints = 0;
+        }
+
         protected bool LineOfSight(Vector2 target)
         {
             if (Room == null) { return false; }

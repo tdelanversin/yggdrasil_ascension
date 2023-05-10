@@ -27,6 +27,7 @@ namespace YGR
         public EnemyState State { get; set; }
         public IShooter Gun { get; set; }
         public void DropSomethingJuicyMaybe();
+        public void Kill();
     }
 
     public interface IEnemyBoss : IEnemy { 
