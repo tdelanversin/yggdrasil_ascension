@@ -87,7 +87,7 @@ namespace YGR
             int ipy = _scaledIlluminationRect.Y - rect.Y;
             int ipw = _scaledIlluminationRect.Width;
             int iph = _scaledIlluminationRect.Height;
-            float scale = room.Scale;
+            float scale = Y_Level.GlobalScale;
             return "PX" + px + "PY" + py + "IRX" + ipx + "IRY" + ipy + "IRW" + ipw + "IRH" + iph + "S" + scale;
         }
 

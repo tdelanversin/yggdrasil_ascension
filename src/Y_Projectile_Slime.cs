@@ -47,13 +47,13 @@ namespace YGR
             spriteBatch.Draw(
                 _spriteInner.Texture, _position + globalOffset,
                 _spriteInner.SourceRectangle,
-                Color.White, 0, Vector2.Zero, Scale, SpriteEffects.None, 0);
+                Color.White, 0, Vector2.Zero, LocalScale, SpriteEffects.None, 0);
 
             // Draw outer projectile texture in the color of the slime
             spriteBatch.Draw(
                 _spriteOuter.Texture, _position + globalOffset,
                 _spriteOuter.SourceRectangle,
-                Color, 0, Vector2.Zero, Scale, SpriteEffects.None, 0);
+                Color, 0, Vector2.Zero, LocalScale, SpriteEffects.None, 0);
         }
     }
 }

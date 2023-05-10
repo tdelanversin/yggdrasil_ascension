@@ -18,7 +18,7 @@ namespace YGR
     public class SimplePlayer : IPlayer
     {
         // IGameElement fields
-        public float Scale { get; protected set; }
+        public float LocalScale { get; }
         public Rectangle Rect { get { return _rect; } set { _rect = value; } }
         public IGameElement WhoKilledMe { get; set; }
 
@@ -102,11 +102,14 @@ namespace YGR
             PlayerIndex = playerIndex;
             Position = initialPosition;
             CharacterSprite = sprite;
-            Gun = gun;
+            if (gun != null)
+                Gun = gun;
+            else
+                Gun = Util.getRandomGun(this);
             Ability = ability;
             Type = type;
             ControlLayout = controlLayout;
-            Scale = scale;
+            LocalScale = scale * Y_Level.GlobalScale;
 
             // Set Name
             if (type == PlayerType.Nerd)
@@ -157,7 +160,7 @@ namespace YGR
             _ghostColor = Color.Lerp(Color.White, Color, 0.5f);
 
             // Collision bounds
-            int height = 60;
+            int height = (int)(60* LocalScale);
             int width = (int)(height / CharacterSprite.SpriteDimension.Y * CharacterSprite.SpriteDimension.X);
             _rect = new Rectangle(
                 (int)Position.X,
@@ -167,13 +170,13 @@ namespace YGR
             );
 
             // Set the drawing scale to make the character fit into the collision bounds
-            CharacterScale = Scale * Util.GetSpriteScale(_rect, CharacterSprite.SpriteDimension);
+            CharacterScale = LocalScale * Util.GetSpriteScale(_rect, CharacterSprite.SpriteDimension);
             CharacterOffset = Vector2.Zero; // Not needed right now
 
             // Set up animated sprite for the ghost
             // It will be slightly higher than players due to floating and shadows.
             GhostSprite = Manager_Sprites.NewAnimatedSprite_Ghost();
-            GhostScale = Scale * _rect.Width / GhostSprite.SpriteDimension.X;
+            GhostScale = LocalScale * _rect.Width / GhostSprite.SpriteDimension.X;
             // Make the ghost peak out of the collision bounds at the top instead of bottom
             GhostOffset = _rect.Size.ToVector2() - GhostSprite.SpriteDimension * GhostScale;
 
@@ -271,7 +274,7 @@ namespace YGR
         public virtual void Godmode()
         {
             LifePoints = LifePointsMax = 999;
-            Gun = new Gun_Godmode();
+            Gun = new Gun_Godmode(this);
             VelocityMax = 0.6f;
         }
 

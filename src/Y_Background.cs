@@ -6,7 +6,6 @@ namespace YGR
 {
     public class Background : IGameElement
     {
-        public float Scale { get; set; }
         public Rectangle Rect { get; set; }
         public int ElementLevel { get { return 1; } set { } }
 

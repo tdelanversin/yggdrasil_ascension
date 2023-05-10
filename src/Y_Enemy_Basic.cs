@@ -38,7 +38,6 @@ namespace YGR
         public IWalkable Room { get; set; }
         public IShooter Gun { get; set; }
         protected IVictim Target = null;
-        public float Scale { get; set; }
         public bool Confused { get; set; }
 
         protected Vector2 _position;
@@ -97,8 +96,7 @@ namespace YGR
 
             Level = level;
             Room = Level.GetRoom(this, Room);
-            Gun = new Gun_BasicEnemy();
-            Scale = 1.0f;
+            Gun = new Gun_BasicEnemy(this);
 
             Color = Color.Orange;
             _currentColor = Color.DarkSlateGray * 0.4f; // Initially we're disabled
@@ -547,7 +545,7 @@ namespace YGR
                                 // drop a life saving goodie
                                 var room = (Y_CMRoom)Room;
                                 var p = new Point(Rect.Location.X + Rect.Width / 2, Rect.Location.Y + Rect.Height / 2);
-                                room.PickUps.Add(PickUp.Factory(Y_PowerUps.Life, p, 32, 32, Scale));
+                                room.PickUps.Add(PickUp.Factory(Y_PowerUps.Life, p, Y_Level.TextureTileSize, Y_Level.TextureTileSize, Y_Level.GlobalScale));
                             }
                         }
                         else
@@ -560,7 +558,7 @@ namespace YGR
                                 var ind = Util.random.Next(0, droppables.Length);
                                 var room = (Y_CMRoom)Room;
                                 var p = new Point(Rect.Location.X + Rect.Width / 2, Rect.Location.Y + Rect.Height / 2);
-                                room.PickUps.Add(PickUp.Factory(droppables[ind], p, 32, 32, Scale));
+                                room.PickUps.Add(PickUp.Factory(droppables[ind], p, Y_Level.TextureTileSize, Y_Level.TextureTileSize, Y_Level.GlobalScale));
                             }
                         }
                     }
