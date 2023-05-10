@@ -12,6 +12,15 @@ namespace YGR
         Inactive,
     }
 
+    public enum BossAttack
+    {
+        Scatter,
+        Precise,
+        AOE,
+        AvoidPattern,
+        Wait,
+    }
+
     public interface IEnemy : IVictim
     {
         public Vector2 FacingDirection { get; set; }
@@ -20,5 +29,7 @@ namespace YGR
         public void DropSomethingJuicyMaybe();
     }
 
-    public interface IEnemyBoss : IEnemy { }
+    public interface IEnemyBoss : IEnemy { 
+        public BossAttack Attack { get; set; }
+    }
 }

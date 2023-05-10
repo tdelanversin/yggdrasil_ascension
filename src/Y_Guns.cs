@@ -353,4 +353,49 @@ namespace YGR
 
         public void Update(GameTime gameTime) { }
     }
+
+    public class Gun_BossScatter : Gun_Basic {}
+
+    public class Gun_BossPrecise : Gun_Basic {}
+
+    public class Gun_BossAvoidPattern : Gun_Basic {}
+
+    public class Gun_BossAOE : Gun_Basic
+    {
+        protected int ShotCount;
+        protected double ShotSpread;
+
+        public Gun_BossAOE()
+        {
+            Name = "AOE boss gun";
+            ShotDelay = 5000;
+            ShotCount = 64;
+            ShotSpread = 2 * Math.PI / ShotCount;
+        }
+
+        public override bool Shoot(GameTime gameTime, Vector2 origin, Vector2 direction, Y_Level level, IGameElement who)
+        {
+            if (NextShotCooldown > 0.0f)
+                return false;
+
+            Manager_Sound.Sound_Shotgun.Play(0.3f, 0, 0);
+
+            NextShotCooldown = ShotDelay;
+
+            double spread = -ShotCount / 2 * ShotSpread;
+            for (int i = 0; i < ShotCount; i++)
+            {
+                var new_dir = new Vector2(
+                    (float)(direction.X * Math.Cos(spread) - direction.Y * Math.Sin(spread)),
+                    (float)(direction.X * Math.Sin(spread) + direction.Y * Math.Cos(spread))
+                );
+
+                Manager_Projectile.AddProjectile_EnemySlimeProjectile(origin, new_dir, level, who);
+                spread += ShotSpread;
+            }
+
+            return true;
+        }
+
+    }
 }

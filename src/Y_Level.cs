@@ -363,7 +363,7 @@ namespace YGR
                     else if (EnemyEntity.GetType(spr) == Manager_Enemies.EnemyType.SlimeEnemy)
                         Manager_Enemies.AddEnemy_Slime(pos, this);
                     else if (EnemyEntity.GetType(spr) == Manager_Enemies.EnemyType.BossEnemy)
-                        Manager_Enemies.AddEnemy_Gigachad(pos, this);
+                        Manager_Enemies.AddEnemy_Boss(pos, this);
                 }
 
                 var players = r.GetPlayerSpawningPoints();
