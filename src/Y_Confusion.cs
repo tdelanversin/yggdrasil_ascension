@@ -14,8 +14,6 @@ namespace YGR
     {
         public IVictim Target { get; set; }
 
-        public float Scale { get; set; }
-
         public Rectangle Rect { get; set; }
 
         public int ElementLevel { get { return 1; } set { } }

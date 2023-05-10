@@ -20,7 +20,8 @@ namespace YGR
         public Color Color { get; set; }
         public int ElementLevel { get { return 1; } set { } }
 
-        public float Scale { get; protected set; }
+        
+        public float LocalScale { get; }
         public Rectangle Rect { get { return _rect; } set { _rect = value; } }
 
         protected Vector2 _position;
@@ -78,16 +79,16 @@ namespace YGR
                 (int)(_size.Y));
 
             Room = Level.GetRoom(this, Room);
-            Scale = _scale * Room.Scale;
-            _size = Scale * _sprite.SpriteDimension;
+            LocalScale = _scale * Y_Level.GlobalScale;
+            _size = LocalScale * _sprite.SpriteDimension;
 
             // Center on the initial position
             // Note that the position is only affected by the global scale, not the internal one
             _rect = new Rectangle(
                 (int)position.X - (int)(_size.X / 2.0f),
                 (int)position.Y - (int)(_size.Y / 2.0f),
-                (int)(_size.X * Room.Scale),
-                (int)(_size.Y * Room.Scale));
+                (int)(_size.X * Y_Level.GlobalScale),
+                (int)(_size.Y * Y_Level.GlobalScale));
             // Manager_Particles._particleEffects[2].Trigger
             //(new Vector2(_rect.Location.X + _rect.Width / 2, _rect.Location.Y + _rect.Height / 2));
 
@@ -162,10 +163,10 @@ namespace YGR
             spriteBatch.Draw(
                 _sprite.Texture, _position + globalOffset,
                 _sprite.SourceRectangle,
-                Color, 0, Vector2.Zero, Scale, SpriteEffects.None, 0);
+                Color, 0, Vector2.Zero, LocalScale, SpriteEffects.None, 0);
         }
 
-        void IGameElement.DrawOutline(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)
+        public void DrawOutline(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)
         {
             Factory_Debug.DrawRectangle(Rect.X, Rect.Y, Rect.Width, Rect.Height, 1, Color.BlueViolet, spriteBatch);
             Collision.DrawOutline(gameTime, globalOffset, spriteBatch);
