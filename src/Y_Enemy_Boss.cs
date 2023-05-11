@@ -30,8 +30,8 @@ namespace YGR
         ) : base(position, sprite, level)
         {
             LifePointsMax = 240;
-            Phase2HP = (int)(LifePointsMax * 0.66f);
-            Phase3HP = (int)(LifePointsMax * 0.33f);
+            Phase2HP = (int)(LifePointsMax * 0.5f);
+            Phase3HP = Phase2HP - 1;
 
             LifePoints = LifePointsMax;
             fleeingHPTreshold = 0; // Gigachad never flees
@@ -130,11 +130,6 @@ namespace YGR
                 Attack = BossAttack.Hide;
                 CharacterSprite.Update(gameTime, AnimationState.Jump);
             }
-            else if (LifePoints <= Phase3HP && Phase == 2)
-            {
-                Phase = 3;
-                _attackWeights = _attackWeightsPhase3;
-            }
 
             if (Phase == 2)
             {
@@ -166,7 +161,8 @@ namespace YGR
                 if (Health <= 0)
                 {
                     Attack = BossAttack.Spawn;
-                    LifePoints = Phase3HP;
+                    Phase = 3;
+                    _attackWeights = _attackWeightsPhase3;
                     CharacterSprite.Update(gameTime, AnimationState.Spawn);
                 }
                 else
