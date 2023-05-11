@@ -477,8 +477,7 @@ namespace YGR
                 Vector2 playerCenter = Rect.Center.ToVector2();
                 if ((Input.HasMouseMoved() || Input.IsLeftMousePressed()) && !_isAiming) // Skip if controller is already aiming
                 {
-                    Vector2 mouseInGamePosition = Input.GetMousePosition().ToVector2() / Camera.Zoom + Camera.VisibleArea.Location.ToVector2();
-                    Vector2 newAimDirection = mouseInGamePosition - playerCenter;
+                    Vector2 newAimDirection = Input.GetMousePositionInGame() - playerCenter;
                     newAimDirection.Normalize();
                     _aimDirection = newAimDirection;
                 }
