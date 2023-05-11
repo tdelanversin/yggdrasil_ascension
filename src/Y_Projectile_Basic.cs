@@ -2,6 +2,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using MonoGame.Extended;
 using System.Collections.Generic;
+using System.Diagnostics;
 #nullable enable
 
 namespace YGR
@@ -153,9 +154,20 @@ namespace YGR
 
         public virtual void Update(GameTime gameTime)
         {
-            UpdateCollisionAndVelocity(gameTime);
+            //var watch = new Stopwatch();
+            //watch.Start();
+            //UpdateCollisionAndVelocity(gameTime);
+
+            //var t1 = watch.ElapsedMilliseconds;
             UpdateParticles(gameTime);
+            //var t2 = watch.ElapsedMilliseconds;
             UpdateSprites(gameTime);
+            //var t3 = watch.ElapsedMilliseconds;
+
+            //if(t1 > 0 || t2 > 0 || t3 > 0)
+            //{
+            //    Logger.Info(t1.ToString() + " " + t2.ToString() + " " + t2.ToString() + " - " + Manager_Projectile.GetProjectiles().Count);
+            //}
         }
 
         public virtual void Draw(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)
@@ -168,7 +180,14 @@ namespace YGR
 
         public void DrawOutline(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)
         {
-            Factory_Debug.DrawRectangle(Rect.X, Rect.Y, Rect.Width, Rect.Height, 1, Color.BlueViolet, spriteBatch);
+            Factory_Debug.DrawRectangle(Rect.X, Rect.Y, Rect.Width, Rect.Height, 2, Color.BlueViolet, spriteBatch);
+
+            int timeStepMS = gameTime.ElapsedGameTime.Milliseconds;
+            int width = timeStepMS * (int)(Rect.Width);
+            int height = timeStepMS * (int)(Rect.Height);
+            Rectangle pretest = new Rectangle(Rect.X - width / 2, Rect.Y - height / 2, width, height);
+            Factory_Debug.DrawRectangle(pretest.X, pretest.Y, pretest.Width, pretest.Height, 5, Color.BlueViolet, spriteBatch);
+
             Collision.DrawOutline(gameTime, globalOffset, spriteBatch);
         }
 
