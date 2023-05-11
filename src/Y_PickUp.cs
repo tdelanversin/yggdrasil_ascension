@@ -25,6 +25,7 @@ namespace YGR
         ChooserNinja,
         ChooserMailman,
         ChooserProfessor,
+        WeaponPinkHammer,
     }
 
     public class PickUp : IGameElement
@@ -199,6 +200,15 @@ namespace YGR
                                 return false;
 
                             return switchGun(new Gun_Funky(player), player, self);
+                        });
+                case Y_PowerUps.WeaponPinkHammer:
+                    return new PickUp(type, location, width, height, _gunScale, Manager_Sprites.Weapon_Hammer, lastOwner,
+                        (player, self) =>
+                        {
+                            if (player.Gun.GetType() == typeof(Weapon_PinkHammer))
+                                return false;
+
+                            return switchGun(new Weapon_PinkHammer(player), player, self);
                         });
                 case Y_PowerUps.Life:
                     return new PickUp(type, location, width, height, 1.75f, Manager_Sprites.NewAnimatedSprite_SpinningHeart(), lastOwner,

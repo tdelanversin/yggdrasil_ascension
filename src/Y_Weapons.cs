@@ -24,5 +24,13 @@ namespace YGR
             Manager_Projectile.AddProjectile_PinkHammer(origin, direction, level, who);
             return true;
         }
+
+        public override void DropAsPickUp(IVictim lastOwner, IWalkable room, Point location)
+        {
+            room.PickUps.Add(PickUp.Factory(
+                Y_PowerUps.WeaponPinkHammer,
+                location,
+                Y_Level.TextureTileSize, Y_Level.TextureTileSize, Y_Level.GlobalScale, lastOwner));
+        }
     }
 }
