@@ -11,6 +11,7 @@ namespace YGR
         public float Age { get; set; }
         public float MaxAge { get; set; }
         public bool DeleteNext { get; set; }
+        public void UpdateCollisionAndVelocity(GameTime gameTime);
         public X_CollisionModel_Projectile Collision { get; set; }
         public Vector2 Velocity { get; set; }
         public Y_Level Level { get; set; }
