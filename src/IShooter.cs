@@ -13,6 +13,8 @@ namespace YGR
 
         public void Update(GameTime gameTime);
 
+        public double NextShotCooldown { get; set; }
+
         public string Name { get; }
 
         public Texture2D Sprite { get; }

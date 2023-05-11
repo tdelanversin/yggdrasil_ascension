@@ -30,6 +30,7 @@ namespace YGR
         public IShooter Gun { get; set; }
         public void DropSomethingJuicyMaybe();
         public void Kill();
+        public void WakeUp();
     }
 
     public interface IEnemyBoss : IEnemy { 

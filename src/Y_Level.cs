@@ -535,7 +535,7 @@ namespace YGR
                     Camera.SetFocusRoom(cmroom);
                     foreach (var enemy in cmroom.GetEnemiesInside())
                     {
-                        enemy.State = EnemyState.Idle;
+                        enemy.WakeUp();
                     }
                     if (cmroom.Category == "Gold")
                     {

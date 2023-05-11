@@ -15,7 +15,7 @@ namespace YGR
         public Texture2D Sprite { get; protected set; }
         public IVictim Owner { get; set; }
 
-        protected double NextShotCooldown = 0.0f;
+        public double NextShotCooldown { get; set; } = 0.0f;
         protected int ShotDelay = 240;
 
         public Gun_Basic(IVictim owner)
@@ -146,6 +146,9 @@ namespace YGR
         public Texture2D Sprite { get; protected set; }
         public IVictim Owner { get; set; }
 
+        // Why are we not using subclassing...
+        public double NextShotCooldown { get; set; } = 0.0f;
+
         double timeSinceShot = 1001;
         Vector2 _origin = new Vector2(0, 0);
         Vector2 _direction = new Vector2(0, 0);
@@ -250,6 +253,9 @@ namespace YGR
         public string Name { get; protected set; }
         public Texture2D Sprite { get; protected set; }
         public IVictim Owner { get; set; }
+
+        // Why are we not using subclassing...
+        public double NextShotCooldown { get; set; } = 0.0f;
 
         double timeSinceShot = 1001;
         Vector2 _origin = new Vector2(0, 0);
@@ -413,6 +419,8 @@ namespace YGR
         {
             Owner = owner;
         }
+
+        public double NextShotCooldown { get; set; } = 0.0f;
 
         public string Name { get { return ""; } }
 

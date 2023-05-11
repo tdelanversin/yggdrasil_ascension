@@ -135,6 +135,24 @@ namespace YGR
             }
         }
 
+        /// <summary>
+        /// Wake up an enemy from Inactive state in a somewhat natural fashion
+        /// </summary>
+        public virtual void WakeUp()
+        {
+            if (Util.random.Next(2) == 1)
+            {
+                State = EnemyState.Wander;
+            }
+            else
+            {
+                State = EnemyState.Idle;
+            }
+
+            // We don't want all enemies to shoot at once
+            Gun.NextShotCooldown = Util.random.Next(2500);
+        }
+
         public virtual void Kill()
         {
             LifePoints = 0;

@@ -65,7 +65,7 @@ namespace YGR
             position += new Vector2(random.Next(-150, 150), random.Next(-150, 150));
             var enemy = new Enemy_Slime(position, Manager_Sprites.NewAnimatedSprite_EnemySlime(), level);
             enemy.ChangeColor(color);
-            enemy.State = EnemyState.Idle;
+            enemy.WakeUp();
             _enemiesToAdd.Add(enemy);
             return enemy;
         }
