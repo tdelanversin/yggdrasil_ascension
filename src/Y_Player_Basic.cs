@@ -59,7 +59,7 @@ namespace YGR
         protected Color _ghostColor;
         protected Texture2D _spriteAimIndicator;
         protected float _acceleration;
-        protected Vector2 _aimDirection;
+        public Vector2 _aimDirection;
         protected float _deceleration;
         protected Vector2 Position;
         protected ParticleEffect pE;

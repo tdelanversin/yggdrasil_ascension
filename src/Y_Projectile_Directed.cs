@@ -39,6 +39,10 @@ namespace YGR
         public override void Draw(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)
         {
             var direction = _direction;
+            if (WhoFiredMe is Player_Basic)
+            { // Add a "little twist" to it ...get it?
+                direction = ((Player_Basic)WhoFiredMe)._aimDirection;
+            }
             Angle = (float)(Math.Atan2(direction.Y, direction.X) + Math.PI / 2);
             spriteBatch.Draw(
                 _sprite.Texture, _rect.Center.ToVector2() + globalOffset,
