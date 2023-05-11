@@ -118,6 +118,17 @@ namespace YGR
             );
         }
 
+        public static AnimatedSprite NewAnimatedSprite_ProjectileHammer()
+        {
+            return new AnimatedSprite(
+                texture: Weapon_Hammer,
+                spriteDimension: new Vector2(32, 32),
+                animations: new Dictionary<AnimationState, int[]> {
+                    { AnimationState.Idle, new int[] { 0 } },
+                }
+            );
+        }
+
         public static AnimatedSprite NewAnimatedSprite_SpinningPlus()
         {
             return new AnimatedSprite(

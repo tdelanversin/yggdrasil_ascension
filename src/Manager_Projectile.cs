@@ -163,6 +163,24 @@ namespace YGR
              );
         }
 
+        public static void AddProjectile_PinkHammer(Vector2 startPosition, Vector2 direction,Y_Level level, IGameElement who)
+        {
+            _projectiles.Add(
+                new Projectile_Directed(
+                    position: startPosition,
+                    direction: direction,
+                    Manager_Sprites.NewAnimatedSprite_ProjectileHammer(),
+                    level: level,
+                    who: who,
+                    scale: 2f,
+                    damage: 0,
+                    maxAge: 10000,
+                    speed: 0.4f,
+                    mass: 50.0f
+                 )
+             );
+        }
+
         public static void Update(GameTime gameTime)
         {
             float deltaTime = (float)gameTime.ElapsedGameTime.TotalSeconds;
