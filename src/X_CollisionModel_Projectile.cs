@@ -44,6 +44,8 @@ namespace YGR
                 {
                     if (enemy == me.WhoFiredMe) continue;
 
+                    if (enemy.Room != me.Room) continue;
+
                     if (handlePotentialImpact(me, (IVictim)enemy, ref myRect, ref newVelocity, ref contactPoint, ref contactNormal, ref who, timeStepMS))
                     {
                         result = true;
@@ -60,6 +62,8 @@ namespace YGR
 
                     // Can't touch ghost
                     if (victim.WhatAreYou() == X_LevelElements.Ghost) continue;
+
+                    if (victim.Room != me.Room) continue;
 
                     // Pass through player if they are currently invincible
                     if (victim.WhatAreYou() == X_LevelElements.Invincible)
