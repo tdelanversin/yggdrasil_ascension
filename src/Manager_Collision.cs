@@ -160,9 +160,15 @@ namespace YGR
             if(collided == null)
                 collided = new List<Record>();
 
+            int width = timeStepMS * movingRect.Width;
+            int height = timeStepMS * movingRect.Height;
+            Rectangle pretest = new Rectangle(movingRect.X - width / 2, movingRect.Y - height / 2, width, height);
+
             float uHit;
             for (int i = 0; i < staticRects.Length; ++i)
             {
+                if (!staticRects[i].Intersects(pretest)) continue;
+
                 bool result = DynamicRectVsStaticRect(
                     ref movingRect, velocity, timeStepMS,
                     ref staticRects[i], out contactPoint, out contactNormal, out uHit);
