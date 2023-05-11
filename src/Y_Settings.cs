@@ -37,6 +37,7 @@ namespace YGR
         public static bool DynamicShades;
         public static bool DebugOutlinesLevel;
         public static bool DebugOutlinesEntities;
+        public static bool DebugMode;
         public static bool DrawFPS;
         public static bool Sound;
         public static bool Music;
@@ -56,9 +57,11 @@ namespace YGR
             DebugOutlinesLevel = false;
             Sound = true;
             Music = true;
+            DebugMode = true; // For now
 #if DEBUG
             Fullscreen = false;
             DebugOutlinesLevel = false;
+            DebugMode = true;
 #endif
 
             /*
@@ -137,6 +140,13 @@ namespace YGR
             DebugOutlinesEntities = !DebugOutlinesEntities;
             SaveSettings();
             return DebugOutlinesEntities;
+        }
+
+        internal static bool ToggleDebugMode()
+        {
+            DebugMode = !DebugMode;
+            SaveSettings();
+            return DebugMode;
         }
 
         internal static bool ToggleDrawFPS()

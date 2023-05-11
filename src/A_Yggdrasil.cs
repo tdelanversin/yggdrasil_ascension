@@ -1,4 +1,5 @@
-﻿using Microsoft.Xna.Framework;
+﻿using System.Diagnostics;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 
@@ -172,18 +173,33 @@ namespace YGR
                 Notifications.New("Camera mode switched to " + Camera.Mode);
             }
 
-            if (Input.IsKeyTriggered(Keybinds.GodMode))
+            // All cheats go here
+            if (Settings.DebugMode && State == GameState.InGame)
             {
-                foreach (var p in Manager_Players.Players) { 
-                    p.Godmode();
-                    break;
+                if (Input.IsKeyTriggered(Keybinds.GodMode))
+                {
+                    foreach (var p in Manager_Players.Players)
+                    {
+                        p.Godmode();
+                        break;
+                    }
+                }
+
+                if (Input.IsKeyTriggered(Keybinds.KillAllEnemies))
+                {
+                    Manager_Enemies.KillAllNormalEnemies();
+                }
+
+                if (Camera.Mode == CameraMode.Manual && Input.IsLeftMouseClick())
+                {
+                    var targetPosition = Input.GetMousePositionInGame().ToPoint();
+                    foreach (var player in Manager_Players.Players)
+                    {
+                        player.TeleportTo(targetPosition);
+                    }
                 }
             }
 
-            if (Input.IsKeyTriggered(Keybinds.KillAllEnemies))
-            {
-                Manager_Enemies.KillAllNormalEnemies();
-            }
 
             Camera.Update(_graphics.GraphicsDevice.Viewport, gameTime);
 
@@ -198,6 +214,7 @@ namespace YGR
                     Menu.Update();
                     break;
                 case GameState.InGame:
+                    var watch = new Stopwatch();
                     _background.Update(gameTime);
                     Manager_Players.Update(gameTime);
                     Manager_Projectile.Update(gameTime);
