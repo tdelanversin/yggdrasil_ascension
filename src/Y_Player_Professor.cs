@@ -20,6 +20,12 @@ namespace YGR
             Type = PlayerType.Professor;
             Name = "Professor";
 
+            // Leave him the hammer for now (inherited from Player_Basic)
+            // if (gun != null)
+            //     Gun = gun;
+            // else
+            //     Gun = Util.getRandomGun(this);
+
             SetupPlayerRect(IPlayer.PlayerBaseHeight);
 
             LifePointsMax = IPlayer.PlayerBaseHealth;

@@ -24,6 +24,7 @@ namespace YGR
         ChooserNerd,
         ChooserNinja,
         ChooserMailman,
+        ChooserProfessor,
     }
 
     public class PickUp : IGameElement
@@ -138,6 +139,17 @@ namespace YGR
                             if (player is not Player_Ninja)
                             {
                                 Manager_Players.SetPlayerType(player.PlayerIndex, PlayerType.Ninja);
+                                Manager_Sound.Sound_GunCocking.Play();
+                            }
+                            return false;
+                        });
+                case Y_PowerUps.ChooserProfessor:
+                    return new PickUp(type, location, width, IPlayer.PlayerBaseHeight, scale * 1.0f, Manager_Sprites.NewAnimatedSprite_TestCharacter(), lastOwner,
+                        (player, self) =>
+                        {
+                            if (player is not Player_Professor)
+                            {
+                                Manager_Players.SetPlayerType(player.PlayerIndex, PlayerType.Professor);
                                 Manager_Sound.Sound_GunCocking.Play();
                             }
                             return false;

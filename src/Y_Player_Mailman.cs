@@ -18,6 +18,11 @@ namespace YGR
             Type = PlayerType.Mailman;
             Name = "Mailman";
 
+            if (gun != null)
+                Gun = gun;
+            else
+                Gun = Util.getRandomGun(this);
+
             // Big guy can take a lot
             LifePointsMax = IPlayer.PlayerBaseHealth * 2;
             LifePoints = LifePointsMax;

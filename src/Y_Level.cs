@@ -376,8 +376,8 @@ namespace YGR
                             r.PickUps.Add(PickUp.Factory(Y_PowerUps.ChooserMailman, pos.ToPoint(), spr.width, spr.height, GlobalScale));
                         if (PlayerEntity.GetType(spr) == PlayerType.Ninja)
                             r.PickUps.Add(PickUp.Factory(Y_PowerUps.ChooserNinja, pos.ToPoint(), spr.width, spr.height, GlobalScale));
-                        if (PlayerEntity.GetType(spr) == PlayerType.Professor) // TODO: for now place a mailman, not gonna take a detour in the starting room
-                            r.PickUps.Add(PickUp.Factory(Y_PowerUps.ChooserMailman, pos.ToPoint(), spr.width, spr.height, GlobalScale));
+                        if (PlayerEntity.GetType(spr) == PlayerType.Professor)
+                            r.PickUps.Add(PickUp.Factory(Y_PowerUps.ChooserProfessor, pos.ToPoint(), spr.width, spr.height, GlobalScale));
                     }
                 }
 

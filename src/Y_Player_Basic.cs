@@ -105,10 +105,9 @@ namespace YGR
             // Yes, bring him back <3
             CharacterSprite = Manager_Sprites.NewAnimatedSprite_TestCharacter();
 
-            if (gun != null)
-                Gun = gun;
-            else
-                Gun = Util.getRandomGun(this);
+            // He deserves the best weapon in the game
+            Gun = new Weapon_PinkHammer(this);
+            
             Ability = new Ability_Ghost();
             Type = type;
             ControlLayout = controlLayout;
@@ -163,8 +162,8 @@ namespace YGR
             // Movement related
             Velocity = Vector2.Zero;
             VelocityMax = IPlayer.PlayerBaseVelocity;
-            _acceleration = 0.008f;
-            _deceleration = 0.004f;
+            _acceleration = 1.008f;
+            _deceleration = 1.004f;
 
             // Dash
             IsDashing = false;

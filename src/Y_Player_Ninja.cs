@@ -19,6 +19,11 @@ namespace YGR
             Type = PlayerType.Ninja;
             Name = "Ninja";
 
+            if (gun != null)
+                Gun = gun;
+            else
+                Gun = Util.getRandomGun(this);
+
             SetupPlayerRect(IPlayer.PlayerBaseHeight);
 
             LifePointsMax = IPlayer.PlayerBaseHealth;
