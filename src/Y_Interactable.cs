@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Timers;
@@ -65,6 +66,11 @@ namespace YGR
         public virtual void DrawOutline(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)
         {
             Factory_Debug.DrawRectangle(Rect.X, Rect.Y, Rect.Width, Rect.Height, 3, Color, spriteBatch);
+        }
+
+        internal virtual void Reset()
+        {
+            InteractionComplete = false;
         }
     }
 
@@ -254,6 +260,13 @@ namespace YGR
                 effects: SpriteEffects.None,
                 layerDepth: 0);
         }
+
+
+        internal override void Reset()
+        {
+            InteractionComplete = false;
+            state = ButtonState.Out;
+        }
     }
 
     // RoomOpener allows opening a room's doors when shot
@@ -292,7 +305,7 @@ namespace YGR
             float mindist = float.MaxValue;
             int index = 0;
             int minIndex = 0;
-            foreach(var tt in teleportationTargets)
+            foreach (var tt in teleportationTargets)
             {
                 var dist = (tt.ToVector2() - midpoint).Length();
                 if (dist < mindist)
@@ -305,7 +318,7 @@ namespace YGR
 
             // teleport all players there
             var targetPoint = teleportationTargets[minIndex];
-            foreach(var p in alivePlayers)
+            foreach (var p in alivePlayers)
             {
                 p.TeleportTo(targetPoint);
             }
@@ -402,6 +415,13 @@ namespace YGR
                 scale: 1,
                 effects: SpriteEffects.None,
                 layerDepth: 0);
+        }
+
+
+        internal override void Reset()
+        {
+            InteractionComplete = false;
+            state = ButtonState.Out;
         }
     }
 }
