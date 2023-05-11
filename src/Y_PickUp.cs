@@ -251,6 +251,63 @@ namespace YGR
             }
         }
 
+        public void DrawSpinningTexture(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)
+        {
+            // We only got a texture, so let's make our own "highly advanced" rotating animation
+            float spin = (float)Math.Sin(gameTime.TotalGameTime.TotalSeconds);
+            int spinWidth = (int)Math.Min(Rect.Width, Math.Abs(spin) * Rect.Width * 1.25);
+
+            // And render a "shadow" to make it more visible
+            spriteBatch.Draw(
+                    texture: _texture,
+                    destinationRectangle: new Rectangle(Rect.X + (Rect.Width - spinWidth) / 2 + 1, Rect.Y + 1, spinWidth, Rect.Height),
+                    sourceRectangle: null,
+                    color: Color.Black,
+                    rotation: 0,
+                    origin: Vector2.Zero,
+                    effects: spin >= 0 ? SpriteEffects.None : SpriteEffects.FlipHorizontally,
+                    layerDepth: 0);
+
+            // Now draw the actual sprite
+            spriteBatch.Draw(
+                    texture: _texture,
+                    destinationRectangle: new Rectangle(Rect.X + (Rect.Width - spinWidth) / 2, Rect.Y, spinWidth, Rect.Height),
+                    sourceRectangle: null,
+                    color: Color,
+                    rotation: 0,
+                    origin: Vector2.Zero,
+                    effects: spin >= 0 ? SpriteEffects.None : SpriteEffects.FlipHorizontally,
+                    layerDepth: 0);
+        }
+
+        public void DrawFloatingTexture(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)
+        {
+            // Spinning looks meh, so instead float up and down a bit
+            int floatyOffset = (int)(Math.Sin(gameTime.TotalGameTime.TotalSeconds * 4) * Y_Level.InGameTileSize * 0.25f);
+
+            // And render a "shadow" to make it more visible
+            spriteBatch.Draw(
+                    texture: _texture,
+                    destinationRectangle: new Rectangle(Rect.X + 2, Rect.Y + floatyOffset + 2, Rect.Width, Rect.Height),
+                    sourceRectangle: null,
+                    color: Color.Black,
+                    rotation: 0,
+                    origin: Vector2.Zero,
+                    effects: SpriteEffects.None,
+                    layerDepth: 0);
+
+            // Now draw the actual sprite
+            spriteBatch.Draw(
+                    texture: _texture,
+                    destinationRectangle: new Rectangle(Rect.X, Rect.Y + floatyOffset, Rect.Width, Rect.Height),
+                    sourceRectangle: null,
+                    color: Color,
+                    rotation: 0,
+                    origin: Vector2.Zero,
+                    effects: SpriteEffects.None,
+                    layerDepth: 0);
+        }
+
         public void Draw(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)
         {
             if (_sprite != null)
@@ -261,32 +318,8 @@ namespace YGR
                         Color.White, 0, Vector2.Zero, _spriteDrawScale, SpriteEffects.None, 0);
             }
             else
-            {
-                // We only got a texture, so let's make our own "highly advanced" rotating animation
-                float spin = (float)Math.Sin(gameTime.TotalGameTime.TotalSeconds);
-                int spinWidth = (int)Math.Min(Rect.Width, Math.Abs(spin) * Rect.Width * 1.25);
-
-                // And render a "shadow" to make it more visible
-                spriteBatch.Draw(
-                        texture: _texture,
-                        destinationRectangle: new Rectangle(Rect.X + (Rect.Width - spinWidth) / 2 + 1, Rect.Y + 1, spinWidth, Rect.Height),
-                        sourceRectangle: null,
-                        color: Color.Black,
-                        rotation: 0,
-                        origin: Vector2.Zero,
-                        effects: spin >= 0 ? SpriteEffects.None : SpriteEffects.FlipHorizontally,
-                        layerDepth: 0);
-
-                // Now draw the actual sprite
-                spriteBatch.Draw(
-                        texture: _texture,
-                        destinationRectangle: new Rectangle(Rect.X + (Rect.Width - spinWidth) / 2, Rect.Y, spinWidth, Rect.Height),
-                        sourceRectangle: null,
-                        color: Color,
-                        rotation: 0,
-                        origin: Vector2.Zero,
-                        effects: spin >= 0 ? SpriteEffects.None : SpriteEffects.FlipHorizontally,
-                        layerDepth: 0);
+            { // We only got a texture, well, let's do something fun with it at least
+                DrawFloatingTexture(gameTime, globalOffset, spriteBatch);
             }
         }
 
