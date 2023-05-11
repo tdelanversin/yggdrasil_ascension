@@ -430,32 +430,139 @@ namespace YGR
         }
     }
 
-    public class Gun_BossScatter : Gun_Basic
-    {
-        public Gun_BossScatter(IVictim owner) : base(owner)
-        {
-        }
-    }
+    public class Gun_BossScatter : Gun_Basic {
 
-    public class Gun_BossPrecise : Gun_Basic
-    {
-        public Gun_BossPrecise(IVictim owner) : base(owner)
-        {
-        }
-    }
-
-    public class Gun_BossAvoidPattern : Gun_Basic
-    {
-        public Gun_BossAvoidPattern(IVictim owner) : base(owner)
-        {
-        }
-    }
-
-    public class Gun_BossAOE : Gun_Basic
-    {
         protected int ShotCount;
         protected double ShotSpread;
 
+        public Gun_BossScatter(IVictim owner) : base(owner)
+        {
+            Name = "Scatter";
+            ShotCount = 10;
+            ShotSpread = .5 / ShotCount;
+            ShotDelay = 1000;
+        }
+
+        public override bool Shoot(GameTime gameTime, Vector2 origin, Vector2 direction, Y_Level level, IGameElement who)
+        {
+            if (NextShotCooldown > 0.0f)
+                return false;
+
+            Manager_Sound.Sound_Shotgun.Play(0.3f, 0, 0);
+
+            NextShotCooldown = ShotDelay;
+
+            double spread = -ShotCount / 2 * ShotSpread;
+            for (int i = 0; i < ShotCount; i++)
+            {
+                var new_dir = new Vector2(
+                    (float)(direction.X * Math.Cos(spread) - direction.Y * Math.Sin(spread)),
+                    (float)(direction.X * Math.Sin(spread) + direction.Y * Math.Cos(spread))
+                );
+
+                Manager_Projectile.AddProjectile_BossProjectile(origin, new_dir, level, who, 0.55f);
+                spread += ShotSpread;
+            }
+
+            return true;
+        }
+    }
+
+    public class Gun_BossPrecise : Gun_Basic {
+
+            protected int ShotCount;
+            protected double ShotSpread;
+            protected double ShotSpreadCurrent; // current spread of the gun, [0,1) and used in ShotSpread * sin(ShotSpreadCurrent * 2 * pi)
+            protected double ShotSpreadSpeed; // how fast the gun spreads and indicated one full sin wave per x milliseconds
+            
+            public Gun_BossPrecise(IVictim owner) : base(owner)
+            {
+                Name = "Precise";
+                ShotDelay = 100;
+                ShotSpread = 0.4f;
+                ShotSpreadCurrent = 0f;
+                ShotSpreadSpeed = 500f;
+            }
+    
+            public override bool Shoot(GameTime gameTime, Vector2 origin, Vector2 direction, Y_Level level, IGameElement who)
+            {
+                if (NextShotCooldown > 0.0f)
+                    return false;
+    
+                NextShotCooldown = ShotDelay;
+
+                ShotSpreadCurrent += gameTime.ElapsedGameTime.TotalMilliseconds / ShotSpreadSpeed;
+                ShotSpreadCurrent %= 1;
+
+                var new_dir = new Vector2(
+                    (float)(direction.X * Math.Cos(ShotSpread * Math.Sin(ShotSpreadCurrent * 2 * Math.PI)) - direction.Y * Math.Sin(ShotSpread * Math.Sin(ShotSpreadCurrent * 2 * Math.PI))),
+                    (float)(direction.X * Math.Sin(ShotSpread * Math.Sin(ShotSpreadCurrent * 2 * Math.PI)) + direction.Y * Math.Cos(ShotSpread * Math.Sin(ShotSpreadCurrent * 2 * Math.PI)))
+                );
+    
+                Manager_Projectile.AddProjectile_BossProjectile(origin, new_dir, level, who);
+    
+                return true;
+            }
+    }
+
+    public class Gun_BossAvoidPattern : Gun_BossScatter {
+
+        protected double RotationSpeed;
+        protected double Rotation;
+        protected int Holes;
+        protected int HoleSize;
+
+        public Gun_BossAvoidPattern(IVictim owner) : base(owner)
+        {
+            Name = "Pattern boss gun";
+            ShotDelay = 100; //Boss regulates its own AOE shooting
+            ShotCount = 64;
+            ShotSpread = (2 * Math.PI) / ShotCount;
+            RotationSpeed = 0.0025f;
+            Rotation = 0.0f;
+            Holes = 2;
+            HoleSize = 5;
+        }
+
+        public override bool Shoot(GameTime gameTime, Vector2 origin, Vector2 direction, Y_Level level, IGameElement who)
+        {
+            if (NextShotCooldown > 0.0f)
+                return false;
+
+            Manager_Sound.Sound_Shotgun.Play(0.3f, 0, 0);
+
+            NextShotCooldown = ShotDelay;
+            direction = -direction;
+
+            Rotation += RotationSpeed * gameTime.ElapsedGameTime.Milliseconds;
+            Rotation %= 2 * Math.PI;
+
+            direction = new Vector2(
+                (float)(direction.X * Math.Cos(Rotation) - direction.Y * Math.Sin(Rotation)),
+                (float)(direction.X * Math.Sin(Rotation) + direction.Y * Math.Cos(Rotation))
+            );
+
+            double spread = -ShotCount / 2 * ShotSpread;
+            for (int i = 0; i < ShotCount; i++)
+            {
+                var new_dir = new Vector2(
+                    (float)(direction.X * Math.Cos(spread) - direction.Y * Math.Sin(spread)),
+                    (float)(direction.X * Math.Sin(spread) + direction.Y * Math.Cos(spread))
+                );
+                spread += ShotSpread;
+
+                if (i % (ShotCount / Holes) < HoleSize) continue;
+
+                Manager_Projectile.AddProjectile_BossProjectile(origin, new_dir, level, who, 0.25f);
+            }
+
+            return true;
+        }
+
+    }
+
+    public class Gun_BossAOE : Gun_BossScatter
+    {
         public Gun_BossAOE(IVictim owner) : base(owner)
         {
             Name = "AOE boss gun";

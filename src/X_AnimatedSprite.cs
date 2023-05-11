@@ -29,7 +29,7 @@ namespace YGR
         public Dictionary<AnimationState, Rectangle[]> AnimationSourceRects { get; private set; }
         public float AnimationDuration { get; }
 
-        int DirectionalIndex;
+        public int DirectionalIndex;
         float AnimationTimer;
         float AnimationTreshold;
         Vector2 LastMovement;

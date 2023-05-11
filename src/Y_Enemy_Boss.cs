@@ -5,15 +5,18 @@ using System.Collections.Generic;
 namespace YGR
 {
     public class Enemy_Boss : Enemy_Basic, IEnemyBoss
-    {        
-        public BossAttack Attack {get; set; } = BossAttack.Wait;
-        GameTime _attackTimer;
+    {
+        public BossAttack Attack { get; set; } = BossAttack.Wait;
+        int _attackTimer = 0;
         Dictionary<BossAttack, IShooter> _attacks = new Dictionary<BossAttack, IShooter>();
         Dictionary<BossAttack, int> _attackLength = new Dictionary<BossAttack, int>();
 
         int Phase = 1;
+        Dictionary<BossAttack, float> _attackWeights = new Dictionary<BossAttack, float>();
         Dictionary<BossAttack, float> _attackWeightsPhase1 = new Dictionary<BossAttack, float>();
         Dictionary<BossAttack, float> _attackWeightsPhase2 = new Dictionary<BossAttack, float>();
+
+        Vector2 _savedTargetDirection = Vector2.Zero;
 
 
         public Enemy_Boss(
@@ -45,19 +48,21 @@ namespace YGR
             };
 
             _attackWeightsPhase1 = new Dictionary<BossAttack, float>() {
-                { BossAttack.Scatter, 0.5f },
-                { BossAttack.Precise, 0.25f },
-                { BossAttack.AOE, 0.25f },
+                { BossAttack.Scatter, 0.35f },
+                { BossAttack.Precise, 0.35f },
+                { BossAttack.AOE, 0.30f },
                 { BossAttack.AvoidPattern, 0.0f },
                 { BossAttack.Wait, 0.0f },
             };
             _attackWeightsPhase2 = new Dictionary<BossAttack, float>() {
-                { BossAttack.Scatter, 0.4f },
+                { BossAttack.Scatter, 0.25f },
                 { BossAttack.Precise, 0.25f },
                 { BossAttack.AOE, 0.25f },
-                { BossAttack.AvoidPattern, 0.1f },
+                { BossAttack.AvoidPattern, 0.25f },
                 { BossAttack.Wait, 0.0f },
             };
+
+            _attackWeights = _attackWeightsPhase1;
 
 
             _hitColor = Color.OrangeRed;
@@ -92,12 +97,19 @@ namespace YGR
         {
             if (State == EnemyState.Inactive) { return; }
 
+            if (LifePoints < 0.5 * LifePointsMax && Phase == 1)
+            {
+                Phase = 2;
+                _attackWeights = _attackWeightsPhase2;
+            }
+
             UpdateHitCounters(gameTime);
             FindTarget();
             UpdateState(gameTime);
 
             Vector2 movement = Vector2.Zero;
-            switch (Attack) {
+            switch (Attack)
+            {
                 case BossAttack.Scatter:
                     movement = Wander(gameTime);
                     break;
@@ -119,20 +131,75 @@ namespace YGR
             UpdateVelocity(movement, gameTime);
             UpdateCollision(gameTime);
 
-            foreach (var attack in _attacks) {
+            foreach (var attack in _attacks)
+            {
                 attack.Value.Update(gameTime);
             }
 
-            CharacterSprite.Update(gameTime, movement);
-
-            if (Attack == BossAttack.Wait) {
-                return;
+            if (_attackLength[Attack] < _attackTimer + gameTime.ElapsedGameTime.Milliseconds)
+            {
+                _attackTimer = 0;
+                if (Attack == BossAttack.Wait)
+                {
+                    var rand = new Random();
+                    float randVal = (float)rand.NextDouble();
+                    foreach (var attack in _attackWeights)
+                    {
+                        if (randVal < attack.Value)
+                        {
+                            Attack = attack.Key;
+                            if (Attack == BossAttack.AvoidPattern)
+                            {
+                                _savedTargetDirection = Target.Rect.Center.ToVector2() - _rect.Center.ToVector2();
+                                _savedTargetDirection.Normalize();
+                            }
+                            break;
+                        }
+                        randVal -= attack.Value;
+                    }
+                }
+                else
+                {
+                    Attack = BossAttack.Wait;
+                }
+            }
+            else
+            {
+                _attackTimer += gameTime.ElapsedGameTime.Milliseconds;
             }
 
             Vector2 targetDirection = Vector2.One;
-            if (Target != null) {
+            if (Target != null)
+            {
                 targetDirection = Target.Rect.Center.ToVector2() - _rect.Center.ToVector2();
                 targetDirection.Normalize();
+            }
+
+            switch(Attack)
+            {
+                case BossAttack.Scatter:
+                    CharacterSprite.Update(gameTime, movement);
+                    break;
+                case BossAttack.Precise:
+                    CharacterSprite.Update(gameTime, movement);
+                    break;
+                case BossAttack.AOE:
+                    CharacterSprite.Update(gameTime, AnimationState.Jump);
+                    if (CharacterSprite.DirectionalIndex == 10) // frame 10 and 11 are the first frames where the boss hits the ground
+                    {
+                        _attacks[Attack].Shoot(gameTime, _rect.Center.ToVector2(), targetDirection, Level, this);
+                    }
+                    return;
+                case BossAttack.AvoidPattern:
+                    CharacterSprite.Update(gameTime, AnimationState.Jump);
+                    targetDirection = _savedTargetDirection;
+                    break;
+                case BossAttack.Wait:
+                    CharacterSprite.Update(gameTime, movement);
+                    return;
+                default:
+                    CharacterSprite.Update(gameTime, movement);
+                    break;
             }
 
             _attacks[Attack].Shoot(gameTime, _rect.Center.ToVector2(), targetDirection, Level, this);
