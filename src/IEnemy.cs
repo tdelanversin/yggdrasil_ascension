@@ -19,6 +19,8 @@ namespace YGR
         AOE,
         AvoidPattern,
         Wait,
+        Spawn,
+        Hide,
     }
 
     public interface IEnemy : IVictim

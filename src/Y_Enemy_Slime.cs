@@ -51,5 +51,11 @@ namespace YGR
             CharacterScale = Util.GetSpriteScale(_rect, CharacterSprite.SpriteDimension);
             CharacterOffset = Vector2.Zero;
         }
+
+        public void ChangeColor(Color color)
+        {
+            Color = color;
+            _currentColor = color;
+        }
     }
 }

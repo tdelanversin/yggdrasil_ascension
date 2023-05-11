@@ -163,7 +163,7 @@ namespace YGR
         }
 
         /* Deal with being hit by projectile, basically physical therapy */
-        public void Hit(IProjectile projectile)
+        public virtual void Hit(IProjectile projectile)
         {
             if (State == EnemyState.Inactive) { return; }
 

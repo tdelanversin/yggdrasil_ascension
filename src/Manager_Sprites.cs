@@ -196,14 +196,14 @@ namespace YGR
         {
             return new AnimatedSprite(
                     texture: Enemy_Boss,
-                    spriteDimension: new Vector2(250, 250),
+                    spriteDimension: new Vector2(235, 205),
                     animations: new Dictionary<AnimationState, int[,]> {
                         { AnimationState.WalkLeft, new int[,] { {1,0}, {1,1}, {1,2} } },
                         { AnimationState.IdleLeft, new int[,] { {1,1}, {1,2} } },
                         { AnimationState.WalkRight, new int[,] { {1,0}, {1,1}, {1,2} } },
                         { AnimationState.IdleRight, new int[,] { {1,1}, {1,2} } },
                         { AnimationState.Jump, new int[,] { {1,2}, {1,1}, {1,0}, {1,1}, {1,2}, {2,0}, {2,1}, {2,2}, {2,3}, {2,4}, {2,5}, {2,6}, {2,7}, {2,8}}},
-                        { AnimationState.Spawn, new int[,] { {0,0}, {0,1}, {0,2}, {0,3}, {0,4}, {1,0}, {1,1}, {1,2}}},
+                        { AnimationState.Spawn, new int[,] { {0,0}, {0,0}, {0,0}, {0,0}, {0,0}, {0,1}, {0,2}, {0,3}, {0,4}, {1,0}, {1,1}, {1,2}}},
                         { AnimationState.Hide, new int[,] { {0,0} }}
                     }
                 );

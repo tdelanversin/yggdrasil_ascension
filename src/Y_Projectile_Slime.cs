@@ -32,6 +32,10 @@ namespace YGR
             {
                 Color = ((Enemy_Slime)who).Color;
             }
+            else if (who is Enemy_Boss)
+            {
+                Color = ((Enemy_Boss)who).Color;
+            }
         }
 
         // Override to update both AnimatedSprites
