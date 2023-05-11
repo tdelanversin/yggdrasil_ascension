@@ -16,6 +16,6 @@ namespace YGR
         public Y_Level Level { get; set; }
         public IWalkable Room { get; set; }
         public IGameElement WhoFiredMe { get; set; } 
-        public int Damage { get; set; }
+        public float Damage { get; set; }
     }
 }

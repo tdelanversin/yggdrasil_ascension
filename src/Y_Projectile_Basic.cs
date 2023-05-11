@@ -16,7 +16,7 @@ namespace YGR
         public Y_Level Level { get; set; }
         public IWalkable Room { get; set; }
         public IGameElement WhoFiredMe { get; set; }
-        public int Damage { get; set; }
+        public float Damage { get; set; }
         public Color Color { get; set; }
         public int ElementLevel { get { return 1; } set { } }
 
@@ -43,7 +43,7 @@ namespace YGR
             Y_Level level,
             IGameElement who,
             float scale = 0.55f,
-            int damage = 1,
+            float damage = 1,
             float maxAge = 2500,
             float speed = 0.55f,
             float mass = 0.5f

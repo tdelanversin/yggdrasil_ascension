@@ -23,8 +23,8 @@ namespace YGR
         public IGameElement WhoKilledMe { get; set; }
 
         // IVictim fields
-        public int LifePoints { get; protected set; }
-        public int LifePointsMax { get; set; }
+        public float LifePoints { get; protected set; }
+        public float LifePointsMax { get; set; }
         public Color Color { get; set; }
         public X_CollisionModel_Victim Collision { get; protected set; }
         public Vector2 Velocity { get; set; }
@@ -235,7 +235,7 @@ namespace YGR
 
 
         // Private heal method, this does NOT check if player is alive
-        protected virtual void heal(int healAmount)
+        protected virtual void heal(float healAmount)
         {
             if (LifePointsMax - LifePoints < healAmount)
             {
@@ -251,7 +251,7 @@ namespace YGR
             heal(LifePointsMax);
         }
 
-        public virtual void Heal(int healAmount)
+        public virtual void Heal(float healAmount)
         {
             if (!IsAlive()) { return; } // Don't heal a dead player
             heal(healAmount);
@@ -265,7 +265,7 @@ namespace YGR
             heal(LifePointsMax / 2);
         }
 
-        public virtual void Revive(int healAmount)
+        public virtual void Revive(float healAmount)
         {
             if (IsAlive()) { return; }
             Stats.Revives++;

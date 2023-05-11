@@ -9,14 +9,14 @@ namespace YGR
     public class Enemy_Basic : IEnemy
     {
         public string Name { get; set; }
-        public int LifePoints { get; set; }
-        public int LifePointsMax { get; set; }
+        public float LifePoints { get; set; }
+        public float LifePointsMax { get; set; }
         public Color Color { get; set; }
         public IGameElement WhoKilledMe { get; set; }
         public int ElementLevel { get { return 1; } set { } }
 
         public EnemyState State { get; set; } = EnemyState.Inactive;
-        protected int fleeingHPTreshold; // Flee if at this treshold or lower
+        protected float fleeingHPTreshold; // Flee if at this treshold or lower
         protected float safetyDistance { get; set; }
 
         public Vector2 Velocity { get; set; }
@@ -65,7 +65,7 @@ namespace YGR
             Name = "Mob";
             LifePointsMax = 8;
             LifePoints = LifePointsMax;
-            fleeingHPTreshold = LifePointsMax / 2;
+            fleeingHPTreshold = LifePointsMax / 2f;
 
             CharacterSprite = sprite;
 
