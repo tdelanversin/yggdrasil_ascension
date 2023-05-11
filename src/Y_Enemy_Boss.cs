@@ -12,9 +12,11 @@ namespace YGR
         Dictionary<BossAttack, int> _attackLength = new Dictionary<BossAttack, int>();
 
         int Phase = 1;
+        int Phase2HP;
+        int Phase3HP;
         Dictionary<BossAttack, float> _attackWeights = new Dictionary<BossAttack, float>();
         Dictionary<BossAttack, float> _attackWeightsPhase1 = new Dictionary<BossAttack, float>();
-        Dictionary<BossAttack, float> _attackWeightsPhase2 = new Dictionary<BossAttack, float>();
+        Dictionary<BossAttack, float> _attackWeightsPhase3 = new Dictionary<BossAttack, float>();
 
         Vector2 _savedTargetDirection = new Vector2(1, 0);
 
@@ -25,7 +27,10 @@ namespace YGR
             Y_Level level
         ) : base(position, sprite, level)
         {
-            LifePointsMax = 120;
+            LifePointsMax = 240;
+            Phase2HP = (int)(LifePointsMax * 0.66f);
+            Phase3HP = (int)(LifePointsMax * 0.33f);
+
             LifePoints = LifePointsMax;
             fleeingHPTreshold = 0; // Gigachad never flees
 
@@ -57,7 +62,7 @@ namespace YGR
                 { BossAttack.Wait, 0.0f },
                 { BossAttack.Spawn, 0.0f}
             };
-            _attackWeightsPhase2 = new Dictionary<BossAttack, float>() {
+            _attackWeightsPhase3 = new Dictionary<BossAttack, float>() {
                 { BossAttack.Scatter, 0.25f },
                 { BossAttack.Precise, 0.25f },
                 { BossAttack.AOE, 0.25f },
@@ -103,10 +108,13 @@ namespace YGR
 
             if (Attack == BossAttack.Spawn)
             {
+                Logger.Debug("Boss position: " + _position.ToString() + " Rect: " + Rect.ToString());
+
                 CharacterSprite.Update(gameTime, AnimationState.Spawn);
                 if (CharacterSprite.Direction != AnimationState.Spawn)
                 {
                     Attack = BossAttack.Wait;
+                    Logger.Debug("Boss position 2: " + _position.ToString() + " Rect: " + Rect.ToString());
                 } else {
                     return;
                 }
@@ -115,7 +123,7 @@ namespace YGR
             if (LifePoints < 0.5 * LifePointsMax && Phase == 1)
             {
                 Phase = 2;
-                _attackWeights = _attackWeightsPhase2;
+                _attackWeights = _attackWeightsPhase3;
             }
 
             UpdateHitCounters(gameTime);
@@ -143,8 +151,13 @@ namespace YGR
                     break;
             }
 
+            Logger.Debug("Boss position 3: " + _position.ToString() + " Rect: " + Rect.ToString());
+
+
             UpdateVelocity(movement, gameTime);
             UpdateCollision(gameTime);
+
+            Logger.Debug("Boss position 4: " + _position.ToString() + " Rect: " + Rect.ToString());
 
             foreach (var attack in _attacks)
             {
