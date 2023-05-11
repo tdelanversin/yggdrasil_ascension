@@ -170,7 +170,7 @@ namespace YGR
             // Return if alread dead, otherwise player kill stats are inaccurate
             if (LifePoints <= 0) { return; }
 
-            if(projectile.WhatAreYou() == X_LevelElements.ConfusionProjectile)
+            if (projectile.WhatAreYou() == X_LevelElements.ConfusionProjectile)
             {
                 Manager_Confusion.AddConfusion(this, ((Projectile_Confusion)projectile).ConfusionDuration);
             }
@@ -218,7 +218,14 @@ namespace YGR
              * ########################################################################## */
             if (input != Vector2.Zero)
             {
-                Manager_Particles.GenParticleEffectDustCloudLight(new Vector2(_rect.Location.X + _rect.Width / 2, _rect.Location.Y + _rect.Height));
+                if (this is IEnemyBoss)
+                {
+                    Manager_Particles._particleEffects[(int)Manager_Particles.Effect.GigaChad].Trigger(new Vector2(_rect.Location.X + _rect.Width / 2, _rect.Location.Y + _rect.Height));
+                }
+                else
+                {
+                    Manager_Particles.GenParticleEffectDustCloudLight(new Vector2(_rect.Location.X + _rect.Width / 2, _rect.Location.Y + _rect.Height));
+                }
 
                 if (input.LengthSquared() > 1)
                 {

@@ -297,35 +297,5 @@ namespace YGR
             if (this is IEnemyBoss) { p.Stats.BossDamageDealt += projectile.Damage; }
             if (LifePoints <= 0) { p.Stats.Kills++; }
         }
-
-
-        protected override void UpdateVelocity(Vector2 input, GameTime gameTime)
-        {
-            int timeStepMS = gameTime.ElapsedGameTime.Milliseconds;
-
-            /* ##########################################################################
-             * Speed and velocity handling based on control input
-             *  => must happen before collision handling <=
-             * ########################################################################## */
-            if (input != Vector2.Zero)
-            {
-                //Manager_Particles.GenParticleEffectDustCloudLight(new Vector2(_rect.Location.X + _rect.Width / 2, _rect.Location.Y + _rect.Height));
-                Manager_Particles._particleEffects[(int)Manager_Particles.Effect.GigaChad].Trigger(new Vector2(_rect.Location.X + _rect.Width / 2, _rect.Location.Y + _rect.Height));
-
-                if (input.LengthSquared() > 1)
-                {
-                    input.Normalize();
-                }
-                Velocity += input * _acceleration * timeStepMS;
-            }
-            else
-            {
-                Velocity = new Vector2(
-                    Math.Sign(Velocity.X) * Math.Max(0.0f, Math.Abs(Velocity.X) - _deceleration * timeStepMS),
-                    Math.Sign(Velocity.Y) * Math.Max(0.0f, Math.Abs(Velocity.Y) - _deceleration * timeStepMS));
-            }
-
-            Velocity = Util.ClampMagnitude(Velocity, _maxVelocity);
-        }
     }
 }
