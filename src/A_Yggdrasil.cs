@@ -174,7 +174,7 @@ namespace YGR
             }
 
             // All cheats go here
-            if (Settings.DebugMode && State == GameState.InGame)
+            if (Settings.DebugMode && State == GameState.InGame && Y_Level.State != Y_Level.GamePlayState.Start)
             {
                 if (Input.IsKeyTriggered(Keybinds.GodMode))
                 {

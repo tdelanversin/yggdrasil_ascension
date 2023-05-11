@@ -36,11 +36,11 @@ namespace YGR
             int height = 250;
             int width = (int)(height / CharacterSprite.SpriteDimension.Y * CharacterSprite.SpriteDimension.X);
 
-            // Offset the boss to center it on the spawner tile that is only 32x32
-            // TODO: standardize boss size and adjust that in the level editor as well 
+            // Offset the enitity to center it on the spawner tile
+            _position = position - new Vector2(width / 2, height / 2);
             _rect = new Rectangle(
-                (int)position.X - (height - 32) / 2,
-                (int)position.Y - (width - 32) / 2 - 30,
+                (int)_position.X,
+                (int)_position.Y,
                 width,
                 height
             );

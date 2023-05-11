@@ -77,14 +77,16 @@ namespace YGR
             safetyDistance = 300f;
             FacingDirection = new Vector2(1, 0);
             Collision = new X_CollisionModel_Victim(1.0f, 0.0f);
-            _position = position;
 
             // Collision bounds
             int height = 60;
             int width = (int)(height / CharacterSprite.SpriteDimension.Y * CharacterSprite.SpriteDimension.X);
+
+            // Offset the enitity to center it on the spawner tile
+            _position = position - new Vector2(width / 2, height / 2);
             _rect = new Rectangle(
-                (int)position.X,
-                (int)position.Y,
+                (int)_position.X,
+                (int)_position.Y,
                 width,
                 height
             );
