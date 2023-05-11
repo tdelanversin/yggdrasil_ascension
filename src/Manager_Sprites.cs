@@ -24,6 +24,7 @@ namespace YGR
         public static Texture2D Weapon_Keyboard { get; private set; }
         public static Texture2D Weapon_RedGun { get; private set; }
         public static Texture2D Weapon_Shotgun { get; private set; }
+        public static Texture2D Weapon_Hammer { get; private set; }
 
         // UI
         public static Texture2D HealthbarEmpty { get; private set; }
@@ -68,6 +69,7 @@ namespace YGR
             Weapon_Keyboard = contentManager.Load<Texture2D>("SpritesWeapons/Keyboard");
             Weapon_RedGun = contentManager.Load<Texture2D>("SpritesWeapons/Red_Gun");
             Weapon_Shotgun = contentManager.Load<Texture2D>("SpritesWeapons/Shotgun");
+            Weapon_Hammer = contentManager.Load<Texture2D>("SpritesWeapons/hammer");
 
             HealthbarEmpty = contentManager.Load<Texture2D>("SpritesOther/healthbar_empty");
             HealthbarInfill = contentManager.Load<Texture2D>("SpritesOther/healthbar_infill");
