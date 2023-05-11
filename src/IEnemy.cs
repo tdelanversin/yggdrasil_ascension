@@ -20,6 +20,7 @@ namespace YGR
         AvoidPattern,
         Wait,
         Spawn,
+        Hide,
     }
 
     public interface IEnemy : IVictim

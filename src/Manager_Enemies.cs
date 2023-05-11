@@ -16,6 +16,7 @@ namespace YGR
         };
 
         private static List<IEnemy> _enemies = new List<IEnemy>();
+        private static List<IEnemy> _enemiesToAdd = new List<IEnemy>();
 
         public static void ClearEnemies()
         {
@@ -57,6 +58,18 @@ namespace YGR
             _enemies.Add(new Enemy_Boss(position, Manager_Sprites.NewAnimatedSprite_EnemyBoss(), level));
         }
 
+        internal static IEnemy AddEnemy_BossMinion(Vector2 position, Y_Level level, Color color)
+        {
+            // add random offset
+            var random = new System.Random();
+            position += new Vector2(random.Next(-150, 150), random.Next(-150, 150));
+            var enemy = new Enemy_Slime(position, Manager_Sprites.NewAnimatedSprite_EnemySlime(), level);
+            enemy.ChangeColor(color);
+            enemy.State = EnemyState.Idle;
+            _enemiesToAdd.Add(enemy);
+            return enemy;
+        }
+
         public static ReadOnlyCollection<IEnemy> GetEnemies()
         {
             return _enemies.AsReadOnly();
@@ -82,6 +95,10 @@ namespace YGR
                 enemy.DropSomethingJuicyMaybe();
             }
             _enemies.RemoveAll(enemy => enemy.LifePoints <= 0);
+
+            // add new enemies
+            _enemies.AddRange(_enemiesToAdd);
+            _enemiesToAdd.Clear();
         }
 
         public static void Draw(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)

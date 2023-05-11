@@ -17,6 +17,8 @@ namespace YGR
         Dictionary<BossAttack, float> _attackWeights = new Dictionary<BossAttack, float>();
         Dictionary<BossAttack, float> _attackWeightsPhase1 = new Dictionary<BossAttack, float>();
         Dictionary<BossAttack, float> _attackWeightsPhase3 = new Dictionary<BossAttack, float>();
+        IList<IEnemy> _minions = new List<IEnemy>();
+        int _minionCount = 20;
 
         Vector2 _savedTargetDirection = new Vector2(1, 0);
 
@@ -109,25 +111,70 @@ namespace YGR
 
             if (Attack == BossAttack.Spawn)
             {
-                Logger.Debug("Boss position: " + _position.ToString() + " Rect: " + Rect.ToString());
-
                 CharacterSprite.Update(gameTime, AnimationState.Spawn);
                 if (CharacterSprite.Direction != AnimationState.Spawn)
                 {
                     Attack = BossAttack.Wait;
-                    Logger.Debug("Boss position 2: " + _position.ToString() + " Rect: " + Rect.ToString());
-                } else {
+                }
+                else
+                {
                     return;
                 }
             }
 
-            if (LifePoints < 0.5 * LifePointsMax && Phase == 1)
+            UpdateHitCounters(gameTime);
+
+            if (LifePoints <= Phase2HP && Phase == 1)
             {
                 Phase = 2;
+                Attack = BossAttack.Hide;
+                CharacterSprite.Update(gameTime, AnimationState.Jump);
+            }
+            else if (LifePoints <= Phase3HP && Phase == 2)
+            {
+                Phase = 3;
                 _attackWeights = _attackWeightsPhase3;
             }
 
-            UpdateHitCounters(gameTime);
+            if (Phase == 2)
+            {
+                if (CharacterSprite.Direction == AnimationState.Jump)
+                {
+                    if (CharacterSprite.DirectionalIndex != 10) {
+                        CharacterSprite.Update(gameTime, AnimationState.Jump);
+                        return;
+                    } else {
+                        // Spawn in enemies
+                        var bossCenter = new Vector2(
+                            _position.X + _rect.Width / 2,
+                            _position.Y + _rect.Height / 2
+                        );
+                        for (int i = 0; i < _minionCount; i++)
+                        {
+                            _minions.Add(Manager_Enemies.AddEnemy_BossMinion(bossCenter, Level, Color));
+                        }
+                    }
+                }
+                CharacterSprite.Update(gameTime, AnimationState.Hide);
+
+                float Health = 0;
+                foreach (var minion in _minions)
+                {
+                    Health += Math.Max(0, minion.LifePoints);
+                }
+                
+                if (Health <= 0)
+                {
+                    Attack = BossAttack.Spawn;
+                    LifePoints = Phase3HP;
+                    CharacterSprite.Update(gameTime, AnimationState.Spawn);
+                }
+                else
+                {
+                    return;
+                }
+            }
+
             FindTarget();
             UpdateState(gameTime);
 
@@ -152,13 +199,8 @@ namespace YGR
                     break;
             }
 
-            Logger.Debug("Boss position 3: " + _position.ToString() + " Rect: " + Rect.ToString());
-
-
             UpdateVelocity(movement, gameTime);
             UpdateCollision(gameTime);
-
-            Logger.Debug("Boss position 4: " + _position.ToString() + " Rect: " + Rect.ToString());
 
             foreach (var attack in _attacks)
             {
@@ -205,7 +247,7 @@ namespace YGR
                 targetDirection.Normalize();
             }
 
-            switch(Attack)
+            switch (Attack)
             {
                 case BossAttack.Scatter:
                     CharacterSprite.Update(gameTime, movement);
@@ -234,6 +276,32 @@ namespace YGR
 
             _attacks[Attack].Shoot(gameTime, _rect.Center.ToVector2(), targetDirection, Level, this);
         }
+
+        /* Deal with being hit by projectile, basically physical therapy */
+        public override void Hit(IProjectile projectile)
+        {
+            if (State == EnemyState.Inactive || Attack == BossAttack.Hide || Attack == BossAttack.Spawn) { return; }
+
+            // Return if alread dead, otherwise player kill stats are inaccurate
+            if (LifePoints <= 0) { return; }
+
+            if (projectile.WhatAreYou() == X_LevelElements.ConfusionProjectile)
+            {
+                Manager_Confusion.AddConfusion(this, ((Projectile_Confusion)projectile).ConfusionDuration);
+            }
+
+            LifePoints -= projectile.Damage;
+            _hitFramesCounter = 1;
+            _currentColor = Color.Lerp(_hitColor, Color, 0.1f);
+
+            // @statistics
+            var p = (IPlayer)projectile.WhoFiredMe;
+            p.Stats.DamageDealt += projectile.Damage;
+            p.Stats.TimesHit++;
+            if (this is IEnemyBoss) { p.Stats.BossDamageDealt += projectile.Damage; }
+            if (LifePoints <= 0) { p.Stats.Kills++; }
+        }
+
 
         protected override void UpdateVelocity(Vector2 input, GameTime gameTime)
         {
