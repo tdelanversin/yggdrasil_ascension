@@ -24,7 +24,7 @@ namespace YGR
             string longest_str = "P1: [JOINED] Pick character"; // Used to center the text
             Vector2 size = font.MeasureString(longest_str);
             Vector2 pos = new Vector2((Camera.Bounds.Width - size.X) / 2, (Camera.Bounds.Height - size.Y * (1f + 3f * spacing)) / 2);
-            pos.Y += 10; // Feels like CSS...
+            pos.Y +=Y_Level.InGameTileSize * 2.5f; // Feels like CSS...
 
             foreach (IPlayer p in Manager_Players.Players)
             {
