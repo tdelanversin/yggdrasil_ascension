@@ -216,37 +216,15 @@ namespace YGR
                     Menu.Update();
                     break;
                 case GameState.InGame:
-                    //var watch = new Stopwatch();
-                    //var times = new List<long>();
-                    //watch.Start();
                     _background.Update(gameTime);
-                    //times.Add(watch.ElapsedMilliseconds);
-                    //watch.Restart();
                     Manager_Players.Update(gameTime);
-                    //times.Add(watch.ElapsedMilliseconds);
-                    //watch.Restart();
                     Manager_Projectile.Update(gameTime);
-                    //times.Add(watch.ElapsedMilliseconds);
-                    //watch.Restart();
                     Manager_Enemies.Update(gameTime);
-                    //times.Add(watch.ElapsedMilliseconds);
-                    //watch.Restart();
                     Manager_Confusion.Update(gameTime);
-                    //times.Add(watch.ElapsedMilliseconds);
-                    //watch.Restart();
                     Manager_Light2.Update(gameTime);
-                    //times.Add(watch.ElapsedMilliseconds);
-                    //watch.Restart();
                     Manager_Particles.Update(gameTime);
-                    //times.Add(watch.ElapsedMilliseconds);
-                    //watch.Restart();
                     Manager_Sound.Update(gameTime);
-                    //times.Add(watch.ElapsedMilliseconds);
-                    //watch.Restart();
                     _level.Update(gameTime);
-                    //times.Add(watch.ElapsedMilliseconds);
-                    //watch.Restart();
-                    //if (times.Any(x => x > 1)) Logger.Info(string.Join(", ", times.Select(x => x.ToString())));
                     break;
                 case GameState.Menu:
                     _background.Update(gameTime);
