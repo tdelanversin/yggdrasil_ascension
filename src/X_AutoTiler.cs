@@ -83,7 +83,7 @@ namespace YGR
         internal class TileInfo
         {
             public int tileSize;
-            public Dictionary<string, List<Color[]>> tiles;
+            public Dictionary<string, List<Texture2D>> tiles;
             public Dictionary<string, X_TileType[][,][]> masks;
         }
 
@@ -134,17 +134,19 @@ namespace YGR
             tileInfo.Add(resourceFolder + jsonFileName, info);
 
             info.tileSize = data.size;
-            info.tiles = new Dictionary<string, List<Color[]>>();
+            info.tiles = new Dictionary<string, List<Texture2D>>();
             info.masks = new Dictionary<string, X_TileType[][,][]>();
 
             foreach (var t in data.tiles)
             {
-                info.tiles.Add(t.Key, new List<Color[]>());
+                info.tiles.Add(t.Key, new List<Texture2D>());
                 foreach (var e in t.Value.coordinates)
                 {
                     Color[] temp = new Color[data.size * data.size];
                     texture.GetData<Color>(0, new Rectangle(e.x * data.size, e.y * data.size, data.size, data.size), temp, 0, data.size * data.size);
-                    info.tiles[t.Key].Add(temp);
+                    var tex = new Texture2D(graphicsDevice, data.size, data.size);
+                    tex.SetData(temp);
+                    info.tiles[t.Key].Add(tex);
                 }
 
                 var masks = new List<X_TileType[,][]>();
@@ -236,69 +238,70 @@ namespace YGR
             }
         }
 
-        public static X_RoofDoor RoomCoverTexture(
-            string name, string resourceFolder, string jsonFileName,
-            int[][] pattern
-        )
-        {
-            string staticKey = resourceFolder + jsonFileName;
-            if (!tileInfo.ContainsKey(staticKey)) Logger.Error("No tile info for the resource " + staticKey);
+        //public static X_RoofDoor RoomCoverTexture(
+        //    string name, string resourceFolder, string jsonFileName,
+        //    int[][] pattern
+        //)
+        //{
+        //    string staticKey = resourceFolder + jsonFileName;
+        //    if (!tileInfo.ContainsKey(staticKey)) Logger.Error("No tile info for the resource " + staticKey);
             
-            TileInfo info = tileInfo[staticKey];
+        //    TileInfo info = tileInfo[staticKey];
             
-            X_RoofDoor res = new X_RoofDoor();
-            var mechanism1Positions = new List<Vector2>();
-            var mechanism2Positions = new List<Vector2>();
-            var doorTiles = info.tiles["doorCover"];
-            var len = doorTiles.Count();
-            int txWidth = pattern[0].Length * info.tileSize;
-            int txHeight = pattern.Length * info.tileSize;
-            Color[] tx = new Color[txWidth * txHeight];
+        //    X_RoofDoor res = new X_RoofDoor();
+        //    var mechanism1Positions = new List<Vector2>();
+        //    var mechanism2Positions = new List<Vector2>();
+        //    var doorTiles = info.tiles["doorCover"];
+        //    var len = doorTiles.Count();
+        //    int txWidth = pattern[0].Length * info.tileSize;
+        //    int txHeight = pattern.Length * info.tileSize;
+        //    Color[] tx = new Color[txWidth * txHeight];
             
-            //Parallel.For(0, pattern.Length, i =>
-            for (int i=0; i<pattern.Length; ++i)
-            {
-                for (int j = 0; j < pattern[0].Length; ++j)
-                {
-                    if ((X_TileType)pattern[i][j] == X_TileType.Floor || (X_TileType)pattern[i][j] == X_TileType.Wall)
-                    {
-                        var rect = new Rectangle(j * info.tileSize, i * info.tileSize, info.tileSize, info.tileSize);
-                        setRectFromArray(tx, doorTiles[random.Next(0, len)], rect, txWidth, info.tileSize);
-                    }
-                }
-            } //);
+        //    //Parallel.For(0, pattern.Length, i =>
+        //    for (int i=0; i<pattern.Length; ++i)
+        //    {
+        //        for (int j = 0; j < pattern[0].Length; ++j)
+        //        {
+        //            if ((X_TileType)pattern[i][j] == X_TileType.Floor || (X_TileType)pattern[i][j] == X_TileType.Wall)
+        //            {
+        //                var rect = new Rectangle(j * info.tileSize, i * info.tileSize, info.tileSize, info.tileSize);
+        //                setRectFromArray(tx, doorTiles[random.Next(0, len)], rect, txWidth, info.tileSize);
+        //            }
+        //        }
+        //    } //);
 
-            for (int i = 0; i < pattern.Length; ++i)
-            {
-                for (int j = 0; j < pattern[0].Length; ++j)
-                {
-                    if ((X_TileType)pattern[i][j] == X_TileType.Roof)
-                    {
-                        mechanism1Positions.Add(new Vector2(j * info.tileSize, i * info.tileSize));
-                        mechanism2Positions.Add(new Vector2(j * info.tileSize, i * info.tileSize));
-                    }
-                }
-            }
+        //    for (int i = 0; i < pattern.Length; ++i)
+        //    {
+        //        for (int j = 0; j < pattern[0].Length; ++j)
+        //        {
+        //            if ((X_TileType)pattern[i][j] == X_TileType.Roof)
+        //            {
+        //                mechanism1Positions.Add(new Vector2(j * info.tileSize, i * info.tileSize));
+        //                mechanism2Positions.Add(new Vector2(j * info.tileSize, i * info.tileSize));
+        //            }
+        //        }
+        //    }
 
-            res.RoofData = tx;
+        //    res.RoofData = tx;
 
-            res.Mechanism1Data = info.tiles["mechanism1"].First();
-            //res.Mechanism1.SetData<Color>(info.tiles["mechanism1"].First());
-            res.Mechanism1Positions = mechanism1Positions.ToArray();
-            res.Mechanism2Data = info.tiles["mechanism2"].First();
-            //res.Mechanism2.SetData<Color>(info.tiles["mechanism2"].First());
-            res.Mechanism2Positions = mechanism2Positions.ToArray();
+        //    res.Mechanism1Data = info.tiles["mechanism1"].First();
+        //    //res.Mechanism1.SetData<Color>(info.tiles["mechanism1"].First());
+        //    res.Mechanism1Positions = mechanism1Positions.ToArray();
+        //    res.Mechanism2Data = info.tiles["mechanism2"].First();
+        //    //res.Mechanism2.SetData<Color>(info.tiles["mechanism2"].First());
+        //    res.Mechanism2Positions = mechanism2Positions.ToArray();
 
-            return res;
-        }
+        //    return res;
+        //}
 
         public static void Resolve<Types>(
             string resourceFolder, string jsonFileName,
             GraphicsDevice graphicsDevice,
             int[][] pattern,
             Func<string, Types> MapTexture,
-            out Dictionary<Types, List<X_AutoTileTexture>> texture,
-            out Dictionary<Types, List<X_AutoTileColor>> color)
+            out Dictionary<Types, List<X_AutoTileTexture>> texture
+            //out Dictionary<Types, List<X_AutoTileColor>> color
+            )
         {
             X_TileType[][] padded = new X_TileType[pattern.Length + 2][];
             for (int i = 0; i < pattern.Length + 2; ++i)
@@ -326,7 +329,7 @@ namespace YGR
             }
 
             texture = new Dictionary<Types, List<X_AutoTileTexture>>();
-            color = new Dictionary<Types, List<X_AutoTileColor>>();
+            //color = new Dictionary<Types, List<X_AutoTileColor>>();
 
             string staticKey = resourceFolder + jsonFileName;
             if (!tileInfo.ContainsKey(staticKey)) Logger.Error("No tile info for the resource " + staticKey);
@@ -341,22 +344,22 @@ namespace YGR
                 foreach (var t in res)
                 {
                     Rectangle rect = new Rectangle(t.Item1 * info.tileSize, t.Item2 * info.tileSize, info.tileSize, info.tileSize);
-                    int ind = getRandomTile(info.tiles[m.Key]);
+                    var tex = getRandomTile(info.tiles[m.Key]);
 
-                    X_AutoTileColor nc = new X_AutoTileColor(new Point(t.Item1, t.Item2), info.tiles[m.Key][ind].Clone() as Color[]);
-                    List<X_AutoTileColor> list2;
-                    if (color.TryGetValue(key, out list2))
-                    {
-                        list2.Add(nc);
-                    }
-                    else
-                    {
-                        list2 = new List<X_AutoTileColor>() { nc };
-                        color.Add(key, list2);
-                    }
+                    //X_AutoTileColor nc = new X_AutoTileColor(new Point(t.Item1, t.Item2), info.tiles[m.Key][ind].Clone() as Color[]);
+                    //List<X_AutoTileColor> list2;
+                    //if (color.TryGetValue(key, out list2))
+                    //{
+                    //    list2.Add(nc);
+                    //}
+                    //else
+                    //{
+                    //    list2 = new List<X_AutoTileColor>() { nc };
+                    //    color.Add(key, list2);
+                    //}
 
-                    var tex = new Texture2D(graphicsDevice, info.tileSize, info.tileSize);
-                    tex.SetData<Color>(nc.Color());
+                    //var tex = new Texture2D(graphicsDevice, info.tileSize, info.tileSize);
+                    //tex.SetData<Color>(nc.Color());
 
                     X_AutoTileTexture np = new X_AutoTileTexture(new Point(t.Item1, t.Item2), tex);
 
@@ -374,9 +377,9 @@ namespace YGR
             }
         }
 
-        private static int getRandomTile(List<Color[]> colors)
+        private static Texture2D getRandomTile(List<Texture2D> textures)
         {
-            return random.Next(0, colors.Count());
+            return textures[random.Next(0, textures.Count())];
         }
     }
 }

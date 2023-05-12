@@ -79,7 +79,7 @@ namespace YGR
         //private Texture2D _wall;
         //private Texture2D _door;
         Dictionary<X_DoorTextureLayer, List<X_AutoTiler.X_AutoTileTexture>> _tileTextures;
-        Dictionary<X_DoorTextureLayer, List<X_AutoTiler.X_AutoTileColor>> _tileColors;
+        //Dictionary<X_DoorTextureLayer, List<X_AutoTiler.X_AutoTileColor>> _tileColors;
         static public int NumTilesDoorWidth { get { return 5; } }
 
         private int _halfHeight;
@@ -143,7 +143,7 @@ namespace YGR
                 graphicsDevice,
                 Collision.GetCollisionTemplate(),
                 MapTexture,
-                out _tileTextures, out _tileColors);
+                out _tileTextures/*, out _tileColors*/);
 
             State = X_DoorState.Closed;
             _closingTheDoor = false;
