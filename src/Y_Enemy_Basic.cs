@@ -603,7 +603,7 @@ namespace YGR
             Collision.DrawOutline(gameTime, globalOffset, spriteBatch);
         }
 
-        public X_LevelElements WhatAreYou() => X_LevelElements.Enemy;
+        public virtual X_LevelElements WhatAreYou() => X_LevelElements.Enemy;
 
         virtual public void DropSomethingJuicyMaybe()
         {

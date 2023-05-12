@@ -42,9 +42,9 @@ namespace YGR
                 // regular player shot the projectile
                 foreach (var enemy in Manager_Enemies.GetEnemies())
                 {
-                    if (enemy == me.WhoFiredMe) continue;
-
                     if (enemy.Room != me.Room) continue;
+
+                    if (enemy.WhatAreYou() == X_LevelElements.Invincible) continue;
 
                     if (handlePotentialImpact(me, (IVictim)enemy, ref myRect, ref newVelocity, ref contactPoint, ref contactNormal, ref who, timeStepMS))
                     {
