@@ -28,6 +28,7 @@ namespace YGR
         public Color Color { get; set; }
         public X_CollisionModel_Victim Collision { get; protected set; }
         public Vector2 Velocity { get; set; }
+        public Vector2 ImpactVelocity { get; set; }
         public Y_Level Level { get; set; }
         public IWalkable Room { get; set; }
         public string Name { get; set; }
@@ -61,6 +62,7 @@ namespace YGR
         protected float _acceleration;
         public Vector2 _aimDirection;
         protected float _deceleration;
+        protected float _impactDeceleration;
         protected Vector2 Position;
         protected ParticleEffect pE;
         protected bool _isAiming;
@@ -107,7 +109,6 @@ namespace YGR
 
             // He deserves the best weapon in the game
             Gun = new Weapon_PinkHammer(this);
-            
             Ability = new Ability_Ghost();
             Type = type;
             ControlLayout = controlLayout;
@@ -161,9 +162,11 @@ namespace YGR
 
             // Movement related
             Velocity = Vector2.Zero;
+            ImpactVelocity = Vector2.Zero;
             VelocityMax = IPlayer.PlayerBaseVelocity;
-            _acceleration = 1.008f;
-            _deceleration = 1.004f;
+            _acceleration = IPlayer.PlayerBaseAcceleration;
+            _deceleration = IPlayer.PlayerBaseDeceleration;
+            _impactDeceleration = IPlayer.PlayerBaseImpactDeceleration;
 
             // Dash
             IsDashing = false;
@@ -508,8 +511,11 @@ namespace YGR
              * ########################################################################## */
             if (input != Vector2.Zero)
             {
-                //Manager_Particles.GenParticleEffectDustCloudLight(new Vector2(_rect.Location.X + _rect.Width / 2, _rect.Location.Y + _rect.Height));
-                Manager_Particles._particleEffects[(int)Manager_Particles.Effect.DustCloudLight].Trigger(new Vector2(_rect.Location.X + _rect.Width / 2, _rect.Location.Y + _rect.Height));
+                if (Settings.ParticleEffects)
+                {
+                    //Manager_Particles.GenParticleEffectDustCloudLight(new Vector2(_rect.Location.X + _rect.Width / 2, _rect.Location.Y + _rect.Height));
+                    Manager_Particles._particleEffects[(int)Manager_Particles.Effect.DustCloudLight].Trigger(new Vector2(_rect.Location.X + _rect.Width / 2, _rect.Location.Y + _rect.Height));
+                }
 
                 if (input.LengthSquared() > 1)
                 {
@@ -524,7 +530,26 @@ namespace YGR
                     Math.Sign(Velocity.Y) * Math.Max(0.0f, Math.Abs(Velocity.Y) - _deceleration * timeStepMS));
             }
 
-            Velocity = Util.ClampMagnitude(Velocity, VelocityMax);
+            if (!handleImpact(timeStepMS)) Velocity = Util.ClampMagnitude(Velocity, VelocityMax);
+        }
+
+        private bool handleImpact(int timeStepMS)
+        {
+            if (ImpactVelocity.X > 0 || ImpactVelocity.Y > 0)
+            {
+                Logger.Info("lol A:" + ImpactVelocity.ToString());
+                Velocity = ImpactVelocity;
+
+                Velocity = Util.ClampMagnitude(Velocity, MathHelper.Max(Math.Abs(ImpactVelocity.X), Math.Abs(ImpactVelocity.Y)));
+
+                ImpactVelocity = new Vector2(
+                    Math.Sign(ImpactVelocity.X) * Math.Max(0.0f, Math.Abs(ImpactVelocity.X) - _impactDeceleration * timeStepMS),
+                    Math.Sign(ImpactVelocity.Y) * Math.Max(0.0f, Math.Abs(ImpactVelocity.Y) - _impactDeceleration * timeStepMS));
+
+                return true;
+            }
+            ImpactVelocity = Vector2.Zero;
+            return false;
         }
 
         protected virtual void UpdateCollision(GameTime gameTime)

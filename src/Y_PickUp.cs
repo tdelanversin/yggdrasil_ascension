@@ -222,7 +222,7 @@ namespace YGR
                             return switchGun(new Weapon_PinkHammer(player), player, self);
                         });
                 case Y_PowerUps.Life:
-                    return new PickUp(type, location, width, height, 1.75f, Manager_Sprites.NewAnimatedSprite_SpinningHeart(), lastOwner,
+                    return new PickUp(type, location, width, height, 1.5f, Manager_Sprites.NewAnimatedSprite_SpinningHeart(), lastOwner,
                         (player, self) =>
                         {
                             if (player.WhatAreYou() != X_LevelElements.Victim)
@@ -236,7 +236,7 @@ namespace YGR
                             return true;
                         });
                 default: // case Y_PowerUps.Revive:
-                    return new PickUp(type, location, width, height, 1.75f, Manager_Sprites.NewAnimatedSprite_SpinningPlus(), lastOwner,
+                    return new PickUp(type, location, width, height, 1.5f, Manager_Sprites.NewAnimatedSprite_SpinningPlus(), lastOwner,
                         (player, self) =>
                         {
                             if (!(!player.IsAlive() && player is not Player_Ghost))

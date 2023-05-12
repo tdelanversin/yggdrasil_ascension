@@ -184,6 +184,7 @@ namespace YGR
                     new SettingsItem("Fullscreen: ", Settings.Fullscreen, toggleFunc: Settings.ToggleFullscreen),
                     new SettingsItem("Show FPS: ", Settings.DrawFPS, toggleFunc: Settings.ToggleDrawFPS),
                     new SettingsItem("Dynamic Shades: ", Settings.DynamicShades, toggleFunc: Settings.ToggleShades),
+                    new SettingsItem("Particle Effects: ", Settings.ParticleEffects, toggleFunc: Settings.ToggleParticleEffects),
                     new SettingsItem("Level Outlines: ", Settings.DebugOutlinesLevel, toggleFunc: Settings.ToggleDebugOutlinesLevel),
                     new SettingsItem("Entity Outlines: ", Settings.DebugOutlinesEntities, toggleFunc: Settings.ToggleDebugOutlinesEntities),
                     new SettingsItem("Debug Mode: ", Settings.DebugMode, toggleFunc: Settings.ToggleDebugMode),

@@ -35,6 +35,7 @@ namespace YGR
         static GameWindow Window;
         public static bool Fullscreen;
         public static bool DynamicShades;
+        public static bool ParticleEffects;
         public static bool DebugOutlinesLevel;
         public static bool DebugOutlinesEntities;
         public static bool DebugMode;
@@ -58,6 +59,7 @@ namespace YGR
             Sound = true;
             Music = true;
             DebugMode = true; // For now
+            ParticleEffects = true; // TODO: disable if not fixed by jury release
 #if DEBUG
             Fullscreen = false;
             DebugOutlinesLevel = false;
@@ -126,6 +128,13 @@ namespace YGR
             DynamicShades = !DynamicShades;
             SaveSettings();
             return DynamicShades;
+        }
+
+        internal static bool ToggleParticleEffects()
+        {
+            ParticleEffects = !ParticleEffects;
+            SaveSettings();
+            return ParticleEffects;
         }
 
         internal static bool ToggleDebugOutlinesLevel()

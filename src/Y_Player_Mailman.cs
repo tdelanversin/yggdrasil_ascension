@@ -36,6 +36,7 @@ namespace YGR
             // Big guy. Tall. Heavy. What else it there to say.
             SetupPlayerRect(height: IPlayer.PlayerBaseHeight * 1.25f);
             _mass = IPlayer.PlayerBaseMass * 2f;
+            _impactDeceleration = IPlayer.PlayerBaseDeceleration * 1.25f;
             Collision = new X_CollisionModel_Victim(_mass, _cr);
         }
     }

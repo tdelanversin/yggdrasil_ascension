@@ -11,14 +11,14 @@ namespace YGR
     public class X_CollisionModel_Projectile
     {
         public float Mass { get; }
-        public float Cr { get; }
+        public float FakeAcceleration { get; }
 
         private List<Manager_Collision.Record> _records;
 
-        public X_CollisionModel_Projectile(float mass, float cr)
+        public X_CollisionModel_Projectile(float mass, float fakeAcceleration)
         {
             Mass = (mass == 0) ? float.Epsilon : mass;
-            Cr = cr;
+            FakeAcceleration = fakeAcceleration;
             _records = new List<Manager_Collision.Record>();
         }
 
@@ -42,9 +42,9 @@ namespace YGR
                 // regular player shot the projectile
                 foreach (var enemy in Manager_Enemies.GetEnemies())
                 {
-                    if (enemy == me.WhoFiredMe) continue;
-
                     if (enemy.Room != me.Room) continue;
+
+                    if (enemy.WhatAreYou() == X_LevelElements.Invincible) continue;
 
                     if (handlePotentialImpact(me, (IVictim)enemy, ref myRect, ref newVelocity, ref contactPoint, ref contactNormal, ref who, timeStepMS))
                     {
@@ -101,8 +101,6 @@ namespace YGR
                         contactPoint.Add(point);
                         contactNormal.Add(normal);
                         newVelocity = Vector2.Zero;
-                        //me.Velocity = Vector2.Zero;
-                        //Logger.Debug("### " + room.WhatAreYou().ToString() + " => " + me.WhoFiredMe.WhatAreYou().ToString() + ":impacted at " + point.ToString() + " with room 1 " + room.Name);
                     }
 
                     // check the connected connectors, just to be sure
@@ -114,9 +112,6 @@ namespace YGR
                             who.Add(room);
                             contactPoint.Add(point);
                             contactNormal.Add(normal);
-                            //me.Velocity = myVelocity;
-                            //newVelocity = myVelocity;
-                            //Logger.Debug("### " + room.WhatAreYou().ToString() + " => " + me.WhoFiredMe.WhatAreYou().ToString() + ":impacted at " + point.ToString() + " with room 2 " + room.Name);
                         }
                     }
                 }
@@ -143,7 +138,7 @@ namespace YGR
             bool result = Manager_Collision.MovingRectVsMovingRectFast(
                 ref myRect, ref myVelocity, Mass,
                 ref otherRect, ref otherVelocity, impactedObject.Collision.Mass,
-                Cr, timeStepMS, out point, out normal);
+                FakeAcceleration, timeStepMS, out point, out normal);
 
             if (result)
             {
@@ -151,8 +146,8 @@ namespace YGR
                 contactPoint.Add(point);
                 contactNormal.Add(normal);
                 me.Velocity = Vector2.Zero;
-                impactedObject.Velocity = otherVelocity;
-                //Logger.Debug("### " + victim.WhatAreYou().ToString() + " => " + me.WhoFiredMe.WhatAreYou().ToString() + ": impacted with someone at " + point.ToString());
+
+                impactedObject.ImpactVelocity = otherVelocity;
 
                 _records.Add(new Manager_Collision.Record(
                     (DateTime.Now - Manager_Collision.StartTime).TotalMilliseconds,

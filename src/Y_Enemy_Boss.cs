@@ -86,7 +86,7 @@ namespace YGR
             Collision = new X_CollisionModel_Victim(_mass, 0.0f);
 
             // Collision bounds
-            int height = 150;
+            int height = 250;
             int width = (int)(height / CharacterSprite.SpriteDimension.Y * CharacterSprite.SpriteDimension.X);
 
             // Offset the enitity to center it on the spawner tile
@@ -102,6 +102,11 @@ namespace YGR
             CharacterScale = Util.GetSpriteScale(_rect, CharacterSprite.SpriteDimension);
             CharacterOffset = Vector2.Zero;
 
+        }
+
+        public override X_LevelElements WhatAreYou()
+        {
+            return Attack == BossAttack.Hide ? X_LevelElements.Invincible : X_LevelElements.Enemy;
         }
 
         public override void Update(GameTime gameTime)
