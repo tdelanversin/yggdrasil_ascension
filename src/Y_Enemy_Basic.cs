@@ -26,7 +26,7 @@ namespace YGR
         protected float _maxVelocity;
 
         public Vector2 FacingDirection { get; set; }
-        protected float _steeringDirection;
+        public float Angle { get; set; }
 
         public AnimatedSprite CharacterSprite { get; }
         protected Vector2 CharacterOffset;
@@ -291,19 +291,71 @@ namespace YGR
             _rect.Location = _position.ToPoint();
         }
 
+        /// <summary>
+        /// Return true if the target position is inside another enemy
+        /// </summary>
+        protected virtual bool CollidesWithOtherEnemy(Vector2 targetLocation)
+        {
+            return Manager_Enemies
+                .GetEnemies()
+                .Where(e =>
+                    e.Room == Room &&
+                    e is not IEnemyBoss &&
+                    e.Rect.Contains(targetLocation))
+                .Count() != 0;
+        }
+
+        protected virtual Vector2 CheckMovementVector(Vector2 desiredMovement)
+        {
+            // Let's start with the assumption that we cannot actually go where we want to
+            Vector2 actualMovement = Vector2.Zero;
+
+            // Update our facing direction and get the angle
+            FacingDirection = Vector2.Normalize(desiredMovement);
+            Angle = (float)Math.Atan2(FacingDirection.Y, FacingDirection.X);
+
+            var length = desiredMovement.Length();
+
+            // We scan in either clockwise or counter clockwise
+            float randomSteering = (float)((Util.random.Next(1) * 2 - 1) * Math.PI / 8);
+
+            for (int i = 0; i < 8; i++)
+            {
+                Vector2 targetLocation = Rect.Center.ToVector2() + FacingDirection * Rect.Height;
+                if (LineOfSight(targetLocation) && !CollidesWithOtherEnemy(targetLocation))
+                {
+                    actualMovement = FacingDirection * length;
+                    break;
+                }
+                else
+                {
+                    Angle += randomSteering;
+                    FacingDirection = new Vector2((float)Math.Cos(Angle), (float)Math.Sin(Angle));
+                }
+            }
+            return actualMovement;
+        }
+
         protected virtual Vector2 Wander(GameTime gameTime)
         {
             float steeringDiff = (Util.random.NextSingle() - 0.5f) / 4f;
 
-            // Don't stupidly try walking into walls
+            // Don't stupidly try walking into walls or other enemies
             int counter = 0;
+            bool canMove = false;
+            bool hasLineOfSight = false;
+            bool collidesWithEnemy = false;
             do
             {
-                _steeringDirection += steeringDiff;
+                Angle += collidesWithEnemy ? 5 * steeringDiff : 2 * steeringDiff;
                 steeringDiff *= 2;
                 counter++;
-                FacingDirection = new Vector2((float)Math.Cos(_steeringDirection), (float)Math.Sin(_steeringDirection));
-            } while (counter < 8 && !LineOfSight(Rect.Center.ToVector2() + FacingDirection * Rect.Height * 2));
+                FacingDirection = new Vector2((float)Math.Cos(Angle), (float)Math.Sin(Angle));
+                var targetLocation = Rect.Center.ToVector2() + FacingDirection * Rect.Height;
+                hasLineOfSight = LineOfSight(targetLocation);
+                collidesWithEnemy = CollidesWithOtherEnemy(targetLocation);
+                canMove = hasLineOfSight && !collidesWithEnemy;
+            } while (counter < 8 && !canMove);
 
             /*
             // Alternative Circle steering model wandering: Move a point on a circle in front of the entity, then face that point
@@ -312,26 +364,22 @@ namespace YGR
             FacingDirection = steeringPoint - _position;
             */
 
-            return FacingDirection;
+            return canMove ? FacingDirection : Vector2.Zero;
         }
 
         protected virtual Vector2 Chase(GameTime gameTime)
         {
-            Vector2 movement = Vector2.Zero;
-
             // Move towards target if it's further than safety distance away
             if (Target != null && Vector2.Distance(Target.Rect.Center.ToVector2(), Rect.Center.ToVector2()) > safetyDistance)
             {
-                FacingDirection = Target.Rect.Center.ToVector2() - Rect.Center.ToVector2();
-                movement = FacingDirection;
+                var desiredMovement = Target.Rect.Center.ToVector2() - Rect.Center.ToVector2();
+                return CheckMovementVector(desiredMovement);
             }
             else
             {
                 // Just stand still, I guess? -> Nope, let's not make it too easy for the players
                 return Wander(gameTime);
             }
-
-            return movement;
         }
 
         protected virtual Vector2 ForceChace(GameTime gameTime)
@@ -339,8 +387,8 @@ namespace YGR
             // Move towards target no matter what
             if (Target != null)
             {
-                FacingDirection = Target.Rect.Center.ToVector2() - Rect.Center.ToVector2();
-                return FacingDirection;
+                var desiredMovement = Target.Rect.Center.ToVector2() - Rect.Center.ToVector2();
+                return CheckMovementVector(desiredMovement);
             }
             else
             {
@@ -358,26 +406,9 @@ namespace YGR
                 return Wander(gameTime);
             }
 
-            // Face away from closest player
-            FacingDirection = Rect.Center.ToVector2() - Target.Rect.Center.ToVector2();
-            FacingDirection = Vector2.Normalize(FacingDirection);
-
-            // If we're running into an obstacle, try and face away from it, like we do when wandering
-            // _steeringDirection = (float)Math.Tan(FacingDirection.X / FacingDirection.Y);
-            float steeringDiff = (Util.random.NextSingle() - 0.5f) / 4f;
-
-            // Don't stupidly try walking into walls
-            int counter = 0;
-            while (counter < 8 && !LineOfSight(Rect.Center.ToVector2() + FacingDirection * Rect.Height * 2))
-            {
-                _steeringDirection += steeringDiff;
-                steeringDiff *= 2;
-                counter++;
-                FacingDirection = new Vector2((float)Math.Cos(_steeringDirection), (float)Math.Sin(_steeringDirection));
-            }
-            movement = FacingDirection;
-
-            return movement;
+            // Face away from target
+            var desiredMovement = Rect.Center.ToVector2() - Target.Rect.Center.ToVector2();
+            return CheckMovementVector(desiredMovement);
         }
 
         public virtual void UpdateState(GameTime gameTime)
@@ -475,7 +506,7 @@ namespace YGR
         {
             string str = String.Format("{0} {1} {2}", Name, LifePoints, State);
             Vector2 str_size = Fonts.Small.MeasureString(str);
-            Vector2 str_pos = new Vector2(_rect.Location.X + _rect.Width / 2 - str_size.X / 2, _rect.Location.Y - str_size.Y - 2) + CharacterOffset;
+            Vector2 str_pos = new Vector2(_rect.Location.X + _rect.Width / 2 - str_size.X / 2, _rect.Location.Y - str_size.Y - 20) + CharacterOffset;
             spriteBatch.DrawString(Fonts.Small, str, str_pos, Color.Wheat);
         }
 
@@ -551,12 +582,12 @@ namespace YGR
             if (Settings.DebugOutlinesEntities)
             {
                 DrawFaceDirectionIndicator(gameTime, globalOffset, spriteBatch);
+                DrawOverheadString(gameTime, globalOffset, spriteBatch);
             }
 
             if (State != EnemyState.Inactive)
             {
                 DrawHealthbar(gameTime, globalOffset, spriteBatch);
-                // DrawOverheadString(gameTime, globalOffset, spriteBatch);
             }
         }
 
