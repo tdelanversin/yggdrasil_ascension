@@ -49,10 +49,7 @@ namespace YGR
                     if (handlePotentialImpact(me, (IVictim)enemy, ref myRect, ref newVelocity, ref contactPoint, ref contactNormal, ref who, timeStepMS))
                     {
                         result = true;
-                        if (me is not Projectile_Directed)
-                        {
-                            me.DeleteNext = true;
-                        }
+                        me.DeleteNext = true;
                         break;
                     }
                 }
@@ -89,10 +86,7 @@ namespace YGR
                     if (handlePotentialImpact(me, victim, ref myRect, ref newVelocity, ref contactPoint, ref contactNormal, ref who, timeStepMS))
                     {
                         result = true;
-                        if (me is not Projectile_Directed)
-                        {
-                            me.DeleteNext = true;
-                        }
+                        me.DeleteNext = true;
                         break;
                     }
                 }
@@ -151,7 +145,8 @@ namespace YGR
                 who.Add(impactedObject);
                 contactPoint.Add(point);
                 contactNormal.Add(normal);
-                me.Velocity = Vector2.Zero;
+                myVelocity = Vector2.Zero;
+                //me.Velocity = Vector2.Zero;
 
                 impactedObject.ImpactVelocity = otherVelocity;
 
