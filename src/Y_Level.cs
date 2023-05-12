@@ -574,8 +574,6 @@ namespace YGR
                         break; // let players fight
                     }
 
-                    Camera.SetFocusPlayers();
-
                     if (_waitTimeBetweenEndOfFightAndLowerDoorsCounter < _waitTimeBetweenEndOfFightAndLowerDoors)
                     {
                         _waitTimeBetweenEndOfFightAndLowerDoorsCounter++;
@@ -585,8 +583,11 @@ namespace YGR
 
                     encounterRoom.Cleared = true;
                     encounterRoom.OpenAllUnlockedRoomDoors();
-                    encounterRoom.SetLocked(false);
 
+                    if (!encounterRoom.AllDoorsOpen()) break; // wait for all doors to open
+
+                    encounterRoom.SetLocked(false);
+                    Camera.SetFocusPlayers();
                     Manager_Sound.PlayFreeRoamMusic();
 
                     if (encounterRoom.Category == "Gold")
@@ -634,10 +635,24 @@ namespace YGR
 
         public void Draw(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)
         {
+            var watch = new Stopwatch();
+            var timesr = new List<long>();
+            var timesd = new List<long>();
+            watch.Start();
             foreach (var room in Rooms)
             {
+                // Culling
+                if (Rectangle.Intersect(Camera.VisibleArea, room.Value.Rect) == Rectangle.Empty) continue;
+
                 room.Value.Draw(gameTime, globalOffset, spriteBatch);
+                if(room.Value.WhatAreYou() == X_LevelElements.Door)
+                    timesd.Add(watch.ElapsedMilliseconds);
+                else
+                    timesr.Add(watch.ElapsedMilliseconds);
+                watch.Restart();
             }
+            if (timesr.Any(x => x > 1)) Logger.Info("Rooms: " + string.Join(",\t", timesr.Select(x => x.ToString())));
+            if (timesd.Any(x => x > 1)) Logger.Info("Doors: " + string.Join(",\t", timesd.Select(x => x.ToString())));
         }
 
         public X_LevelElements WhatAreYou()
