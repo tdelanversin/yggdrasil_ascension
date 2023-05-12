@@ -184,7 +184,7 @@ namespace YGR
                     damage: 0,
                     maxAge: 10000,
                     speed: 0.4f,
-                    mass: 50.0f,
+                    mass: 16.0f,
                     fakeAcceleration: 2.0f // make stuff fly on impact: 1.0f is the exact elastic impact. <1.0f is fake slower, > 1.0f is fake faster
                  )
              );

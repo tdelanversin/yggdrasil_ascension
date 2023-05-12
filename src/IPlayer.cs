@@ -19,8 +19,8 @@ namespace YGR
         public static int PlayerBaseHeight = 2 * Y_Level.InGameTileSize;
         public static float PlayerBaseVelocity = 0.35f;
         public static float PlayerBaseMass = 0.35f;
-        public static float PlayerBaseAcceleration = 1.008f;
-        public static float PlayerBaseDeceleration = 1.004f;
+        public static float PlayerBaseAcceleration = 0.008f;
+        public static float PlayerBaseDeceleration = 0.004f;
         public static float PlayerBaseImpactDeceleration = 0.01f;
 
         public ControlLayout ControlLayout { get; set; }

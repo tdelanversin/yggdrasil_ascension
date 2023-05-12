@@ -31,6 +31,7 @@ namespace YGR
         public void DropSomethingJuicyMaybe();
         public void Kill();
         public void WakeUp();
+        public void ChangePosition(Vector2 newPosition);
     }
 
     public interface IEnemyBoss : IEnemy { 

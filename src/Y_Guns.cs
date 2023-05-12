@@ -554,15 +554,16 @@ namespace YGR
             double spread = -ShotCount / 2 * ShotSpread;
             for (int i = 0; i < ShotCount; i++)
             {
+                spread += ShotSpread;
+                if (i % (ShotCount / Holes) < HoleSize) continue;
+
                 var new_dir = new Vector2(
                     (float)(direction.X * Math.Cos(spread) - direction.Y * Math.Sin(spread)),
                     (float)(direction.X * Math.Sin(spread) + direction.Y * Math.Cos(spread))
                 );
-                spread += ShotSpread;
+                var prosition = origin + new_dir * 50f;
 
-                if (i % (ShotCount / Holes) < HoleSize) continue;
-
-                Manager_Projectile.AddProjectile_BossProjectile(origin, new_dir, level, who, 0.25f);
+                Manager_Projectile.AddProjectile_BossProjectile(prosition, new_dir, level, who, 0.25f);
             }
 
             return true;
@@ -596,8 +597,9 @@ namespace YGR
                     (float)(direction.X * Math.Cos(spread) - direction.Y * Math.Sin(spread)),
                     (float)(direction.X * Math.Sin(spread) + direction.Y * Math.Cos(spread))
                 );
+                var prosition = origin + new_dir * 30f;
 
-                Manager_Projectile.AddProjectile_BossProjectile(origin, new_dir, level, who, 0.30f);
+                Manager_Projectile.AddProjectile_BossProjectile(prosition, new_dir, level, who, 0.30f);
                 spread += ShotSpread;
             }
 

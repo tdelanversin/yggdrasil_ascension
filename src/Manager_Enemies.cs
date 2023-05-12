@@ -58,16 +58,20 @@ namespace YGR
             _enemies.Add(new Enemy_Boss(position, Manager_Sprites.NewAnimatedSprite_EnemyBoss(), level));
         }
 
-        internal static IEnemy AddEnemy_BossMinion(Vector2 position, Y_Level level, Color color)
+        internal static IEnemy MakeEnemy_BossMinion(Y_Level level, Color color)
         {
-            // add random offset
+            var enemy = new Enemy_Slime(Vector2.Zero, Manager_Sprites.NewAnimatedSprite_EnemySlime(), level);
+            enemy.ChangeColor(color);
+            return enemy;
+        }
+
+        internal static void AddEnemy_BossMinion(Vector2 position, IEnemy minion)
+        {
             var random = new System.Random();
             position += new Vector2(random.Next(-150, 150), random.Next(-150, 150));
-            var enemy = new Enemy_Slime(position, Manager_Sprites.NewAnimatedSprite_EnemySlime(), level);
-            enemy.ChangeColor(color);
-            enemy.WakeUp();
-            _enemiesToAdd.Add(enemy);
-            return enemy;
+            minion.ChangePosition(position);
+            minion.WakeUp();
+            _enemiesToAdd.Add(minion);
         }
 
         public static ReadOnlyCollection<IEnemy> GetEnemies()
@@ -97,8 +101,11 @@ namespace YGR
             _enemies.RemoveAll(enemy => enemy.LifePoints <= 0);
 
             // add new enemies
-            _enemies.AddRange(_enemiesToAdd);
-            _enemiesToAdd.Clear();
+            if (_enemiesToAdd.Count > 0)
+            {
+                _enemies.AddRange(_enemiesToAdd);
+                _enemiesToAdd.Clear();
+            }
         }
 
         public static void Draw(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)
