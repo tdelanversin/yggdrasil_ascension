@@ -49,6 +49,10 @@ namespace YGR
                     if (handlePotentialImpact(me, (IVictim)enemy, ref myRect, ref newVelocity, ref contactPoint, ref contactNormal, ref who, timeStepMS))
                     {
                         result = true;
+                        if (me is not Projectile_Directed)
+                        {
+                            me.DeleteNext = true;
+                        }
                         break;
                     }
                 }
@@ -85,6 +89,10 @@ namespace YGR
                     if (handlePotentialImpact(me, victim, ref myRect, ref newVelocity, ref contactPoint, ref contactNormal, ref who, timeStepMS))
                     {
                         result = true;
+                        if (me is not Projectile_Directed)
+                        {
+                            me.DeleteNext = true;
+                        }
                         break;
                     }
                 }
@@ -97,6 +105,7 @@ namespace YGR
                     if (room.Collision.Intersect(ref myRect, ref newVelocity, timeStepMS, out point, out normal))
                     {
                         result = true;
+                        me.DeleteNext = true;
                         who.Add(room);
                         contactPoint.Add(point);
                         contactNormal.Add(normal);
@@ -109,6 +118,7 @@ namespace YGR
                         if (door.Value.First().Collision.Intersect(ref myRect, ref newVelocity, timeStepMS, out point, out normal))
                         {
                             result = true;
+                            me.DeleteNext = true;
                             who.Add(room);
                             contactPoint.Add(point);
                             contactNormal.Add(normal);
@@ -117,11 +127,7 @@ namespace YGR
                 }
             }
 
-            if (result)
-            {
-                me.DeleteNext = true;
-            }
-            else
+            if (!result)
             {
                 newVelocity = me.Velocity;
             }
