@@ -686,7 +686,7 @@ namespace YGR
                 ref collided
             );
 
-            if (collision) unifyCollisions(ref collided, ref movingRect, out contactPoint, out contactNormal);
+            //if (collision) unifyCollisions(ref collided, ref movingRect, out contactPoint, out contactNormal);
 
             return collision;
         }
@@ -699,11 +699,11 @@ namespace YGR
             bool collision = Manager_Collision.FastRectVsStaticRects(
                 ref movingRect, velocity, timeStepMS, _collisionRectangles, _collisionRectanglesHit, ref collided);
 
-            if (collision)
-            {
-                unifyCollisions(ref collided, ref movingRect, out contactPoint, out contactNormal);
-                velocity = Vector2.Zero;
-            }
+            //if (collision)
+            //{
+            //    unifyCollisions(ref collided, ref movingRect, out contactPoint, out contactNormal);
+            //    velocity = Vector2.Zero;
+            //}
 
             return collision;
         }

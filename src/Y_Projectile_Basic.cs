@@ -133,10 +133,6 @@ namespace YGR
                     if (obj is IVictim)
                     {
                         Manager_Particles._particleEffects[(int)Manager_Particles.Effect.Impact].Trigger(new Vector2(_rect.Location.X + _rect.Width / 2, _rect.Location.Y + _rect.Height / 2));
-                        if(obj.WhatAreYou() == X_LevelElements.Enemy)
-                        {
-                            Logger.Info("From outside: " + ((IVictim)obj).Velocity.ToString());
-                        }
                         ((IVictim)obj).Hit(this);
                     }
                 }
