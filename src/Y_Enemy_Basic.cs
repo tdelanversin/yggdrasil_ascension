@@ -157,6 +157,13 @@ namespace YGR
             Gun.NextShotCooldown = Util.random.Next(2500);
         }
 
+        public virtual void ChangePosition(Vector2 newPosition)
+        {
+            _position = newPosition - new Vector2(_rect.Width / 2, _rect.Height / 2);
+            _rect.X = (int)_position.X;
+            _rect.Y = (int)_position.Y;
+        }
+
         public virtual void Kill()
         {
             LifePoints = 0;

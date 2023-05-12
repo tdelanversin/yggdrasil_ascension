@@ -686,7 +686,7 @@ namespace YGR
                 ref collided
             );
 
-            if (collision) unifyCollisions(ref collided, ref movingRect, out contactPoint, out contactNormal);
+            // if (collision) unifyCollisions(ref collided, ref movingRect, out contactPoint, out contactNormal);
 
             return collision;
         }
@@ -701,7 +701,7 @@ namespace YGR
 
             if (collision)
             {
-                unifyCollisions(ref collided, ref movingRect, out contactPoint, out contactNormal);
+                // unifyCollisions(ref collided, ref movingRect, out contactPoint, out contactNormal);
                 velocity = Vector2.Zero;
             }
 

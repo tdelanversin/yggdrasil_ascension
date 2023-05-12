@@ -12,15 +12,18 @@ namespace YGR
         Dictionary<BossAttack, int> _attackLength = new Dictionary<BossAttack, int>();
 
         int Phase = 1;
-        int Phase2HP;
-        int Phase3HP;
+        float Phase1HP;
+        float Phase2HP;
+        float Phase3HP;
         Dictionary<BossAttack, float> _attackWeights = new Dictionary<BossAttack, float>();
         Dictionary<BossAttack, float> _attackWeightsPhase1 = new Dictionary<BossAttack, float>();
         Dictionary<BossAttack, float> _attackWeightsPhase3 = new Dictionary<BossAttack, float>();
         IList<IEnemy> _minions = new List<IEnemy>();
-        int _minionCount = 20;
 
+        // Vairables for AOE pattern avoiding attack
         Vector2 _savedTargetDirection = new Vector2(1, 0);
+        bool _alreadyShot = false;
+
 
 
         public Enemy_Boss(
@@ -29,13 +32,6 @@ namespace YGR
             Y_Level level
         ) : base(position, sprite, level)
         {
-            LifePointsMax = 240;
-            Phase2HP = (int)(LifePointsMax * 0.5f);
-            Phase3HP = Phase2HP - 1;
-
-            LifePoints = LifePointsMax;
-            fleeingHPTreshold = 0; // Gigachad never flees
-
             Name = "Slime Boss";
             Gun = new Gun_BasicEnemy(this);
 
@@ -75,7 +71,6 @@ namespace YGR
 
             _attackWeights = _attackWeightsPhase1;
 
-
             _hitColor = Color.OrangeRed;
             Color = new Color(255, 255, 98);
             _currentColor = Color;
@@ -102,11 +97,34 @@ namespace YGR
             CharacterScale = Util.GetSpriteScale(_rect, CharacterSprite.SpriteDimension);
             CharacterOffset = Vector2.Zero;
 
+            // Create the minions
+            for (int i = 0; i < 22; i++)
+            {
+                _minions.Add(Manager_Enemies.MakeEnemy_BossMinion(Level, Color));
+            }
+
+            Phase1HP = 200;
+            Phase2HP = 0;
+            foreach (var minion in _minions)
+            {
+                Phase2HP += Math.Max(0, minion.LifePoints);
+            }
+            Phase3HP = 200;
+
+            LifePointsMax = Phase1HP + Phase2HP + Phase3HP;
+
+            LifePoints = LifePointsMax;
+            fleeingHPTreshold = 0;
         }
 
         public override X_LevelElements WhatAreYou()
         {
             return Attack == BossAttack.Hide ? X_LevelElements.Invincible : X_LevelElements.Enemy;
+        }
+
+        private Vector2 BossCenter()
+        {
+            return _rect.Center.ToVector2() + new Vector2(0, 80 * Y_Level.GlobalScale);
         }
 
         public override void Update(GameTime gameTime)
@@ -128,7 +146,7 @@ namespace YGR
 
             UpdateHitCounters(gameTime);
 
-            if (LifePoints <= Phase2HP && Phase == 1)
+            if (LifePoints <= Phase2HP + Phase3HP && Phase == 1)
             {
                 Phase = 2;
                 Attack = BossAttack.Hide;
@@ -144,17 +162,10 @@ namespace YGR
                         CharacterSprite.Update(gameTime, AnimationState.Jump);
                         return;
                     }
-                    else
+                    // Spawn in enemies
+                    foreach (IEnemy minion in _minions)
                     {
-                        // Spawn in enemies
-                        var bossCenter = new Vector2(
-                            _position.X + _rect.Width / 2,
-                            _position.Y + _rect.Height / 2
-                        );
-                        for (int i = 0; i < _minionCount; i++)
-                        {
-                            _minions.Add(Manager_Enemies.AddEnemy_BossMinion(bossCenter, Level, Color));
-                        }
+                        Manager_Enemies.AddEnemy_BossMinion(BossCenter(), minion);
                     }
                 }
                 CharacterSprite.Update(gameTime, AnimationState.Hide);
@@ -165,6 +176,8 @@ namespace YGR
                     Health += Math.Max(0, minion.LifePoints);
                 }
 
+                LifePoints = Phase3HP + Health;
+
                 if (Health <= 0)
                 {
                     Attack = BossAttack.Spawn;
@@ -172,10 +185,7 @@ namespace YGR
                     _attackWeights = _attackWeightsPhase3;
                     CharacterSprite.Update(gameTime, AnimationState.Spawn);
                 }
-                else
-                {
-                    return;
-                }
+                return;
             }
 
             FindTarget();
@@ -216,6 +226,7 @@ namespace YGR
                 if (Attack != BossAttack.Wait)
                 {
                     Attack = BossAttack.Wait;
+                    _alreadyShot = false;
                 }
                 else
                 {
@@ -260,13 +271,16 @@ namespace YGR
                     break;
                 case BossAttack.AOE:
                     CharacterSprite.Update(gameTime, AnimationState.Jump);
-                    if (CharacterSprite.DirectionalIndex == 10) // frame 10 and 11 are the first frames where the boss hits the ground
-                    {
-                        _attacks[Attack].Shoot(gameTime, _rect.Center.ToVector2(), targetDirection, Level, this);
-                    }
-                    return;
+                    if (CharacterSprite.DirectionalIndex != 10) // frame 10 and 11 are the first frames where the boss hits the ground
+                        return;
+                    break;
                 case BossAttack.AvoidPattern:
                     CharacterSprite.Update(gameTime, AnimationState.Jump);
+                    if (!_alreadyShot){
+                        if (CharacterSprite.DirectionalIndex != 10) // frame 10 and 11 are the first frames where the boss hits the ground
+                            return;
+                        _alreadyShot = true;
+                    }
                     targetDirection = _savedTargetDirection;
                     break;
                 case BossAttack.Wait:
@@ -277,7 +291,7 @@ namespace YGR
                     break;
             }
 
-            _attacks[Attack].Shoot(gameTime, _rect.Center.ToVector2(), targetDirection, Level, this);
+            _attacks[Attack].Shoot(gameTime, BossCenter(), targetDirection, Level, this);
         }
 
         /* Deal with being hit by projectile, basically physical therapy */
