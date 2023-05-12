@@ -78,7 +78,7 @@ namespace YGR
 
             _maxVelocity = 0.075f;
 
-            var _mass = 8.0f; // Heavier than other entities
+            var _mass = 64.0f; // Heavier than other entities
             Collision = new X_CollisionModel_Victim(_mass, 0.0f);
 
             // Collision bounds
