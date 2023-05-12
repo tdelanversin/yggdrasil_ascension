@@ -1,10 +1,12 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using Microsoft.Xna.Framework.Input;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace YGR
 {
@@ -171,9 +173,11 @@ namespace YGR
 
         private static List<Tuple<int, int>> match(X_TileType[][] pattern, X_TileType[][,][] tiles)
         {
-            List<Tuple<int, int>> res = new List<Tuple<int, int>>();
-            foreach(var tile in tiles)
+            List<Tuple<int, int>>[] res = new List<Tuple<int, int>>[tiles.Count()];
+            Parallel.For(0, tiles.Count(), t =>
+            //foreach(var tile in tiles)
             {
+                res[t] = new List<Tuple<int, int>>();
                 for (int y = 1; y < pattern.Length - 1; ++y)
                 {
                     for (int x = 1; x < pattern[0].Length - 1; ++x)
@@ -182,15 +186,21 @@ namespace YGR
                         {
                             for (int i = -1; i <= 1; ++i)
                             {
-                                if (!evalTile(pattern[y + j][x + i], tile[j + 1, i + 1])) goto no_match;
+                                if (!evalTile(pattern[y + j][x + i], tiles[t][j + 1, i + 1])) goto no_match;
                             }
                         }
-                        res.Add(new Tuple<int, int>(x - 1, y - 1));
+                        res[t].Add(new Tuple<int, int>(x - 1, y - 1));
                     no_match: continue;
                     }
                 }
+            });
+            var result = res[0];
+            for(int i=1; i<res.Length; ++i)
+            {
+                result.AddRange(res[i]);
             }
-            return res;
+
+            return result;
         }
 
         private static void output(List<Tuple<int, int>> coords, string fileName, int width, int height)
@@ -337,10 +347,17 @@ namespace YGR
             TileInfo info = tileInfo[staticKey];
 
             int len = info.tileSize * info.tileSize;
-            foreach (var m in info.masks)
+            List<X_AutoTileTexture>[] listArray = new List<X_AutoTileTexture>[info.masks.Count()];
+            Types[] keys = new Types[info.masks.Count()];
+            var masks = info.masks.ToArray();
+            //foreach (var m in info.masks)
+            for(int i=0; i<info.masks.Count(); ++i)
             {
+                var m = masks[i];
                 var res = match(padded, m.Value);
                 var key = MapTexture(m.Key);
+                keys[i] = key;
+                listArray[i] = new List<X_AutoTileTexture>();
                 foreach (var t in res)
                 {
                     Rectangle rect = new Rectangle(t.Item1 * info.tileSize, t.Item2 * info.tileSize, info.tileSize, info.tileSize);
@@ -362,17 +379,20 @@ namespace YGR
                     //tex.SetData<Color>(nc.Color());
 
                     X_AutoTileTexture np = new X_AutoTileTexture(new Point(t.Item1, t.Item2), tex);
-
-                    List<X_AutoTileTexture> list;
-                    if (texture.TryGetValue(key, out list))
-                    {
-                        list.Add(np);
-                    }
-                    else
-                    {
-                        list = new List<X_AutoTileTexture>() { np };
-                        texture.Add(key, list);
-                    }
+                    listArray[i].Add(np);
+                }
+            } //);
+            
+            for(int i=0; i<listArray.Length; ++i)
+            {
+                List<X_AutoTileTexture> list;
+                if (texture.TryGetValue(keys[i], out list))
+                {
+                    list.AddRange(listArray[i]);
+                }
+                else
+                {
+                    texture.Add(keys[i], listArray[i]);
                 }
             }
         }
