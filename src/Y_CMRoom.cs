@@ -397,10 +397,11 @@ namespace YGR
                     {
                         // Room opener field that can trigger the game start
                         _interactables.Add(new Interactable_BossRoomEscaper(
-                            new Rectangle(button.x, button.y, button.width, button.height), this)
+                            // TODO: correct button size should ideally come from ldtk
+                            new Rectangle(button.x, button.y, 4 * Y_Level.InGameTileSize, 4 * Y_Level.InGameTileSize), this)
                         );
                     }
-                    else if(button.customFields["Type"] == ButtonEntity.StartButton)
+                    else if (button.customFields["Type"] == ButtonEntity.StartButton)
                     {
                         // Room opener field that can trigger the game start
                         _interactables.Add(new Interactable_RoomOpener(
@@ -413,7 +414,7 @@ namespace YGR
             if (array.entities.Teleportation_point != null)
             {
                 var teleporter = JsonConvert.DeserializeObject<List<GenericLdtkEntity>>(array.entities.Teleportation_point.ToString());
-                foreach(var t in teleporter)
+                foreach (var t in teleporter)
                 {
                     TeleporterTarget = new Point(t.x + 16, t.y + 16);
                     break;
@@ -548,7 +549,7 @@ namespace YGR
 
         public int GetTargetShadeIndex()
         {
-            return (ShadeIndex+1)%2;
+            return (ShadeIndex + 1) % 2;
         }
 
         public void SwitchTargetShadeIndex()
@@ -661,7 +662,7 @@ namespace YGR
                 if (PickUps[i].Active && player.Rect.Intersects(PickUps[i].Rect))
                 {
                     bool powerupExpired = PickUps[i].Action((IPlayer)player, PickUps[i]);
-                   
+
                     return;
                 }
             }
@@ -987,7 +988,7 @@ namespace YGR
             //// needs to be done this way because properties return by value and not by ref
             Rect = new Rectangle(position.X, position.Y, Rect.Width, Rect.Height);
             Offset = new Vector3(Rect.Location.X / Y_Level.GlobalScale, Rect.Location.Y / Y_Level.GlobalScale, 0);
-            foreach(var enemy in _enemies)
+            foreach (var enemy in _enemies)
             {
                 enemy.x += p.X;
                 enemy.y += p.Y;
@@ -1001,7 +1002,7 @@ namespace YGR
 
             TeleporterTarget = new Point(TeleporterTarget.X + p.X, TeleporterTarget.Y + p.Y);
 
-            foreach(var interact in _interactables)
+            foreach (var interact in _interactables)
             {
                 interact.MoveBy(p);
             }
@@ -1019,7 +1020,7 @@ namespace YGR
 
         public List<PickUp> GetPickUps()
         {
-           return PickUps;
+            return PickUps;
         }
 
         public List<PlayerEntity> GetPlayerSpawningPoints()
@@ -1135,7 +1136,7 @@ namespace YGR
                 interactable.DrawOutline(gameTime, globalOffset, spriteBatch);
             }
 
-            Factory_Debug.DrawRectangle(TeleporterTarget.X-16, TeleporterTarget.Y-16, 32, 32, 3, Color.Blue, spriteBatch);
+            Factory_Debug.DrawRectangle(TeleporterTarget.X - 16, TeleporterTarget.Y - 16, 32, 32, 3, Color.Blue, spriteBatch);
         }
 
         /// <summary>
@@ -1165,7 +1166,7 @@ namespace YGR
                 spriteBatch.Draw(
                     ShadeTexture[ShadeIndex], Rect.Location.ToVector2(),
                     new Rectangle(0, 0, ShadeTexture[ShadeIndex].Width, ShadeTexture[ShadeIndex].Height),
-                    Color.White*Manager_Light2.ShadeFloat, 0, Vector2.Zero, Y_Level.GlobalScale, SpriteEffects.None, 0);
+                    Color.White * Manager_Light2.ShadeFloat, 0, Vector2.Zero, Y_Level.GlobalScale, SpriteEffects.None, 0);
 
                 spriteBatch.Draw(
                     _roof, Rect.Location.ToVector2(),

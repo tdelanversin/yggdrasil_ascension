@@ -395,14 +395,14 @@ namespace YGR
 
         public override void Draw(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)
         {
-            Texture2D buttonSprite = Manager_Sprites.ButtonOut;
+            Texture2D buttonSprite = Manager_Sprites.EscapeButtonOut;
             if (state == ButtonState.In)
             {
-                buttonSprite = Manager_Sprites.ButtonIn;
+                buttonSprite = Manager_Sprites.EscapeButtonIn;
             }
             else if (state == ButtonState.Half)
             {
-                buttonSprite = Manager_Sprites.ButtonHalf;
+                buttonSprite = Manager_Sprites.EscapeButtonHalf;
             }
 
             spriteBatch.Draw(
