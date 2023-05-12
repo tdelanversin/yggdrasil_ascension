@@ -75,11 +75,7 @@ namespace YGR
         public List<PickUp> PickUps { get; }
 
         private X_DoorDirection _direction;
-        //private Texture2D _floor;
-        //private Texture2D _wall;
-        //private Texture2D _door;
         Dictionary<X_DoorTextureLayer, List<X_AutoTiler.X_AutoTileTexture>> _tileTextures;
-        Dictionary<X_DoorTextureLayer, List<X_AutoTiler.X_AutoTileColor>> _tileColors;
         static public int NumTilesDoorWidth { get { return 5; } }
 
         private int _halfHeight;
@@ -89,14 +85,10 @@ namespace YGR
         private float _animationTime = 0.0f;
 
         bool _visited;
-        //private Y_Door _door;
 
         Dictionary<int, List<Vector2>> _barkPoints;
         bool _closingTheDoor;
         bool _openingTheDoor;
-
-        //Rectangle _outsideRect1;
-        //Rectangle _outsideRect2;
 
         public Texture2D[] ShadeTexture { get; set; }
         public int ShadeIndex { get; set; }
@@ -143,7 +135,8 @@ namespace YGR
                 graphicsDevice,
                 Collision.GetCollisionTemplate(),
                 MapTexture,
-                out _tileTextures, out _tileColors);
+                out _tileTextures
+            );
 
             State = X_DoorState.Closed;
             _closingTheDoor = false;
@@ -1159,8 +1152,6 @@ namespace YGR
                     }
                     break;
                 case X_DoorState.Opening:
-                    //Illuminate(); // only happens once no matter where it is!!
-                    //Manager_Light2.Illuminate(this);
                     if (!_openingTheDoor)
                     {
                         _openingTheDoor = true;
@@ -1176,11 +1167,6 @@ namespace YGR
                     }
                     break;
                 case X_DoorState.Open:
-                    //Illuminate(); // only happens once no matter where it is!!
-                    //if (keyPressed)
-                    //{
-                    //    State = X_DoorState.Closing;
-                    //}
                     break;
                 case X_DoorState.Closing:
                     if (!_closingTheDoor)
@@ -1228,16 +1214,6 @@ namespace YGR
                     }
                     break;
             }
-
-            //if (Rectangle.Intersect(Camera.VisibleArea, Rect) == Rectangle.Empty)
-            //{
-            //    return;
-            //}
-
-            //if (IsDoorOpen())
-            //{
-            //    Manager_Light2.Illuminate(this);
-            //}
         }
 
         public List<Rectangle> GetOpenDoorCollisionRects()
