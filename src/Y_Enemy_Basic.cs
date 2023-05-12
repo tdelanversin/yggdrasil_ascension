@@ -185,26 +185,29 @@ namespace YGR
         /* Deal with being hit by projectile, basically physical therapy */
         public virtual void Hit(IProjectile projectile)
         {
-            if (State == EnemyState.Inactive) { return; }
-
-            // Return if alread dead, otherwise player kill stats are inaccurate
-            if (LifePoints <= 0) { return; }
-
-            if (projectile.WhatAreYou() == X_LevelElements.ConfusionProjectile)
+            lock (this)
             {
-                Manager_Confusion.AddConfusion(this, ((Projectile_Confusion)projectile).ConfusionDuration);
+                if (State == EnemyState.Inactive) { return; }
+
+                // Return if alread dead, otherwise player kill stats are inaccurate
+                if (LifePoints <= 0) { return; }
+
+                if (projectile.WhatAreYou() == X_LevelElements.ConfusionProjectile)
+                {
+                    Manager_Confusion.AddConfusion(this, ((Projectile_Confusion)projectile).ConfusionDuration);
+                }
+
+                LifePoints -= projectile.Damage;
+                _hitFramesCounter = 1;
+                _currentColor = Color.Lerp(_hitColor, Color, 0.1f);
+
+                // @statistics
+                var p = (IPlayer)projectile.WhoFiredMe;
+                p.Stats.DamageDealt += projectile.Damage;
+                p.Stats.TimesHit++;
+                if (this is IEnemyBoss) { p.Stats.BossDamageDealt += projectile.Damage; }
+                if (LifePoints <= 0) { p.Stats.Kills++; }
             }
-
-            LifePoints -= projectile.Damage;
-            _hitFramesCounter = 1;
-            _currentColor = Color.Lerp(_hitColor, Color, 0.1f);
-
-            // @statistics
-            var p = (IPlayer)projectile.WhoFiredMe;
-            p.Stats.DamageDealt += projectile.Damage;
-            p.Stats.TimesHit++;
-            if (this is IEnemyBoss) { p.Stats.BossDamageDealt += projectile.Damage; }
-            if (LifePoints <= 0) { p.Stats.Kills++; }
         }
 
         protected void UpdateHitCounters(GameTime gameTime)
