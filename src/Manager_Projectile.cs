@@ -3,7 +3,10 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
+using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace YGR
 {
@@ -163,14 +166,45 @@ namespace YGR
              );
         }
 
+        public static void AddProjectile_PinkHammer(Vector2 startPosition, Vector2 direction,Y_Level level, IGameElement who)
+        {
+            _projectiles.Add(
+                new Projectile_Directed(
+                    position: startPosition,
+                    direction: direction,
+                    Manager_Sprites.NewAnimatedSprite_ProjectileHammer(),
+                    level: level,
+                    who: who,
+                    scale: 2f,
+                    damage: 0,
+                    maxAge: 10000,
+                    speed: 0.4f,
+                    mass: 50.0f
+                 )
+             );
+        }
+
         public static void Update(GameTime gameTime)
         {
             float deltaTime = (float)gameTime.ElapsedGameTime.TotalSeconds;
+            Parallel.ForEach(_projectiles, projectile =>
+            {
+                projectile.UpdateCollisionAndVelocity(gameTime);
+            });
+
             foreach (IProjectile projectile in _projectiles)
             {
                 projectile.Update(gameTime);
             }
-            _projectiles.RemoveAll(projectile => (projectile.Age > projectile.MaxAge) || projectile.DeleteNext);
+
+            //_projectiles.RemoveAll(projectile => (projectile.Age > projectile.MaxAge) || projectile.DeleteNext);
+
+            //var newList = _projectiles.AsParallel()
+            //   .Where(projectile => !((projectile.Age > projectile.MaxAge) || projectile.DeleteNext))
+            //.ToList();
+            //_projectiles = newList;
+
+            _projectiles = _projectiles.Where(projectile => !((projectile.Age > projectile.MaxAge) || projectile.DeleteNext)).ToList();
         }
 
         public static void Draw(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)

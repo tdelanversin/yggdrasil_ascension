@@ -24,6 +24,7 @@ namespace YGR
         public static Texture2D Weapon_Keyboard { get; private set; }
         public static Texture2D Weapon_RedGun { get; private set; }
         public static Texture2D Weapon_Shotgun { get; private set; }
+        public static Texture2D Weapon_Hammer { get; private set; }
 
         // UI
         public static Texture2D HealthbarEmpty { get; private set; }
@@ -68,6 +69,7 @@ namespace YGR
             Weapon_Keyboard = contentManager.Load<Texture2D>("SpritesWeapons/Keyboard");
             Weapon_RedGun = contentManager.Load<Texture2D>("SpritesWeapons/Red_Gun");
             Weapon_Shotgun = contentManager.Load<Texture2D>("SpritesWeapons/Shotgun");
+            Weapon_Hammer = contentManager.Load<Texture2D>("SpritesWeapons/hammer");
 
             HealthbarEmpty = contentManager.Load<Texture2D>("SpritesOther/healthbar_empty");
             HealthbarInfill = contentManager.Load<Texture2D>("SpritesOther/healthbar_infill");
@@ -113,6 +115,17 @@ namespace YGR
                     { AnimationState.Idle, new int[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11 } },
                 },
                 animationDuration: 1000
+            );
+        }
+
+        public static AnimatedSprite NewAnimatedSprite_ProjectileHammer()
+        {
+            return new AnimatedSprite(
+                texture: Weapon_Hammer,
+                spriteDimension: new Vector2(32, 32),
+                animations: new Dictionary<AnimationState, int[]> {
+                    { AnimationState.Idle, new int[] { 0 } },
+                }
             );
         }
 

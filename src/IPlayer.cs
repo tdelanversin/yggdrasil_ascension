@@ -15,7 +15,7 @@ namespace YGR
 
     public interface IPlayer : IVictim
     {
-        public static int PlayerBaseHealth = 15;
+        public static float PlayerBaseHealth = 15;
         public static int PlayerBaseHeight = 2 * Y_Level.InGameTileSize;
         public static float PlayerBaseVelocity = 0.35f;
         public static float PlayerBaseMass = 0.35f;
@@ -34,9 +34,9 @@ namespace YGR
         public AnimatedSprite GetSprite();
         public bool IsAlive();
         public void Heal();
-        public void Heal(int healAmount);
+        public void Heal(float healAmount);
         public void Revive();
-        public void Revive(int healAmount);
+        public void Revive(float healAmount);
         public void Godmode();
     }
 }

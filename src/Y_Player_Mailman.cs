@@ -11,12 +11,17 @@ namespace YGR
             IShooter gun,
             PlayerType type,
             ControlLayout controlLayout = ControlLayout.ControllerOnly
-            ) : base(playerIndex, initialPosition, level, gun,  type, controlLayout)
+            ) : base(playerIndex, initialPosition, level, gun, type, controlLayout)
         {
             CharacterSprite = Manager_Sprites.NewAnimatedSprite_Mailman();
             Ability = new Ability_Shield();
             Type = PlayerType.Mailman;
             Name = "Mailman";
+
+            if (gun != null)
+                Gun = gun;
+            else
+                Gun = Util.getRandomGun(this);
 
             // Big guy can take a lot
             LifePointsMax = IPlayer.PlayerBaseHealth * 2;

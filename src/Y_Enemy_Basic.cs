@@ -9,14 +9,14 @@ namespace YGR
     public class Enemy_Basic : IEnemy
     {
         public string Name { get; set; }
-        public int LifePoints { get; set; }
-        public int LifePointsMax { get; set; }
+        public float LifePoints { get; set; }
+        public float LifePointsMax { get; set; }
         public Color Color { get; set; }
         public IGameElement WhoKilledMe { get; set; }
         public int ElementLevel { get { return 1; } set { } }
 
         public EnemyState State { get; set; } = EnemyState.Inactive;
-        protected int fleeingHPTreshold; // Flee if at this treshold or lower
+        protected float fleeingHPTreshold; // Flee if at this treshold or lower
         protected float safetyDistance { get; set; }
 
         public Vector2 Velocity { get; set; }
@@ -65,7 +65,7 @@ namespace YGR
             Name = "Mob";
             LifePointsMax = 8;
             LifePoints = LifePointsMax;
-            fleeingHPTreshold = LifePointsMax / 2;
+            fleeingHPTreshold = LifePointsMax / 2f;
 
             CharacterSprite = sprite;
 
@@ -77,14 +77,16 @@ namespace YGR
             safetyDistance = 300f;
             FacingDirection = new Vector2(1, 0);
             Collision = new X_CollisionModel_Victim(1.0f, 0.0f);
-            _position = position;
 
             // Collision bounds
             int height = 60;
             int width = (int)(height / CharacterSprite.SpriteDimension.Y * CharacterSprite.SpriteDimension.X);
+
+            // Offset the enitity to center it on the spawner tile
+            _position = position - new Vector2(width / 2, height / 2);
             _rect = new Rectangle(
-                (int)position.X,
-                (int)position.Y,
+                (int)_position.X,
+                (int)_position.Y,
                 width,
                 height
             );
@@ -133,6 +135,24 @@ namespace YGR
             }
         }
 
+        /// <summary>
+        /// Wake up an enemy from Inactive state in a somewhat natural fashion
+        /// </summary>
+        public virtual void WakeUp()
+        {
+            if (Util.random.Next(2) == 1)
+            {
+                State = EnemyState.Wander;
+            }
+            else
+            {
+                State = EnemyState.Idle;
+            }
+
+            // We don't want all enemies to shoot at once
+            Gun.NextShotCooldown = Util.random.Next(2500);
+        }
+
         public virtual void Kill()
         {
             LifePoints = 0;
@@ -165,26 +185,29 @@ namespace YGR
         /* Deal with being hit by projectile, basically physical therapy */
         public virtual void Hit(IProjectile projectile)
         {
-            if (State == EnemyState.Inactive) { return; }
-
-            // Return if alread dead, otherwise player kill stats are inaccurate
-            if (LifePoints <= 0) { return; }
-
-            if(projectile.WhatAreYou() == X_LevelElements.ConfusionProjectile)
+            lock (this)
             {
-                Manager_Confusion.AddConfusion(this, ((Projectile_Confusion)projectile).ConfusionDuration);
+                if (State == EnemyState.Inactive) { return; }
+
+                // Return if alread dead, otherwise player kill stats are inaccurate
+                if (LifePoints <= 0) { return; }
+
+                if (projectile.WhatAreYou() == X_LevelElements.ConfusionProjectile)
+                {
+                    Manager_Confusion.AddConfusion(this, ((Projectile_Confusion)projectile).ConfusionDuration);
+                }
+
+                LifePoints -= projectile.Damage;
+                _hitFramesCounter = 1;
+                _currentColor = Color.Lerp(_hitColor, Color, 0.1f);
+
+                // @statistics
+                var p = (IPlayer)projectile.WhoFiredMe;
+                p.Stats.DamageDealt += projectile.Damage;
+                p.Stats.TimesHit++;
+                if (this is IEnemyBoss) { p.Stats.BossDamageDealt += projectile.Damage; }
+                if (LifePoints <= 0) { p.Stats.Kills++; }
             }
-
-            LifePoints -= projectile.Damage;
-            _hitFramesCounter = 1;
-            _currentColor = Color.Lerp(_hitColor, Color, 0.1f);
-
-            // @statistics
-            var p = (IPlayer)projectile.WhoFiredMe;
-            p.Stats.DamageDealt += projectile.Damage;
-            p.Stats.TimesHit++;
-            if (this is IEnemyBoss) { p.Stats.BossDamageDealt += projectile.Damage; }
-            if (LifePoints <= 0) { p.Stats.Kills++; }
         }
 
         protected void UpdateHitCounters(GameTime gameTime)
@@ -218,7 +241,14 @@ namespace YGR
              * ########################################################################## */
             if (input != Vector2.Zero)
             {
-                Manager_Particles.GenParticleEffectDustCloudLight(new Vector2(_rect.Location.X + _rect.Width / 2, _rect.Location.Y + _rect.Height));
+                if (this is IEnemyBoss)
+                {
+                    Manager_Particles._particleEffects[(int)Manager_Particles.Effect.GigaChad].Trigger(new Vector2(_rect.Location.X + _rect.Width / 2, _rect.Location.Y + _rect.Height));
+                }
+                else
+                {
+                    Manager_Particles.GenParticleEffectDustCloudLight(new Vector2(_rect.Location.X + _rect.Width / 2, _rect.Location.Y + _rect.Height));
+                }
 
                 if (input.LengthSquared() > 1)
                 {

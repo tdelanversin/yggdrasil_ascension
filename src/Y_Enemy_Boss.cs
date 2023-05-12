@@ -89,9 +89,8 @@ namespace YGR
             int height = 150;
             int width = (int)(height / CharacterSprite.SpriteDimension.Y * CharacterSprite.SpriteDimension.X);
 
-            // Offset the boss to center it on the spawner tile that is only 32x32
-            _position.X -= (height - Y_Level.InGameTileSize) / 2;
-            _position.Y -= (width - Y_Level.InGameTileSize) / 2;
+            // Offset the enitity to center it on the spawner tile
+            _position = position - new Vector2(width / 2, height / 2);
             _rect = new Rectangle(
                 (int)_position.X,
                 (int)_position.Y,
@@ -135,10 +134,13 @@ namespace YGR
             {
                 if (CharacterSprite.Direction == AnimationState.Jump)
                 {
-                    if (CharacterSprite.DirectionalIndex != 10) {
+                    if (CharacterSprite.DirectionalIndex != 10)
+                    {
                         CharacterSprite.Update(gameTime, AnimationState.Jump);
                         return;
-                    } else {
+                    }
+                    else
+                    {
                         // Spawn in enemies
                         var bossCenter = new Vector2(
                             _position.X + _rect.Width / 2,
@@ -157,7 +159,7 @@ namespace YGR
                 {
                     Health += Math.Max(0, minion.LifePoints);
                 }
-                
+
                 if (Health <= 0)
                 {
                     Attack = BossAttack.Spawn;
@@ -276,56 +278,29 @@ namespace YGR
         /* Deal with being hit by projectile, basically physical therapy */
         public override void Hit(IProjectile projectile)
         {
-            if (State == EnemyState.Inactive || Attack == BossAttack.Hide || Attack == BossAttack.Spawn) { return; }
-
-            // Return if alread dead, otherwise player kill stats are inaccurate
-            if (LifePoints <= 0) { return; }
-
-            if (projectile.WhatAreYou() == X_LevelElements.ConfusionProjectile)
+            lock (this)
             {
-                Manager_Confusion.AddConfusion(this, ((Projectile_Confusion)projectile).ConfusionDuration);
-            }
+                if (State == EnemyState.Inactive || Attack == BossAttack.Hide || Attack == BossAttack.Spawn) { return; }
 
-            LifePoints -= projectile.Damage;
-            _hitFramesCounter = 1;
-            _currentColor = Color.Lerp(_hitColor, Color, 0.1f);
+                // Return if alread dead, otherwise player kill stats are inaccurate
+                if (LifePoints <= 0) { return; }
 
-            // @statistics
-            var p = (IPlayer)projectile.WhoFiredMe;
-            p.Stats.DamageDealt += projectile.Damage;
-            p.Stats.TimesHit++;
-            if (this is IEnemyBoss) { p.Stats.BossDamageDealt += projectile.Damage; }
-            if (LifePoints <= 0) { p.Stats.Kills++; }
-        }
-
-
-        protected override void UpdateVelocity(Vector2 input, GameTime gameTime)
-        {
-            int timeStepMS = gameTime.ElapsedGameTime.Milliseconds;
-
-            /* ##########################################################################
-             * Speed and velocity handling based on control input
-             *  => must happen before collision handling <=
-             * ########################################################################## */
-            if (input != Vector2.Zero)
-            {
-                //Manager_Particles.GenParticleEffectDustCloudLight(new Vector2(_rect.Location.X + _rect.Width / 2, _rect.Location.Y + _rect.Height));
-                Manager_Particles._particleEffects[(int)Manager_Particles.Effect.GigaChad].Trigger(new Vector2(_rect.Location.X + _rect.Width / 2, _rect.Location.Y + _rect.Height));
-
-                if (input.LengthSquared() > 1)
+                if (projectile.WhatAreYou() == X_LevelElements.ConfusionProjectile)
                 {
-                    input.Normalize();
+                    Manager_Confusion.AddConfusion(this, ((Projectile_Confusion)projectile).ConfusionDuration);
                 }
-                Velocity += input * _acceleration * timeStepMS;
-            }
-            else
-            {
-                Velocity = new Vector2(
-                    Math.Sign(Velocity.X) * Math.Max(0.0f, Math.Abs(Velocity.X) - _deceleration * timeStepMS),
-                    Math.Sign(Velocity.Y) * Math.Max(0.0f, Math.Abs(Velocity.Y) - _deceleration * timeStepMS));
-            }
 
-            Velocity = Util.ClampMagnitude(Velocity, _maxVelocity);
+                LifePoints -= projectile.Damage;
+                _hitFramesCounter = 1;
+                _currentColor = Color.Lerp(_hitColor, Color, 0.1f);
+
+                // @statistics
+                var p = (IPlayer)projectile.WhoFiredMe;
+                p.Stats.DamageDealt += projectile.Damage;
+                p.Stats.TimesHit++;
+                if (this is IEnemyBoss) { p.Stats.BossDamageDealt += projectile.Damage; }
+                if (LifePoints <= 0) { p.Stats.Kills++; }
+            }
         }
     }
 }

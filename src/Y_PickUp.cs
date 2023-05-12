@@ -24,6 +24,8 @@ namespace YGR
         ChooserNerd,
         ChooserNinja,
         ChooserMailman,
+        ChooserProfessor,
+        WeaponPinkHammer,
     }
 
     public class PickUp : IGameElement
@@ -37,6 +39,8 @@ namespace YGR
         public static float _gunScale = 2f;
 
         public Y_PowerUps Type { get; }
+
+        public Color Color;
 
         public Func<IPlayer, PickUp, bool> Action { get; }
         public int ElementLevel { get { return 1; } set { } }
@@ -74,6 +78,7 @@ namespace YGR
         {
             LocalScale = scale * Y_Level.GlobalScale;
             Type = type;
+            Color = Color.White;
 
             Action = action;
             Active = true;
@@ -93,6 +98,8 @@ namespace YGR
         {
             LocalScale = scale * Y_Level.GlobalScale;
             Type = type;
+            Color = Color.White;
+
             int heightNew = (int)(height * scale);
             int widthNew = (int)((heightNew * texture.Width / texture.Height));
 
@@ -103,6 +110,12 @@ namespace YGR
             _spriteDrawScale = LocalScale * Util.GetSpriteScale(Rect, texture.Bounds.Size.ToVector2());
 
             _lastOwner = lastOwner;
+        }
+
+        public PickUp(Y_PowerUps type, Point location, int width, int height, float scale, Texture2D texture, IVictim lastOwner, Color color, Func<IPlayer, PickUp, bool> action)
+        : this(type, location, width, height, scale, texture, lastOwner, action)
+        {
+            Color = color;
         }
 
         public static PickUp Factory(Y_PowerUps type, Point location, int width, int height, float scale, IVictim lastOwner = null)
@@ -138,6 +151,17 @@ namespace YGR
                             if (player is not Player_Ninja)
                             {
                                 Manager_Players.SetPlayerType(player.PlayerIndex, PlayerType.Ninja);
+                                Manager_Sound.Sound_GunCocking.Play();
+                            }
+                            return false;
+                        });
+                case Y_PowerUps.ChooserProfessor:
+                    return new PickUp(type, location, width, IPlayer.PlayerBaseHeight, scale * 1.0f, Manager_Sprites.NewAnimatedSprite_TestCharacter(), lastOwner,
+                        (player, self) =>
+                        {
+                            if (player is not Player_Professor)
+                            {
+                                Manager_Players.SetPlayerType(player.PlayerIndex, PlayerType.Professor);
                                 Manager_Sound.Sound_GunCocking.Play();
                             }
                             return false;
@@ -188,6 +212,15 @@ namespace YGR
 
                             return switchGun(new Gun_Funky(player), player, self);
                         });
+                case Y_PowerUps.WeaponPinkHammer:
+                    return new PickUp(type, location, width, height, _gunScale, Manager_Sprites.Weapon_Hammer, lastOwner, Color.LightPink,
+                        (player, self) =>
+                        {
+                            if (player.Gun.GetType() == typeof(Weapon_PinkHammer))
+                                return false;
+
+                            return switchGun(new Weapon_PinkHammer(player), player, self);
+                        });
                 case Y_PowerUps.Life:
                     return new PickUp(type, location, width, height, 1.75f, Manager_Sprites.NewAnimatedSprite_SpinningHeart(), lastOwner,
                         (player, self) =>
@@ -218,6 +251,63 @@ namespace YGR
             }
         }
 
+        public void DrawSpinningTexture(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)
+        {
+            // We only got a texture, so let's make our own "highly advanced" rotating animation
+            float spin = (float)Math.Sin(gameTime.TotalGameTime.TotalSeconds);
+            int spinWidth = (int)Math.Min(Rect.Width, Math.Abs(spin) * Rect.Width * 1.25);
+
+            // And render a "shadow" to make it more visible
+            spriteBatch.Draw(
+                    texture: _texture,
+                    destinationRectangle: new Rectangle(Rect.X + (Rect.Width - spinWidth) / 2 + 1, Rect.Y + 1, spinWidth, Rect.Height),
+                    sourceRectangle: null,
+                    color: Color.Black,
+                    rotation: 0,
+                    origin: Vector2.Zero,
+                    effects: spin >= 0 ? SpriteEffects.None : SpriteEffects.FlipHorizontally,
+                    layerDepth: 0);
+
+            // Now draw the actual sprite
+            spriteBatch.Draw(
+                    texture: _texture,
+                    destinationRectangle: new Rectangle(Rect.X + (Rect.Width - spinWidth) / 2, Rect.Y, spinWidth, Rect.Height),
+                    sourceRectangle: null,
+                    color: Color,
+                    rotation: 0,
+                    origin: Vector2.Zero,
+                    effects: spin >= 0 ? SpriteEffects.None : SpriteEffects.FlipHorizontally,
+                    layerDepth: 0);
+        }
+
+        public void DrawFloatingTexture(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)
+        {
+            // Spinning looks meh, so instead float up and down a bit
+            int floatyOffset = (int)(Math.Sin(gameTime.TotalGameTime.TotalSeconds * 4) * Y_Level.InGameTileSize * 0.25f);
+
+            // And render a "shadow" to make it more visible
+            spriteBatch.Draw(
+                    texture: _texture,
+                    destinationRectangle: new Rectangle(Rect.X + 2, Rect.Y + floatyOffset + 2, Rect.Width, Rect.Height),
+                    sourceRectangle: null,
+                    color: Color.Black,
+                    rotation: 0,
+                    origin: Vector2.Zero,
+                    effects: SpriteEffects.None,
+                    layerDepth: 0);
+
+            // Now draw the actual sprite
+            spriteBatch.Draw(
+                    texture: _texture,
+                    destinationRectangle: new Rectangle(Rect.X, Rect.Y + floatyOffset, Rect.Width, Rect.Height),
+                    sourceRectangle: null,
+                    color: Color,
+                    rotation: 0,
+                    origin: Vector2.Zero,
+                    effects: SpriteEffects.None,
+                    layerDepth: 0);
+        }
+
         public void Draw(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)
         {
             if (_sprite != null)
@@ -228,32 +318,8 @@ namespace YGR
                         Color.White, 0, Vector2.Zero, _spriteDrawScale, SpriteEffects.None, 0);
             }
             else
-            {
-                // We only got a texture, so let's make our own "highly advanced" rotating animation
-                float spin = (float)Math.Sin(gameTime.TotalGameTime.TotalSeconds);
-                int spinWidth = (int)Math.Min(Rect.Width, Math.Abs(spin) * Rect.Width * 1.25);
-
-                // And render a "shadow" to make it more visible
-                spriteBatch.Draw(
-                        texture: _texture,
-                        destinationRectangle: new Rectangle(Rect.X + (Rect.Width - spinWidth) / 2 + 1, Rect.Y + 1, spinWidth, Rect.Height),
-                        sourceRectangle: null,
-                        color: Color.Black,
-                        rotation: 0,
-                        origin: Vector2.Zero,
-                        effects: spin >= 0 ? SpriteEffects.None : SpriteEffects.FlipHorizontally,
-                        layerDepth: 0);
-
-                // Now draw the actual sprite
-                spriteBatch.Draw(
-                        texture: _texture,
-                        destinationRectangle: new Rectangle(Rect.X + (Rect.Width - spinWidth) / 2, Rect.Y, spinWidth, Rect.Height),
-                        sourceRectangle: null,
-                        color: Color.White,
-                        rotation: 0,
-                        origin: Vector2.Zero,
-                        effects: spin >= 0 ? SpriteEffects.None : SpriteEffects.FlipHorizontally,
-                        layerDepth: 0);
+            { // We only got a texture, well, let's do something fun with it at least
+                DrawFloatingTexture(gameTime, globalOffset, spriteBatch);
             }
         }
 

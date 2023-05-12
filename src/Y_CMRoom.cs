@@ -611,6 +611,10 @@ namespace YGR
             var rects = Collision.GetCollisionRectangles().ToList();
             rects.AddRange(ResetRects);
             Collision.UpdateCollisionRectangles(rects);
+            foreach (var it in _interactables)
+            {
+                it.Reset();
+            }
             DoorRooms.Clear();
             ResetRects.Clear();
             Cleared = false;

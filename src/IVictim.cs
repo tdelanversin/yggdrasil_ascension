@@ -13,8 +13,8 @@ namespace YGR
 {
     public interface IVictim : IGameElement
     {
-        public int LifePoints { get; }
-        public int LifePointsMax { get; }
+        public float LifePoints { get; }
+        public float LifePointsMax { get; }
         public Color Color { get; set; }
         public bool Confused { get; set; }
         public X_CollisionModel_Victim Collision { get; }
