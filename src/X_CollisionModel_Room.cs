@@ -615,23 +615,6 @@ namespace YGR
                         3, color, spriteBatch);
             }
 
-            //for (int i = 0; i < _extraCollisionRectangles.Count(); ++i)
-            //{
-            //    Color color = Manager_Collision.MissColor;
-            //    if (_extraCollisionRectanglesHit[i])
-            //    {
-            //        color = Manager_Collision.HitColor;
-            //        _extraCollisionRectanglesHit[i] = false;
-            //    }
-
-            //    Factory_Debug.DrawRectangle(
-            //            _extraCollisionRectangles[i].X,
-            //            _extraCollisionRectangles[i].Y,
-            //            _extraCollisionRectangles[i].Width,
-            //            _extraCollisionRectangles[i].Height,
-            //            3, color, spriteBatch);
-            //}
-
             _records.RemoveAll(rec => (rec.TimeStampMS + Manager_Collision.DrawTimeoutMS < (DateTime.Now - Manager_Collision.StartTime).TotalMilliseconds));
             foreach (var rec in _records)
             {
