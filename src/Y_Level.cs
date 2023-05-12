@@ -574,8 +574,6 @@ namespace YGR
                         break; // let players fight
                     }
 
-                    Camera.SetFocusPlayers();
-
                     if (_waitTimeBetweenEndOfFightAndLowerDoorsCounter < _waitTimeBetweenEndOfFightAndLowerDoors)
                     {
                         _waitTimeBetweenEndOfFightAndLowerDoorsCounter++;
@@ -585,8 +583,11 @@ namespace YGR
 
                     encounterRoom.Cleared = true;
                     encounterRoom.OpenAllUnlockedRoomDoors();
-                    encounterRoom.SetLocked(false);
 
+                    if (!encounterRoom.AllDoorsOpen()) break; // wait for all doors to open
+
+                    encounterRoom.SetLocked(false);
+                    Camera.SetFocusPlayers();
                     Manager_Sound.PlayFreeRoamMusic();
 
                     if (encounterRoom.Category == "Gold")
@@ -636,6 +637,8 @@ namespace YGR
         {
             foreach (var room in Rooms)
             {
+                // Culling
+                if (Rectangle.Intersect(Camera.VisibleArea, room.Value.Rect) == Rectangle.Empty) continue;
                 room.Value.Draw(gameTime, globalOffset, spriteBatch);
             }
         }
