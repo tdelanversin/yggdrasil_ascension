@@ -398,7 +398,7 @@ namespace YGR
                         // Room opener field that can trigger the game start
                         _interactables.Add(new Interactable_BossRoomEscaper(
                             // TODO: correct button size should ideally come from ldtk
-                            new Rectangle(button.x, button.y, 4 * Y_Level.InGameTileSize, 4 * Y_Level.InGameTileSize), this)
+                            new Rectangle(button.x, button.y, button.width, button.height), this)
                         );
                     }
                     else if (button.customFields["Type"] == ButtonEntity.StartButton)
