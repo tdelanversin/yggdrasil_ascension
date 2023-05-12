@@ -668,6 +668,15 @@ namespace YGR
             }
         }
 
+        public bool AllDoorsOpen()
+        {
+            foreach(var door in DoorRooms)
+            {
+                if (!((Y_Door)door.Value.First()).IsDoorOpen()) return false;
+            }
+            return true;
+        }
+
         public bool IsVisible()
         {
             return State == X_RoomState.Visible || State == X_RoomState.InEncounter;
@@ -1147,12 +1156,6 @@ namespace YGR
         /// <param name="spriteBatch">Active Monogame SpriteBatch</param>
         public void Draw(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)
         {
-            // Culling
-            if (Rectangle.Intersect(Camera.VisibleArea, Rect) == Rectangle.Empty)
-            {
-                return;
-            }
-
             if (State == X_RoomState.Invisible)
             {
             }

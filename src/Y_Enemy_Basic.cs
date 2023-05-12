@@ -256,11 +256,11 @@ namespace YGR
                 {
                     if (this is IEnemyBoss)
                     {
-                        Manager_Particles._particleEffects[(int)Manager_Particles.Effect.GigaChad].Trigger(new Vector2(_rect.Location.X + _rect.Width / 2, _rect.Location.Y + _rect.Height));
+                        Manager_Particles.GetParticleEffect(Manager_Particles.Effect.GigaChad).Trigger(new Vector2(_rect.Location.X + _rect.Width / 2, _rect.Location.Y + _rect.Height));
                     }
                     else
                     {
-                        Manager_Particles.GenParticleEffectDustCloudLight(new Vector2(_rect.Location.X + _rect.Width / 2, _rect.Location.Y + _rect.Height));
+                        Manager_Particles.GetParticleEffect(Manager_Particles.Effect.DustCloudLight).Trigger(new Vector2(_rect.Location.X + _rect.Width / 2, _rect.Location.Y + _rect.Height));
                     }
                 }
 
