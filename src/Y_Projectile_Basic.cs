@@ -21,7 +21,7 @@ namespace YGR
         public Color Color { get; set; }
         public int ElementLevel { get { return 1; } set { } }
 
-        
+
         public float LocalScale { get; }
         public Rectangle Rect { get { return _rect; } set { _rect = value; } }
 
@@ -132,8 +132,11 @@ namespace YGR
                     // Hit players and enemies
                     if (obj is IVictim)
                     {
-                        Manager_Particles._particleEffects[(int)Manager_Particles.Effect.Impact].Trigger(new Vector2(_rect.Location.X + _rect.Width / 2, _rect.Location.Y + _rect.Height / 2));
-                        if(obj.WhatAreYou() == X_LevelElements.Enemy)
+                        if (Settings.ParticleEffects)
+                        {
+                            Manager_Particles._particleEffects[(int)Manager_Particles.Effect.Impact].Trigger(new Vector2(_rect.Location.X + _rect.Width / 2, _rect.Location.Y + _rect.Height / 2));
+                        }
+                        if (obj.WhatAreYou() == X_LevelElements.Enemy)
                         {
                             Logger.Info("From outside: " + ((IVictim)obj).Velocity.ToString());
                         }
@@ -149,6 +152,10 @@ namespace YGR
         /* Particle handling */
         public virtual void UpdateParticles(GameTime gameTime)
         {
+            if (!Settings.ParticleEffects)
+            {
+                return;
+            }
             Manager_Particles._particleEffects[(int)Manager_Particles.Effect.ProjectileTrails].Emitters.ForEach(emitter => { emitter.Parameters.Color = Color.ToHsl(); });//new MonoGame.Extended.Range<HslColor>(Color.ToHsl());
             Manager_Particles._particleEffects[(int)Manager_Particles.Effect.ProjectileTrails].Trigger(new Vector2(_rect.Location.X + _rect.Width / 2, _rect.Location.Y + _rect.Height / 2));
         }
