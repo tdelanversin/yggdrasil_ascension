@@ -2,6 +2,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using MonoGame.Extended;
 using System;
+using System.Collections.Generic;
 #nullable enable
 
 namespace YGR
@@ -33,6 +34,54 @@ namespace YGR
                 (int)(position.Y + _direction.Y * _size.Y),
                 (int)(_size.X * 2.0f / 3.0f * Y_Level.GlobalScale),
                 (int)(_size.Y * 2.0f / 3.0f * Y_Level.GlobalScale));
+        }
+
+        public override void UpdateCollisionAndVelocity(GameTime gameTime)
+        {
+            int timeStepMS = (int)gameTime.ElapsedGameTime.TotalMilliseconds;
+            Age += timeStepMS;
+
+            /* Collision / Velocity handling */
+            IList<Vector2> contactNormal;
+            IList<Point> contactPoint;
+            IList<IGameElement> who;
+            Vector2 newVelocity = Velocity;
+            if (Collision.Intersect(this, timeStepMS, out newVelocity, out contactPoint, out contactNormal, out who))
+            {
+                //Logger.Debug("Collided with something");
+                foreach (var obj in who)
+                {
+                    // No friendly fire between entities of same kind
+                    if (obj.WhatAreYou() == WhoFiredMe.WhatAreYou()) continue;
+
+                    // Can't touch ghost
+                    if (obj.WhatAreYou() == X_LevelElements.Ghost) continue;
+
+                    // Pass through player if they are currently invincible
+                    if (obj.WhatAreYou() == X_LevelElements.Invincible) continue;
+
+                    else if (obj is IWalkable)
+                    {
+                        Velocity = newVelocity;
+                    }
+                    else
+                    {
+                        DeleteNext = false;
+                    }
+
+                    // Hit players and enemies
+                    if (obj is IVictim)
+                    {
+                        if (Settings.ParticleEffects)
+                        {
+                            Manager_Particles.GetParticleEffect(Manager_Particles.Effect.Impact).Trigger(new Vector2(_rect.Location.X + _rect.Width / 2, _rect.Location.Y + _rect.Height / 2));
+                        }
+                        ((IVictim)obj).Hit(this);
+                    }
+                }
+            }
+            _position += Velocity * timeStepMS;
+            _rect.Location = _position.ToPoint();
         }
 
         /* Particle handling */
