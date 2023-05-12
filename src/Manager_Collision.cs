@@ -231,7 +231,7 @@ namespace YGR
         public static bool MovingRectVsMovingRect(
             ref Rectangle myRect, ref Vector2 myVelocity, float myMass,
             ref Rectangle otherRect, ref Vector2 otherVelocity, float otherMass,
-            float cr, int timeStepMS,
+            float fakeAccellerator, int timeStepMS,
             out Point contactPoint, out Vector2 contactNormal)
         {
             contactNormal = Vector2.Zero;
@@ -245,9 +245,9 @@ namespace YGR
 
             // then resolve the speeds according to the elastic impact rules
             float massSum = myMass + otherMass;
-            Vector2 f = myMass * myVelocity + otherMass * otherVelocity;
-            Vector2 myNewVelocity = (cr * otherMass * (otherVelocity - myVelocity) + f) / massSum;
-            Vector2 otherNewVelocity = (cr * myMass * (myVelocity - otherVelocity) + f) / massSum;
+
+            Vector2 myNewVelocity = (myMass - otherMass) / massSum * myVelocity + 2 * otherMass / massSum * otherVelocity;
+            Vector2 otherNewVelocity = fakeAccellerator * (2 *myMass/massSum*myVelocity + (otherMass - myMass)/massSum*otherVelocity);
 
             myVelocity = myNewVelocity;
             otherVelocity = otherNewVelocity;
@@ -260,7 +260,7 @@ namespace YGR
 
         public static bool MovingRectVsMovingRectFast(ref Rectangle myRect, ref Vector2 myVelocity, float myMass,
             ref Rectangle otherRect, ref Vector2 otherVelocity, float otherMass,
-            float cr, int timeStepMS,
+            float fakeAccellerator, int timeStepMS,
             out Point contactPoint, out Vector2 contactNormal)
         {
             bool contact = FastRectVsRect(
@@ -270,9 +270,9 @@ namespace YGR
             if (!contact) return false;
 
             float massSum = myMass + otherMass;
-            Vector2 f = myMass * myVelocity + otherMass * otherVelocity;
-            Vector2 myNewVelocity = (cr * otherMass * (otherVelocity - myVelocity) + f) / massSum;
-            Vector2 otherNewVelocity = (cr * myMass * (myVelocity - otherVelocity) + f) / massSum;
+
+            Vector2 myNewVelocity = (myMass - otherMass) / massSum * myVelocity + 2 * otherMass / massSum * otherVelocity;
+            Vector2 otherNewVelocity = fakeAccellerator * (2 * myMass / massSum * myVelocity + (otherMass - myMass) / massSum * otherVelocity);
 
             myVelocity = myNewVelocity;
             otherVelocity = otherNewVelocity;
