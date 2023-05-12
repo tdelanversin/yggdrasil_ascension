@@ -216,15 +216,37 @@ namespace YGR
                     Menu.Update();
                     break;
                 case GameState.InGame:
+                    var watch = new Stopwatch();
+                    var times = new List<long>();
+                    watch.Start();
                     _background.Update(gameTime);
+                    times.Add(watch.ElapsedMilliseconds);
+                    watch.Reset();
                     Manager_Players.Update(gameTime);
+                    times.Add(watch.ElapsedMilliseconds);
+                    watch.Reset();
                     Manager_Projectile.Update(gameTime);
+                    times.Add(watch.ElapsedMilliseconds);
+                    watch.Reset();
                     Manager_Enemies.Update(gameTime);
+                    times.Add(watch.ElapsedMilliseconds);
+                    watch.Reset();
                     Manager_Confusion.Update(gameTime);
+                    times.Add(watch.ElapsedMilliseconds);
+                    watch.Reset();
                     Manager_Light2.Update(gameTime);
+                    times.Add(watch.ElapsedMilliseconds);
+                    watch.Reset();
                     Manager_Particles.Update(gameTime);
+                    times.Add(watch.ElapsedMilliseconds);
+                    watch.Reset();
                     Manager_Sound.Update(gameTime);
+                    times.Add(watch.ElapsedMilliseconds);
+                    watch.Reset();
                     _level.Update(gameTime);
+                    times.Add(watch.ElapsedMilliseconds);
+                    watch.Reset();
+                    if (times.Any(x => x > 1)) Logger.Info("Update: " + string.Join(",\t", times.Select(x => x.ToString())));
                     break;
                 case GameState.Menu:
                     _background.Update(gameTime);
@@ -261,36 +283,36 @@ namespace YGR
                     watch.Start();
 
                     _background.Draw(gameTime, zero, _spriteBatch);
-                    //times.Add(watch.ElapsedMilliseconds);
-                    //watch.Restart();
+                    times.Add(watch.ElapsedMilliseconds);
+                    watch.Restart();
 
                     _level.Draw(gameTime, Vector2.Zero, _spriteBatch);
                     times.Add(watch.ElapsedMilliseconds);
                     watch.Restart();
 
                     _background.DrawTitleText(gameTime, Vector2.Zero, _spriteBatch);
-                    //times.Add(watch.ElapsedMilliseconds);
-                    //watch.Restart();
+                    times.Add(watch.ElapsedMilliseconds);
+                    watch.Restart();
 
                     Manager_Confusion.Draw(gameTime, Vector2.Zero, _spriteBatch);
-                    //times.Add(watch.ElapsedMilliseconds);
-                    //watch.Restart();
+                    times.Add(watch.ElapsedMilliseconds);
+                    watch.Restart();
 
                     Manager_Particles.Draw(gameTime, _spriteBatch);
-                    //times.Add(watch.ElapsedMilliseconds);
-                    //watch.Restart();
+                    times.Add(watch.ElapsedMilliseconds);
+                    watch.Restart();
 
                     Manager_Projectile.Draw(gameTime, zero, _spriteBatch);
-                    //times.Add(watch.ElapsedMilliseconds);
-                    //watch.Restart();
+                    times.Add(watch.ElapsedMilliseconds);
+                    watch.Restart();
 
                     Manager_Enemies.Draw(gameTime, zero, _spriteBatch);
-                    //times.Add(watch.ElapsedMilliseconds);
-                    //watch.Restart();
+                    times.Add(watch.ElapsedMilliseconds);
+                    watch.Restart();
 
                     Manager_Players.Draw(gameTime, zero, _spriteBatch);
-                    //times.Add(watch.ElapsedMilliseconds);
-                    //watch.Restart();
+                    times.Add(watch.ElapsedMilliseconds);
+                    watch.Restart();
 
                     if (Settings.DebugOutlinesLevel)
                     {
@@ -305,7 +327,7 @@ namespace YGR
                         Manager_Confusion.DrawOutline(gameTime, zero, _spriteBatch);
                     }
 
-                    if (times.Any(x => x > 1)) Logger.Info(string.Join(", ", times.Select(x => x.ToString())));
+                    if (times.Any(x => x > 1)) Logger.Info("Draw: " + string.Join(",\t", times.Select(x => x.ToString())));
                     break;
 
                 case GameState.Menu:
