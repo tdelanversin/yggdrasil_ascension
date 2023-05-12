@@ -128,7 +128,7 @@ namespace YGR
         {
             return new AnimatedSprite(
                 texture: Weapon_Hammer,
-                spriteDimension: new Vector2(32, 32),
+                spriteDimension: new Vector2(Weapon_Hammer.Height, Weapon_Hammer.Height),
                 animations: new Dictionary<AnimationState, int[]> {
                     { AnimationState.Idle, new int[] { 0 } },
                 }

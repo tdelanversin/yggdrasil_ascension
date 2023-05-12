@@ -109,7 +109,6 @@ namespace YGR
 
             // He deserves the best weapon in the game
             Gun = new Weapon_PinkHammer(this);
-            
             Ability = new Ability_Ghost();
             Type = type;
             ControlLayout = controlLayout;
@@ -512,8 +511,11 @@ namespace YGR
              * ########################################################################## */
             if (input != Vector2.Zero)
             {
-                //Manager_Particles.GenParticleEffectDustCloudLight(new Vector2(_rect.Location.X + _rect.Width / 2, _rect.Location.Y + _rect.Height));
-                Manager_Particles._particleEffects[(int)Manager_Particles.Effect.DustCloudLight].Trigger(new Vector2(_rect.Location.X + _rect.Width / 2, _rect.Location.Y + _rect.Height));
+                if (Settings.ParticleEffects)
+                {
+                    //Manager_Particles.GenParticleEffectDustCloudLight(new Vector2(_rect.Location.X + _rect.Width / 2, _rect.Location.Y + _rect.Height));
+                    Manager_Particles._particleEffects[(int)Manager_Particles.Effect.DustCloudLight].Trigger(new Vector2(_rect.Location.X + _rect.Width / 2, _rect.Location.Y + _rect.Height));
+                }
 
                 if (input.LengthSquared() > 1)
                 {

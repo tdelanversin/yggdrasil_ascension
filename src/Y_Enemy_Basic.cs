@@ -245,13 +245,16 @@ namespace YGR
              * ########################################################################## */
             if (input != Vector2.Zero)
             {
-                if (this is IEnemyBoss)
+                if (Settings.ParticleEffects)
                 {
-                    Manager_Particles._particleEffects[(int)Manager_Particles.Effect.GigaChad].Trigger(new Vector2(_rect.Location.X + _rect.Width / 2, _rect.Location.Y + _rect.Height));
-                }
-                else
-                {
-                    Manager_Particles.GenParticleEffectDustCloudLight(new Vector2(_rect.Location.X + _rect.Width / 2, _rect.Location.Y + _rect.Height));
+                    if (this is IEnemyBoss)
+                    {
+                        Manager_Particles._particleEffects[(int)Manager_Particles.Effect.GigaChad].Trigger(new Vector2(_rect.Location.X + _rect.Width / 2, _rect.Location.Y + _rect.Height));
+                    }
+                    else
+                    {
+                        Manager_Particles.GenParticleEffectDustCloudLight(new Vector2(_rect.Location.X + _rect.Width / 2, _rect.Location.Y + _rect.Height));
+                    }
                 }
 
                 if (input.LengthSquared() > 1)
@@ -267,7 +270,7 @@ namespace YGR
                     Math.Sign(Velocity.Y) * Math.Max(0.0f, Math.Abs(Velocity.Y) - _deceleration * timeStepMS));
             }
 
-            if(!handleImpact(timeStepMS)) Velocity = Util.ClampMagnitude(Velocity, _maxVelocity);
+            if (!handleImpact(timeStepMS)) Velocity = Util.ClampMagnitude(Velocity, _maxVelocity);
         }
 
         private bool handleImpact(int timeStepMS)

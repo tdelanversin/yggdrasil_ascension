@@ -38,6 +38,10 @@ namespace YGR
         /* Particle handling */
         public override void UpdateParticles(GameTime gameTime)
         {
+            if (!Settings.ParticleEffects)
+            {
+                return;
+            }
             var particlePosition = _rect.Center.ToVector2() - _direction * _sprite.SpriteDimension.X * LocalScale / 2;
             Manager_Particles._particleEffects[(int)Manager_Particles.Effect.ProjectileTrails].Emitters.ForEach(emitter => { emitter.Parameters.Color = Color.ToHsl(); });//new MonoGame.Extended.Range<HslColor>(Color.ToHsl());
             Manager_Particles._particleEffects[(int)Manager_Particles.Effect.ProjectileTrails].Trigger(particlePosition);

@@ -180,7 +180,7 @@ namespace YGR
                     Manager_Sprites.NewAnimatedSprite_ProjectileHammer(),
                     level: level,
                     who: who,
-                    scale: 2f,
+                    scale: .5f,
                     damage: 0,
                     maxAge: 10000,
                     speed: 0.4f,

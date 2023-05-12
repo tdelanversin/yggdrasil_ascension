@@ -12,7 +12,7 @@ using MonoGame.Extended.Particles.Modifiers.Containers;
 
 using MonoGame.Extended.TextureAtlases;
 using Microsoft.Xna.Framework.Content;
-using Vector2=Microsoft.Xna.Framework.Vector2;
+using Vector2 = Microsoft.Xna.Framework.Vector2;
 using MonoGame.Extended.Sprites;
 
 namespace YGR
@@ -42,8 +42,8 @@ namespace YGR
 
 
         //public static Dictionary<string,ParticleEffect> _particleEffects { get;  private set; }
-        public static List<ParticleEffect> _particleEffectsTest { get;  private set; }
-        public static List<ParticleEffect> _particleEffects { get;  private set; }
+        public static List<ParticleEffect> _particleEffectsTest { get; private set; }
+        public static List<ParticleEffect> _particleEffects { get; private set; }
         public static void Initialize()
         {
             _particleEffectsTest = new List<ParticleEffect>();
@@ -59,7 +59,7 @@ namespace YGR
         public static void LoadContent(ContentManager contentManager, GraphicsDevice graphicsDevice)
         {
             //_particleTexture_dust = contentManager.Load<Texture2D>("SpritesEffects/dust_particle");
-       _particleTexture_fire = new Texture2D(graphicsDevice,1,1);
+            _particleTexture_fire = new Texture2D(graphicsDevice, 1, 1);
             _particleTexture_dash = new Texture2D(graphicsDevice, 1, 1);
             _particleTexture_dash.SetData(new[] { Color.Cyan });
             _particleTexture_impact = new Texture2D(graphicsDevice, 1, 1);
@@ -76,12 +76,12 @@ namespace YGR
             GenParticleEffectDash(pos);
             GenParticleEffectImpact(pos);
         }
-        public static void GenParticleEffectBase(Vector2 pos )
+        public static void GenParticleEffectBase(Vector2 pos)
         {
             TextureRegion2D textureRegion = new TextureRegion2D(_particleTexture_dust);
             _particleEffect_dust = new ParticleEffect(autoTrigger: false)
             {
-                Position = new Vector2(33330,3330),
+                Position = new Vector2(33330, 3330),
                 //Position = pos,
                 Emitters = new List<ParticleEmitter>
                 {
@@ -98,24 +98,24 @@ namespace YGR
                         },
                         Modifiers =
                         {
-                          
+
                             new VelocityColorModifier
                             {
                                 StationaryColor = Microsoft.Xna.Framework.Color.Green.ToHsl(),
                                 VelocityColor = Microsoft.Xna.Framework.Color.Blue.ToHsl(),
                                 VelocityThreshold = 80f
                             },
-                       
+
                         }
                     }
                 }
             };
             _particleEffects.Add(_particleEffect_dust);
         }
-   
+
         public static void GenParticleEffectDustCloudLight(Vector2 pos)
         {
-           
+
 
             TextureRegion2D textureRegion = new TextureRegion2D(_particleTexture_dust_cloud_light);
             _particleEffect_dust_cloud_light = new ParticleEffect(autoTrigger: false)
@@ -201,7 +201,7 @@ namespace YGR
         }
         public static void GenParticleEffectProjectileTrails(Vector2 pos, Color c)
         {
-            _particleTexture_fire.SetData(new[] {c});
+            _particleTexture_fire.SetData(new[] { c });
             TextureRegion2D textureRegion = new TextureRegion2D(_particleTexture_fire);
             _particleEffect_fire = new ParticleEffect(autoTrigger: false)
             {
@@ -244,7 +244,7 @@ namespace YGR
             _particleEffects.Add(_particleEffect_fire);
             _particleEffectsTest.Add(_particleEffect_fire);
         }
-   
+
 
 
         public static void GenParticleEffectDash(Vector2 pos)
@@ -293,7 +293,7 @@ namespace YGR
             };
             _particleEffects.Add(_particleEffect_dash);
         }
-     
+
         public static void GenParticleEffectImpact(Vector2 pos)
         {
 
@@ -341,15 +341,19 @@ namespace YGR
         }
         public static void Update(GameTime gameTime)
         {
-            foreach (var  pE in _particleEffects)
+            if (!Settings.ParticleEffects)
             {
-      
+                return;
+            }
+            foreach (var pE in _particleEffects)
+            {
+
                 pE.Update((float)gameTime.ElapsedGameTime.TotalSeconds);
                 pE.Emitters.ForEach(e => { e.AutoTrigger = false; });
             }
-           
 
-            
+
+
         }
         public static void Dispose()
         {
@@ -358,12 +362,16 @@ namespace YGR
                 //pE.Dispose();
                 //foreach (var emitter in pE.Emitters)
                 //{
-                    //emitter.
+                //emitter.
                 //}
             }
         }
         public static void Draw(GameTime gameTime, SpriteBatch spriteBatch)
         {
+            if (!Settings.ParticleEffects)
+            {
+                return;
+            }
             foreach (var pE in _particleEffects)
             {
                 spriteBatch.Draw(pE);
