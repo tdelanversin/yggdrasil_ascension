@@ -20,6 +20,8 @@ namespace YGR
         protected float safetyDistance { get; set; }
 
         public Vector2 Velocity { get; set; }
+        public Vector2 ImpactVelocity { get; set; }
+        protected float _impactDeceleration;
         protected float maxVelocity { get; set; }
         protected float _acceleration;
         protected float _deceleration;
@@ -70,9 +72,11 @@ namespace YGR
             CharacterSprite = sprite;
 
             Velocity = Vector2.Zero;
+            ImpactVelocity = Vector2.Zero;
             _acceleration = 0.006f;
             _deceleration = 0.04f;
             _maxVelocity = 0.06f;
+            _impactDeceleration = 0.001f;
 
             safetyDistance = 300f;
             FacingDirection = new Vector2(1, 0);
@@ -260,7 +264,26 @@ namespace YGR
                     Math.Sign(Velocity.Y) * Math.Max(0.0f, Math.Abs(Velocity.Y) - _deceleration * timeStepMS));
             }
 
-            Velocity = Util.ClampMagnitude(Velocity, _maxVelocity);
+            if(!handleImpact(timeStepMS)) Velocity = Util.ClampMagnitude(Velocity, _maxVelocity);
+        }
+
+        private bool handleImpact(int timeStepMS)
+        {
+            if (ImpactVelocity.X > 0 || ImpactVelocity.Y > 0)
+            {
+                Logger.Info("lol A:" + ImpactVelocity.ToString());
+                Velocity = ImpactVelocity;
+
+                Velocity = Util.ClampMagnitude(Velocity, MathHelper.Max(Math.Abs(ImpactVelocity.X), Math.Abs(ImpactVelocity.Y)));
+
+                ImpactVelocity = new Vector2(
+                    Math.Sign(ImpactVelocity.X) * Math.Max(0.0f, Math.Abs(ImpactVelocity.X) - _impactDeceleration * timeStepMS),
+                    Math.Sign(ImpactVelocity.Y) * Math.Max(0.0f, Math.Abs(ImpactVelocity.Y) - _impactDeceleration * timeStepMS));
+
+                return true;
+            }
+            ImpactVelocity = Vector2.Zero;
+            return false;
         }
 
         protected virtual void UpdateCollision(GameTime gameTime)
@@ -287,7 +310,7 @@ namespace YGR
                 }
             }
 
-            _position += newVelocity * timeStepMS;
+            _position += Velocity * timeStepMS;
             _rect.Location = _position.ToPoint();
         }
 
