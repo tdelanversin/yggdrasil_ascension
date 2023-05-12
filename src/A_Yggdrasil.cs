@@ -283,36 +283,36 @@ namespace YGR
                     watch.Start();
 
                     _background.Draw(gameTime, zero, _spriteBatch);
-                    times.Add(watch.ElapsedMilliseconds);
-                    watch.Restart();
+                    //times.Add(watch.ElapsedMilliseconds);
+                    //watch.Restart();
 
                     _level.Draw(gameTime, Vector2.Zero, _spriteBatch);
                     times.Add(watch.ElapsedMilliseconds);
                     watch.Restart();
 
                     _background.DrawTitleText(gameTime, Vector2.Zero, _spriteBatch);
-                    times.Add(watch.ElapsedMilliseconds);
-                    watch.Restart();
+                    //times.Add(watch.ElapsedMilliseconds);
+                    //watch.Restart();
 
                     Manager_Confusion.Draw(gameTime, Vector2.Zero, _spriteBatch);
-                    times.Add(watch.ElapsedMilliseconds);
-                    watch.Restart();
+                    //times.Add(watch.ElapsedMilliseconds);
+                    //watch.Restart();
 
                     Manager_Particles.Draw(gameTime, _spriteBatch);
-                    times.Add(watch.ElapsedMilliseconds);
-                    watch.Restart();
+                    //times.Add(watch.ElapsedMilliseconds);
+                    //watch.Restart();
 
                     Manager_Projectile.Draw(gameTime, zero, _spriteBatch);
-                    times.Add(watch.ElapsedMilliseconds);
-                    watch.Restart();
+                    //times.Add(watch.ElapsedMilliseconds);
+                    //watch.Restart();
 
                     Manager_Enemies.Draw(gameTime, zero, _spriteBatch);
-                    times.Add(watch.ElapsedMilliseconds);
-                    watch.Restart();
+                    //times.Add(watch.ElapsedMilliseconds);
+                    //watch.Restart();
 
                     Manager_Players.Draw(gameTime, zero, _spriteBatch);
-                    times.Add(watch.ElapsedMilliseconds);
-                    watch.Restart();
+                    //times.Add(watch.ElapsedMilliseconds);
+                    //watch.Restart();
 
                     if (Settings.DebugOutlinesLevel)
                     {
