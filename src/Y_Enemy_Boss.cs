@@ -1,4 +1,5 @@
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 using System;
 using System.Collections.Generic;
 
@@ -292,6 +293,44 @@ namespace YGR
             }
 
             _attacks[Attack].Shoot(gameTime, BossCenter(), targetDirection, Level, this);
+        }
+
+        
+        protected override void DrawHealthbar(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)
+        {
+            Vector2 dim = Manager_Sprites.HealthbarEmpty.Bounds.Size.ToVector2();
+            float scale = 2;
+            dim *= scale;
+            Vector2 offset = new Vector2((Rect.Width - dim.X) / 2, -dim.Y - 5);
+            Vector2 pos = _rect.Location.ToVector2() + offset;
+            spriteBatch.Draw(
+                texture: Manager_Sprites.HealthbarEmpty,
+                position: pos,
+                sourceRectangle: null,
+                color: Color.White,
+                rotation: 0,
+                origin: Vector2.Zero,
+                scale: scale,
+                effects: SpriteEffects.None,
+                layerDepth: 0);
+
+            // Fill the healthbar
+            if (LifePoints > 0)
+            {
+                float healthPerc = LifePoints / (float)LifePointsMax;
+                Rectangle infill = Manager_Sprites.HealthbarInfill.Bounds;
+                infill.Width = (int)(infill.Width * healthPerc);
+                spriteBatch.Draw(
+                    texture: Manager_Sprites.HealthbarInfill,
+                    position: pos,
+                    sourceRectangle: infill,
+                    color: Color.OrangeRed,
+                    rotation: 0,
+                    origin: Vector2.Zero,
+                    scale: scale,
+                    effects: SpriteEffects.None,
+                    layerDepth: 0);
+            }
         }
 
         /* Deal with being hit by projectile, basically physical therapy */
