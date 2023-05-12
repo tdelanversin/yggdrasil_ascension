@@ -16,7 +16,7 @@ namespace YGR
             Y_Level level,
             IGameElement who,
             float scale,
-            int damage,
+            float damage,
             float maxAge,
             float speed,
             float mass

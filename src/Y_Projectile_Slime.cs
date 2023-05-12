@@ -18,7 +18,7 @@ namespace YGR
             Y_Level level,
             IGameElement who,
             float scale = 0.55f,
-            int damage = 1,
+            float damage = 1,
             float maxAge = 2500,
             float speed = 0.55f,
             float mass = 0.5f

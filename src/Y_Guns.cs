@@ -15,7 +15,7 @@ namespace YGR
         public Texture2D Sprite { get; protected set; }
         public IVictim Owner { get; set; }
 
-        protected double NextShotCooldown = 0.0f;
+        public double NextShotCooldown { get; set; } = 0.0f;
         protected int ShotDelay = 240;
 
         public Gun_Basic(IVictim owner)
@@ -146,6 +146,9 @@ namespace YGR
         public Texture2D Sprite { get; protected set; }
         public IVictim Owner { get; set; }
 
+        // Why are we not using subclassing...
+        public double NextShotCooldown { get; set; } = 0.0f;
+
         double timeSinceShot = 1001;
         Vector2 _origin = new Vector2(0, 0);
         Vector2 _direction = new Vector2(0, 0);
@@ -250,6 +253,9 @@ namespace YGR
         public string Name { get; protected set; }
         public Texture2D Sprite { get; protected set; }
         public IVictim Owner { get; set; }
+
+        // Why are we not using subclassing...
+        public double NextShotCooldown { get; set; } = 0.0f;
 
         double timeSinceShot = 1001;
         Vector2 _origin = new Vector2(0, 0);
@@ -414,6 +420,8 @@ namespace YGR
             Owner = owner;
         }
 
+        public double NextShotCooldown { get; set; } = 0.0f;
+
         public string Name { get { return ""; } }
 
         public Texture2D Sprite { get { return Manager_Sprites.White; } }
@@ -430,7 +438,8 @@ namespace YGR
         }
     }
 
-    public class Gun_BossScatter : Gun_Basic {
+    public class Gun_BossScatter : Gun_Basic
+    {
 
         protected int ShotCount;
         protected double ShotSpread;
@@ -468,44 +477,46 @@ namespace YGR
         }
     }
 
-    public class Gun_BossPrecise : Gun_Basic {
+    public class Gun_BossPrecise : Gun_Basic
+    {
 
-            protected int ShotCount;
-            protected double ShotSpread;
-            protected double ShotSpreadCurrent; // current spread of the gun, [0,1) and used in ShotSpread * sin(ShotSpreadCurrent * 2 * pi)
-            protected double ShotSpreadSpeed; // how fast the gun spreads and indicated one full sin wave per x milliseconds
-            
-            public Gun_BossPrecise(IVictim owner) : base(owner)
-            {
-                Name = "Precise";
-                ShotDelay = 100;
-                ShotSpread = 0.4f;
-                ShotSpreadCurrent = 0f;
-                ShotSpreadSpeed = 500f;
-            }
-    
-            public override bool Shoot(GameTime gameTime, Vector2 origin, Vector2 direction, Y_Level level, IGameElement who)
-            {
-                if (NextShotCooldown > 0.0f)
-                    return false;
-    
-                NextShotCooldown = ShotDelay;
+        protected int ShotCount;
+        protected double ShotSpread;
+        protected double ShotSpreadCurrent; // current spread of the gun, [0,1) and used in ShotSpread * sin(ShotSpreadCurrent * 2 * pi)
+        protected double ShotSpreadSpeed; // how fast the gun spreads and indicated one full sin wave per x milliseconds
 
-                ShotSpreadCurrent += gameTime.ElapsedGameTime.TotalMilliseconds / ShotSpreadSpeed;
-                ShotSpreadCurrent %= 1;
+        public Gun_BossPrecise(IVictim owner) : base(owner)
+        {
+            Name = "Precise";
+            ShotDelay = 100;
+            ShotSpread = 0.4f;
+            ShotSpreadCurrent = 0f;
+            ShotSpreadSpeed = 500f;
+        }
 
-                var new_dir = new Vector2(
-                    (float)(direction.X * Math.Cos(ShotSpread * Math.Sin(ShotSpreadCurrent * 2 * Math.PI)) - direction.Y * Math.Sin(ShotSpread * Math.Sin(ShotSpreadCurrent * 2 * Math.PI))),
-                    (float)(direction.X * Math.Sin(ShotSpread * Math.Sin(ShotSpreadCurrent * 2 * Math.PI)) + direction.Y * Math.Cos(ShotSpread * Math.Sin(ShotSpreadCurrent * 2 * Math.PI)))
-                );
-    
-                Manager_Projectile.AddProjectile_BossProjectile(origin, new_dir, level, who);
-    
-                return true;
-            }
+        public override bool Shoot(GameTime gameTime, Vector2 origin, Vector2 direction, Y_Level level, IGameElement who)
+        {
+            if (NextShotCooldown > 0.0f)
+                return false;
+
+            NextShotCooldown = ShotDelay;
+
+            ShotSpreadCurrent += gameTime.ElapsedGameTime.TotalMilliseconds / ShotSpreadSpeed;
+            ShotSpreadCurrent %= 1;
+
+            var new_dir = new Vector2(
+                (float)(direction.X * Math.Cos(ShotSpread * Math.Sin(ShotSpreadCurrent * 2 * Math.PI)) - direction.Y * Math.Sin(ShotSpread * Math.Sin(ShotSpreadCurrent * 2 * Math.PI))),
+                (float)(direction.X * Math.Sin(ShotSpread * Math.Sin(ShotSpreadCurrent * 2 * Math.PI)) + direction.Y * Math.Cos(ShotSpread * Math.Sin(ShotSpreadCurrent * 2 * Math.PI)))
+            );
+
+            Manager_Projectile.AddProjectile_BossProjectile(origin, new_dir, level, who);
+
+            return true;
+        }
     }
 
-    public class Gun_BossAvoidPattern : Gun_BossScatter {
+    public class Gun_BossAvoidPattern : Gun_BossScatter
+    {
 
         protected double RotationSpeed;
         protected double Rotation;

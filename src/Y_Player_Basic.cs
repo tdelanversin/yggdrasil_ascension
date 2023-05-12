@@ -23,8 +23,8 @@ namespace YGR
         public IGameElement WhoKilledMe { get; set; }
 
         // IVictim fields
-        public int LifePoints { get; protected set; }
-        public int LifePointsMax { get; set; }
+        public float LifePoints { get; protected set; }
+        public float LifePointsMax { get; set; }
         public Color Color { get; set; }
         public X_CollisionModel_Victim Collision { get; protected set; }
         public Vector2 Velocity { get; set; }
@@ -59,7 +59,7 @@ namespace YGR
         protected Color _ghostColor;
         protected Texture2D _spriteAimIndicator;
         protected float _acceleration;
-        protected Vector2 _aimDirection;
+        public Vector2 _aimDirection;
         protected float _deceleration;
         protected Vector2 Position;
         protected ParticleEffect pE;
@@ -105,10 +105,9 @@ namespace YGR
             // Yes, bring him back <3
             CharacterSprite = Manager_Sprites.NewAnimatedSprite_TestCharacter();
 
-            if (gun != null)
-                Gun = gun;
-            else
-                Gun = Util.getRandomGun(this);
+            // He deserves the best weapon in the game
+            Gun = new Weapon_PinkHammer(this);
+            
             Ability = new Ability_Ghost();
             Type = type;
             ControlLayout = controlLayout;
@@ -163,8 +162,8 @@ namespace YGR
             // Movement related
             Velocity = Vector2.Zero;
             VelocityMax = IPlayer.PlayerBaseVelocity;
-            _acceleration = 0.008f;
-            _deceleration = 0.004f;
+            _acceleration = 1.008f;
+            _deceleration = 1.004f;
 
             // Dash
             IsDashing = false;
@@ -235,7 +234,7 @@ namespace YGR
 
 
         // Private heal method, this does NOT check if player is alive
-        protected virtual void heal(int healAmount)
+        protected virtual void heal(float healAmount)
         {
             if (LifePointsMax - LifePoints < healAmount)
             {
@@ -251,7 +250,7 @@ namespace YGR
             heal(LifePointsMax);
         }
 
-        public virtual void Heal(int healAmount)
+        public virtual void Heal(float healAmount)
         {
             if (!IsAlive()) { return; } // Don't heal a dead player
             heal(healAmount);
@@ -265,7 +264,7 @@ namespace YGR
             heal(LifePointsMax / 2);
         }
 
-        public virtual void Revive(int healAmount)
+        public virtual void Revive(float healAmount)
         {
             if (IsAlive()) { return; }
             Stats.Revives++;
@@ -477,8 +476,7 @@ namespace YGR
                 Vector2 playerCenter = Rect.Center.ToVector2();
                 if ((Input.HasMouseMoved() || Input.IsLeftMousePressed()) && !_isAiming) // Skip if controller is already aiming
                 {
-                    Vector2 mouseInGamePosition = Input.GetMousePosition().ToVector2() / Camera.Zoom + Camera.VisibleArea.Location.ToVector2();
-                    Vector2 newAimDirection = mouseInGamePosition - playerCenter;
+                    Vector2 newAimDirection = Input.GetMousePositionInGame() - playerCenter;
                     newAimDirection.Normalize();
                     _aimDirection = newAimDirection;
                 }

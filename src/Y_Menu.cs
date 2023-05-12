@@ -186,6 +186,7 @@ namespace YGR
                     new SettingsItem("Dynamic Shades: ", Settings.DynamicShades, toggleFunc: Settings.ToggleShades),
                     new SettingsItem("Level Outlines: ", Settings.DebugOutlinesLevel, toggleFunc: Settings.ToggleDebugOutlinesLevel),
                     new SettingsItem("Entity Outlines: ", Settings.DebugOutlinesEntities, toggleFunc: Settings.ToggleDebugOutlinesEntities),
+                    new SettingsItem("Debug Mode: ", Settings.DebugMode, toggleFunc: Settings.ToggleDebugMode),
                     new SettingsItem("Sound Effects: ", Settings.Sound, toggleFunc: Settings.ToggleSoundEffects),
                     new SettingsItem("Music: ", Settings.Music, toggleFunc: Settings.ToggleMusic),
                     new MenuItem("Back", Menu.Ascend),

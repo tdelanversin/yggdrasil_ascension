@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
@@ -145,6 +146,17 @@ namespace YGR
         public static bool HasKeyboardStateChanged()
         {
             return currentKeyState != previousKeyState;
+        }
+
+        internal static Vector2 GetMousePositionInGame()
+        {
+            var mousePositionWindow = Input.GetMousePosition().ToVector2();
+
+            // Scale by camera zoom level
+            var mousePositionGame = mousePositionWindow / Camera.Zoom;
+
+            // Offset by camera visible area bounds
+            return mousePositionGame + Camera.VisibleArea.Location.ToVector2();
         }
     }
 }
