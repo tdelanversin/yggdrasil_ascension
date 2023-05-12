@@ -35,6 +35,7 @@ namespace YGR
         protected float _mass;
         protected float _cr;
         protected float _scale;
+        protected float _fakeAcceleration;
 
         public Projectile_Basic(
             Vector2 position,
@@ -46,7 +47,8 @@ namespace YGR
             float damage = 1,
             float maxAge = 2500,
             float speed = 0.55f,
-            float mass = 0.5f
+            float mass = 0.5f,
+            float fakeAcceleration = 1.0f
         )
         {
             // Constructor args
@@ -60,13 +62,14 @@ namespace YGR
             MaxAge = maxAge;
             _speed = speed;
             _mass = mass;
+            _fakeAcceleration = fakeAcceleration;
 
             // Other fields
             Age = 0f;
             _isEnemy = false;
             DeleteNext = false;
             Velocity = _speed * direction;
-            Collision = new X_CollisionModel_Projectile(_mass, 1.0f);
+            Collision = new X_CollisionModel_Projectile(_mass, fakeAcceleration);
             Color = Color.White; // neutral
                                  //Manager_Particles.GenParticleEffectProjectileTrails(new Vector2(_rect.Location.X + _rect.Width / 2, _rect.Location.Y + _rect.Height / 2), Color);
 
@@ -129,6 +132,10 @@ namespace YGR
                     if (obj is IVictim)
                     {
                         Manager_Particles._particleEffects[(int)Manager_Particles.Effect.Impact].Trigger(new Vector2(_rect.Location.X + _rect.Width / 2, _rect.Location.Y + _rect.Height / 2));
+                        if(obj.WhatAreYou() == X_LevelElements.Enemy)
+                        {
+                            Logger.Info("From outside: " + ((IVictim)obj).Velocity.ToString());
+                        }
                         ((IVictim)obj).Hit(this);
                     }
                 }
@@ -168,7 +175,7 @@ namespace YGR
 
         public void DrawOutline(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)
         {
-            Factory_Debug.DrawRectangle(Rect.X, Rect.Y, Rect.Width, Rect.Height, 1, Color.BlueViolet, spriteBatch);
+            Factory_Debug.DrawRectangle(Rect.X, Rect.Y, Rect.Width, Rect.Height, 2, Color.BlueViolet, spriteBatch);
             Collision.DrawOutline(gameTime, globalOffset, spriteBatch);
         }
 

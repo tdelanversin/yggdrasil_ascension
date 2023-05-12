@@ -21,8 +21,9 @@ namespace YGR
             float damage = 1,
             float maxAge = 2500,
             float speed = 0.55f,
-            float mass = 0.5f
-        ) : base(position, direction, spriteOuter, level, who, scale, damage, maxAge, speed, mass)
+            float mass = 0.5f,
+            float fakeAcceleration = 0.0f
+        ) : base(position, direction, spriteOuter, level, who, scale, damage, maxAge, speed, mass, fakeAcceleration)
         {
             _spriteInner = spriteInner;
             _spriteOuter = spriteOuter;
