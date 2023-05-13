@@ -25,7 +25,7 @@ def makeGaussian(size, fwhm = 3, center=None):
     return np.exp(-4*np.log(2) * ((x-x0)**2 + (y-y0)**2) / fwhm**2)
 
 h_offset = 16
-count = 5
+count = 8
 width = 256
 height = 128
 a = 1.0
@@ -37,7 +37,11 @@ gauss = makeGaussian(17, 3)
 
 import math
 
+exp = 1.0
+dexp = 0.5
 for c in range(0, count):
+    if(c == 4):
+        dexp = -dexp
     lspx = np.linspace(-1, 1, height)
     lspy = np.linspace(-1, 1, width)
     mesh = np.meshgrid(lspy, lspx)
@@ -58,7 +62,10 @@ for c in range(0, count):
 
     mask = mesh[0]**2 / a**2 + mesh[1]**2 / b**2 < 1.0
     values = (mesh[0]**2 / a**2 + mesh[1]**2 / b**2)
-    values = (1 - np.exp(-0.05*values))**()
+
+    values = (1 - np.exp(-0.05*values))**exp
+    exp += dexp
+
     sigmoid = lspx
     sigmoid = 1-1/(1 + np.exp(-15*(sigmoid - 0.2)))
     sigmoid = np.tile(sigmoid.reshape(-1,1), (1,width))
