@@ -597,7 +597,7 @@ namespace YGR
                 layerDepth: 0);
         }
 
-        public void Draw(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)
+        public virtual void Draw(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)
         {
             // Culling
             if (Rectangle.Intersect(Camera.VisibleArea, Rect) == Rectangle.Empty)
