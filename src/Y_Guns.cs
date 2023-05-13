@@ -140,6 +140,59 @@ namespace YGR
         }
     }
 
+    public class Gun_ShotGunEnemy : Gun_Basic
+    {
+        protected int ShotCount;
+        protected double ShotSpread;
+
+        public Gun_ShotGunEnemy(IVictim owner) : base(owner)
+        {
+            ShotDelay = 800;
+            ShotCount = 5;
+            ShotSpread = .3 / ShotCount;
+            Name = string.Format("Shotgun ({0})", ShotCount);
+            Sprite = Manager_Sprites.Weapon_Shotgun;
+        }
+
+        public Gun_ShotGunEnemy(IVictim owner, int shotCount) : this(owner)
+        {
+            ShotCount = shotCount;
+            ShotSpread = .3 / ShotCount;
+        }
+
+        public override bool Shoot(GameTime gameTime, Vector2 origin, Vector2 direction, Y_Level level, IGameElement who)
+        {
+            if (NextShotCooldown > 0.0f)
+                return true;
+
+            Manager_Sound.Sound_Shotgun.Play(0.3f, 0, 0);
+
+            NextShotCooldown = ShotDelay;
+
+            double spread = -ShotCount / 2 * ShotSpread;
+            for (int i = 0; i < ShotCount; i++)
+            {
+                var new_dir = new Vector2(
+                    (float)(direction.X * Math.Cos(spread) - direction.Y * Math.Sin(spread)),
+                    (float)(direction.X * Math.Sin(spread) + direction.Y * Math.Cos(spread))
+                );
+
+                Manager_Projectile.AddProjectile_EnemySlimeProjectile(origin, new_dir, level, who);
+                spread += ShotSpread;
+            }
+            return true;
+        }
+
+        public override void DropAsPickUp(IVictim lastOwner, IWalkable room, Point location)
+        {
+            room.PickUps.Add(PickUp.Factory(
+                Y_PowerUps.WeaponShotgun,
+                location,
+                Y_Level.TextureTileSize, Y_Level.TextureTileSize, Y_Level.GlobalScale, lastOwner));
+        }
+
+    }
+
     public class Gun_Funky : IShooter
     {
         public string Name { get; protected set; }

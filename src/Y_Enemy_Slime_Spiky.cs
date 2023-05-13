@@ -22,12 +22,12 @@ namespace YGR
             Y_Level level
         ) : base(position, sprite, level)
         {
-            LifePointsMax = 9;
+            LifePointsMax = 35;
             LifePoints = LifePointsMax;
             fleeingHPTreshold = LifePointsMax / 2;
 
             Name = "Slime Spiky";
-            Gun = new Gun_BasicEnemy(this);
+            Gun = new Gun_ShotGunEnemy(this);
 
             Color = SlimeyColors[Util.random.Next(SlimeyColors.Count)]; // Slimey green, picked from the colored png files
             _currentColor = Color;
