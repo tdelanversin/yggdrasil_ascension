@@ -25,6 +25,8 @@ namespace YGR
         Vector2 _savedTargetDirection = new Vector2(1, 0);
         bool _alreadyShot = false;
 
+        Color bossColor;
+
 
 
         public Enemy_Boss(
@@ -73,7 +75,8 @@ namespace YGR
             _attackWeights = _attackWeightsPhase1;
 
             _hitColor = Color.OrangeRed;
-            Color = new Color(255, 255, 98);
+            Color = Color.White;
+            bossColor = new Color(255, 255, 98);
             _currentColor = Color;
 
             _maxVelocity = 0.075f;
@@ -101,7 +104,7 @@ namespace YGR
             // Create the minions
             for (int i = 0; i < 22; i++)
             {
-                _minions.Add(Manager_Enemies.MakeEnemy_BossMinion(Level, Color));
+                _minions.Add(Manager_Enemies.MakeEnemy_BossMinion(Level, bossColor));
             }
 
             Phase1HP = 200;
@@ -294,6 +297,7 @@ namespace YGR
 
             _attacks[Attack].Shoot(gameTime, BossCenter(), targetDirection, Level, this);
         }
+    
 
         
         protected override void DrawHealthbar(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)

@@ -23,6 +23,7 @@ namespace YGR
         public static void ClearEnemies()
         {
             _enemies.Clear();
+            _bosses.Clear();
         }
 
         public static void ClearEnemies(IWalkable room)
@@ -33,6 +34,13 @@ namespace YGR
             }
 
             _enemies.RemoveAll(enemy => enemy.LifePoints <= 0);
+
+            foreach(var boss in _bosses)
+            {
+                if (boss.Room == room) boss.Kill();
+            }
+
+            _bosses.RemoveAll(boss => boss.LifePoints <= 0);
         }
 
         public static void KillAllNormalEnemies()
