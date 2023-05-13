@@ -63,6 +63,14 @@ namespace YGR
         public static Texture2D Effect_Confusion { get; private set; }
         public static Texture2D Effect_Shield { get; private set; }
 
+        // Level Ups
+        public static Texture2D LevelUp_DarkFlash { get; private set; }
+        public static Texture2D LevelUp_LightFlash { get; private set; }
+        public static Texture2D LevelUp_Bullet { get; private set; }
+        public static Texture2D LevelUp_DarkFlash_NoShade { get; private set; }
+        public static Texture2D LevelUp_LightFlash_NoShade { get; private set; }
+        public static Texture2D LevelUp_Bullet_NoShade { get; private set; }
+
         public static void LoadContent(ContentManager contentManager)
         {
             Player_Ninja = contentManager.Load<Texture2D>("SpritesCharacters/charaset");
@@ -101,7 +109,7 @@ namespace YGR
 
             Enemy_Basic = Player_Simple;
             Enemy_Slime = contentManager.Load<Texture2D>("SpritesCharacters/slime");
-            Enemy_SlimeSpiky = contentManager.Load<Texture2D>("SpritesCharacters/slime");
+            Enemy_SlimeSpiky = contentManager.Load<Texture2D>("SpritesCharacters/spiky_sheet");
             Enemy_Gigachad = contentManager.Load<Texture2D>("SpritesCharacters/gigachad");
             Enemy_Boss = contentManager.Load<Texture2D>("SpritesCharacters/slime_boss_sheet");
 
@@ -110,6 +118,85 @@ namespace YGR
 
             Effect_Confusion = contentManager.Load<Texture2D>("SpritesEffects/noise");
             Effect_Shield = contentManager.Load<Texture2D>("SpritesEffects/shield");
+
+            LevelUp_DarkFlash = contentManager.Load<Texture2D>("SpritesOther/thunder_up_sheet_2");
+            LevelUp_LightFlash = contentManager.Load<Texture2D>("SpritesOther/tunder_up_sheet");
+            LevelUp_Bullet = contentManager.Load<Texture2D>("SpritesOther/bullet_sheet");
+
+            LevelUp_DarkFlash_NoShade = contentManager.Load<Texture2D>("SpritesOther/thunder_up_sheet_2_no_shade");
+            LevelUp_LightFlash_NoShade = contentManager.Load<Texture2D>("SpritesOther/tunder_up_sheet_no_shade");
+            LevelUp_Bullet_NoShade = contentManager.Load<Texture2D>("SpritesOther/bullet_sheet_no_shade");
+        }
+
+        public static AnimatedSprite NewAnimatedSprite_LevelUp_DarkFlash_NoShade()
+        {
+            return new AnimatedSprite(
+                texture: LevelUp_DarkFlash_NoShade,
+                spriteDimension: new Vector2(533, 1035),
+                animations: new Dictionary<AnimationState, int[]> {
+                    { AnimationState.Idle, new int[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11 } },
+                },
+                animationDuration: 750
+            );
+        }
+
+        public static AnimatedSprite NewAnimatedSprite_LevelUp_LightFlash_NoShade()
+        {
+            return new AnimatedSprite(
+                texture: LevelUp_LightFlash_NoShade,
+                spriteDimension: new Vector2(533, 1035),
+                animations: new Dictionary<AnimationState, int[]> {
+                    { AnimationState.Idle, new int[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11 } },
+                },
+                animationDuration: 750
+            );
+        }
+
+        public static AnimatedSprite NewAnimatedSprite_LevelUp_Bullet_NoShade()
+        {
+            return new AnimatedSprite(
+                texture: LevelUp_Bullet_NoShade,
+                spriteDimension: new Vector2(675, 955),
+                animations: new Dictionary<AnimationState, int[]> {
+                    { AnimationState.Idle, new int[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12 } },
+                },
+                animationDuration: 750
+            );
+        }
+        public static AnimatedSprite NewAnimatedSprite_LevelUp_DarkFlash()
+        {
+            return new AnimatedSprite(
+                texture: LevelUp_DarkFlash,
+                spriteDimension: new Vector2(533, 1035),
+                animations: new Dictionary<AnimationState, int[]> {
+                    { AnimationState.Idle, new int[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11 } },
+                },
+                animationDuration: 750
+            );
+        }
+
+        public static AnimatedSprite NewAnimatedSprite_LevelUp_LightFlash()
+        {
+            return new AnimatedSprite(
+                texture: LevelUp_LightFlash,
+                spriteDimension: new Vector2(533, 1035),
+                animations: new Dictionary<AnimationState, int[]> {
+                    { AnimationState.Idle, new int[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11 } },
+                },
+                animationDuration: 750
+            );
+        }
+
+        public static AnimatedSprite NewAnimatedSprite_LevelUp_Bullet()
+        {
+            return new AnimatedSprite(
+                texture: LevelUp_Bullet,
+                spriteDimension: new Vector2(675, 955),
+                animations: new Dictionary<AnimationState, int[]> {
+                    { AnimationState.Idle, new int[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12 } },
+                },
+                animationDuration: 750
+            );
         }
 
         public static AnimatedSprite NewAnimatedSprite_Confusion()
@@ -225,7 +312,7 @@ namespace YGR
         {
             return new AnimatedSprite(
                     texture: Enemy_SlimeSpiky,
-                    spriteDimension: new Vector2(55, 42),
+                    spriteDimension: new Vector2(64, 51),
                     animations: new Dictionary<AnimationState, int[]> {
                         { AnimationState.WalkLeft, new int[] { 0, 1, 2, 3, 4, 3, 2, 1 } },
                         { AnimationState.WalkRight, new int[] { 0, 1, 2, 3, 4, 3, 2, 1 } },
