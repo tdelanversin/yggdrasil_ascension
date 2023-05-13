@@ -81,6 +81,7 @@ namespace YGR
         float _angle;
         bool _triggered;
         float _strength;
+        float _maxStrength;
         bool _reloading;
         int _reloadingTimeMS;
         int _reloadingTimeCounter;
@@ -124,6 +125,7 @@ namespace YGR
             _good = Color.Blue;
             _crap = Color.Red;
             _strength = Owner.LifePointsMax;
+            _maxStrength = _strength;
         }
 
         public bool Trigger(GameTime gametime, Vector2 origin, Vector2 direction, Y_Level level, IGameElement who)
@@ -150,7 +152,7 @@ namespace YGR
             // Draw an indicator only if a) the player is actively aiming on the gamepad or b) is using mouse to aim
             if(_triggered)
             {
-                float p = 1.0f / Owner.LifePointsMax * _strength;
+                float p = 1.0f / _maxStrength * _strength;
                 Color gradient = new Color(
                     (byte)(_crap.R * (1.0f-p) + _good.R * p),
                     (byte)(_crap.G * (1.0f-p) + _good.G * p),
@@ -168,6 +170,11 @@ namespace YGR
         public bool HitByProjectile(IProjectile projectile, int timeStepMS)
         {
             if (!_triggered) return false;
+
+            foreach(var p in _collisionModel)
+            {
+                if (projectile.Rect.Contains(p)) return true;
+            }
 
             /*
              * Screw this!!! Maybe another time...
@@ -251,7 +258,11 @@ namespace YGR
         public void Hit(float damage)
         {
             _strength -= damage;
-            if (_strength <= 0) _reloading = true;
+            if (_strength <= 0)
+            {
+                _reloading = true;
+                _triggered = false;
+            }
         }
 
         public void DrawOutline(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)
@@ -274,6 +285,7 @@ namespace YGR
                 if(_reloadingTimeCounter >= _reloadingTimeMS)
                 {
                     _reloadingTimeCounter = 0;
+                    _strength = _maxStrength;
                     _reloading = false;
                 }
             }

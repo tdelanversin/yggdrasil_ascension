@@ -72,6 +72,7 @@ namespace YGR
                         var shield = (Ability_Shield)victim.Ability;
                         if (shield.HitByProjectile(me, timeStepMS))
                         {
+                            shield.Hit(me.Damage);
                             result = true;
                             me.DeleteNext = true;
                             continue;
