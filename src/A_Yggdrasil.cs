@@ -246,7 +246,7 @@ namespace YGR
                     _level.Update(gameTime);
                     times.Add(watch.ElapsedMilliseconds);
                     watch.Reset();
-                    if (times.Any(x => x > 1)) Logger.Info("Update: " + string.Join(",\t", times.Select(x => x.ToString())));
+                    //if (times.Any(x => x > 1)) Logger.Info("Update: " + string.Join(",\t", times.Select(x => x.ToString())));
                     break;
                 case GameState.Menu:
                     _background.Update(gameTime);
@@ -327,7 +327,7 @@ namespace YGR
                         Manager_Confusion.DrawOutline(gameTime, zero, _spriteBatch);
                     }
 
-                    if (times.Any(x => x > 1)) Logger.Info("Draw: " + string.Join(",\t", times.Select(x => x.ToString())));
+                    //if (times.Any(x => x > 1)) Logger.Info("Draw: " + string.Join(",\t", times.Select(x => x.ToString())));
                     break;
 
                 case GameState.Menu:

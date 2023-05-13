@@ -5,30 +5,6 @@ import numpy as np
 import scipy.signal as scs
 import scipy.ndimage as scn
 
-# def test_func(values):
-#     print(values)
-#     return values.sum()
-
-
-# x = np.array([[1,2,3],[4,5,6],[7,8,9]])
-
-# footprint = np.array([[1,1,1],
-#                       [1,0,1],
-#                       [1,1,1]])
-
-# results = ndimage.generic_filter(x, test_func, footprint=footprint)
-
-
-# for obj in os.walk("."):
-#     png_files = list(filter(lambda f: f.find(".png") >= 0, obj[2]))
-#     png_files.sort()
-#     if png_files:
-#         for png_file in png_files:
-#             p = png_file.split('-')
-#             end = p[2].split('.')
-#             new_name = p[0] + '-' + p[1] + '-' + str(int(end[0]) + offset) + "." + end[1]
-#             os.rename(png_file, new_name)
-
 def makeGaussian(size, fwhm = 3, center=None):
     """ Make a square gaussian kernel.
 
@@ -48,10 +24,7 @@ def makeGaussian(size, fwhm = 3, center=None):
 
     return np.exp(-4*np.log(2) * ((x-x0)**2 + (y-y0)**2) / fwhm**2)
 
-file_name = "random_noise.png"
-
 size = 128
-
 width = 15
 new_img = np.zeros((size, width*size, 4), dtype = np.byte)
 # new_img[0:img.shape[0],0:img.shape[1],:] = img

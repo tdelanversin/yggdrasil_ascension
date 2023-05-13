@@ -1,4 +1,5 @@
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 
 namespace YGR
 {
@@ -14,7 +15,7 @@ namespace YGR
             ) : base(playerIndex, initialPosition, level, gun, type, controlLayout)
         {
             CharacterSprite = Manager_Sprites.NewAnimatedSprite_Mailman();
-            Ability = new Ability_Shield();
+            Ability = new Ability_Shield(this);
             Type = PlayerType.Mailman;
             Name = "Mailman";
 
@@ -38,6 +39,13 @@ namespace YGR
             _mass = IPlayer.PlayerBaseMass * 2f;
             _impactDeceleration = IPlayer.PlayerBaseDeceleration * 1.25f;
             Collision = new X_CollisionModel_Victim(_mass, _cr);
+        }
+
+        public override void DrawOutline(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)
+        {
+            Factory_Debug.DrawRectangle(_rect.X, _rect.Y, _rect.Width, _rect.Height, 1, Color.OrangeRed, spriteBatch);
+            Collision.DrawOutline(gameTime, globalOffset, spriteBatch);
+            ((Ability_Shield)Ability).DrawOutline(gameTime, globalOffset, spriteBatch);
         }
     }
 }

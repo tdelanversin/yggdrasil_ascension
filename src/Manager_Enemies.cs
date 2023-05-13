@@ -111,7 +111,6 @@ namespace YGR
             _enemies.RemoveAll(enemy => enemy.LifePoints <= 0);
 
             // remove bosses
-            var bosses = _bosses.Where(x => x.LifePoints <= 0).ToList();
             _bosses.RemoveAll(boss => boss.LifePoints <= 0);
 
             // add new enemies

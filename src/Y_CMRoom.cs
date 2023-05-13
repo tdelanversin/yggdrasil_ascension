@@ -540,7 +540,7 @@ namespace YGR
         {
             Lights = new List<X_Light>() {
             new X_Light(
-                new Vector3(Rect.X + -offsetX * Y_Level.TextureTileSize,
+                new Vector3(Rect.X + offsetX * Y_Level.TextureTileSize,
                 Rect.Y + offsetY * Y_Level.TextureTileSize,
                 offsetZ * Y_Level.TextureTileSize),
                 Rect, Y_Level.GlobalScale)
