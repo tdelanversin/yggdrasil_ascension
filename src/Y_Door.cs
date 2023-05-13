@@ -71,6 +71,7 @@ namespace YGR
         private X_DoorState State { get; set; }
         public int ElementLevel { get { return 1; } set { } }
         public string Category { get; }
+        public int NCollisionRectsWithoutDoor { get; }
 
         public List<PickUp> PickUps { get; }
 
@@ -193,6 +194,8 @@ namespace YGR
             }
 
             ShadeTexture[0].SetData(Shade);
+
+            NCollisionRectsWithoutDoor = Collision.GetCollisionRectangles().Length;
         }
 
         public int GetTargetShadeIndex()
