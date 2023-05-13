@@ -304,7 +304,7 @@ namespace YGR
         public void DrawBossHealthBar(GameTime gameTime, SpriteBatch spriteBatch)
         {
             Vector2 dim = Manager_Sprites.HealthbarBackgroundBoss.Bounds.Size.ToVector2();
-            float scale = 6;
+            float scale = Camera.Bounds.Height / dim.Y * 0.8f;
             dim *= scale;
             Vector2 offset = new Vector2(-dim.X / 2, -dim.Y / 2);
             Vector2 pos = new Vector2(Camera.Bounds.Width * 9 / 10, Camera.Bounds.Height / 2) + offset;
