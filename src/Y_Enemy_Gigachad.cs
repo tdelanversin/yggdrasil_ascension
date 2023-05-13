@@ -1,6 +1,7 @@
 using Microsoft.Xna.Framework;
 using System;
 using System.Collections.Generic;
+using Microsoft.Xna.Framework.Graphics;
 
 namespace YGR
 {
@@ -98,5 +99,7 @@ namespace YGR
             // Gigachad shoot Big Gun no matter what (as long as there are players in the same room)
             Gun2.Shoot(gameTime, _rect.Center.ToVector2(), Vector2.One, Level, this);
         }
+
+        public void DrawBossHealthBar(GameTime gameTime, SpriteBatch spriteBatch) { }
     }
 }

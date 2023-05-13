@@ -116,6 +116,18 @@ namespace YGR
             }
         }
 
+        public static void DrawBossHealthBar(GameTime gameTime, SpriteBatch spriteBatch)
+        {
+            foreach (var boss in Manager_Enemies.GetBosses())
+            {
+                if (boss.State == EnemyState.Inactive)
+                    continue;
+
+                boss.DrawBossHealthBar(gameTime, spriteBatch);
+            }
+
+        }
+
         public static void DrawPlayerStatistics(GameTime gameTime, SpriteBatch spriteBatch, bool printAll = false)
         {
             SpriteFont font = Fonts.GetDecentlySizedFont();
