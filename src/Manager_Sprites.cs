@@ -56,6 +56,7 @@ namespace YGR
 
         // Effects
         public static Texture2D Effect_Confusion { get; private set; }
+        public static Texture2D Effect_Shield { get; private set; }
 
         public static void LoadContent(ContentManager contentManager)
         {
@@ -98,6 +99,7 @@ namespace YGR
             SpinningPlus = contentManager.Load<Texture2D>("SpritesOther/SpinningPlus");
 
             Effect_Confusion = contentManager.Load<Texture2D>("SpritesEffects/noise");
+            Effect_Shield = contentManager.Load<Texture2D>("SpritesEffects/shield");
         }
 
         public static AnimatedSprite NewAnimatedSprite_Confusion()
@@ -107,6 +109,18 @@ namespace YGR
                 spriteDimension: new Vector2(128, 128),
                 animations: new Dictionary<AnimationState, int[]> {
                     { AnimationState.Idle, new int[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14 } },
+                },
+                animationDuration: 500
+            );
+        }
+
+        public static AnimatedSprite NewAnimatedSprite_Shield()
+        {
+            return new AnimatedSprite(
+                texture: Effect_Shield,
+                spriteDimension: new Vector2(256, 128),
+                animations: new Dictionary<AnimationState, int[]> {
+                    { AnimationState.Idle, new int[] { 0, 1, 2, 3, 4 } },
                 },
                 animationDuration: 500
             );

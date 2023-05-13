@@ -19,6 +19,7 @@
         MultiPowerUp,
         Bark,
         Confusion,
-        ConfusionProjectile
+        ConfusionProjectile,
+        Shield
     }
 }
