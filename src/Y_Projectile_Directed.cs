@@ -101,7 +101,7 @@ namespace YGR
             var direction = _direction;
             if (WhoFiredMe is Player_Basic)
             { // Add a "little twist" to it ...get it?
-                direction = ((Player_Basic)WhoFiredMe)._aimDirection;
+                direction = ((Player_Basic)WhoFiredMe).AimDirection;
             }
             Angle = (float)(Math.Atan2(direction.Y, direction.X) + Math.PI / 2);
             spriteBatch.Draw(

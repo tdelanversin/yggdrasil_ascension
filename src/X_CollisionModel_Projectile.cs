@@ -66,6 +66,18 @@ namespace YGR
 
                     if (victim.Room != me.Room) continue;
 
+                    // first check all the shields
+                    if (victim.Ability is Ability_Shield)
+                    {
+                        var shield = (Ability_Shield)victim.Ability;
+                        if (shield.HitByProjectile(me, timeStepMS))
+                        {
+                            result = true;
+                            me.DeleteNext = true;
+                            continue;
+                        }
+                    }
+
                     // Pass through player if they are currently invincible
                     if (victim.WhatAreYou() == X_LevelElements.Invincible)
                     {

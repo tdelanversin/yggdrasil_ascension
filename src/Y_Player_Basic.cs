@@ -60,7 +60,7 @@ namespace YGR
         protected Color _ghostColor;
         protected Texture2D _spriteAimIndicator;
         protected float _acceleration;
-        public Vector2 _aimDirection;
+        public Vector2 AimDirection;
         protected float _deceleration;
         protected float _impactDeceleration;
         protected Vector2 Position;
@@ -70,7 +70,7 @@ namespace YGR
         protected float _invincibleTimer;
         protected float _cr;
         protected float _mass;
-        protected InputType _currentAimInput;
+        public InputType CurrentAimInput;
         protected float _actionTimer;
         protected float _actionTreshold;
 
@@ -81,7 +81,7 @@ namespace YGR
         protected int _dashCooldown;
         protected int _dashCooldownTimer;
 
-        protected enum InputType
+        public enum InputType
         {
             Controller = 0,
             KeyboardMouse,
@@ -182,7 +182,7 @@ namespace YGR
 
             // Character state
             _isAiming = false;
-            _aimDirection = new Vector2(1, 0);
+            AimDirection = new Vector2(1, 0);
             IsInvincible = false;
             IsActive = true;
             Stats = new Statistics();
@@ -423,9 +423,9 @@ namespace YGR
                     newAimDirection.X *= gpState.ThumbSticks.Right.X;
                     newAimDirection.Y *= -gpState.ThumbSticks.Right.Y;
                     newAimDirection.Normalize();
-                    _aimDirection = newAimDirection;
+                    AimDirection = newAimDirection;
                     _isAiming = true;
-                    _currentAimInput = InputType.Controller;
+                    CurrentAimInput = InputType.Controller;
                 }
                 else
                 {
@@ -434,16 +434,16 @@ namespace YGR
                 if ((Input.IsButtonDown(PlayerIndex, Keybinds.GamePadShoot)) && IsAlive())
                 {
                     _isAiming = true; // Show the aim indicator when firing
-                    _currentAimInput = InputType.Controller;
-                    bool shot = Gun.Shoot(gameTime, Rect.Center.ToVector2(), _aimDirection, Level, this);
+                    CurrentAimInput = InputType.Controller;
+                    bool shot = Gun.Shoot(gameTime, Rect.Center.ToVector2(), AimDirection, Level, this);
                     if (shot) { Stats.TimesFired++; }
                 }
 
                 if (Input.IsButtonDown(PlayerIndex, Keybinds.GamePadAbility) && IsAlive())
                 {
                     _isAiming = true; // Show the aim indicator when firing
-                    _currentAimInput = InputType.Controller;
-                    bool triggered = Ability.Trigger(gameTime, Rect.Center.ToVector2(), _aimDirection, Level, this);
+                    CurrentAimInput = InputType.Controller;
+                    bool triggered = Ability.Trigger(gameTime, Rect.Center.ToVector2(), AimDirection, Level, this);
                     if (triggered) { Stats.TimesAbilitated++; }
                 }
             }
@@ -481,22 +481,22 @@ namespace YGR
                 {
                     Vector2 newAimDirection = Input.GetMousePositionInGame() - playerCenter;
                     newAimDirection.Normalize();
-                    _aimDirection = newAimDirection;
+                    AimDirection = newAimDirection;
                 }
                 if (Input.IsLeftMousePressed() && IsAlive())
                 {
-                    bool shot = Gun.Shoot(gameTime, playerCenter, _aimDirection, Level, this);
+                    bool shot = Gun.Shoot(gameTime, playerCenter, AimDirection, Level, this);
                     if (shot) { Stats.TimesFired++; }
                 }
                 if (Input.IsRightMousePressed() && IsAlive())
                 {
-                    bool triggered = Ability.Trigger(gameTime, playerCenter, _aimDirection, Level, this);
+                    bool triggered = Ability.Trigger(gameTime, playerCenter, AimDirection, Level, this);
                     if (triggered) { Stats.TimesAbilitated++; }
                 }
 
                 if (Input.HasMouseStateChanged())
                 {
-                    _currentAimInput = InputType.KeyboardMouse;
+                    CurrentAimInput = InputType.KeyboardMouse;
                 }
             }
         }
@@ -669,11 +669,11 @@ namespace YGR
         protected virtual void DrawAimIndicator(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)
         {
             // Draw an indicator only if a) the player is actively aiming on the gamepad or b) is using mouse to aim
-            if (_currentAimInput == InputType.Controller && _isAiming || _currentAimInput == InputType.KeyboardMouse)
+            if (CurrentAimInput == InputType.Controller && _isAiming || CurrentAimInput == InputType.KeyboardMouse)
             {
-                var angle = Math.Atan2(_aimDirection.Y, _aimDirection.X) + Math.PI / 2;
+                var angle = Math.Atan2(AimDirection.Y, AimDirection.X) + Math.PI / 2;
                 spriteBatch.Draw(
-                    _spriteAimIndicator, _rect.Location.ToVector2() + _rect.Size.ToVector2() / 2f + _aimDirection * (int)(_rect.Height * 1.5),
+                    _spriteAimIndicator, _rect.Location.ToVector2() + _rect.Size.ToVector2() / 2f + AimDirection * (int)(_rect.Height * 1.5),
                     null,
                     Color, (float)angle, new Vector2(_spriteAimIndicator.Width / 2, 0), 0.1f, SpriteEffects.None, 0);
             }
