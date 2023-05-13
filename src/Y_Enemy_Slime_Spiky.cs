@@ -114,7 +114,7 @@ namespace YGR
                 spriteBatch.Draw(
                         _carriedPowerUpSprite.Texture, Rect.Center.ToVector2() - offset,
                         _carriedPowerUpSprite.SourceRectangle,
-                        Color.White*0.65f, 0, Vector2.Zero, scale, SpriteEffects.None, 0);
+                        Color.White*0.3f, 0, Vector2.Zero, scale, SpriteEffects.None, 0);
             }
             if(_carriedImage != null)
             {
@@ -129,7 +129,7 @@ namespace YGR
                 spriteBatch.Draw(
                         _carriedImage.Texture, Rect.Location.ToVector2() + offset,
                         target,
-                        Color.White * 0.7f, 0, Vector2.Zero, scale, SpriteEffects.None, 0);
+                        Color.White * 0.4f, 0, Vector2.Zero, scale, SpriteEffects.None, 0);
             }
         }
 
