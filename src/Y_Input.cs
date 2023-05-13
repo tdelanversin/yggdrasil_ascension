@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 
@@ -60,6 +61,23 @@ namespace YGR
                 currentGamePadState[i] = GamePad.GetState(i);
             }
         }
+
+        public static bool AnyGamePadButtonPressed()
+        {
+            return currentGamePadState
+                .Any(x =>
+                    x.IsButtonDown(Buttons.A) || x.IsButtonDown(Buttons.B) || x.IsButtonDown(Buttons.Back) ||
+                    x.IsButtonDown(Buttons.BigButton) || x.IsButtonDown(Buttons.DPadDown) || x.IsButtonDown(Buttons.DPadLeft) ||
+                    x.IsButtonDown(Buttons.DPadRight) || x.IsButtonDown(Buttons.DPadUp) || x.IsButtonDown(Buttons.LeftShoulder) ||
+                    x.IsButtonDown(Buttons.LeftTrigger) || x.IsButtonDown(Buttons.RightShoulder) || x.IsButtonDown(Buttons.RightTrigger) ||
+                    x.IsButtonDown(Buttons.Start) || x.IsButtonDown(Buttons.X) || x.IsButtonDown(Buttons.Y));
+        }
+
+        public static bool AnythingPressed()
+        {
+            return currentKeyState.GetPressedKeyCount() > 0 || AnyGamePadButtonPressed();
+        }
+
         public static bool IsKeyDown(Keys key)
         {
             return currentKeyState.IsKeyDown(key);
