@@ -109,7 +109,7 @@ namespace YGR
             _scale = 1.0f;
             _center = new Point(128, 64);
             _a = 128.0f * Y_Level.GlobalScale; // must be half the texture width from the Python script
-            _b = 48.0f * Y_Level.GlobalScale; // must be half the texture height from the Python script
+            _b = 80.0f * Y_Level.GlobalScale; // must be half the texture height from the Python script
             _hOffset = 16.0f * Y_Level.GlobalScale; // must be the same as h_offset from the Python script
 
             _triggered = false;
@@ -162,7 +162,7 @@ namespace YGR
                 spriteBatch.Draw(
                     _sprite.Texture, Owner.Rect.Center.ToVector2() + 0.25f * Owner.AimDirection * Owner.Rect.Size.ToVector2(),
                     _sprite.SourceRectangle,
-                    gradient, angle, _sprite.SpriteDimension * 0.5f, _scale * Y_Level.GlobalScale, SpriteEffects.None, 0
+                    gradient * 0.5f, angle, _sprite.SpriteDimension * 0.5f, _scale * Y_Level.GlobalScale, SpriteEffects.None, 0
                 );
             }
         }

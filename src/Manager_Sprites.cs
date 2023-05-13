@@ -118,11 +118,11 @@ namespace YGR
         {
             return new AnimatedSprite(
                 texture: Effect_Shield,
-                spriteDimension: new Vector2(256, 128),
+                spriteDimension: new Vector2(256, 160),
                 animations: new Dictionary<AnimationState, int[]> {
-                    { AnimationState.Idle, new int[] { 0, 1, 2, 3, 4 } },
+                    { AnimationState.Idle, new int[] { 0, 1, 2, 3, 4, 5, 6, 7 } },
                 },
-                animationDuration: 500
+                animationDuration: 750
             );
         }
 
