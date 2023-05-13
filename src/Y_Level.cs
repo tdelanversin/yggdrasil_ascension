@@ -65,10 +65,6 @@ namespace YGR
         private int _waitTimeBetweenEndOfFightAndLowerDoors = 125;
         private int _waitTimeBetweenEndOfFightAndLowerDoorsCounter = 0;
 
-        public static int LightOffsetX;
-        public static int LightOffsetY;
-        public static int LightOffsetZ;
-
         public static int TextureTileSize { get; set; }
         public static int InGameTileSize { get; set; }
         public static float GlobalScale { get; set; }
@@ -205,9 +201,9 @@ namespace YGR
             var watch = new Stopwatch();
             watch.Start();
             float offset = 1024;
-            LightOffsetX = Util.random.Next(-15, Rect.Width + 15);
-            LightOffsetY = Util.random.Next(-15, Rect.Height + 15);
-            LightOffsetZ = Util.random.Next(8, 20);
+
+            int lIndex = Util.random.Next(0, 4);
+
             foreach (var node in tree)
             {
                 var type = _availableRooms[node.Value.Type];
@@ -232,7 +228,17 @@ namespace YGR
                 p.X = p.X + (TileWidth - p.X % TileWidth);
                 p.Y = p.Y + (TileHeight - p.Y % TileHeight);
 
-                ((Y_CMRoom)room).AddLight(LightOffsetX, LightOffsetY, LightOffsetZ);
+                Vector3[] lPos = new Vector3[]
+                {
+                    new Vector3(-7, -10, 10),
+                    new Vector3(room.Rect.Width/Y_Level.TextureTileSize + 7, -10, 10),
+                    new Vector3(-7, room.Rect.Height/Y_Level.TextureTileSize + 7, 10),
+                    new Vector3(room.Rect.Width/Y_Level.TextureTileSize + 7, room.Rect.Height/Y_Level.TextureTileSize + 10, 10)
+                };
+
+                if(lIndex >= lPos.Length) Logger.Error("Max index and length of array must agree (just some random check)");
+
+                ((Y_CMRoom)room).AddLight((int)lPos[lIndex].X, (int)lPos[lIndex].Y, (int)lPos[lIndex].Z);
                 room.MoveTo(p);
                 Rooms.Add(node.Key, room);
 
@@ -400,10 +406,13 @@ namespace YGR
                 Manager_Light2.IlluminateSync(Rooms.Values.Where(c => c.WhatAreYou() == X_LevelElements.Room).ToList());
             }
 
-            //foreach(var enemy in Manager_Enemies.GetEnemies())
+            //string model = "";
+            //int globalOffset = 0;
+            //foreach (var room in Rooms)
             //{
-            //    Manager_Confusion.AddConfusion(enemy, 1000000);
+            //    Manager_Light2.CreateModel(room.Value, true, ref model, ref globalOffset);
             //}
+            //File.WriteAllText("./logs/model.obj", model);
         }
 
         public IWalkable GetRoom(IGameElement elem, IWalkable currentRoom)

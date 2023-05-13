@@ -1,6 +1,8 @@
-﻿using Microsoft.Xna.Framework;
+﻿using Assimp;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
+using SkiaSharp;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -294,7 +296,9 @@ namespace YGR
             //room.IlluminationResources.Lights = room.Lights.Select(x => x.GetUnscaledPosition()).ToArray();
             room.IlluminationResources.Lights = room.GetAllRelevantLights().Select(x => x.GetUnscaledPosition()).ToArray();
 
-            room.IlluminationResources.Vertices = CreateModel(room); /* (open ? IlluminationModelOpened : IlluminationModelClosed);*/
+            string model = "";
+            int globalOffset = 0;
+            room.IlluminationResources.Vertices = CreateModel(room, false, ref model, ref globalOffset); /* (open ? IlluminationModelOpened : IlluminationModelClosed);*/
             room.IlluminationResources.NumLights = room.IlluminationResources.Lights.Count();
             room.IlluminationResources.NumVerts = room.IlluminationResources.Vertices.Count();
             room.IlluminationResources.NumCoords = 0;
@@ -519,39 +523,56 @@ namespace YGR
             }
         }
 
-        public static X_Point3[] CreateModel(IWalkable room)
+        public static X_Point3[] CreateModel(IWalkable room, bool visualize, ref string model, ref int globalOffset)
         {
+            int minEC, maxEC;
             List<Rectangle> rects = new List<Rectangle>();
             if (room.WhatAreYou() == X_LevelElements.Door)
-            {
+            { 
                 rects.AddRange(((Y_Door)room).GetOpenDoorCollisionRects());
-                foreach (var door in room.DoorRooms)
+                maxEC = rects.Count();
+                if (!visualize)
                 {
-                    var d = (Y_CMRoom)door.Value.First();
-                    rects.AddRange(d.Collision.GetCollisionRectangles());
+                    foreach (var door in room.DoorRooms)
+                    {
+                        var d = (Y_CMRoom)door.Value.First();
+                        rects.AddRange(d.Collision.GetCollisionRectangles());
+                    }
                 }
+                minEC = 4;
             }
             else
             {
                 rects.AddRange(room.Collision.GetCollisionRectangles());
-                foreach(var door in room.DoorRooms)
+                if (!visualize)
                 {
-                    // add all doors and make sure they are in the opened state
-                    var d = (Y_Door)door.Value.First();
-                    if (d.DoorIsOpen())
-                        rects.AddRange(d.GetOpenDoorCollisionRects());
-                    else
-                        rects.AddRange(d.GetClosedDoorCollisionRects());
+                    foreach (var door in room.DoorRooms)
+                    {
+                        // add all doors and make sure they are in the opened state
+                        var d = (Y_Door)door.Value.First();
+                        if (d.DoorIsOpen())
+                            rects.AddRange(d.GetOpenDoorCollisionRects());
+                        else
+                            rects.AddRange(d.GetClosedDoorCollisionRects());
+                    }
                 }
+                minEC = 0;
+                maxEC = 0;
             }
 
 
+            int ridiculouslyHeighWall = Y_Level.TextureTileSize * (visualize ? 5 : 15);
             float scale = Y_Level.GlobalScale;
-            float elev = room.Collision.TileHeight / scale;
-            int shift = 5;
+            float elev = Y_Level.TextureTileSize;
+            int shift = 0;
             List<X_Point3> points = new List<X_Point3>();
+            int counter = 0;
+            int tEH;
             foreach (var rect in rects)
             {
+                if(counter >= minEC && counter < maxEC) tEH = ridiculouslyHeighWall;
+                else tEH = 0;
+
                 float x = (rect.X - shift + 0.5f) / scale;
                 float y = (rect.Y - shift) / scale;
                 float h = (rect.Height + shift) / scale;
@@ -562,34 +583,85 @@ namespace YGR
                             new Vector3(x, y+h, -e),
                             new Vector3(x+w, y+h, -e),
                             new Vector3(x+w, y, -e),
-                            new Vector3(x, y, shift),
-                            new Vector3(x, y+h, shift),
-                            new Vector3(x+w, y+h, shift),
-                            new Vector3(x+w, y, shift)
+                            new Vector3(x, y, shift + tEH),
+                            new Vector3(x, y+h, shift + tEH),
+                            new Vector3(x+w, y+h, shift + tEH),
+                            new Vector3(x+w, y, shift + tEH)
                 };
 
+                counter++;
                 points.AddRange(vertices);
             }
 
-            //Logger.Info("Calcualte light model for room " + room.Name + ": " + watch.ElapsedMilliseconds.ToString());
+            if(visualize)
+            {
+                if (room.WhatAreYou() == X_LevelElements.Door)
+                {
+                    var room1 = room.DoorRooms.Values.ToList().First().First().Name;
+                    var room2 = room.DoorRooms.Values.ToList().Last().First().Name;
+                    model += toWavefrontObj(points, "./logs/Door_" + room1 + "_to_" + room2 + ".obj", room, ref globalOffset);
+                }
+                else
+                {
+                    model += toWavefrontObj(points, "./logs/Room_" + room.Name + ".obj", room, ref globalOffset);
+                }
+            }
 
             return points.ToArray();
         }
 
-        //private static void toWavefrontObj(List<X_Cube> cubes, string name)
+        private static string toWavefrontObj(List<X_Point3> points, string name, IWalkable room, ref int globalOffset)
+        {
+            string sc = "\n# Level part " + name;
+            string s = "# Level part " + name;
+            int index = 0;
+
+            var scale = 0.001f;
+            for (int v = 0; v < points.Count(); v++)
+            {
+                if (v % 8 == 0)
+                {
+                    s += "o cube" + index + "\n";
+                    sc += "o cube" + index + "\n";
+                    index++;
+                }
+
+                var p00 = points[v];
+                s += ("v " + scale * (p00.X - room.Rect.Center.X) + " " + scale * (p00.Y - room.Rect.Center.Y) + " " + scale * p00.Z + "\n");
+                sc += ("v " + scale * p00.X + " " + scale * p00.Y + " " + scale * p00.Z + "\n");
+            }
+
+            s += "\n";
+            for (int offset = globalOffset; offset < points.Count()+ globalOffset; offset += 8)
+            {
+                for (int i = 0; i < 36; i += 3)
+                {
+                    sc += ("f " + (indices[i] + 1 + offset) + " " + (indices[i + 1] + 1 + offset) + " " + (indices[i + 2] + 1 + offset) + "\n");
+                    s += ("f " + (indices[i] + 1 + offset) + " " + (indices[i + 1] + 1 + offset) + " " + (indices[i + 2] + 1 + offset) + "\n");
+                }
+            }
+
+            globalOffset += points.Count();
+
+            File.WriteAllText(name, s);
+            return sc;
+        }
+
+        //public string toWavefrontObj(int offset)
         //{
         //    string s = "";
-        //    int i = 0;
-        //    int offset = 0;
-        //    foreach (var cube in cubes)
+        //    foreach (var v in _vertices)
         //    {
-        //        s += "o cube" + i + "\n";
-        //        s += (cube.toWavefrontObj(offset));
-        //        offset += cube.VertexCount();
-        //        i++;
+        //        s += ("v " + v.X + " " + v.Y + " " + v.Z + "\n");
         //    }
+        //    s += "\n";
+        //    for (int i = 0; i < _triangles.GetLength(0); ++i)
+        //    {
+        //        s += ("f " + (_triangles[i, 0] + 1 + offset) + " " + (_triangles[i, 1] + 1 + offset) + " " + (_triangles[i, 2] + 1 + offset) + "\n");
+        //    }
+        //    s += "\n";
 
-        //    File.WriteAllText(name, s);
+        //    return s;
         //}
     }
 }
