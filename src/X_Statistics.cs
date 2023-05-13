@@ -25,25 +25,28 @@ namespace YGR
         private HashSet<WeakReference> ProjectilesTracked = new HashSet<WeakReference> { };
         public void TrackDodgedProjectile(IProjectile projectile)
         {
-            // Reverse look-up to see if we already track it
-            bool alreadyTracked = false;
-            foreach (var weakRef in ProjectilesTracked)
+            lock (this)
             {
-                if (weakRef.Target == projectile)
+                // Reverse look-up to see if we already track it
+                bool alreadyTracked = false;
+                foreach (var weakRef in ProjectilesTracked)
                 {
-                    alreadyTracked = true;
-                    break;
+                    if (weakRef.Target == projectile)
+                    {
+                        alreadyTracked = true;
+                        break;
+                    }
                 }
+                if (!alreadyTracked)
+                {
+                    ProjectilesDodged++;
+                    ProjectilesTracked.Add(new WeakReference(projectile));
+                }
+
+                // Amortized lazy clean-up
+                if (ProjectilesTracked.Count > 32)
+                    ProjectilesTracked.RemoveWhere(x => x.Target == null);
             }
-            if (!alreadyTracked)
-            {
-                ProjectilesDodged++;
-                ProjectilesTracked.Add(new WeakReference(projectile));
-            }
-            
-            // Amortized lazy clean-up
-            if (ProjectilesTracked.Count > 32)
-                ProjectilesTracked.RemoveWhere(x => x.Target == null);
         }
     }
 }
