@@ -376,6 +376,7 @@ namespace YGR
                         UI.DrawPlayerSelection(gameTime, _spriteBatch);
                     }
                     UI.DrawPlayerStatus(gameTime, _spriteBatch);
+                    UI.DrawBossHealthBar(gameTime, _spriteBatch);
                     break;
 
                 case GameState.Menu:
