@@ -298,39 +298,101 @@ namespace YGR
         
         protected override void DrawHealthbar(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)
         {
-            Vector2 dim = Manager_Sprites.HealthbarEmpty.Bounds.Size.ToVector2();
-            float scale = 2;
+            return;
+        }
+
+        public void DrawBossHealthBar(GameTime gameTime, SpriteBatch spriteBatch)
+        {
+            Vector2 dim = Manager_Sprites.HealthbarBackgroundBoss.Bounds.Size.ToVector2();
+            float scale = Camera.Bounds.Height / dim.Y * 0.8f;
             dim *= scale;
-            Vector2 offset = new Vector2((Rect.Width - dim.X) / 2, -dim.Y - 5);
-            Vector2 pos = _rect.Location.ToVector2() + offset;
+            Vector2 offset = new Vector2(-dim.X / 2, -dim.Y / 2);
+            Vector2 pos = new Vector2(Camera.Bounds.Width * 9 / 10, Camera.Bounds.Height / 2) + offset;
+
+            // Draw the background
             spriteBatch.Draw(
-                texture: Manager_Sprites.HealthbarEmpty,
-                position: pos,
+                texture: Manager_Sprites.HealthbarBackgroundBoss,
+                destinationRectangle: new Rectangle((int)pos.X, (int)pos.Y, (int)dim.X, (int)dim.Y),
                 sourceRectangle: null,
                 color: Color.White,
                 rotation: 0,
                 origin: Vector2.Zero,
-                scale: scale,
                 effects: SpriteEffects.None,
                 layerDepth: 0);
 
             // Fill the healthbar
             if (LifePoints > 0)
             {
-                float healthPerc = LifePoints / (float)LifePointsMax;
-                Rectangle infill = Manager_Sprites.HealthbarInfill.Bounds;
-                infill.Width = (int)(infill.Width * healthPerc);
+                float healthPerc = LifePoints / LifePointsMax;
+                Rectangle infill = Manager_Sprites.HealthbarInfillBoss.Bounds;
+
+                var heightOffset = (int)(infill.Height * (1 - healthPerc));
+                infill.Y += heightOffset;
+                infill.Height -= heightOffset;
+
+                var destinationRectangle = new Rectangle((int)pos.X, (int)(pos.Y + heightOffset * scale), (int)(infill.Width * scale), (int)(infill.Height * scale));
+
                 spriteBatch.Draw(
-                    texture: Manager_Sprites.HealthbarInfill,
-                    position: pos,
+                    texture: Manager_Sprites.HealthbarInfillBoss,
+                    destinationRectangle: destinationRectangle,
                     sourceRectangle: infill,
-                    color: Color.OrangeRed,
+                    color: Color.White,
                     rotation: 0,
                     origin: Vector2.Zero,
-                    scale: scale,
                     effects: SpriteEffects.None,
                     layerDepth: 0);
             }
+
+            // Draw indicators for the phases
+            Rectangle seperator = Manager_Sprites.HealthbarSeperatorBoss.Bounds;
+
+            float phase2Perc = (Phase2HP + Phase3HP) / LifePointsMax;
+            float phase3Perc = Phase3HP / LifePointsMax;
+
+            var phase2Offset = (int)(dim.Y) * (1 - phase2Perc);
+            var phase3Offset = (int)(dim.Y) * (1 - phase3Perc);
+
+            var destinationRectanglePhase2 = new Rectangle(
+                (int)pos.X, 
+                (int)(pos.Y + phase2Offset - seperator.Height / 2 * scale), 
+                (int)(seperator.Width * scale), 
+                (int)(seperator.Height * scale));
+            var destinationRectanglePhase3 = new Rectangle(
+                (int)pos.X, 
+                (int)(pos.Y + phase3Offset - seperator.Height / 2 * scale), 
+                (int)(seperator.Width * scale), 
+                (int)(seperator.Height * scale));
+
+            spriteBatch.Draw(
+                texture: Manager_Sprites.HealthbarSeperatorBoss,
+                destinationRectangle: destinationRectanglePhase2,
+                sourceRectangle: null,
+                color: Color.White,
+                rotation: 0,
+                origin: Vector2.Zero,
+                effects: SpriteEffects.None,
+                layerDepth: 0);
+                
+            spriteBatch.Draw(
+                texture: Manager_Sprites.HealthbarSeperatorBoss,
+                destinationRectangle: destinationRectanglePhase3,
+                sourceRectangle: null,
+                color: Color.White,
+                rotation: 0,
+                origin: Vector2.Zero,
+                effects: SpriteEffects.None,
+                layerDepth: 0);
+
+            // Draw the Foreground
+            spriteBatch.Draw(
+                texture: Manager_Sprites.HealthbarForegroundBoss,
+                destinationRectangle: new Rectangle((int)pos.X, (int)pos.Y, (int)dim.X, (int)dim.Y),
+                sourceRectangle: null,
+                color: Color.White,
+                rotation: 0,
+                origin: Vector2.Zero,
+                effects: SpriteEffects.None,
+                layerDepth: 0);
         }
 
         /* Deal with being hit by projectile, basically physical therapy */
@@ -348,15 +410,30 @@ namespace YGR
                     Manager_Confusion.AddConfusion(this, ((Projectile_Confusion)projectile).ConfusionDuration);
                 }
 
-                LifePoints -= projectile.Damage;
+                var DamageDealt = 0.0f;
+                if (Phase == 1 && LifePoints - projectile.Damage <= Phase2HP + Phase3HP)
+                {
+                    DamageDealt = LifePoints - (Phase2HP + Phase3HP);
+                    LifePoints = Phase2HP + Phase3HP;
+                }
+                else if (Phase == 2 && LifePoints - projectile.Damage <= Phase3HP)
+                {
+                    DamageDealt = LifePoints - Phase3HP;
+                    LifePoints = Phase3HP;
+                }
+                else {
+                    DamageDealt = projectile.Damage;
+                    LifePoints -= projectile.Damage;
+                }
+
                 _hitFramesCounter = 1;
                 _currentColor = Color.Lerp(_hitColor, Color, 0.1f);
 
                 // @statistics
                 var p = (IPlayer)projectile.WhoFiredMe;
-                p.Stats.DamageDealt += projectile.Damage;
+                p.Stats.DamageDealt += DamageDealt;
                 p.Stats.TimesHit++;
-                if (this is IEnemyBoss) { p.Stats.BossDamageDealt += projectile.Damage; }
+                if (this is IEnemyBoss) { p.Stats.BossDamageDealt += DamageDealt; }
                 if (LifePoints <= 0) { p.Stats.Kills++; }
             }
         }

@@ -36,5 +36,7 @@ namespace YGR
 
     public interface IEnemyBoss : IEnemy { 
         public BossAttack Attack { get; set; }
+                    
+        public void DrawBossHealthBar(GameTime gameTime, SpriteBatch spriteBatch);
     }
 }

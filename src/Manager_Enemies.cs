@@ -17,6 +17,7 @@ namespace YGR
 
         private static List<IEnemy> _enemies = new List<IEnemy>();
         private static List<IEnemy> _enemiesToAdd = new List<IEnemy>();
+        private static List<IEnemyBoss> _bosses = new List<IEnemyBoss>();
 
         public static void ClearEnemies()
         {
@@ -50,12 +51,16 @@ namespace YGR
 
         internal static void AddEnemy_Gigachad(Vector2 position, Y_Level level)
         {
-            _enemies.Add(new Enemy_Gigachad(position, Manager_Sprites.NewAnimatedSprite_Gigachad(), level));
+            IEnemy enemy = new Enemy_Gigachad(position, Manager_Sprites.NewAnimatedSprite_Gigachad(), level);
+            _enemies.Add(enemy);
+            _bosses.Add((IEnemyBoss)enemy);
         }
 
         internal static void AddEnemy_Boss(Vector2 position, Y_Level level)
         {
-            _enemies.Add(new Enemy_Boss(position, Manager_Sprites.NewAnimatedSprite_EnemyBoss(), level));
+            IEnemy enemy = new Enemy_Boss(position, Manager_Sprites.NewAnimatedSprite_EnemyBoss(), level);
+            _enemies.Add(enemy);
+            _bosses.Add((IEnemyBoss)enemy);
         }
 
         internal static IEnemy MakeEnemy_BossMinion(Y_Level level, Color color)
@@ -79,6 +84,11 @@ namespace YGR
             return _enemies.AsReadOnly();
         }
 
+        public static ReadOnlyCollection<IEnemyBoss> GetBosses()
+        {
+            return _bosses.AsReadOnly();
+        }
+
         public static void Update(GameTime gameTime)
         {
             float deltaTime = (float)gameTime.ElapsedGameTime.TotalSeconds;
@@ -99,6 +109,10 @@ namespace YGR
                 enemy.DropSomethingJuicyMaybe();
             }
             _enemies.RemoveAll(enemy => enemy.LifePoints <= 0);
+
+            // remove bosses
+            var bosses = _bosses.Where(x => x.LifePoints <= 0).ToList();
+            _bosses.RemoveAll(boss => boss.LifePoints <= 0);
 
             // add new enemies
             if (_enemiesToAdd.Count > 0)

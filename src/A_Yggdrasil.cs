@@ -345,7 +345,7 @@ namespace YGR
 
 
             /* ### Draw everything that is NOT an in-game level element ### */
-            _spriteBatch.Begin(SpriteSortMode.Immediate, null, null, null, null, null, null);
+            _spriteBatch.Begin(SpriteSortMode.Immediate, null, SamplerState.PointClamp, null, null, null, null);
 
             // Fps Counter
             _frameCounter.Update((float)gameTime.ElapsedGameTime.TotalSeconds);
@@ -376,6 +376,7 @@ namespace YGR
                         UI.DrawPlayerSelection(gameTime, _spriteBatch);
                     }
                     UI.DrawPlayerStatus(gameTime, _spriteBatch);
+                    UI.DrawBossHealthBar(gameTime, _spriteBatch);
                     break;
 
                 case GameState.Menu:
