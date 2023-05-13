@@ -7,6 +7,9 @@ namespace YGR
 {
     public enum Y_PowerUps
     {
+        // have an empty one as default
+        None,
+
         // Powerups
         Revive,
         Life,
@@ -27,7 +30,9 @@ namespace YGR
         ChooserProfessor,
         WeaponPinkHammer,
 
-        LevelUp
+        LevelUpNerd,
+        LevelUpProfessor,
+        LevelUpMailman
     }
 
     public class PickUp : IGameElement
@@ -48,6 +53,7 @@ namespace YGR
         public int ElementLevel { get { return 1; } set { } }
 
         private AnimatedSprite _sprite;
+        private AnimatedSprite _carriedSprite;
         private float _spriteDrawScale;
 
         private Texture2D _texture;
@@ -76,7 +82,16 @@ namespace YGR
             return true;
         }
 
-        public PickUp(Y_PowerUps type, Point location, int width, int height, float scale, AnimatedSprite sprite, IVictim lastOwner, Func<IPlayer, PickUp, bool> action)
+        public PickUp(
+            Y_PowerUps type, 
+            Point location, 
+            int width, 
+            int height, 
+            float scale, 
+            AnimatedSprite sprite, 
+            AnimatedSprite carriedSprite,
+            IVictim lastOwner, 
+            Func<IPlayer, PickUp, bool> action)
         {
             LocalScale = scale * Y_Level.GlobalScale;
             Type = type;
@@ -85,6 +100,7 @@ namespace YGR
             Action = action;
             Active = true;
             _sprite = sprite;
+            _carriedSprite = carriedSprite;
 
             int heightNew = (int)(height * LocalScale);
             int widthNew = (int)((heightNew * sprite.SpriteDimension.X / sprite.SpriteDimension.Y));
@@ -125,7 +141,10 @@ namespace YGR
             switch (type)
             {
                 case Y_PowerUps.ChooserNerd:
-                    return new PickUp(type, location, width, IPlayer.PlayerBaseHeight, scale * 1.0f, Manager_Sprites.NewAnimatedSprite_NerdyGirl(), lastOwner,
+                    return new PickUp(type, location, width, IPlayer.PlayerBaseHeight, scale * 1.0f, 
+                        Manager_Sprites.NewAnimatedSprite_NerdyGirl(), 
+                        null, 
+                        lastOwner,
                         (player, self) =>
                         {
                             if (player is not Player_NerdyGirl)
@@ -136,7 +155,10 @@ namespace YGR
                             return false;
                         });
                 case Y_PowerUps.ChooserMailman:
-                    return new PickUp(type, location, width, IPlayer.PlayerBaseHeight, scale * 1.0f, Manager_Sprites.NewAnimatedSprite_Mailman(), lastOwner,
+                    return new PickUp(type, location, width, IPlayer.PlayerBaseHeight, scale * 1.0f, 
+                        Manager_Sprites.NewAnimatedSprite_Mailman(), 
+                        null, 
+                        lastOwner,
                         (player, self) =>
                         {
                             if (player is not Player_Mailman)
@@ -147,7 +169,10 @@ namespace YGR
                             return false;
                         });
                 case Y_PowerUps.ChooserNinja:
-                    return new PickUp(type, location, width, IPlayer.PlayerBaseHeight, scale * 1.0f, Manager_Sprites.NewAnimatedSprite_Ninja(), lastOwner,
+                    return new PickUp(type, location, width, IPlayer.PlayerBaseHeight, scale * 1.0f, 
+                        Manager_Sprites.NewAnimatedSprite_Ninja(), 
+                        null, 
+                        lastOwner,
                         (player, self) =>
                         {
                             if (player is not Player_Ninja)
@@ -158,7 +183,10 @@ namespace YGR
                             return false;
                         });
                 case Y_PowerUps.ChooserProfessor:
-                    return new PickUp(type, location, width, IPlayer.PlayerBaseHeight, scale * 1.0f, Manager_Sprites.NewAnimatedSprite_TestCharacter(), lastOwner,
+                    return new PickUp(type, location, width, IPlayer.PlayerBaseHeight, scale * 1.0f, 
+                        Manager_Sprites.NewAnimatedSprite_TestCharacter(), 
+                        null, 
+                        lastOwner,
                         (player, self) =>
                         {
                             if (player is not Player_Professor)
@@ -224,7 +252,10 @@ namespace YGR
                             return switchGun(new Weapon_PinkHammer(player), player, self);
                         });
                 case Y_PowerUps.Life:
-                    return new PickUp(type, location, width, height, 1.5f, Manager_Sprites.NewAnimatedSprite_SpinningHeart(), lastOwner,
+                    return new PickUp(type, location, width, height, 1.5f, 
+                        Manager_Sprites.NewAnimatedSprite_SpinningHeart(),
+                        null, 
+                        lastOwner,
                         (player, self) =>
                         {
                             if (player.WhatAreYou() != X_LevelElements.Victim)
@@ -237,22 +268,68 @@ namespace YGR
                             Manager_Sound.Sound_CashIn.Play();
                             return true;
                         });
-                case Y_PowerUps.LevelUp:
-                    return new PickUp(type, location, width, height, 1.5f, Manager_Sprites.NewAnimatedSprite_SpinningHeart(), lastOwner,
+                case Y_PowerUps.LevelUpNerd:
+                    return new PickUp(type, location, width, height, 1.5f, 
+                        Manager_Sprites.NewAnimatedSprite_LevelUp_DarkFlash(),
+                        Manager_Sprites.NewAnimatedSprite_NerdyGirl(),
+                        lastOwner,
                         (player, self) =>
                         {
                             if (player.WhatAreYou() != X_LevelElements.Victim)
                                 return false;
-                            if (player.LifePoints >= player.LifePointsMax)
+                            if (!(player is Player_NerdyGirl))
+                                return false;
+                            if (player.ElementLevel > 3)
                                 return false;
 
-                            player.Heal();
                             player.Room.PickUps.Remove(self);
                             Manager_Sound.Sound_CashIn.Play();
+                            player.ElementLevel = player.ElementLevel + 1;
+                            return true;
+                        });
+                case Y_PowerUps.LevelUpMailman:
+                    return new PickUp(type, location, width, height, 1.5f, 
+                        Manager_Sprites.NewAnimatedSprite_LevelUp_DarkFlash(),
+                        Manager_Sprites.NewAnimatedSprite_Mailman(), 
+                        lastOwner,
+                        (player, self) =>
+                        {
+                            if (player.WhatAreYou() != X_LevelElements.Victim)
+                                return false;
+                            if (!(player is Player_Mailman))
+                                return false;
+                            if (player.ElementLevel > 3)
+                                return false;
+
+                            player.Room.PickUps.Remove(self);
+                            Manager_Sound.Sound_CashIn.Play();
+                            player.ElementLevel = player.ElementLevel + 1;
+                            return true;
+                        });
+                case Y_PowerUps.LevelUpProfessor:
+                    return new PickUp(type, location, width, height, 1.5f, 
+                        Manager_Sprites.NewAnimatedSprite_LevelUp_DarkFlash(),
+                        Manager_Sprites.NewAnimatedSprite_Ninja(), 
+                        lastOwner,
+                        (player, self) =>
+                        {
+                            if (player.WhatAreYou() != X_LevelElements.Victim)
+                                return false;
+                            if (!(player is Player_Ninja))
+                                return false;
+                            if (player.ElementLevel > 3)
+                                return false;
+
+                            player.Room.PickUps.Remove(self);
+                            Manager_Sound.Sound_CashIn.Play();
+                            player.ElementLevel = player.ElementLevel + 1;
                             return true;
                         });
                 default: // case Y_PowerUps.Revive:
-                    return new PickUp(type, location, width, height, 1.5f, Manager_Sprites.NewAnimatedSprite_SpinningPlus(), lastOwner,
+                    return new PickUp(type, location, width, height, 1.5f, 
+                        Manager_Sprites.NewAnimatedSprite_SpinningPlus(),
+                        null, 
+                        lastOwner,
                         (player, self) =>
                         {
                             if (!(!player.IsAlive() && player is not Player_Ghost))
@@ -332,6 +409,22 @@ namespace YGR
                         _sprite.Texture, Rect.Location.ToVector2(),
                         _sprite.SourceRectangle,
                         Color.White, 0, Vector2.Zero, _spriteDrawScale, SpriteEffects.None, 0);
+
+                if (_carriedSprite != null)
+                {
+                    var target = _carriedSprite.AnimationSourceRects[AnimationState.WalkRight][0];
+                    var scale = (float)Rect.Height / (float)target.Height;
+                    scale *= 0.5f;
+                    var offset = new Vector2(
+                        0,
+                        Rect.Height - target.Height * scale
+                    );
+
+                    spriteBatch.Draw(
+                            _carriedSprite.Texture, Rect.Location.ToVector2() + offset,
+                            target,
+                            Color.White, 0, Vector2.Zero, scale, SpriteEffects.None, 0);
+                }
             }
             else
             { // We only got a texture, well, let's do something fun with it at least
