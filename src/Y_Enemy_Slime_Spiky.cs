@@ -50,7 +50,7 @@ namespace YGR
             );
 
             // Set the drawing scale to make the character fit into the collision bounds
-            CharacterScale = Util.GetSpriteScale(_rect, CharacterSprite.SpriteDimension);
+            CharacterScale = Util.GetSpriteScale(_rect, CharacterSprite.SpriteDimension)*2;
             CharacterOffset = Vector2.Zero;
         }
 

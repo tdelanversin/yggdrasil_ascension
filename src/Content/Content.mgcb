@@ -508,6 +508,18 @@
 /processorParam:TextureFormat=Color
 /build:SpritesOther/Boss_Healthbar_Separator.png
 
+#begin SpritesOther/bullet_sheet.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:SpritesOther/bullet_sheet.png
+
 #begin SpritesOther/Button_Half_2.png
 /importer:TextureImporter
 /processor:TextureProcessor
@@ -904,6 +916,18 @@
 /processorParam:TextureFormat=Color
 /build:SpritesOther/target_indicator.png
 
+#begin SpritesOther/thunder_up_sheet_2.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:SpritesOther/thunder_up_sheet_2.png
+
 #begin SpritesOther/title_image.png
 /importer:TextureImporter
 /processor:TextureProcessor
@@ -915,6 +939,18 @@
 /processorParam:MakeSquare=False
 /processorParam:TextureFormat=Color
 /build:SpritesOther/title_image.png
+
+#begin SpritesOther/tunder_up_sheet.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:SpritesOther/tunder_up_sheet.png
 
 #begin SpritesOther/white.png
 /importer:TextureImporter

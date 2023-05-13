@@ -26,6 +26,8 @@ namespace YGR
         ChooserMailman,
         ChooserProfessor,
         WeaponPinkHammer,
+
+        LevelUp
     }
 
     public class PickUp : IGameElement
@@ -222,6 +224,20 @@ namespace YGR
                             return switchGun(new Weapon_PinkHammer(player), player, self);
                         });
                 case Y_PowerUps.Life:
+                    return new PickUp(type, location, width, height, 1.5f, Manager_Sprites.NewAnimatedSprite_SpinningHeart(), lastOwner,
+                        (player, self) =>
+                        {
+                            if (player.WhatAreYou() != X_LevelElements.Victim)
+                                return false;
+                            if (player.LifePoints >= player.LifePointsMax)
+                                return false;
+
+                            player.Heal();
+                            player.Room.PickUps.Remove(self);
+                            Manager_Sound.Sound_CashIn.Play();
+                            return true;
+                        });
+                case Y_PowerUps.LevelUp:
                     return new PickUp(type, location, width, height, 1.5f, Manager_Sprites.NewAnimatedSprite_SpinningHeart(), lastOwner,
                         (player, self) =>
                         {

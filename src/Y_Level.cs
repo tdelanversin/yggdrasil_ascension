@@ -350,6 +350,21 @@ namespace YGR
             Camera.InTransitionFromMenu = true;
 
             Manager_Enemies.ClearEnemies();
+
+            // Select 8 rooms out of all rooms minus the Gold and the Start room
+            // and mark them for containing a spiky semi boss slime
+            var spikeRooms = Rooms.Values
+                .Where(x => x.WhatAreYou() == X_LevelElements.Room && 
+                          !(x.Category == "Start") &&
+                          !(x.Category == "Gold"))
+                .ToList();
+
+            var selected = spikeRooms.OrderBy(x => Util.random.Next()).Take(8);
+            foreach(var sel in selected)
+            {
+                ((Y_CMRoom)sel).HasSpikeEnemy = true;
+            }
+
             foreach (var room in Rooms)
             {
                 if (room.Value.WhatAreYou() != X_LevelElements.Room) continue;

@@ -13,6 +13,7 @@ namespace YGR
             SimpleEnemy = 0,
             SlimeEnemy,
             BossEnemy,
+            SpikyEnemy
         };
 
         private static List<IEnemy> _enemies = new List<IEnemy>();

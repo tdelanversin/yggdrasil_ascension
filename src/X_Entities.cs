@@ -8,12 +8,14 @@ namespace YGR
         public const string SimpleEnemy = "SimpleEnemy";
         public const string SlimeEnemy = "SlimeEnemy";
         public const string BossEnemy = "BossEnemy";
+        public const string SpikyEnemy = "SpikyEnemy";
 
         public static Manager_Enemies.EnemyType GetType(EnemyEntity enemy)
         {
             if (enemy.customFields["Type"] == EnemyEntity.SimpleEnemy) return Manager_Enemies.EnemyType.SlimeEnemy;
             if (enemy.customFields["Type"] == EnemyEntity.SlimeEnemy) return Manager_Enemies.EnemyType.SlimeEnemy;
             if (enemy.customFields["Type"] == EnemyEntity.BossEnemy) return Manager_Enemies.EnemyType.BossEnemy;
+            if (enemy.customFields["Type"] == EnemyEntity.SpikyEnemy) return Manager_Enemies.EnemyType.SpikyEnemy;
 
             return Manager_Enemies.EnemyType.SimpleEnemy;
         }
