@@ -302,7 +302,10 @@ namespace YGR
 
             // find the nearest teleportation point in a room that has been discovered and cleared already
             var teleportationTargets = Y_Level.Rooms.Values
-                                                    .Where(x => x.WhatAreYou() == X_LevelElements.Room && x.IsVisible() && x.Category != "Gold")
+                                                    .Where(x => x.WhatAreYou() == X_LevelElements.Room
+                                                        && x.IsVisible()
+                                                        && ((Y_CMRoom)x).Cleared
+                                                        && x.Category != "Gold")
                                                     .Select(x => ((Y_CMRoom)x).TeleporterTarget)
                                                     .ToArray();
             Vector2 midpoint = Room.Rect.Center.ToVector2();
