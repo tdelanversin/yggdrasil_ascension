@@ -384,6 +384,11 @@ namespace YGR
                     {
                         UI.DrawPlayerSelection(gameTime, _spriteBatch);
                     }
+                    else if (Y_Level.State == Y_Level.GamePlayState.End)
+                    {
+                        UI.DrawEndScreen(gameTime, _spriteBatch);
+                        break;
+                    }
                     UI.DrawPlayerStatus(gameTime, _spriteBatch);
                     UI.DrawBossHealthBar(gameTime, _spriteBatch);
                     break;

@@ -1,16 +1,17 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 
 namespace YGR
 {
     /* Render some notifications in-game that automatically fade away and disappear again */
     public static class Notifications
     {
-        internal class Notification
+        public class Notification
         {
-            internal int Age = 0;
-            internal int AgeMax = 4000;
+            public int Age = 0;
+            public int AgeMax = 4000;
             internal string Message = "";
             internal Color Color = Color.BlanchedAlmond;
             internal Vector2 Size;
@@ -43,7 +44,7 @@ namespace YGR
                 Font = font;
                 Size = Font.MeasureString(message);
             }
-            
+
         }
 
         internal static List<Notification> _notifications { get; private set; } = new List<Notification> { };
@@ -51,6 +52,11 @@ namespace YGR
         public static void Clear()
         {
             _notifications.Clear();
+        }
+
+        public static ReadOnlyCollection<Notification> GetNotifications()
+        {
+            return _notifications.AsReadOnly();
         }
 
         public static void New(string message)

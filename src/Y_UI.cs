@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
 using Microsoft.Xna.Framework;
@@ -24,7 +25,7 @@ namespace YGR
             string longest_str = "P1: [JOINED] Pick character"; // Used to center the text
             Vector2 size = font.MeasureString(longest_str);
             Vector2 pos = new Vector2((Camera.Bounds.Width - size.X) / 2, (Camera.Bounds.Height - size.Y * (1f + 3f * spacing)) / 2);
-            pos.Y +=Y_Level.InGameTileSize * 2.5f; // Feels like CSS...
+            pos.Y += Y_Level.InGameTileSize * 2.5f; // Feels like CSS...
 
             foreach (IPlayer p in Manager_Players.Players)
             {
@@ -190,6 +191,32 @@ namespace YGR
                 Util.DrawString(font, indexString, pos, playerColorLight, spriteBatch);
                 Util.DrawString(font, infoString, pos, Color.Wheat, spriteBatch);
                 pos.Y += totalSize.Y * spacing;
+            }
+        }
+
+        /// <summary>
+        /// Draw ending image. Assumes that the ending notifications are also still up
+        /// </summary>
+        public static void DrawEndScreen(GameTime gameTime, SpriteBatch spriteBatch)
+        {
+            Notifications.Notification last = Notifications.GetNotifications().Last();
+            float fadeTime = 2000;
+            float fadeAlpha = 1f;
+            if (last.Age < fadeTime)
+            {
+                fadeAlpha = last.Age / fadeTime;
+            }
+            else if (last.Age > last.AgeMax - fadeTime)
+            {
+                fadeAlpha = (last.AgeMax - last.Age) / fadeTime;
+            }
+            if (Y_Level.EndState == Y_Level.GameEndState.Won)
+            {
+                spriteBatch.Draw(Manager_Sprites.ImageVictory, Camera.Bounds, null, Color.White * fadeAlpha, 0, Vector2.Zero, SpriteEffects.None, 0);
+            }
+            else if (Y_Level.EndState == Y_Level.GameEndState.Lost)
+            {
+                spriteBatch.Draw(Manager_Sprites.ImageDefeat, Camera.Bounds, null, Color.White * fadeAlpha, 0, Vector2.Zero, SpriteEffects.None, 0);
             }
         }
     }

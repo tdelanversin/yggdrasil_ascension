@@ -39,10 +39,12 @@ namespace YGR
         public static Texture2D HealthbarSeperatorBoss { get; private set; }
         public static Texture2D White { get; private set; }
 
-        // Background
+        // Images
         public static Texture2D BackgroundYggdrasil { get; private set; }
         public static Texture2D BackgroundSky { get; private set; }
         public static Texture2D BackgroundTitleText { get; private set; }
+        public static Texture2D ImageDefeat { get; private set; }
+        public static Texture2D ImageVictory { get; private set; }
 
         // Level elements
         public static Texture2D ButtonOut { get; private set; }
@@ -75,8 +77,6 @@ namespace YGR
         public static Texture2D LevelUp_DarkFlash_NoShade { get; private set; }
         public static Texture2D LevelUp_LightFlash_NoShade { get; private set; }
         public static Texture2D LevelUp_Bullet_NoShade { get; private set; }
-        public static Texture2D defeat_image { get; private set; }
-        public  static Texture2D victory_image { get; private set; }    
 
         public static void LoadContent(ContentManager contentManager)
         {
@@ -139,8 +139,8 @@ namespace YGR
             LevelUp_LightFlash_NoShade = contentManager.Load<Texture2D>("SpritesOther/tunder_up_sheet_no_shade");
             LevelUp_Bullet_NoShade = contentManager.Load<Texture2D>("SpritesOther/bullet_sheet_no_shade");
 
-            defeat_image = contentManager.Load<Texture2D>("Images/defeat");
-            victory_image = contentManager.Load<Texture2D>("Images/victory");
+            ImageDefeat = contentManager.Load<Texture2D>("Images/defeat");
+            ImageVictory = contentManager.Load<Texture2D>("Images/victory");
         }
 
         public static AnimatedSprite NewAnimatedSprite_LevelUp_DarkFlash_NoShade()

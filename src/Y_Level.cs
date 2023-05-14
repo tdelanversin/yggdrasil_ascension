@@ -1257,7 +1257,11 @@ namespace YGR
                     State = GamePlayState.FreeRoam;
                     break;
                 case GamePlayState.End:
-                    // Nothing yet
+                    // Once the ending notification is gone, set the state to freeroam
+                    if (Notifications.GetNotifications().Count < 1)
+                    {
+                        State = Y_Level.GamePlayState.FreeRoam;
+                    }
                     break;
 
                 default:
