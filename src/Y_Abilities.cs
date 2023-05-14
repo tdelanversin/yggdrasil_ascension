@@ -296,9 +296,6 @@ namespace YGR
 
             _currentDuration -= gameTime.ElapsedGameTime.Milliseconds;
 
-            // set owner's velocity to half
-            Owner.Velocity = Owner.Velocity * 0.5f;
-
             var p = Owner.Rect.Center;
             float baseAngle = (float)(Math.Atan2(Owner.AimDirection.Y, Owner.AimDirection.X));
 
