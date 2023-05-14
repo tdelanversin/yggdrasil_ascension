@@ -43,7 +43,7 @@ namespace YGR
         public static void AddProjectile_StarterProjectile(Vector2 startPosition, Vector2 direction, Y_Level level, IGameElement who)
         {
             if (!BoundsCheckSimple(startPosition, ((IVictim)who).Room)) return;
-         
+
             _projectiles.Add(
                 new Projectile_Basic(
                     position: startPosition,
@@ -171,7 +171,7 @@ namespace YGR
              );
         }
 
-        public static void AddProjectile_PinkHammer(Vector2 startPosition, Vector2 direction,Y_Level level, IGameElement who)
+        public static void AddProjectile_PinkHammer(Vector2 startPosition, Vector2 direction, Y_Level level, IGameElement who)
         {
             _projectiles.Add(
                 new Projectile_Directed(
@@ -193,7 +193,8 @@ namespace YGR
         public static void Update(GameTime gameTime)
         {
             float deltaTime = (float)gameTime.ElapsedGameTime.TotalSeconds;
-            Parallel.ForEach(_projectiles, projectile =>
+            // Parallel.ForEach(_projectiles, projectile =>
+            _projectiles.ForEach(projectile =>
             {
                 projectile.UpdateCollisionAndVelocity(gameTime);
             });
