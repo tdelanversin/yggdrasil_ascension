@@ -903,6 +903,8 @@ namespace YGR
                         // make sure these are somewhere to be found, because, let's face it, it's the pinky hammer :-D
                         pws.Add(Y_PowerUps.WeaponPinkHammer);
                         pws.Add(Y_PowerUps.WeaponHelix);
+                        pws.Add(Y_PowerUps.WeaponBlunderbuss);
+                        pws.Add(Y_PowerUps.WeaponRedDevil);
 
                         // fill up the rest of the slots with some random stuff
                         // var pwsWeapons = new List<Y_PowerUps> {

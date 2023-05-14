@@ -137,6 +137,27 @@ namespace YGR
             );
         }
 
+        public static void AddProjectile_RedDevil(Vector2 startPosition, Vector2 direction, Y_Level level, IGameElement who)
+        {
+            if (!BoundsCheckSimple(startPosition, ((IVictim)who).Room)) return;
+
+            _projectiles.Add(
+                new Projectile_Curve(
+                    position: startPosition,
+                    direction: direction,
+                    sprite: Manager_Sprites.NewAnimatedSprite_ProjectileHelix(),
+                    level: level,
+                    who: who,
+                    scale: 0.35f,
+                    damage: 1f,
+                    maxAge: 2500,
+                    speed: 0.55f,
+                    mass: 0.5f,
+                    fakeAcceleration: 0.0f
+                )
+            );
+        }
+
         /// Larger, slower, heavier, longer lived and deals more damage
         public static void AddProjectile_EnemySlimeProjectile(Vector2 startPosition, Vector2 direction, Y_Level level, IGameElement who)
         {
