@@ -15,6 +15,9 @@ namespace YGR
         public static Song Song_TheWhiteLion; // https://pixabay.com/music/main-title-the-white-lion-10379/
         public static Song Song_Orchestra;
         public static Song Song_Space;
+        public static Song Song_EndingWon; // https://pixabay.com/music/main-title-winning-elevation-111355/
+        public static Song Song_EndingLost; // https://pixabay.com/music/main-title-cinematic-epic-trailer-background-music-123922/
+        public static Song Song_Encounter02; // https://pixabay.com/music/main-title-chasing-victory-main-9448/
 
         public static SoundEffect Sound_Bonus;
         public static SoundEffect Sound_Dash;
@@ -48,6 +51,9 @@ namespace YGR
             Song_Orchestra = contentManager.Load<Song>("Sounds/song_orchestra");
             Song_TheWhiteLion = contentManager.Load<Song>("Sounds/song_the-white-lion");
             Song_Space = contentManager.Load<Song>("Sounds/song_space");
+            Song_EndingLost = contentManager.Load<Song>("Sounds/song_ending-lost");
+            Song_EndingWon = contentManager.Load<Song>("Sounds/song_ending-won");
+            Song_Encounter02 = contentManager.Load<Song>("Sounds/song_encounter-02");
 
             Sound_Bonus = contentManager.Load<SoundEffect>("Sounds/bonus_sound");
             Sound_Dash = contentManager.Load<SoundEffect>("Sounds/dash");
