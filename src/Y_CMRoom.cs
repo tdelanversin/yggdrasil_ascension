@@ -119,7 +119,7 @@ namespace YGR
 
         public string Name { get; set; }
         public X_CollisionModel_Room Collision { get; }
-        public int ElementLevel { get { return 1; } set { } }
+        public int ElementLevel { get; set; }
         public X_RoomGraph Graph { get; set; }
         public Rectangle Rect { get; set; }
         public Dictionary<X_ConnectorSide, IList<X_ConnectorPoint>> Doors { get; set; }

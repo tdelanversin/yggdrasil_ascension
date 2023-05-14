@@ -7,7 +7,7 @@ namespace YGR
     public class Background : IGameElement
     {
         public Rectangle Rect { get; set; }
-        public int ElementLevel { get { return 1; } set { } }
+        public int ElementLevel { get; set; }
 
         Texture2D SpriteYggdrasil;
         Texture2D SpriteSky;

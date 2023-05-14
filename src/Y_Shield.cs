@@ -11,7 +11,7 @@ namespace YGR
     public class Y_Shield : IGameElement
     {
         public Rectangle Rect { get; set; }
-        public int ElementLevel { get { return 1; } set { } }
+        public int ElementLevel { get; set; }
         public Player_Basic Owner { get; set; }
 
         AnimatedSprite _sprite;
