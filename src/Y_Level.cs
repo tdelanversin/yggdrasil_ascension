@@ -107,7 +107,8 @@ namespace YGR
         private int MaxTutorialStageDurationS = 30;
         private int TutorialStageDurationCounterMS = 0;
         private int TutorialStageDurationCounterS = 0;
-        private int TutorialButtonPressCoolDownFC = 60;
+        private int TutorialStageDurationCounterS_InitialSkipAfter = 10;
+        private int TutorialButtonPressCoolDownFC = 120;
         private int TutorialButtonPressCoolDownCounter = 0;
 
         Vector2 Tutorial_PlayerSlot_Nerd;
@@ -976,11 +977,21 @@ namespace YGR
 
             if (TutorialStageDurationCounterMS == 0)
             {
-                Notifications.New("[Remaining: " + (MaxTutorialStageDurationS - TutorialStageDurationCounterS) + "]", colorLightRoom, duration, Fonts.Medium);
+                // in the first stage: add comment non-skippable
+                if(TutorialState == GameTutorialState.Warning && TutorialStageDurationCounterS < TutorialStageDurationCounterS_InitialSkipAfter)
+                {
+                    Notifications.New("[Skippable in: " + (TutorialStageDurationCounterS_InitialSkipAfter - TutorialStageDurationCounterS) + "]", Color.DarkRed, duration, Fonts.Medium);
+                }
+                else
+                {
+                    Notifications.New("[Remaining: " + (MaxTutorialStageDurationS - TutorialStageDurationCounterS) + "]", colorLightRoom, duration, Fonts.Medium);
+                }
             }
 
             TutorialStageDurationCounterMS += gameTime.ElapsedGameTime.Milliseconds;
-            bool anything = Input.AnythingPressed() && TutorialButtonPressCoolDownCounter == 0 && !(TutorialState == GameTutorialState.Warning);
+            bool anything = Input.AnythingPressed() && 
+                            TutorialButtonPressCoolDownCounter == 0 && 
+                            !(TutorialState == GameTutorialState.Warning && TutorialStageDurationCounterS < TutorialStageDurationCounterS_InitialSkipAfter);
             if (TutorialButtonPressCoolDownCounter > TutorialButtonPressCoolDownFC)
             {
                 TutorialButtonPressCoolDownCounter = 0;
