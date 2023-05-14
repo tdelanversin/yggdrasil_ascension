@@ -41,6 +41,9 @@ namespace YGR
             _currentColor = Color;
             _hitColor = Color.DarkRed;
 
+            _dropProbabilityPercent = 20;
+            _dropProbabilityPercentLifeSaving = 50;
+
             var _mass = 2.0f;
             Collision = new X_CollisionModel_Victim(_mass, 0.0f);
 
@@ -149,6 +152,12 @@ namespace YGR
 
         public override void DropSomethingJuicyMaybe()
         {
+            if (_carriedPowerUp == Y_PowerUps.None)
+            {
+                base.DropSomethingJuicyMaybe();
+                return;
+            }
+
             // drop a grave stone with absolute certainty
             if (Room.WhatAreYou() == X_LevelElements.Room)
             {

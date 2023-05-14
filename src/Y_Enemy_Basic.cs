@@ -669,39 +669,32 @@ namespace YGR
 
         virtual public void DropSomethingJuicyMaybe()
         {
-            if (WhoKilledMe != null)
+            if (WhoKilledMe == null) return;
+            if (WhoKilledMe.WhatAreYou() != X_LevelElements.Victim) return;
+            if (Room.WhatAreYou() != X_LevelElements.Room) return;
+
+            var vic = (IVictim)WhoKilledMe;
+            if (vic.LifePoints < 0.1f * (float)vic.LifePointsMax)
             {
-                if (WhoKilledMe.WhatAreYou() == X_LevelElements.Victim)
-                {
-                    if (Room.WhatAreYou() == X_LevelElements.Room)
-                    {
-                        var vic = (IVictim)WhoKilledMe;
-                        if (vic.LifePoints < 0.1f * (float)vic.LifePointsMax)
-                        {
-                            var next = Util.random.Next(0, 100);
-                            if (next < _dropProbabilityPercentLifeSaving)
-                            {
-                                // drop a life saving goodie
-                                var room = (Y_CMRoom)Room;
-                                var p = new Point(Rect.Location.X + Rect.Width / 2, Rect.Location.Y + Rect.Height / 2);
-                                room.PickUps.Add(PickUp.Factory(Y_PowerUps.Life, p, Y_Level.TextureTileSize, Y_Level.TextureTileSize, Y_Level.GlobalScale));
-                            }
-                        }
-                        else
-                        {
-                            // otherwise maybe drop something that may or may not be usefull
-                            var next = Util.random.Next(0, 100);
-                            if (next < _dropProbabilityPercent)
-                            {
-                                var droppables = new Y_PowerUps[] { Y_PowerUps.Life, Y_PowerUps.Revive };
-                                var ind = Util.random.Next(0, droppables.Length);
-                                var room = (Y_CMRoom)Room;
-                                var p = new Point(Rect.Location.X + Rect.Width / 2, Rect.Location.Y + Rect.Height / 2);
-                                room.PickUps.Add(PickUp.Factory(droppables[ind], p, Y_Level.TextureTileSize, Y_Level.TextureTileSize, Y_Level.GlobalScale));
-                            }
-                        }
-                    }
-                }
+                var next = Util.random.Next(0, 100);
+                if (next >= _dropProbabilityPercentLifeSaving) return;
+
+                // drop a life saving goodie
+                var room = (Y_CMRoom)Room;
+                var p = new Point(Rect.Location.X + Rect.Width / 2, Rect.Location.Y + Rect.Height / 2);
+                room.PickUps.Add(PickUp.Factory(Y_PowerUps.Life, p, Y_Level.TextureTileSize, Y_Level.TextureTileSize, Y_Level.GlobalScale));
+            }
+            else
+            {
+                // otherwise maybe drop something that may or may not be usefull
+                var next = Util.random.Next(0, 100);
+                if (next >= _dropProbabilityPercent) return;
+
+                var droppables = new Y_PowerUps[] { Y_PowerUps.Life, Y_PowerUps.Revive };
+                var ind = Util.random.Next(0, droppables.Length);
+                var room = (Y_CMRoom)Room;
+                var p = new Point(Rect.Location.X + Rect.Width / 2, Rect.Location.Y + Rect.Height / 2);
+                room.PickUps.Add(PickUp.Factory(droppables[ind], p, Y_Level.TextureTileSize, Y_Level.TextureTileSize, Y_Level.GlobalScale));
             }
         }
     }

@@ -19,7 +19,7 @@ namespace YGR
         WeaponPistol,
         WeaponShotgun,
         WeaponKeyboard,
-        WeaponFunky,
+        WeaponHelix,
         WeaponEnemySlowPistol,
         WeaponWide,
         WeaponGiga,
@@ -246,14 +246,14 @@ namespace YGR
 
                             return switchGun(new Gun_ShotGun(player), player, self);
                         });
-                case Y_PowerUps.WeaponFunky:
+                case Y_PowerUps.WeaponHelix:
                     return new PickUp(type, location, width, height, _gunScale, Manager_Sprites.Weapon_RedGun, lastOwner, true,
                         (player, self) =>
                         {
-                            if (player.Gun.GetType() == typeof(Gun_Funky))
+                            if (player.Gun.GetType() == typeof(Gun_Helix))
                                 return false;
 
-                            return switchGun(new Gun_Funky(player), player, self);
+                            return switchGun(new Gun_Helix(player), player, self);
                         });
                 case Y_PowerUps.WeaponPinkHammer:
                     return new PickUp(type, location, width, height, _gunScale, Manager_Sprites.Weapon_Hammer, lastOwner, true, Color.LightPink,
@@ -366,7 +366,7 @@ namespace YGR
                             return false;
                         });
                 default: // case Y_PowerUps.Revive:
-                    return new PickUp(type, location, width, height, 1.5f, 
+                    return new PickUp(Y_PowerUps.Revive, location, width, height, 1.5f, 
                         Manager_Sprites.NewAnimatedSprite_SpinningPlus(),
                         null, 
                         lastOwner,

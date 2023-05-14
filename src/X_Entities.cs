@@ -93,7 +93,7 @@ namespace YGR
         public const string WeaponPistol = "WeaponPistol";
         public const string WeaponShotgun = "WeaponShotgun";
         public const string WeaponKeyboard = "WeaponKeyboard";
-        public const string WeaponFunky = "WeaponFunky";
+        public const string WeaponHelix = "WeaponHelix";
 
 #pragma warning disable 0649
         public string id;

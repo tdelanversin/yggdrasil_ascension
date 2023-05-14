@@ -533,8 +533,8 @@ namespace YGR
                     PickUps.Add(PickUp.Factory(Y_PowerUps.WeaponPistol, location, s.width, s.height, Y_Level.GlobalScale));
                 if (s.customFields["Type"] == PowerUp.WeaponShotgun)
                     PickUps.Add(PickUp.Factory(Y_PowerUps.WeaponShotgun, location, s.width, s.height, Y_Level.GlobalScale));
-                if (s.customFields["Type"] == PowerUp.WeaponFunky)
-                    PickUps.Add(PickUp.Factory(Y_PowerUps.WeaponFunky, location, s.width, s.height, Y_Level.GlobalScale));
+                if (s.customFields["Type"] == PowerUp.WeaponHelix)
+                    PickUps.Add(PickUp.Factory(Y_PowerUps.WeaponHelix, location, s.width, s.height, Y_Level.GlobalScale));
             }
         }
 

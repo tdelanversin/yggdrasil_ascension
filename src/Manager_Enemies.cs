@@ -84,6 +84,13 @@ namespace YGR
             return enemy;
         }
 
+        internal static IEnemy MakeEnemy_BossMinionSpiky(Y_Level level, Color color)
+        {
+            var enemy = new Enemy_Slime_Spiky(Vector2.Zero, Manager_Sprites.NewAnimatedSprite_EnemySlimeSpiky(), level);
+            enemy.ChangeColor(color);
+            return enemy;
+        }
+
         internal static void AddEnemy_BossMinion(Vector2 position, IEnemy minion)
         {
             var random = new System.Random();

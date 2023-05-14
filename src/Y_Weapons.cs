@@ -7,7 +7,7 @@ namespace YGR
     {
         public Weapon_PinkHammer(IVictim owner) : base(owner)
         {
-            ShotDelay = 1000;
+            ShotDelay = 2000;
             Name = "Pink Hammer";
             Sprite = Manager_Sprites.Weapon_Hammer;
         }

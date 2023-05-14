@@ -19,6 +19,7 @@ namespace YGR
 
         // Projectiles
         public static Texture2D Projectile_Simple { get; private set; }
+        public static Texture2D Projectile_Helix { get; private set; }
 
         // Weapons
         public static Texture2D Weapon_Pistol { get; private set; }
@@ -84,6 +85,7 @@ namespace YGR
 
             AimIndicator = contentManager.Load<Texture2D>("SpritesOther/target_indicator");
             Projectile_Simple = contentManager.Load<Texture2D>("SpritesOther/projectiles");
+            Projectile_Helix = contentManager.Load<Texture2D>("SpritesOther/Player_Projectile");
 
             Weapon_Pistol = contentManager.Load<Texture2D>("SpritesWeapons/Pistol");
             Weapon_Keyboard = contentManager.Load<Texture2D>("SpritesWeapons/Keyboard");
@@ -280,6 +282,17 @@ namespace YGR
                 spriteDimension: new Vector2(32, 32),
                 animations: new Dictionary<AnimationState, int[]> {
                     { AnimationState.Idle, new int[] { 4, 5, 6, 7 } },
+                }
+            );
+        }
+
+        public static AnimatedSprite NewAnimatedSprite_ProjectileHelix()
+        {
+            return new AnimatedSprite(
+                texture: Projectile_Helix,
+                spriteDimension: new Vector2(32, 32),
+                animations: new Dictionary<AnimationState, int[]> {
+                    { AnimationState.Idle, new int[] { 0 } },
                 }
             );
         }
