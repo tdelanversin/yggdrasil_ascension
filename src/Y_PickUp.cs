@@ -33,6 +33,7 @@ namespace YGR
 
         LevelUpNerd,
         LevelUpProfessor,
+        LevelUpNinja,
         LevelUpMailman,
 
         // Dead Enemy
@@ -322,7 +323,26 @@ namespace YGR
                 case Y_PowerUps.LevelUpProfessor:
                     return new PickUp(type, location, width, height, 1.5f, 
                         Manager_Sprites.NewAnimatedSprite_LevelUp_DarkFlash(),
-                        Manager_Sprites.NewAnimatedSprite_Ninja(), 
+                        Manager_Sprites.NewAnimatedSprite_Professor(), 
+                        lastOwner,
+                        false,
+                        (player, self) =>
+                        {
+                            if (player.WhatAreYou() != X_LevelElements.Victim)
+                                return false;
+                            if (!(player is Player_Professor))
+                                return false;
+                            if (!player.LevelUp())
+                                return false;
+
+                            player.Room.PickUps.Remove(self);
+                            Manager_Sound.Sound_CashIn.Play();
+                            return true;
+                        });
+                case Y_PowerUps.LevelUpNinja:
+                    return new PickUp(type, location, width, height, 1.5f,
+                        Manager_Sprites.NewAnimatedSprite_LevelUp_DarkFlash(),
+                        Manager_Sprites.NewAnimatedSprite_Ninja(),
                         lastOwner,
                         false,
                         (player, self) =>
