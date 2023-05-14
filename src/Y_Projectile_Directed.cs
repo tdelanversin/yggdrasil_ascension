@@ -78,7 +78,17 @@ namespace YGR
                             {
                                 Manager_Particles.GetParticleEffect(Manager_Particles.Effect.Impact).Trigger(new Vector2(_rect.Location.X + _rect.Width / 2, _rect.Location.Y + _rect.Height / 2));
                             }
-                            ((IVictim)obj).Hit(this);
+                            if (obj is IEnemyBoss)
+                            {
+                                var tmp = Damage;
+                                Damage *= 0.05f;
+                                ((IEnemyBoss)obj).Hit(this);
+                                Damage = tmp;
+                            }
+                            else
+                            {
+                                ((IVictim)obj).Hit(this);
+                            }
                         }
                     }
                 }

@@ -95,6 +95,7 @@ namespace YGR
 
             var _mass = 64.0f; // Heavier than other entities
             Collision = new X_CollisionModel_Victim(_mass, 0.0f);
+            _impactDeceleration = 0.1f;
 
             // Collision bounds
             int height = 250;
@@ -212,6 +213,27 @@ namespace YGR
 
             FindTarget();
             UpdateState(gameTime);
+
+            // Damage players on contact
+            if (Attack != BossAttack.Hide)
+            {
+                foreach (var player in Manager_Players.Players)
+                {
+                    if (player.Type == PlayerType.Ghost) { continue; }
+                    if (player.Rect.Intersects(Rect))
+                    {
+                        player.Hit(new Projectile_Slime(
+                            position: _position,
+                            direction: new Vector2(0, 1),
+                            spriteOuter: Manager_Sprites.NewAnimatedSprite_ProjectileSlimeOuter(),
+                            spriteInner: Manager_Sprites.NewAnimatedSprite_ProjectileSlimeInner(),
+                            level: Level,
+                            who: this,
+                            damage: 3
+                        ));
+                    }
+                }
+            }
 
             Vector2 movement = Vector2.Zero;
             switch (Attack)
