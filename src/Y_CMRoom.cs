@@ -703,8 +703,6 @@ namespace YGR
                 if (PickUps[i].Active && player.Rect.Intersects(PickUps[i].Rect))
                 {
                     bool powerupExpired = PickUps[i].Action((IPlayer)player, PickUps[i]);
-
-                    return;
                 }
             }
         }
