@@ -195,14 +195,10 @@ namespace YGR
 
     public class Gun_Helix : Gun_Basic
     {
-        double timeSinceShot = 1001;
-        Y_Level? _level;
-        IGameElement? _who;
-
         public Gun_Helix(IVictim owner) : base(owner)
         {
             Name = "Helix Gun";
-            Sprite = Manager_Sprites.Weapon_RedGun;
+            Sprite = Manager_Sprites.Weapon_Helix;
             ShotDelay = 100;
         }
 
@@ -231,6 +227,90 @@ namespace YGR
         }
     }
 
+    public class Gun_Blunderbuss : Gun_Basic
+    {
+        float ShotSpread;
+        float ShotCount;
+        public Gun_Blunderbuss(IVictim owner) : base(owner)
+        {
+            Name = "Blunderbuss";
+            Sprite = Manager_Sprites.Weapon_Blunderbuss;
+            ShotDelay = 1000;
+            ShotSpread = 0.002f;
+            ShotCount = 5;
+        }
+
+        public override bool Shoot(GameTime gameTime, Vector2 origin, Vector2 direction, Y_Level level, IGameElement who)
+        {
+            if (NextShotCooldown > 0.0f)
+                return false;
+
+            NextShotCooldown = ShotDelay;
+
+
+            double spread = -(ShotCount - 1) / 2 * ShotSpread;
+            for (int i = 0; i < ShotCount; i++)
+            {
+                Manager_Projectile.AddProjectile_Blunderbuss(origin, direction, level, who, drift: (float)spread);
+                spread += ShotSpread;
+            }
+            return true;
+        }
+
+        public override void DropAsPickUp(IVictim lastOwner, IWalkable room, Point location)
+        {
+            room.PickUps.Add(PickUp.Factory(
+                Y_PowerUps.WeaponBlunderbuss,
+                location,
+                Y_Level.TextureTileSize, Y_Level.TextureTileSize, Y_Level.GlobalScale, lastOwner));
+        }
+
+    }
+
+    public class Gun_RedDevil : Gun_ShotGun
+    {
+        public Gun_RedDevil(IVictim owner) : base(owner)
+        {
+            Name = "Red Devil";
+            Sprite = Manager_Sprites.Weapon_RedDevil;
+            ShotCount = 48;
+            ShotDelay = 1000;
+            ShotSpread = 2 * Math.PI / ShotCount;
+        }
+
+
+        public override bool Shoot(GameTime gameTime, Vector2 origin, Vector2 direction, Y_Level level, IGameElement who)
+        {
+            if (NextShotCooldown > 0.0f)
+                return true;
+
+            Manager_Sound.Sound_Shotgun.Play(0.3f, 0, 0);
+
+            NextShotCooldown = ShotDelay;
+
+            double spread = -ShotCount / 2 * ShotSpread;
+            for (int i = 0; i < ShotCount; i++)
+            {
+                var new_dir = new Vector2(
+                    (float)(direction.X * Math.Cos(spread) - direction.Y * Math.Sin(spread)),
+                    (float)(direction.X * Math.Sin(spread) + direction.Y * Math.Cos(spread))
+                );
+
+                Manager_Projectile.AddProjectile_RedDevil(origin, new_dir, level, who);
+                spread += ShotSpread;
+            }
+            return true;
+        }
+
+        public override void DropAsPickUp(IVictim lastOwner, IWalkable room, Point location)
+        {
+            room.PickUps.Add(PickUp.Factory(
+                Y_PowerUps.WeaponRedDevil,
+                location,
+                Y_Level.TextureTileSize, Y_Level.TextureTileSize, Y_Level.GlobalScale, lastOwner));
+        }
+    }
+
     public class Gun_Wide : IShooter
     {
         public string Name { get; protected set; }
@@ -250,7 +330,7 @@ namespace YGR
         {
             // TODO: find name
             Name = "Cannon";
-            Sprite = Manager_Sprites.Weapon_RedGun;
+            Sprite = Manager_Sprites.Weapon_RedDevil;
             Owner = owner;
         }
 

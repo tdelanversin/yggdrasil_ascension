@@ -5,17 +5,13 @@ using System;
 
 namespace YGR
 {
-    public class Projectile_Sin : Projectile_Basic
+    public class Projectile_Curve : Projectile_Basic
     {
         // Slime projectiles have an outer and inner component
 
-        Vector2 _mainAxisPosition;
-        Vector2 _mainAxisVelocity;
-        float _sinAmplitude;
-        float _sinFrequency;
-        float _sinPhase;
+        float _drift = 0.0f;
 
-        public Projectile_Sin(
+        public Projectile_Curve(
             Vector2 position,
             Vector2 direction,
             AnimatedSprite sprite,
@@ -27,9 +23,7 @@ namespace YGR
             float speed = 0.55f,
             float mass = 0.5f,
             float fakeAcceleration = 1.0f,
-            float sinAmplitude = 0.5f,
-            float sinFrequency = 0.01f,
-            float sinPhase = 0.0f
+            float drift = 0.0f
         ) : base(
             position: position,
             direction: direction,
@@ -43,12 +37,7 @@ namespace YGR
             mass: mass,
             fakeAcceleration: fakeAcceleration)
         {
-            _mainAxisPosition = position;
-            _mainAxisVelocity = direction * speed;
-            _sinAmplitude = sinAmplitude;
-            _sinFrequency = sinFrequency;
-            _sinPhase = sinPhase;
-
+            _drift = drift;
             Color = Color.White;
         }
 
@@ -58,15 +47,11 @@ namespace YGR
             int timeStepMS = (int)gameTime.ElapsedGameTime.TotalMilliseconds;
             Age += timeStepMS;
             
-            // Update main axis position
-            _mainAxisPosition += _mainAxisVelocity * timeStepMS;
-
-            // Update position
-            var mainAxisNormal = new Vector2(-_direction.Y, _direction.X);
-            var newPosition = _mainAxisPosition + mainAxisNormal * (float)Math.Sin(Age * _sinFrequency + _sinPhase * 2 * Math.PI) * _sinAmplitude;
+            // Find direction normal
+            Vector2 directionNormal = new Vector2(-_direction.Y, _direction.X);
 
             // Calculate new velocity
-            Velocity = (newPosition - _position) / timeStepMS;
+            Velocity = Velocity + directionNormal * _drift;
 
             /* Collision / Velocity handling */
             IList<Vector2> contactNormal;
