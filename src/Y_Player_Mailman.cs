@@ -5,6 +5,8 @@ namespace YGR
 {
     public class Player_Mailman : Player_Basic
     {
+        float VelocityMaxFree;
+
         public Player_Mailman(
             PlayerIndex playerIndex,
             Vector2 initialPosition,
@@ -30,6 +32,7 @@ namespace YGR
 
             // Carrying all those packages you ordered is not easy...
             VelocityMax = IPlayer.PlayerBaseVelocity * 0.8f;
+            VelocityMaxFree = VelocityMax;
 
             // ...but we can still do a decent sprint if needed
             _dashSpeed /= 0.8f;
@@ -39,6 +42,20 @@ namespace YGR
             _mass = IPlayer.PlayerBaseMass * 2f;
             _impactDeceleration = IPlayer.PlayerBaseDeceleration * 1.25f;
             Collision = new X_CollisionModel_Victim(_mass, _cr);
+        }
+
+        public override void Update(GameTime gameTime)
+        {
+            if (Ability != null && Ability.Triggered)
+            {
+                VelocityMax = VelocityMaxFree * 0.5f;
+            }
+            else
+            {
+                VelocityMax = VelocityMaxFree;
+            }
+
+            base.Update(gameTime);
         }
 
         public override void DrawOutline(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)
