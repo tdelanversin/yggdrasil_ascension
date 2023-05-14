@@ -76,6 +76,12 @@ namespace YGR
             EndTutorial
         }
 
+        public enum GameEndState
+        {
+            Lost,
+            Won,
+        }
+
         public Rectangle Rect { get; set; }
         public static IDictionary<int, IWalkable> Rooms { get; private set; }
         public int TileWidth { get; }
@@ -100,9 +106,11 @@ namespace YGR
 
         // Gameplay state objects
         public IWalkable ActiveRoom;
-        public static GamePlayState State;
 
+        public static GamePlayState State;
         public static GameTutorialState TutorialState;
+        public static GameEndState EndState;
+
         private int MaxTutorialStageDurationMS = 1000;
         private int MaxTutorialStageDurationS = 30;
         private int TutorialStageDurationCounterMS = 0;
@@ -468,7 +476,7 @@ namespace YGR
             }
 
             // iterate trough every enemy and give them the room they are in
-            foreach(var enemy in Manager_Enemies.GetEnemies())
+            foreach (var enemy in Manager_Enemies.GetEnemies())
             {
                 enemy.Room = GetRoom(enemy, null);
             }
@@ -666,7 +674,7 @@ namespace YGR
             Color colorLightRoom = Color.Wheat;
             Color colorLeafRoom = Color.Wheat;
 
-            if(TutorialStageDurationCounterMS == 0)
+            if (TutorialStageDurationCounterMS == 0)
             {
                 Notifications.Clear();
             }
@@ -882,7 +890,7 @@ namespace YGR
                         var allPos = pups.Select(x => x.Rect.Center.ToVector2()).ToArray();
                         var avgPos = new Vector2(allPos.Select(x => x.X).Average(), allPos.Select(x => x.Y).Average());
 
-                        if(TutorialStageDurationCounterS == 0)
+                        if (TutorialStageDurationCounterS == 0)
                             Camera.SetFocusMenu(A_Yggdrasil.Background_.Rect, animationDuration: 3000);
 
                         ShowTutorialControls(duration);
@@ -922,7 +930,7 @@ namespace YGR
                     }
                     break;
                 case GameTutorialState.IntroduceSpikySlime:
-                    if(TutorialStageDurationCounterMS > 0)
+                    if (TutorialStageDurationCounterMS > 0)
                     {
                         Camera.Position = Tutorial_Spiky.Rect.Center.ToVector2();
                     }
@@ -978,7 +986,7 @@ namespace YGR
             if (TutorialStageDurationCounterMS == 0)
             {
                 // in the first stage: add comment non-skippable
-                if(TutorialState == GameTutorialState.Warning && TutorialStageDurationCounterS < TutorialStageDurationCounterS_InitialSkipAfter)
+                if (TutorialState == GameTutorialState.Warning && TutorialStageDurationCounterS < TutorialStageDurationCounterS_InitialSkipAfter)
                 {
                     Notifications.New("[Continue in: " + (TutorialStageDurationCounterS_InitialSkipAfter - TutorialStageDurationCounterS) + "]", colorLightRoom, duration, Fonts.Medium);
                 }
@@ -989,8 +997,8 @@ namespace YGR
             }
 
             TutorialStageDurationCounterMS += gameTime.ElapsedGameTime.Milliseconds;
-            bool anything = Input.AnythingPressed() && 
-                            TutorialButtonPressCoolDownCounter == 0 && 
+            bool anything = Input.AnythingPressed() &&
+                            TutorialButtonPressCoolDownCounter == 0 &&
                             !(TutorialState == GameTutorialState.Warning && TutorialStageDurationCounterS < TutorialStageDurationCounterS_InitialSkipAfter);
             if (TutorialButtonPressCoolDownCounter > TutorialButtonPressCoolDownFC)
             {
@@ -1011,7 +1019,7 @@ namespace YGR
 
                 TutorialStageDurationCounterMS = 0;
                 TutorialStageDurationCounterS++;
-                if(TutorialStageDurationCounterS > MaxTutorialStageDurationS)
+                if (TutorialStageDurationCounterS > MaxTutorialStageDurationS)
                 {
                     TutorialStageDurationCounterS = 0;
                     TutorialNext();
@@ -1053,7 +1061,7 @@ namespace YGR
 
                         // give each player two power ups somewhere inside a big fat spiky slime
                         var pws = new List<Y_PowerUps>();
-                        
+
                         foreach (var p in Manager_Players.Players)
                         {
                             if (p is Player_Mailman) pws.Add(Y_PowerUps.LevelUpMailman);
@@ -1195,6 +1203,7 @@ namespace YGR
                         Notifications.New("Fighting to the bitter end, our heroes couldn't prove", Color.Wheat, gameEndNotificationLength, Fonts.Large);
                         Notifications.New("themselves worthy of fighting alongside the gods...", Color.Wheat, gameEndNotificationLength, Fonts.Large);
                         Manager_Sound.PlayFreeRoamMusic();
+                        EndState = GameEndState.Lost;
                         State = GamePlayState.End;
                         break;
                     }
@@ -1228,7 +1237,8 @@ namespace YGR
                         Manager_Sound.PlayFreeRoamMusic();
                         encounterRoom.OpenAllUnlockedRoomDoors();
                         Camera.SetFocusPlayers();
-                        State = GamePlayState.FreeRoam; // no end screen for now
+                        EndState = GameEndState.Won;
+                        State = GamePlayState.End; // no end screen for now
                     }
                     else
                     {
