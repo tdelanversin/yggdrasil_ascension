@@ -974,7 +974,7 @@ namespace YGR
                     int gameEndNotificationLength = 15000;
 
                     // Check if players died
-                    if (encounterRoom.GetPlayersInside().FindAll(p => p.LifePoints > 0).Count < 1)
+                    if (encounterRoom.GetPlayersInside().FindAll(p => p.LifePoints > 0).Count < 1 && encounterRoom.PickUps.FindAll(x => x.Type == Y_PowerUps.Revive).Count < 1)
                     {
                         Notifications.New("\n\n\n\n", Color.Wheat, gameEndNotificationLength);
                         Notifications.New("Fighting to the bitter end, our heroes couldn't prove", Color.Wheat, gameEndNotificationLength, Fonts.Large);
