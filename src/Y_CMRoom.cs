@@ -687,7 +687,12 @@ namespace YGR
                     Vector2 pos = new Vector2(spiky.x, spiky.y);
                     Manager_Enemies.AddEnemy_SlimeSpiky(pos, _level);
                 }
+            }
 
+            // make 100% sure that there are no enemies without a room -.-
+            foreach(var slime in Manager_Enemies.GetEnemies())
+            {
+                slime.Room = _level.GetRoom(slime, null);
             }
         }
 
