@@ -250,10 +250,10 @@ namespace YGR
                     return new PickUp(type, location, width, height, _gunScale, Manager_Sprites.Weapon_RedGun, lastOwner, true,
                         (player, self) =>
                         {
-                            if (player.Gun.GetType() == typeof(Gun_Funky))
+                            if (player.Gun.GetType() == typeof(Gun_Helix))
                                 return false;
 
-                            return switchGun(new Gun_Funky(player), player, self);
+                            return switchGun(new Gun_Helix(player), player, self);
                         });
                 case Y_PowerUps.WeaponPinkHammer:
                     return new PickUp(type, location, width, height, _gunScale, Manager_Sprites.Weapon_Hammer, lastOwner, true, Color.LightPink,

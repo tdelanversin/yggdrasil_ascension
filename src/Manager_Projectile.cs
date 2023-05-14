@@ -84,23 +84,33 @@ namespace YGR
         }
 
         /// Fast and strong projectiles for the funky gun
-        public static void AddProjectile_Strong(Vector2 startPosition, Vector2 direction, Y_Level level, IGameElement who)
+        public static void AddProjectile_Helix(
+            Vector2 startPosition, 
+            Vector2 direction, 
+            Y_Level level, 
+            IGameElement who, 
+            float amplitude = 15f,
+            float frequency = 0.015f,
+            float phase = 0.0f)
         {
             if (!BoundsCheckFull(startPosition, ((IVictim)who).Room)) return;
 
             _projectiles.Add(
-                new Projectile_Basic(
+                new Projectile_Sin(
                     position: startPosition,
                     direction: direction,
-                    sprite: Manager_Sprites.NewAnimatedSprite_ProjectileSlimeInner(), // TODO: dedicated sprite
+                    sprite: Manager_Sprites.NewAnimatedSprite_ProjectileHelix(),
                     level: level,
                     who: who,
                     scale: 0.45f,
-                    damage: 1,
-                    maxAge: 1500,
-                    speed: 0.85f,
+                    damage: .25f,
+                    maxAge: 2500,
+                    speed: 0.55f,
                     mass: 0.5f,
-                    fakeAcceleration: 0.0f // make stuff fly on impact: 1.0f is the exact elastic impact. <1.0f is fake slower, > 1.0f is fake faster
+                    fakeAcceleration: 0.0f,
+                    sinAmplitude: amplitude,
+                    sinFrequency: frequency,
+                    sinPhase: phase
                 )
             );
         }
@@ -181,7 +191,7 @@ namespace YGR
                     level: level,
                     who: who,
                     scale: .5f,
-                    damage: 0,
+                    damage: 1,
                     maxAge: 10000,
                     speed: 0.4f,
                     mass: 16.0f,

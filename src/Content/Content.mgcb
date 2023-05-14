@@ -760,6 +760,18 @@
 /processorParam:TextureFormat=Color
 /build:SpritesOther/Level_Background.png
 
+#begin SpritesOther/Player_Projectile.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:SpritesOther/Player_Projectile.png
+
 #begin SpritesOther/projectile.png
 /importer:TextureImporter
 /processor:TextureProcessor

@@ -193,104 +193,32 @@ namespace YGR
 
     }
 
-    public class Gun_Funky : IShooter
+    public class Gun_Helix : Gun_Basic
     {
-        public string Name { get; protected set; }
-        public Texture2D Sprite { get; protected set; }
-        public IVictim Owner { get; set; }
-
-        // Why are we not using subclassing...
-        public double NextShotCooldown { get; set; } = 0.0f;
-
         double timeSinceShot = 1001;
-        Vector2 _origin = new Vector2(0, 0);
-        Vector2 _direction = new Vector2(0, 0);
         Y_Level? _level;
         IGameElement? _who;
 
-        public Gun_Funky(IVictim owner)
+        public Gun_Helix(IVictim owner) : base(owner)
         {
-            // TODO: possibly find better name, but this one matches the power level and texture
-            Name = "Red Devil";
+            Name = "Helix Gun";
             Sprite = Manager_Sprites.Weapon_RedGun;
-            Owner = owner;
+            ShotDelay = 100;
         }
 
-        static int shotDelay = 1000;
-        static double shotSpread = .1;
-
-        // bulletArray is a 2D array of booleans that represent the shape of the bullet spray patter
-        static bool[,] bulletArray = {
-            { false, false, true, false, false },
-            { false, true, true, true, false },
-            { true, true, true, true, true },
-            { true, true, true, true, true },
-            { true, true, true, true, true },
-            { true, true, true, true, true },
-            { true, false, true, false, true },
-            { false, true, true, true, false }
-        };
-        // shotTimings is an array of doubles that represent the time in milliseconds that each bullet row should be fired
-        static double[] shotTimings = { 0.0, 60.0, 120.0, 180.0, 240.0, 300.0, 360.0, 420.0 };
-
-        public virtual bool Shoot(GameTime gameTime, Vector2 origin, Vector2 direction, Y_Level level, IGameElement who)
+        public override bool Shoot(GameTime gameTime, Vector2 origin, Vector2 direction, Y_Level level, IGameElement who)
         {
-            if (timeSinceShot < shotDelay)
+            if (NextShotCooldown > 0.0f)
                 return false;
 
-            Manager_Sound.Sound_Explosion.Play();
+            NextShotCooldown = ShotDelay;
 
-            timeSinceShot = 0.0f;
-            _origin = origin;
-            _direction = direction;
-            _level = level;
-            _who = who;
+            Manager_Projectile.AddProjectile_Helix(origin, direction, level, who, phase: 0.0f);
+            Manager_Projectile.AddProjectile_Helix(origin, direction, level, who, phase: 0.5f);
             return true;
         }
 
-        public virtual void Update(GameTime gameTime)
-        {
-            if (timeSinceShot >= shotDelay || _who == null || _level == null)
-                return;
-
-            var lastUpdate = timeSinceShot;
-            timeSinceShot += gameTime.ElapsedGameTime.TotalMilliseconds;
-
-            shotTimings.Last();
-            if (lastUpdate >= shotTimings.Last())
-                return;
-
-            for (int i = 0; i < shotTimings.GetLength(0); ++i)
-            {
-                if (lastUpdate > shotTimings[i] || timeSinceShot <= shotTimings[i])
-                    continue;
-
-                double timedelta = timeSinceShot - shotTimings[i];
-                double spread = -bulletArray.GetLength(1) / 2 * shotSpread;
-                for (int j = 0; j < bulletArray.GetLength(1); j++)
-                {
-                    if (!bulletArray[i, j])
-                    {
-                        spread += shotSpread;
-                        continue;
-                    }
-
-                    var new_dir = new Vector2(
-                        (float)(_direction.X * Math.Cos(spread) - _direction.Y * Math.Sin(spread)),
-                        (float)(_direction.X * Math.Sin(spread) + _direction.Y * Math.Cos(spread))
-                    );
-                    var new_origin = new Vector2(
-                        (float)(_who.Rect.Center.X + timedelta * new_dir.X),
-                        (float)(_who.Rect.Center.Y + timedelta * new_dir.Y)
-                    );
-
-                    Manager_Projectile.AddProjectile_Strong(new_origin, new_dir, _level, _who);
-                    spread += shotSpread;
-                }
-            }
-        }
-
-        public virtual void DropAsPickUp(IVictim lastOwner, IWalkable room, Point location)
+        public override void DropAsPickUp(IVictim lastOwner, IWalkable room, Point location)
         {
             /*
              * TODO: add low probability for this one
