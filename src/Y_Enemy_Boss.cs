@@ -229,7 +229,7 @@ namespace YGR
                             spriteInner: Manager_Sprites.NewAnimatedSprite_ProjectileSlimeInner(),
                             level: Level,
                             who: this,
-                            damage: 3
+                            damage: 5
                         ));
                     }
                 }
