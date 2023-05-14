@@ -77,7 +77,7 @@ namespace YGR
             if (self._lastOwner == player)
                 return false;
 
-            if (player is Player_Ghost)
+            if (player.WhatAreYou() == X_LevelElements.Ghost)
                 return false;
 
             var oldGun = player.Gun;
