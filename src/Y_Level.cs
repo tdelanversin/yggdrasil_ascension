@@ -59,6 +59,7 @@ namespace YGR
             IntroduceCharactersProfessor,
             IntroduceGhosts,
             IntroducePowerUps,
+            IntroduceYggdrasil,
             IntroduceBoss,
             IntroduceSampleRoomWSpikySlime,
             IntroduceSpikySlime,
@@ -570,6 +571,9 @@ namespace YGR
                     TutorialState = GameTutorialState.IntroducePowerUps;
                     break;
                 case GameTutorialState.IntroducePowerUps:
+                    TutorialState = GameTutorialState.IntroduceYggdrasil;
+                    break;
+                case GameTutorialState.IntroduceYggdrasil:
                     TutorialState = GameTutorialState.IntroduceBoss;
                     break;
                 case GameTutorialState.IntroduceBoss:
@@ -592,7 +596,7 @@ namespace YGR
 
         public void ShowTutorialControls(int duration)
         {
-            Notifications.New("Press any button to continue through the tutorial, [Start] / [Esc] to skip and start playing", Color.Wheat, duration, Fonts.Small);
+            Notifications.New("\nPress any button to continue through the tutorial, [Start] / [Esc] to skip and start playing\n", Color.Wheat, duration, Fonts.Small);
         }
 
         public void UpdateTutorial(GameTime gameTime)
@@ -635,7 +639,11 @@ namespace YGR
                         ShowTutorialControls(duration);
                         Notifications.New("\n\n\n\n", colorLightRoom, duration);
                         Notifications.New("You can choose between 4 distinct Characters.", colorLightRoom, duration, Fonts.Large);
-                        Notifications.New("All Characters have one Gun and an Ability.", colorLightRoom, duration, Fonts.Large);
+                        Notifications.New("All Characters have one Gun and an Ability and can Dodge.", colorLightRoom, duration, Fonts.Large);
+                        Notifications.New("Use Gun with [" + Keybinds.GamePadShoot.ToString() + "]", colorLightRoom, duration, Fonts.Large);
+                        Notifications.New("Use Ability with [" + Keybinds.GamePadAbility.ToString() + "]", colorLightRoom, duration, Fonts.Large);
+                        Notifications.New("Use Dodge with [" + Keybinds.GamePadAction.ToString() + "]", colorLightRoom, duration, Fonts.Large);
+                        Notifications.New("Aim with [RightThumbStick]", colorLightRoom, duration, Fonts.Large);
                     }
                     break;
                 case GameTutorialState.IntroduceCharactersNinja:
@@ -646,7 +654,9 @@ namespace YGR
                         int duration = MaxTutorialStageDurationMS;
                         ShowTutorialControls(duration);
                         Notifications.New("\n\n\n\n", colorLightRoom, duration);
-                        Notifications.New("This is Ninja", colorLightRoom, duration, Fonts.Large);
+                        Notifications.New("This is Ninja,", colorLightRoom, duration, Fonts.Large);
+                        Notifications.New("he has been here for a long time", colorLightRoom, duration, Fonts.Large);
+                        Notifications.New("which is why he is still here!", colorLightRoom, duration, Fonts.Large);
                     }
                     break;
                 case GameTutorialState.IntroduceCharactersNerd:
@@ -668,7 +678,7 @@ namespace YGR
 
                         int duration = MaxTutorialStageDurationMS;
                         ShowTutorialControls(duration);
-                        Notifications.New("\n\n\n\n", colorLightRoom, duration);
+                        Notifications.New("\n\n\n\n\n\n\n\n\n\n\n\n\n", colorLightRoom, duration);
                         Notifications.New("This is the Mailman,", colorLightRoom, duration, Fonts.Large);
                         Notifications.New("he can activate a shield and protect himself and others", colorLightRoom, duration, Fonts.Large);
                         Notifications.New("behind him for a while.", colorLightRoom, duration, Fonts.Large);
@@ -717,6 +727,22 @@ namespace YGR
                         Notifications.New("Ghosts can pick up blue Revives to get another chance!", colorLightRoom, duration, Fonts.Large);
                     }
                     break;
+                case GameTutorialState.IntroduceYggdrasil:
+                    if (TutorialStageDurationCounterMS == 0)
+                    {
+                        var pups = _startRoom.PickUps.Where(x => x.Type == Y_PowerUps.Life || x.Type == Y_PowerUps.Revive).ToList();
+                        var allPos = pups.Select(x => x.Rect.Center.ToVector2()).ToArray();
+                        var avgPos = new Vector2(allPos.Select(x => x.X).Average(), allPos.Select(x => x.Y).Average());
+
+                        Camera.SetFocusMenu(A_Yggdrasil.Background_.Rect, animationDuration: 3000);
+
+                        int duration = MaxTutorialStageDurationMS;
+                        ShowTutorialControls(duration);
+                        Notifications.New("\n\n\n\n", colorLightRoom, duration);
+                        Notifications.New("Your Mission:", colorLightRoom, duration, Fonts.Large);
+                        Notifications.New("Get to the top of Yggdrasil!", colorLightRoom, duration, Fonts.Large);
+                    }
+                    break;
                 case GameTutorialState.IntroduceBoss:
                     if (TutorialStageDurationCounterMS == 0)
                     {
@@ -725,9 +751,8 @@ namespace YGR
 
                         int duration = MaxTutorialStageDurationMS;
                         ShowTutorialControls(duration);
-                        Notifications.New("\n\n\n\n", colorGoldRoom, duration);
-                        Notifications.New("Your Mission is to get to the top of Yggdrasil where you will find", colorGoldRoom, duration, Fonts.Large);
-                        Notifications.New("the Final Boss.", colorGoldRoom, duration, Fonts.Large);
+                        Notifications.New("\n\n\n\n\n\n\n\n", colorGoldRoom, duration);
+                        Notifications.New("There, you will find the Final Boss.", colorGoldRoom, duration, Fonts.Large);
                         Notifications.New("Defeat it to prove yourself worthy", colorGoldRoom, duration, Fonts.Large);
                         Notifications.New("to help the Gods when Ragnarok arrives!", colorGoldRoom, duration, Fonts.Large);
                     }
@@ -750,6 +775,10 @@ namespace YGR
                     }
                     break;
                 case GameTutorialState.IntroduceSpikySlime:
+                    if(TutorialStageDurationCounterMS > 0)
+                    {
+                        Camera.Position = Tutorial_Spiky.Rect.Center.ToVector2();
+                    }
                     if (TutorialStageDurationCounterMS == 0)
                     {
                         Camera.SetFocusManual(Tutorial_Spiky.Rect.Center.ToVector2(), zoomCharacter);
