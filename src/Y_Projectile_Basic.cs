@@ -132,11 +132,14 @@ namespace YGR
                     // Hit players and enemies
                     if (obj is IVictim)
                     {
-                        if (Settings.ParticleEffects)
+                        lock (this)
                         {
-                            Manager_Particles.GetParticleEffect(Manager_Particles.Effect.Impact).Trigger(new Vector2(_rect.Location.X + _rect.Width / 2, _rect.Location.Y + _rect.Height / 2));
+                            if (Settings.ParticleEffects)
+                            {
+                                Manager_Particles.GetParticleEffect(Manager_Particles.Effect.Impact).Trigger(new Vector2(_rect.Location.X + _rect.Width / 2, _rect.Location.Y + _rect.Height / 2));
+                            }
+                            ((IVictim)obj).Hit(this);
                         }
-                        ((IVictim)obj).Hit(this);
                     }
                 }
                 Velocity = newVelocity;
