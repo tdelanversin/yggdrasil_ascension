@@ -115,6 +115,28 @@ namespace YGR
             );
         }
 
+        public static void AddProjectile_Blunderbuss(Vector2 startPosition, Vector2 direction, Y_Level level, IGameElement who, float drift = 0.0f)
+        {
+            if (!BoundsCheckSimple(startPosition, ((IVictim)who).Room)) return;
+
+            _projectiles.Add(
+                new Projectile_Curve(
+                    position: startPosition,
+                    direction: direction,
+                    sprite: Manager_Sprites.NewAnimatedSprite_ProjectileHelix(),
+                    level: level,
+                    who: who,
+                    scale: 0.35f,
+                    damage: 2,
+                    maxAge: 2500,
+                    speed: 0.55f,
+                    mass: 0.5f,
+                    fakeAcceleration: 0.0f,
+                    drift: drift
+                )
+            );
+        }
+
         /// Larger, slower, heavier, longer lived and deals more damage
         public static void AddProjectile_EnemySlimeProjectile(Vector2 startPosition, Vector2 direction, Y_Level level, IGameElement who)
         {

@@ -1048,6 +1048,18 @@
 /processorParam:TextureFormat=Color
 /build:SpritesOther/white.png
 
+#begin SpritesWeapons/Blunderbuss.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:SpritesWeapons/Blunderbuss.png
+
 #begin SpritesWeapons/hammer.png
 /importer:TextureImporter
 /processor:TextureProcessor
@@ -1059,6 +1071,18 @@
 /processorParam:MakeSquare=False
 /processorParam:TextureFormat=Color
 /build:SpritesWeapons/hammer.png
+
+#begin SpritesWeapons/Helix.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:SpritesWeapons/Helix.png
 
 #begin SpritesWeapons/Keyboard.png
 /importer:TextureImporter
