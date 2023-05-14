@@ -26,25 +26,6 @@ namespace YGR
             return X_LevelElements.Ghost;
         }
 
-        public override void Update(GameTime gameTime)
-        {
-            UpdateRoom(gameTime);
-
-            Vector2 input = Vector2.Zero;
-            HandleGamepadInput(gameTime, ref input);
-            HandleMouseKeyboardInput(gameTime, ref input);
-
-            if (input != Vector2.Zero || _isAiming) IsActive = true;
-
-            GhostSprite.Update(gameTime, input);
-
-            UpdateVelocity(input, gameTime);
-            UpdateDash(gameTime);
-            UpdateCollision(gameTime);
-
-            UpdateColor(gameTime);
-        }
-
         protected override void DrawOverheadString(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)
         {
             string str = "P" + (int)PlayerIndex + ": " + (IsActive ? "Entered" : "Move to register");

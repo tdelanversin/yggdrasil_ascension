@@ -28,14 +28,14 @@ namespace YGR
 
         public static void ClearEnemies(IWalkable room)
         {
-            foreach(var enemy in _enemies)
+            foreach (var enemy in _enemies)
             {
                 if (enemy.Room == room) enemy.Kill();
             }
 
             _enemies.RemoveAll(enemy => enemy.LifePoints <= 0);
 
-            foreach(var boss in _bosses)
+            foreach (var boss in _bosses)
             {
                 if (boss.Room == room) boss.Kill();
             }
@@ -93,6 +93,13 @@ namespace YGR
             _enemiesToAdd.Add(minion);
         }
 
+        /* Offer method to place gravestone. Players should be able to hit them
+            for fun, plus we really don't need a Manager_Gravestones */
+        public static void AddGraveStone(Vector2 position, Y_Level level)
+        {
+            _enemies.Add(new Gravestone(position, level));
+        }
+
         public static ReadOnlyCollection<IEnemy> GetEnemies()
         {
             return _enemies.AsReadOnly();
@@ -118,7 +125,7 @@ namespace YGR
             // select all dying enemies
             var list = _enemies.Where(x => x.LifePoints <= 0).ToList();
             // drop, or maybe not, something jucy
-            foreach(var enemy in list)
+            foreach (var enemy in list)
             {
                 enemy.DropSomethingJuicyMaybe();
             }

@@ -249,7 +249,9 @@ namespace YGR
         /// </summary>
         public static void DrawString(SpriteFont font, string text, Vector2 position, Color color, SpriteBatch spriteBatch)
         {
-            spriteBatch.DrawString(font, text, position + Vector2.One, Color.Black);
+            Color shadow = Color.Black;
+            shadow.A = color.A;
+            spriteBatch.DrawString(font, text, position + 2 * Vector2.One, shadow);
             spriteBatch.DrawString(font, text, position, color);
         }
     }

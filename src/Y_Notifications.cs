@@ -92,7 +92,7 @@ namespace YGR
                 {   // Fade out
                     color *= timeLeft / fadeTime;
                 }
-                spriteBatch.DrawString(n.Font, n.Message, pos, color);
+                Util.DrawString(n.Font, n.Message, pos, color, spriteBatch);
                 y += (int)(n.Size.Y * 1.5);
             }
         }

@@ -131,14 +131,14 @@ namespace YGR
         public static void DrawPlayerStatistics(GameTime gameTime, SpriteBatch spriteBatch, bool printAll = false)
         {
             SpriteFont font = Fonts.GetDecentlySizedFont();
-            Vector2 pos = new Vector2((Camera.Bounds.Width) / 5, Camera.Bounds.Height / 3);
+            Vector2 pos = new Vector2((Camera.Bounds.Width) / 7, Camera.Bounds.Height / 5);
             float spacing = 1.25f;
 
             for (int i = 0; i < Manager_Players.Players.Count; i++)
             {
                 if (i == 2)
                 {
-                    pos = new Vector2((Camera.Bounds.Width) * 3 / 5, Camera.Bounds.Height / 3);
+                    pos = new Vector2((Camera.Bounds.Width) * 3 / 5, Camera.Bounds.Height / 5);
                 }
 
                 IPlayer p = Manager_Players.Players[i];
@@ -164,12 +164,15 @@ namespace YGR
                 {
                     // Never mind, let's do it by hand as well
                     infoString += string.Format("\n {0,-20} {1,-8:0}", "Kills", stats.Kills);
+                    infoString += string.Format("\n {0,-20} {1,-8:0}", "Deaths", stats.Deaths);
                     infoString += string.Format("\n {0,-20} {1,-8:0}", "Damage Dealt", stats.DamageDealt);
+                    infoString += string.Format("\n {0,-20} {1,-8:0}", "Damage Dealt To Boss", stats.BossDamageDealt);
                     infoString += string.Format("\n {0,-20} {1,-8:0}", "Damage Taken", stats.DamageTaken);
                     infoString += string.Format("\n {0,-20} {1,-8:0}", "Times Fired", stats.TimesFired);
                     infoString += string.Format("\n {0,-20} {1,-8:0}", "Times Dashed", stats.TimesDashed);
+                    infoString += string.Format("\n {0,-20} {1,-8:0}", "Projectiles Dodged", stats.ProjectilesDodged);
+                    infoString += string.Format("\n {0,-20} {1,-8:0}", "Abilites used", stats.TimesAbilitated);
                     infoString += string.Format("\n {0,-20} {1,-8:0}", "Distance Walked", stats.DistanceTravelled / 32);
-                    infoString += string.Format("\n {0,-20} {1,-8:0}", "Bullets Dodged", stats.ProjectilesDodged);
                 }
 
                 Vector2 indexStringSize = font.MeasureString(indexString);

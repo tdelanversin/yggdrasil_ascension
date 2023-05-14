@@ -355,6 +355,7 @@ namespace YGR
             if (CurrentSubmenu == StatsMenu)
             {
                 UI.DrawPlayerStatistics(gameTime, spriteBatch);
+                UI.DrawPlayerStatus(gameTime, spriteBatch);
             }
             else if (CurrentSubmenu == SettingsMenu || Game.State == GameState.PreGame)
             {

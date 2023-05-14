@@ -137,16 +137,25 @@ namespace YGR
             Input.Update();
             Notifications.Update(gameTime);
 
-            // Keybind to switch states
-            if ((Y_Level.State != Y_Level.GamePlayState.Tutorial || State == GameState.Intro) && (Input.IsKeyTriggered(Keys.Escape) || Input.IsButtonTriggeredAny(Buttons.Start)))
+            // Keybind to enter the menu or skip intro / tutorial
+            if (Input.IsKeyTriggered(Keys.Escape) || Input.IsButtonTriggeredAny(Buttons.Start))
             {
                 if (State == GameState.Intro)
                 {
+                    // Skip intro video
                     DesiredState = GameState.PreGame;
                 }
                 else if (State == GameState.InGame)
                 {
-                    DesiredState = GameState.Menu;
+                    // Skip the tutorial
+                    if (Y_Level.State == Y_Level.GamePlayState.Tutorial)
+                    {
+                        Y_Level.TutorialState = Y_Level.GameTutorialState.EndTutorial;
+                    }
+                    else
+                    {
+                        DesiredState = GameState.Menu;
+                    }
                 }
                 else if (State == GameState.Menu)
                 {
