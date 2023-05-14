@@ -18,7 +18,10 @@ namespace YGR
         public Texture2D Sprite { get; protected set; }
 
         protected double NextShotCooldown = 0.0f;
+
         protected int ShotDelay = 5000;
+
+        public bool Triggered { get; private set; }
 
         public Ability_Confusion()
         {
@@ -60,6 +63,8 @@ namespace YGR
         public void Update(GameTime gameTime) { }
 
         public void Draw(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch) { }
+
+        public bool Triggered { get; private set; }
     }
 
     public class Ability_Shield : IAbility
@@ -67,6 +72,7 @@ namespace YGR
         public string Name { get; protected set; }
         public Texture2D Sprite { get; protected set; }
         public Player_Basic Owner { get; set; }
+        public bool Triggered { get; private set; }
 
         AnimatedSprite _sprite;
         Point _center;
@@ -76,7 +82,6 @@ namespace YGR
 
         float _scale;
         float _angle;
-        bool _triggered;
 
         //bool _reloading;
         int _maxDuration;
@@ -115,7 +120,7 @@ namespace YGR
             _b = 80.0f * Y_Level.GlobalScale; // must be half the texture height from the Python script
             _hOffset = 16.0f * Y_Level.GlobalScale; // must be the same as h_offset from the Python script
 
-            _triggered = false;
+            Triggered = false;
             _collisionModel = new Vector2[_outerCollisionModelPrecision + _innerCollisionModelPrecision + _middleCollisionModelPrecision];
             _everySecondFrame = true;
         }
@@ -130,9 +135,9 @@ namespace YGR
         public bool Trigger(GameTime gametime, Vector2 origin, Vector2 direction, Y_Level level, IGameElement who)
         {
             if (_shortestWaitTimeCounter > 0) return false;
-            if (_triggered) return false;
+            if (Triggered) return false;
             setShieldDuration();
-            _triggered = true;
+            Triggered = true;
 
             return true;
         }
@@ -140,7 +145,7 @@ namespace YGR
         public void Draw(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)
         {
             // Draw an indicator only if a) the player is actively aiming on the gamepad or b) is using mouse to aim
-            if(_triggered)
+            if(Triggered)
             {
                 Color good = _goodLevelColors[Math.Max(_goodLevelColors.Length - 1, Owner.ElementLevel - 1)];
                 float p = 1.0f / _level_3_duration * _currentDuration;
@@ -160,7 +165,7 @@ namespace YGR
 
         public bool HitByProjectile(IProjectile projectile, int timeStepMS)
         {
-            if (!_triggered) return false;
+            if (!Triggered) return false;
 
             foreach(var p in _collisionModel)
             {
@@ -244,7 +249,7 @@ namespace YGR
 
         public void DrawOutline(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)
         {
-            if (!_triggered) return;
+            if (!Triggered) return;
 
             foreach (var cm in _collisionModel)
             {
@@ -274,10 +279,10 @@ namespace YGR
             if (!(Input.IsKeyDown(Keybinds.KeyboardAbility) || Input.IsButtonDown(Owner.PlayerIndex, Keybinds.GamePadAbility)) || _currentDuration <= 0)
             {
                 // If we were running the shield... set the shortest wait time to 1s
-                if (_triggered) _shortestWaitTimeCounter = _shortestWaitTimeMS;
+                if (Triggered) _shortestWaitTimeCounter = _shortestWaitTimeMS;
 
                 // set trigger to false
-                _triggered = false;
+                Triggered = false;
 
                 // make sure we are up to speed
                 setShieldDuration();

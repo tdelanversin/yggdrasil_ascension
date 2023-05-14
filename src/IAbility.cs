@@ -19,5 +19,7 @@ namespace YGR
         public string Name { get; }
 
         public Texture2D Sprite { get; }
+
+        public bool Triggered { get; }
     }
 }
