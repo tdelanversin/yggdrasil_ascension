@@ -902,23 +902,25 @@ namespace YGR
 
                         // make sure these are somewhere to be found, because, let's face it, it's the pinky hammer :-D
                         pws.Add(Y_PowerUps.WeaponPinkHammer);
+                        pws.Add(Y_PowerUps.WeaponHelix);
 
                         // fill up the rest of the slots with some random stuff
-                        var pwsWeapons = new List<Y_PowerUps> {
-                            Y_PowerUps.WeaponFunky
-                            //Y_PowerUps.WeaponWide,
-                            //Y_PowerUps.WeaponGiga
-                        };
-                        while (pws.Count() < arr.Length)
-                        {
-                            pws.Add(pwsWeapons[Util.random.Next(0, pwsWeapons.Count())]);
-                        }
+                        // var pwsWeapons = new List<Y_PowerUps> {
+                        //     Y_PowerUps.WeaponHelix
+                        //     //Y_PowerUps.WeaponWide,
+                        //     //Y_PowerUps.WeaponGiga
+                        // };
+                        // while (pws.Count() < arr.Length)
+                        // {
+                        //     pws.Add(pwsWeapons[Util.random.Next(0, pwsWeapons.Count())]);
+                        // }
 
                         // mix everything thouroughly
                         var randpws = pws.OrderBy(x => Util.random.Next()).ToArray();
-                        for (int i = 0; i < arr.Length; ++i)
+                        var randarr = arr.OrderBy(x => Util.random.Next()).ToArray();
+                        for (int i = 0; i < randarr.Length && i < randpws.Length; ++i)
                         {
-                            ((Enemy_Slime_Spiky)arr[i]).SetPowerUp(randpws[i]);
+                            ((Enemy_Slime_Spiky)randarr[i]).SetPowerUp(randpws[i]);
                         }
                     }
                     break;
