@@ -298,6 +298,14 @@ namespace YGR
                 Manager_Sound.Sound_PlayerDeath.Play();
                 Stats.Deaths++;
                 LifePoints = 0;
+                // drop a grave stone as a pickup
+                // if (Room.WhatAreYou() == X_LevelElements.Room)
+                // {
+                //     var p = new Point(Rect.Location.X + Rect.Width / 2, Rect.Location.Y + Rect.Height / 2);
+                //     ((Y_CMRoom)Room).PickUps.Add(PickUp.Factory(Y_PowerUps.Gravestone, p, Y_Level.TextureTileSize, Y_Level.TextureTileSize, Y_Level.GlobalScale));
+                // }
+                // Drop a grave stone as an enemy
+                // Manager_Enemies.AddGraveStone(Rect.Center.ToVector2(), Level);
             }
         }
 

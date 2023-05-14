@@ -238,6 +238,8 @@ namespace YGR
             if (timeSinceShot < shotDelay)
                 return false;
 
+            Manager_Sound.Sound_Explosion.Play();
+
             timeSinceShot = 0.0f;
             _origin = origin;
             _direction = direction;
