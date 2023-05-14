@@ -13,6 +13,7 @@ namespace YGR
         public static Texture2D Player_Simple { get; private set; }
         public static Texture2D Player_NerdyGirl { get; private set; }
         public static Texture2D Player_Mailman { get; private set; }
+        public static Texture2D Player_Professor { get; private set; }
         public static Texture2D Player_Ghost { get; private set; }
         public static Texture2D AimIndicator { get; private set; }
 
@@ -69,6 +70,7 @@ namespace YGR
             Player_Ghost = contentManager.Load<Texture2D>("SpritesCharacters/ghosty");
             Player_NerdyGirl = contentManager.Load<Texture2D>("SpritesCharacters/NerdyGirl");
             Player_Mailman = contentManager.Load<Texture2D>("SpritesCharacters/Mailman");
+            Player_Professor = contentManager.Load<Texture2D>("SpritesCharacters/Prof");
 
             AimIndicator = contentManager.Load<Texture2D>("SpritesOther/target_indicator");
             Projectile_Simple = contentManager.Load<Texture2D>("SpritesOther/projectiles");
@@ -289,6 +291,21 @@ namespace YGR
                     { AnimationState.IdleLeft, new int[,] { {1,2}, {1,1}, {1,0}, {1,1} } },
                     { AnimationState.IdleRight, new int[,] { {0,5}, {0,6}, {0,7}, {0,5} } },
                     { AnimationState.WalkRight, new int[,] { {0,0}, {0,1}, {0,0}, {0,2}, {0,3}, {0,4}, {0,3}, {0,2} } },
+                },
+                animationDuration: 1000
+            );
+        }
+
+        public static AnimatedSprite NewAnimatedSprite_Professor()
+        {
+            return new AnimatedSprite(
+                texture: Player_Professor,
+                spriteDimension: new Vector2(201, 489),
+                animations: new Dictionary<AnimationState, int[,]> {
+                    { AnimationState.WalkLeft, new int[,] { {1,10}, {1,9}, {1,8}, {1,7}, {1,6}, {1,5}, {1,4}, {1,3} } },
+                    { AnimationState.IdleLeft, new int[,] { {1,2}, {1,1}, {1,0}, {1,1} } },
+                    { AnimationState.IdleRight, new int[,] { {0,8}, {0,9}, {0,10}, {0,9} } },
+                    { AnimationState.WalkRight, new int[,] { {0,0}, {0,1}, {0,2}, {0,3}, {0,4}, {0,5}, {0,6}, {0,7} } },
                 },
                 animationDuration: 1000
             );

@@ -14,7 +14,7 @@ namespace YGR
             ) : base(playerIndex, initialPosition, level, gun, type, controlLayout)
         {
             // TODO: No sprite yet :(
-            // CharacterSprite = Manager_Sprites.NewAnimatedSprite_Professor();
+            CharacterSprite = Manager_Sprites.NewAnimatedSprite_Professor();
 
             Ability = new Ability_Confusion();
             Type = PlayerType.Professor;
@@ -30,6 +30,7 @@ namespace YGR
 
             LifePointsMax = IPlayer.PlayerBaseHealth;
             LifePoints = LifePointsMax;
+            SetupPlayerRect(height: IPlayer.PlayerBaseHeight * 1.25f);
 
             // Professor is old and no longer as fast
             VelocityMax = IPlayer.PlayerBaseVelocity * 0.8f;

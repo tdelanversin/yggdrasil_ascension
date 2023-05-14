@@ -156,7 +156,7 @@ namespace YGR
                             return false;
                         });
                 case Y_PowerUps.ChooserProfessor:
-                    return new PickUp(type, location, width, IPlayer.PlayerBaseHeight, scale * 1.0f, Manager_Sprites.NewAnimatedSprite_TestCharacter(), lastOwner,
+                    return new PickUp(type, location, width, IPlayer.PlayerBaseHeight, scale * 1.0f, Manager_Sprites.NewAnimatedSprite_Professor(), lastOwner,
                         (player, self) =>
                         {
                             if (player is not Player_Professor)
