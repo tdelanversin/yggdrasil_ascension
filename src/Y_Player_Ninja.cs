@@ -15,7 +15,7 @@ namespace YGR
         {
             CharacterSprite = Manager_Sprites.NewAnimatedSprite_Ninja();
 
-            Ability = new Ability_Confusion();
+            Ability = null; // no ability for the ninja
             Type = PlayerType.Ninja;
             Name = "Ninja";
 

@@ -15,7 +15,7 @@ namespace YGR
         {
             CharacterSprite = Manager_Sprites.NewAnimatedSprite_NerdyGirl();
 
-            Ability = new Ability_Confusion();
+            Ability = null; // no ability for the nerd
             Type = PlayerType.Nerd;
             Name = "Nerdy Girl";
 
