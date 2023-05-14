@@ -20,6 +20,7 @@
         Bark,
         Confusion,
         ConfusionProjectile,
-        Shield
+        Shield,
+        Gravestone,
     }
 }

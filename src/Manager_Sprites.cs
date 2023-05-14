@@ -48,6 +48,7 @@ namespace YGR
         public static Texture2D EscapeButtonOut { get; private set; }
         public static Texture2D EscapeButtonHalf { get; private set; }
         public static Texture2D EscapeButtonIn { get; private set; }
+        public static Texture2D Gravestone { get; private set; }
 
         // Power Ups
         public static Texture2D SpinningHeart { get; private set; }
@@ -108,6 +109,7 @@ namespace YGR
             EscapeButtonOut = contentManager.Load<Texture2D>("SpritesOther/Escape_Button-Out");
             EscapeButtonHalf = contentManager.Load<Texture2D>("SpritesOther/Escape_Button-Half");
             EscapeButtonIn = contentManager.Load<Texture2D>("SpritesOther/Escape_Button-In");
+            Gravestone = contentManager.Load<Texture2D>("SpritesOther/gravestone");
 
             Enemy_Basic = Player_Simple;
             Enemy_Slime = contentManager.Load<Texture2D>("SpritesCharacters/slime");
