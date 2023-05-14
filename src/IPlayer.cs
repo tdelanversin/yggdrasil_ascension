@@ -34,6 +34,8 @@ namespace YGR
         public Statistics Stats { get; set; }
         public void TeleportTo(Point target);
 
+        public bool LevelUp();
+
         public AnimatedSprite GetSprite();
         public bool IsAlive();
         public void Heal();
