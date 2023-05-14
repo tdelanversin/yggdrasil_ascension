@@ -678,7 +678,7 @@ namespace YGR
                     {
                         ShowTutorialControls(duration);
                         Notifications.New("\n\n\n\n\n\n\n\n", colorLightRoom, duration);
-                        Notifications.New("Press any button to skip following steps of the tutorial,", colorLightRoom, duration, Fonts.Large);
+                        Notifications.New("Press any button to skip FOLLOWING steps of the tutorial,", colorLightRoom, duration, Fonts.Large);
                         Notifications.New("Press [Start] / [Esc] to skip all and directly start playing!", colorLightRoom, duration, Fonts.Large);
                     }
                     break;
