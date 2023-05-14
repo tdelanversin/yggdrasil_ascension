@@ -2,6 +2,7 @@
 using Microsoft.Xna.Framework.Graphics;
 using System;
 using System.Linq;
+using System.Runtime.InteropServices;
 
 namespace YGR
 {
@@ -32,7 +33,10 @@ namespace YGR
 
         LevelUpNerd,
         LevelUpProfessor,
-        LevelUpMailman
+        LevelUpMailman,
+
+        // Dead Enemy
+        Gravestone
     }
 
     public class PickUp : IGameElement
@@ -55,6 +59,7 @@ namespace YGR
         private AnimatedSprite _sprite;
         private AnimatedSprite _carriedSprite;
         private float _spriteDrawScale;
+        private bool _floaty;
 
         private Texture2D _texture;
 
@@ -91,6 +96,7 @@ namespace YGR
             AnimatedSprite sprite, 
             AnimatedSprite carriedSprite,
             IVictim lastOwner, 
+            bool floaty,
             Func<IPlayer, PickUp, bool> action)
         {
             LocalScale = scale * Y_Level.GlobalScale;
@@ -101,6 +107,7 @@ namespace YGR
             Active = true;
             _sprite = sprite;
             _carriedSprite = carriedSprite;
+            _floaty = floaty;
 
             int heightNew = (int)(height * LocalScale);
             int widthNew = (int)((heightNew * sprite.SpriteDimension.X / sprite.SpriteDimension.Y));
@@ -112,7 +119,7 @@ namespace YGR
             _lastOwner = lastOwner;
         }
 
-        public PickUp(Y_PowerUps type, Point location, int width, int height, float scale, Texture2D texture, IVictim lastOwner, Func<IPlayer, PickUp, bool> action)
+        public PickUp(Y_PowerUps type, Point location, int width, int height, float scale, Texture2D texture, IVictim lastOwner, bool floaty, Func<IPlayer, PickUp, bool> action)
         {
             LocalScale = scale * Y_Level.GlobalScale;
             Type = type;
@@ -126,12 +133,13 @@ namespace YGR
             Active = true;
             _texture = texture;
             _spriteDrawScale = LocalScale * Util.GetSpriteScale(Rect, texture.Bounds.Size.ToVector2());
+            _floaty = floaty;
 
             _lastOwner = lastOwner;
         }
 
-        public PickUp(Y_PowerUps type, Point location, int width, int height, float scale, Texture2D texture, IVictim lastOwner, Color color, Func<IPlayer, PickUp, bool> action)
-        : this(type, location, width, height, scale, texture, lastOwner, action)
+        public PickUp(Y_PowerUps type, Point location, int width, int height, float scale, Texture2D texture, IVictim lastOwner, bool floaty, Color color, Func<IPlayer, PickUp, bool> action)
+        : this(type, location, width, height, scale, texture, lastOwner, floaty, action)
         {
             Color = color;
         }
@@ -145,6 +153,7 @@ namespace YGR
                         Manager_Sprites.NewAnimatedSprite_NerdyGirl(), 
                         null, 
                         lastOwner,
+                        false,
                         (player, self) =>
                         {
                             if (player is not Player_NerdyGirl)
@@ -159,6 +168,7 @@ namespace YGR
                         Manager_Sprites.NewAnimatedSprite_Mailman(), 
                         null, 
                         lastOwner,
+                        false,
                         (player, self) =>
                         {
                             if (player is not Player_Mailman)
@@ -173,6 +183,7 @@ namespace YGR
                         Manager_Sprites.NewAnimatedSprite_Ninja(), 
                         null, 
                         lastOwner,
+                        false,
                         (player, self) =>
                         {
                             if (player is not Player_Ninja)
@@ -187,6 +198,7 @@ namespace YGR
                         Manager_Sprites.NewAnimatedSprite_Professor(), 
                         null, 
                         lastOwner,
+                        false,
                         (player, self) =>
                         {
                             if (player is not Player_Professor)
@@ -198,7 +210,7 @@ namespace YGR
                         });
 
                 case Y_PowerUps.WeaponPistol:
-                    return new PickUp(type, location, width, height, _gunScale, Manager_Sprites.Weapon_Pistol, lastOwner,
+                    return new PickUp(type, location, width, height, _gunScale, Manager_Sprites.Weapon_Pistol, lastOwner, true,
                         (player, self) =>
                         {
                             if (player.Gun.GetType() == typeof(Gun_Basic))
@@ -207,7 +219,7 @@ namespace YGR
                             return switchGun(new Gun_Basic(player), player, self);
                         });
                 case Y_PowerUps.WeaponEnemySlowPistol:
-                    return new PickUp(type, location, width, height, _gunScale, Manager_Sprites.Weapon_Pistol, lastOwner,
+                    return new PickUp(type, location, width, height, _gunScale, Manager_Sprites.Weapon_Pistol, lastOwner, true,
                         (player, self) =>
                         {
                             if (player.Gun.GetType() == typeof(Gun_BasicEnemy))
@@ -216,7 +228,7 @@ namespace YGR
                             return switchGun(new Gun_BasicEnemy(player), player, self);
                         });
                 case Y_PowerUps.WeaponWide:
-                    return new PickUp(type, location, width, height, _gunScale, Manager_Sprites.Weapon_Pistol, lastOwner,
+                    return new PickUp(type, location, width, height, _gunScale, Manager_Sprites.Weapon_Pistol, lastOwner, true,
                         (player, self) =>
                         {
                             if (player.Gun.GetType() == typeof(Gun_Wide))
@@ -225,7 +237,7 @@ namespace YGR
                             return switchGun(new Gun_Wide(player), player, self);
                         });
                 case Y_PowerUps.WeaponShotgun:
-                    return new PickUp(type, location, width, height, _gunScale, Manager_Sprites.Weapon_Shotgun, lastOwner,
+                    return new PickUp(type, location, width, height, _gunScale, Manager_Sprites.Weapon_Shotgun, lastOwner, true,
                         (player, self) =>
                         {
                             if (player.Gun.GetType() == typeof(Gun_ShotGun))
@@ -234,7 +246,7 @@ namespace YGR
                             return switchGun(new Gun_ShotGun(player), player, self);
                         });
                 case Y_PowerUps.WeaponFunky:
-                    return new PickUp(type, location, width, height, _gunScale, Manager_Sprites.Weapon_RedGun, lastOwner,
+                    return new PickUp(type, location, width, height, _gunScale, Manager_Sprites.Weapon_RedGun, lastOwner, true,
                         (player, self) =>
                         {
                             if (player.Gun.GetType() == typeof(Gun_Funky))
@@ -243,7 +255,7 @@ namespace YGR
                             return switchGun(new Gun_Funky(player), player, self);
                         });
                 case Y_PowerUps.WeaponPinkHammer:
-                    return new PickUp(type, location, width, height, _gunScale, Manager_Sprites.Weapon_Hammer, lastOwner, Color.LightPink,
+                    return new PickUp(type, location, width, height, _gunScale, Manager_Sprites.Weapon_Hammer, lastOwner, true, Color.LightPink,
                         (player, self) =>
                         {
                             if (player.Gun.GetType() == typeof(Weapon_PinkHammer))
@@ -256,6 +268,7 @@ namespace YGR
                         Manager_Sprites.NewAnimatedSprite_SpinningHeart(),
                         null, 
                         lastOwner,
+                        false,
                         (player, self) =>
                         {
                             if (player.WhatAreYou() != X_LevelElements.Victim)
@@ -273,6 +286,7 @@ namespace YGR
                         Manager_Sprites.NewAnimatedSprite_LevelUp_DarkFlash(),
                         Manager_Sprites.NewAnimatedSprite_NerdyGirl(),
                         lastOwner,
+                        false,
                         (player, self) =>
                         {
                             if (player.WhatAreYou() != X_LevelElements.Victim)
@@ -292,6 +306,7 @@ namespace YGR
                         Manager_Sprites.NewAnimatedSprite_LevelUp_DarkFlash(),
                         Manager_Sprites.NewAnimatedSprite_Mailman(), 
                         lastOwner,
+                        false,
                         (player, self) =>
                         {
                             if (player.WhatAreYou() != X_LevelElements.Victim)
@@ -311,6 +326,7 @@ namespace YGR
                         Manager_Sprites.NewAnimatedSprite_LevelUp_DarkFlash(),
                         Manager_Sprites.NewAnimatedSprite_Ninja(), 
                         lastOwner,
+                        false,
                         (player, self) =>
                         {
                             if (player.WhatAreYou() != X_LevelElements.Victim)
@@ -325,11 +341,19 @@ namespace YGR
                             player.ElementLevel = player.ElementLevel + 1;
                             return true;
                         });
+                case Y_PowerUps.Gravestone:
+                    return new PickUp(type, location, width, height, 1.5f, Manager_Sprites.Gravestone, lastOwner, false,
+                        (player, self) =>
+                        {
+                            // un-pick-up-able
+                            return false;
+                        });
                 default: // case Y_PowerUps.Revive:
                     return new PickUp(type, location, width, height, 1.5f, 
                         Manager_Sprites.NewAnimatedSprite_SpinningPlus(),
                         null, 
                         lastOwner,
+                        false,
                         (player, self) =>
                         {
                             if (!(!player.IsAlive() && player is not Player_Ghost))
@@ -375,8 +399,12 @@ namespace YGR
 
         public void DrawFloatingTexture(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)
         {
-            // Spinning looks meh, so instead float up and down a bit
-            int floatyOffset = (int)(Math.Sin(gameTime.TotalGameTime.TotalSeconds * 4) * Y_Level.InGameTileSize * 0.25f);
+            int floatyOffset = 0;
+            if (_floaty)
+            {
+                // Spinning looks meh, so instead float up and down a bit
+                floatyOffset = (int)(Math.Sin(gameTime.TotalGameTime.TotalSeconds * 4) * Y_Level.InGameTileSize * 0.25f);
+            }
 
             // And render a "shadow" to make it more visible
             spriteBatch.Draw(

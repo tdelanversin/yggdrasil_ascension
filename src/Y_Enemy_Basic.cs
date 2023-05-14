@@ -643,6 +643,13 @@ namespace YGR
 
         virtual public void DropSomethingJuicyMaybe()
         {
+            // drop a grave stone with absolute certainty
+            if(Room.WhatAreYou() == X_LevelElements.Room)
+            {
+                var p = new Point(Rect.Location.X + Rect.Width / 2, Rect.Location.Y + Rect.Height / 2);
+                ((Y_CMRoom)Room).PickUps.Add(PickUp.Factory(Y_PowerUps.Gravestone, p, Y_Level.TextureTileSize, Y_Level.TextureTileSize, Y_Level.GlobalScale));
+            }
+
             if (WhoKilledMe != null)
             {
                 if (WhoKilledMe.WhatAreYou() == X_LevelElements.Victim)
