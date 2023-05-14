@@ -199,6 +199,7 @@ namespace YGR
         /// </summary>
         public static void DrawEndScreen(GameTime gameTime, SpriteBatch spriteBatch)
         {
+            if (Notifications.GetNotifications().Count < 1) { return; }
             Notifications.Notification last = Notifications.GetNotifications().Last();
             float fadeTime = 2000;
             float fadeAlpha = 1f;

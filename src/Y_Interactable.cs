@@ -354,7 +354,7 @@ namespace YGR
             if (InteractionComplete) { return; }
 
             // If the game is already over, no need to use this button
-            if (Y_Level.State == Y_Level.GamePlayState.End)
+            if (Y_Level.State == Y_Level.GamePlayState.EndScreen)
             {
                 state = ButtonState.In;
                 InteractionComplete = true;

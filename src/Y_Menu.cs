@@ -66,7 +66,8 @@ namespace YGR
 
         private static void ReturnToGame()
         {
-            if (Game.State != GameState.Menu)
+            if (Game.State != GameState.Menu ||
+                Y_Level.State == Y_Level.GamePlayState.GameOver)
             {
                 return;
             }
@@ -238,6 +239,25 @@ namespace YGR
             RepositionMenuItems();
 
             Game.StartNewGame();
+        }
+
+        public static void GameOver()
+        {
+            // Disable 'Continue'
+            CurrentSubmenu.Children[0].IsActive = false;
+
+            // Select statistics
+            SelectMenu(2);
+
+            // Kind of a hack to set the game state here, but we have access to it, so let's do it
+            Game.DesiredState = GameState.Menu;
+        }
+
+        public static void GameWon()
+        {
+            // Select statistics
+            SelectMenu(2);
+            Game.DesiredState = GameState.Menu;
         }
 
         private static void SelectMenu(int nextSelected)

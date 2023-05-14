@@ -4,7 +4,6 @@ using System.Diagnostics;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Content;
-using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Media;
 
 namespace YGR
@@ -40,6 +39,8 @@ namespace YGR
         public static SoundEffect Sound_OmniShotGun;
         public static SoundEffect Sound_Wush;
 
+        public static List<Song> SongsEncounter;
+
         // private static SoundEffect bogus_sound;
         public static Dictionary<IGameElement, SoundEffectInstance> playing_sound_effects;
 
@@ -47,6 +48,8 @@ namespace YGR
 
         public static void LoadContent(ContentManager contentManager)
         {
+            SongsEncounter = new List<Song>();
+
             Song_Dramatic = contentManager.Load<Song>("Sounds/song_dramatic");
             Song_Orchestra = contentManager.Load<Song>("Sounds/song_orchestra");
             Song_TheWhiteLion = contentManager.Load<Song>("Sounds/song_the-white-lion");
@@ -54,6 +57,9 @@ namespace YGR
             Song_EndingLost = contentManager.Load<Song>("Sounds/song_ending-lost");
             Song_EndingWon = contentManager.Load<Song>("Sounds/song_ending-won");
             Song_Encounter02 = contentManager.Load<Song>("Sounds/song_encounter-02");
+
+            SongsEncounter.Add(Song_Orchestra);
+            SongsEncounter.Add(Song_Encounter02);
 
             Sound_Bonus = contentManager.Load<SoundEffect>("Sounds/bonus_sound");
             Sound_Dash = contentManager.Load<SoundEffect>("Sounds/dash");
@@ -108,7 +114,7 @@ namespace YGR
                     eff.Value.Item2.Play();
                     eff.Value.Item1.Reset();
                 }
-                else if(!eff.Key())
+                else if (!eff.Key())
                 {
                     _registry.Remove(eff.Key);
                 }
@@ -132,7 +138,18 @@ namespace YGR
 
         internal static void PlayEncounterMusic()
         {
-            MediaPlayer.Play(Manager_Sound.Song_Orchestra);
+            // Play a random encounter song
+            MediaPlayer.Play(SongsEncounter[Util.random.Next(SongsEncounter.Count)]);
+        }
+
+        internal static void PlaySongEndingWin()
+        {
+            MediaPlayer.Play(Manager_Sound.Song_EndingWon);
+        }
+
+        internal static void PlaySongEndingLose()
+        {
+            MediaPlayer.Play(Manager_Sound.Song_EndingLost);
         }
 
         internal static void StopMusic()

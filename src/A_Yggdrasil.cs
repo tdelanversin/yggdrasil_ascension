@@ -384,7 +384,7 @@ namespace YGR
                     {
                         UI.DrawPlayerSelection(gameTime, _spriteBatch);
                     }
-                    else if (Y_Level.State == Y_Level.GamePlayState.End)
+                    else if (Y_Level.State == Y_Level.GamePlayState.EndScreen)
                     {
                         UI.DrawEndScreen(gameTime, _spriteBatch);
                         break;

@@ -46,7 +46,8 @@ namespace YGR
             FreeRoam, // Not in an encounter, players can freely roam
             Encounter, // Players are in an encounter, room locked
             Escaped,
-            End,
+            EndScreen,
+            GameOver,
         }
 
         public enum GameTutorialState
@@ -1200,11 +1201,12 @@ namespace YGR
                     if (encounterRoom.GetPlayersInside().FindAll(p => p.LifePoints > 0).Count < 1 && encounterRoom.PickUps.FindAll(x => x.Type == Y_PowerUps.Revive).Count < 1)
                     {
                         Notifications.New("\n\n\n\n", Color.Wheat, gameEndNotificationLength);
-                        Notifications.New("Fighting to the bitter end, our heroes couldn't prove", Color.Wheat, gameEndNotificationLength, Fonts.Large);
-                        Notifications.New("themselves worthy of fighting alongside the gods...", Color.Wheat, gameEndNotificationLength, Fonts.Large);
-                        Manager_Sound.PlayFreeRoamMusic();
+                        Notifications.New("Humans. You have tried to prove yourself to be worthy in a fight. But alas, there was a greater evil that slayed you.", Color.Wheat, gameEndNotificationLength, Fonts.Large);
+                        Notifications.New("Will you train, every day, to earn that honor? Will you commit to fighting and failing, until victory is the only outcome?", Color.Wheat, gameEndNotificationLength, Fonts.Large);
+                        Notifications.New("If so, we will eagerly watch your every try, and one day, invite you to fight with us, at the great battle of Ragnarok.", Color.Wheat, gameEndNotificationLength, Fonts.Large);
+                        Manager_Sound.PlaySongEndingLose();
                         EndState = GameEndState.Lost;
-                        State = GamePlayState.End;
+                        State = GamePlayState.EndScreen;
                         break;
                     }
 
@@ -1232,13 +1234,13 @@ namespace YGR
                     if (encounterRoom.Category == "Gold")
                     {
                         Notifications.New("\n\n\n\n", Color.Wheat, gameEndNotificationLength);
-                        Notifications.New("Overcoming the final challenge, glory awaits our heroes", Color.Wheat, gameEndNotificationLength, Fonts.Large);
-                        Notifications.New("when they fight alongside the gods in Ragnarok...", Color.Wheat, gameEndNotificationLength, Fonts.Large);
-                        Manager_Sound.PlayFreeRoamMusic();
+                        Notifications.New("Our heroes. You have managed to climb Yggdrasil and prove yourselves. We applaud you for that.", Color.Wheat, gameEndNotificationLength, Fonts.Large);
+                        Notifications.New("Now, it will be our honor, to have you fight along side of us in the upcoming battle of Ragnarok. Are you ready?", Color.Wheat, gameEndNotificationLength, Fonts.Large);
+                        Manager_Sound.PlaySongEndingWin();
                         encounterRoom.OpenAllUnlockedRoomDoors();
                         Camera.SetFocusPlayers();
                         EndState = GameEndState.Won;
-                        State = GamePlayState.End; // no end screen for now
+                        State = GamePlayState.EndScreen; // no end screen for now
                     }
                     else
                     {
@@ -1256,14 +1258,28 @@ namespace YGR
                     Manager_Sound.PlayFreeRoamMusic();
                     State = GamePlayState.FreeRoam;
                     break;
-                case GamePlayState.End:
-                    // Once the ending notification is gone, set the state to freeroam
+                case GamePlayState.EndScreen:
+                    // Wait for the ending screen and notifications to fade out
                     if (Notifications.GetNotifications().Count < 1)
                     {
-                        State = Y_Level.GamePlayState.FreeRoam;
+                        // If the players won, then they can continue playing
+                        if (EndState == GameEndState.Won)
+                        {
+                            State = GamePlayState.FreeRoam;
+                            Menu.GameWon();
+                            Manager_Sound.PlayMainMenuMusic();
+                        }
+                        else
+                        {
+                            State = GamePlayState.GameOver;
+                            Menu.GameOver();
+                            Manager_Sound.PlayMainMenuMusic();
+                        }
                     }
                     break;
-
+                case GamePlayState.GameOver:
+                    // Needs to be handled in the main game class
+                    break;
                 default:
                     break;
             }

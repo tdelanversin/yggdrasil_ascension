@@ -46,30 +46,6 @@
 /processorParam:TextureFormat=Color
 /build:Images/defeat.png
 
-#begin Images/defeat.png
-/importer:TextureImporter
-/processor:TextureProcessor
-/processorParam:ColorKeyColor=255,0,255,255
-/processorParam:ColorKeyEnabled=True
-/processorParam:GenerateMipmaps=False
-/processorParam:PremultiplyAlpha=True
-/processorParam:ResizeToPowerOfTwo=False
-/processorParam:MakeSquare=False
-/processorParam:TextureFormat=Color
-/build:Images/defeat.png
-
-#begin Images/victory.png
-/importer:TextureImporter
-/processor:TextureProcessor
-/processorParam:ColorKeyColor=255,0,255,255
-/processorParam:ColorKeyEnabled=True
-/processorParam:GenerateMipmaps=False
-/processorParam:PremultiplyAlpha=True
-/processorParam:ResizeToPowerOfTwo=False
-/processorParam:MakeSquare=False
-/processorParam:TextureFormat=Color
-/build:Images/victory.png
-
 #begin Images/victory.png
 /importer:TextureImporter
 /processor:TextureProcessor
@@ -207,6 +183,24 @@
 /processor:SongProcessor
 /processorParam:Quality=Best
 /build:Sounds/song_dramatic.mp3
+
+#begin Sounds/song_encounter-02.mp3
+/importer:Mp3Importer
+/processor:SongProcessor
+/processorParam:Quality=Best
+/build:Sounds/song_encounter-02.mp3
+
+#begin Sounds/song_ending-lost.mp3
+/importer:Mp3Importer
+/processor:SongProcessor
+/processorParam:Quality=Best
+/build:Sounds/song_ending-lost.mp3
+
+#begin Sounds/song_ending-won.mp3
+/importer:Mp3Importer
+/processor:SongProcessor
+/processorParam:Quality=Best
+/build:Sounds/song_ending-won.mp3
 
 #begin Sounds/song_orchestra.mp3
 /importer:Mp3Importer
