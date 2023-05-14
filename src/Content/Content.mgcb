@@ -46,6 +46,12 @@
 /processorParam:Quality=Best
 /build:Sounds/better_fireball.wav
 
+#begin Sounds/blaster.wav
+/importer:WavImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:Sounds/blaster.wav
+
 #begin Sounds/bonus_sound.wav
 /importer:WavImporter
 /processor:SoundEffectProcessor
@@ -112,6 +118,18 @@
 /processorParam:Quality=Best
 /build:Sounds/menu-select.wav
 
+#begin Sounds/omni_shotgun.wav
+/importer:WavImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:Sounds/omni_shotgun.wav
+
+#begin Sounds/plasmapistol.wav
+/importer:WavImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:Sounds/plasmapistol.wav
+
 #begin Sounds/platform_activate.wav
 /importer:WavImporter
 /processor:SoundEffectProcessor
@@ -171,6 +189,12 @@
 /processor:SoundEffectProcessor
 /processorParam:Quality=Best
 /build:Sounds/viking_horn.wav
+
+#begin Sounds/wush.wav
+/importer:WavImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:Sounds/wush.wav
 
 #begin SpritesCharacters/charaset.png
 /importer:TextureImporter

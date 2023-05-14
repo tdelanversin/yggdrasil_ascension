@@ -209,6 +209,8 @@ namespace YGR
 
             NextShotCooldown = ShotDelay;
 
+            Manager_Sound.Sound_Blaster.Play(0.15f, 0, 0);
+
             Manager_Projectile.AddProjectile_Helix(origin, direction, level, who, phase: 0.0f);
             Manager_Projectile.AddProjectile_Helix(origin, direction, level, who, phase: 0.5f);
             return true;
@@ -247,6 +249,7 @@ namespace YGR
 
             NextShotCooldown = ShotDelay;
 
+            Manager_Sound.Sound_PlasmaPistol.Play(0.85f, 0, 0);
 
             double spread = -(ShotCount - 1) / 2 * ShotSpread;
             for (int i = 0; i < ShotCount; i++)
@@ -284,7 +287,7 @@ namespace YGR
             if (NextShotCooldown > 0.0f)
                 return true;
 
-            Manager_Sound.Sound_Shotgun.Play(0.3f, 0, 0);
+            Manager_Sound.Sound_OmniShotGun.Play(0.7f, 0, 0);
 
             NextShotCooldown = ShotDelay;
 
