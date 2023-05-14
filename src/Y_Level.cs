@@ -892,13 +892,43 @@ namespace YGR
 
                         // give each player two power ups somewhere inside a big fat spiky slime
                         var pws = new List<Y_PowerUps>();
+                        
                         foreach (var p in Manager_Players.Players)
                         {
-                            if (p is Player_Mailman) pws.AddRange(new List<Y_PowerUps> { Y_PowerUps.LevelUpMailman, Y_PowerUps.LevelUpMailman });
-                            else if (p is Player_NerdyGirl) pws.AddRange(new List<Y_PowerUps> { Y_PowerUps.LevelUpNerd, Y_PowerUps.LevelUpNerd });
-                            else if (p is Player_Ninja) pws.AddRange(new List<Y_PowerUps> { Y_PowerUps.LevelUpNinja, Y_PowerUps.LevelUpNinja });
-                            else if (p is Player_Professor) pws.AddRange(new List<Y_PowerUps> { Y_PowerUps.LevelUpProfessor, Y_PowerUps.LevelUpProfessor });
+                            if (p is Player_Mailman) pws.Add(Y_PowerUps.LevelUpMailman);
+                            else if (p is Player_NerdyGirl) pws.Add(Y_PowerUps.LevelUpNerd);
+                            else if (p is Player_Ninja) pws.Add(Y_PowerUps.LevelUpNinja);
+                            else if (p is Player_Professor) pws.Add(Y_PowerUps.LevelUpProfessor);
                         }
+
+                        if (Manager_Players.Players.Count <= 2)
+                        {
+                            foreach (var p in Manager_Players.Players)
+                            {
+                                if (p is Player_Mailman) pws.Add(Y_PowerUps.LevelUpMailman);
+                                else if (p is Player_NerdyGirl) pws.Add(Y_PowerUps.LevelUpNerd);
+                                else if (p is Player_Ninja) pws.Add(Y_PowerUps.LevelUpNinja);
+                                else if (p is Player_Professor) pws.Add(Y_PowerUps.LevelUpProfessor);
+                            }
+                        }
+                        else
+                        {
+                            var tmppws = new List<Y_PowerUps>();
+                            foreach (var p in Manager_Players.Players)
+                            {
+                                if (p is Player_Mailman) pws.Add(Y_PowerUps.LevelUpMailman);
+                                else if (p is Player_NerdyGirl) pws.Add(Y_PowerUps.LevelUpNerd);
+                                else if (p is Player_Ninja) pws.Add(Y_PowerUps.LevelUpNinja);
+                                else if (p is Player_Professor) pws.Add(Y_PowerUps.LevelUpProfessor);
+                            }
+                            // randomly select .5 * the number of players powerups
+                            var randtmppws = pws.OrderBy(x => Util.random.Next()).ToArray();
+                            for (int i = 0; i < randtmppws.Count() / 2; i++)
+                            {
+                                tmppws.Add(randtmppws[i]);
+                            }
+                        }
+
 
                         // make sure these are somewhere to be found, because, let's face it, it's the pinky hammer :-D
                         pws.Add(Y_PowerUps.WeaponPinkHammer);
