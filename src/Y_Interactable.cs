@@ -276,10 +276,14 @@ namespace YGR
         {
             Out,
             Half,
-            In,
+            In
         }
 
         ButtonState state = ButtonState.Out;
+
+        private int _countDown = 1000;
+        private int _secsToEscape = 3;
+        private int _countDownCounter;
 
         public Interactable_BossRoomEscaper(
             Rectangle bounds,
@@ -288,6 +292,7 @@ namespace YGR
         {
             Color = Color.Green;
             Label = "Get out";
+            _countDownCounter = _secsToEscape;
         }
 
         public void TriggerInteraction(GameTime gameTime)
@@ -359,7 +364,24 @@ namespace YGR
             foreach (var p in activePlayers)
             {
                 if (Rect.Contains(p.Rect.Center + new Point(0, p.Rect.Height / 2)))
-                    tryTrigger = true;
+                {
+                    if(_countDownCounter == 0)
+                    {
+                        tryTrigger = true;
+                    }
+                    else
+                    {
+                        Notifications.Clear();
+                        Notifications.New("\n\n\n\n", Color.Wheat, 2000);
+                        Notifications.New("Escape in: " + _countDownCounter.ToString(), Color.Wheat, 2000, Fonts.Large);
+                        _countDown -= gameTime.ElapsedGameTime.Milliseconds;
+                        if(_countDown <= 0)
+                        {
+                            _countDown = 1000;
+                            _countDownCounter--;
+                        }
+                    }
+                }
                 else
                     ready = false;
 
@@ -386,6 +408,11 @@ namespace YGR
             {
                 state = ButtonState.Out;
                 Color = Color.Wheat;
+                if (!ready)
+                {
+                    _countDown = 1000;
+                    _countDownCounter = _secsToEscape;
+                }
             }
             if (state != statePrev)
             {
