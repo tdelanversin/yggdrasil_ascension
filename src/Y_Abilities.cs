@@ -35,11 +35,8 @@ namespace YGR
 
             NextShotCooldown = ShotDelay;
 
-            var duration = 0;
-            if (who.ElementLevel == 1) duration = 3000;
-            else if (who.ElementLevel == 2) duration = 5000;
-            else duration = 8000;
-            Manager_Projectile.AddProjectile_Confusion(origin, direction, duration, level, who);
+            // decide on the duration of the confusion in the Hit() method of the respective enemy!!!
+            Manager_Projectile.AddProjectile_Confusion(origin, direction, 0, level, who);
             return true;
         }
 
