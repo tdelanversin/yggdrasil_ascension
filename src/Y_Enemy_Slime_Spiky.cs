@@ -68,6 +68,11 @@ namespace YGR
             if(_carriedPowerUp == Y_PowerUps.LevelUpProfessor)
             {
                 _carriedPowerUpSprite = Manager_Sprites.NewAnimatedSprite_LevelUp_LightFlash_NoShade();
+                _carriedImage = Manager_Sprites.NewAnimatedSprite_Professor();
+            }
+            else if (_carriedPowerUp == Y_PowerUps.LevelUpNinja)
+            {
+                _carriedPowerUpSprite = Manager_Sprites.NewAnimatedSprite_LevelUp_LightFlash_NoShade();
                 _carriedImage = Manager_Sprites.NewAnimatedSprite_Ninja();
             }
             else if (_carriedPowerUp == Y_PowerUps.LevelUpNerd)

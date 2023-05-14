@@ -393,7 +393,7 @@ namespace YGR
                           !(x.Category == "Gold"))
                 .ToList();
 
-            var selected = spikeRooms.OrderBy(x => Util.random.Next()).Take(8);
+            var selected = spikeRooms.OrderBy(x => Util.random.Next()).Take(9);
             foreach (var sel in selected)
             {
                 ((Y_CMRoom)sel).HasSpikeEnemy = true;
@@ -896,7 +896,8 @@ namespace YGR
                         {
                             if (p is Player_Mailman) pws.AddRange(new List<Y_PowerUps> { Y_PowerUps.LevelUpMailman, Y_PowerUps.LevelUpMailman });
                             else if (p is Player_NerdyGirl) pws.AddRange(new List<Y_PowerUps> { Y_PowerUps.LevelUpNerd, Y_PowerUps.LevelUpNerd });
-                            else if (p is Player_Ninja) pws.AddRange(new List<Y_PowerUps> { Y_PowerUps.LevelUpProfessor, Y_PowerUps.LevelUpProfessor });
+                            else if (p is Player_Ninja) pws.AddRange(new List<Y_PowerUps> { Y_PowerUps.LevelUpNinja, Y_PowerUps.LevelUpNinja });
+                            else if (p is Player_Professor) pws.AddRange(new List<Y_PowerUps> { Y_PowerUps.LevelUpProfessor, Y_PowerUps.LevelUpProfessor });
                         }
 
                         // make sure these are somewhere to be found, because, let's face it, it's the pinky hammer :-D
