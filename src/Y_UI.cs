@@ -80,7 +80,7 @@ namespace YGR
                 // infoString += string.Format("\n Weapon: {0}", p.Gun.Name);
                 infoString += string.Format("\n Class:");
                 infoString += string.Format("\n Weapon:");
-                infoString += string.Format("\n Kills: {0:0}", p.Stats.Kills);
+                infoString += string.Format("\n Level: {0:0}", p.ElementLevel);
 
                 Vector2 indexStringSize = font.MeasureString(indexString);
                 Color playerColor = Color.Lerp(p.Color, Color.Wheat, 0.5f);
