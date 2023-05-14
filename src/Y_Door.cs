@@ -97,6 +97,7 @@ namespace YGR
         private static Texture2D _fenceH;
         private static Texture2D _fenceV;
         public static int DoorMoovingCounter = 0;
+        bool _ablsoluteGlobalVisibility = true;
 
         public static void Initialize(ContentManager content)
         {
@@ -1034,6 +1035,11 @@ namespace YGR
             return State == X_DoorState.Open || State == X_DoorState.LockedOpen;
         }
 
+        public void SetVisible(bool yes)
+        {
+            _ablsoluteGlobalVisibility = yes;
+        }
+
         public bool IsDoorClosed()
         {
             return 
@@ -1346,6 +1352,8 @@ namespace YGR
 
         public void Draw(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)
         {
+            if (!_ablsoluteGlobalVisibility) return;
+
             Vector2 position = Rect.Location.ToVector2();
             Vector2 movePosition = position;
             movePosition.Y += _currentDoorOpenOffset;

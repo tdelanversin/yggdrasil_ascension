@@ -1009,12 +1009,12 @@ namespace YGR
                         break; // let players fight
                     }
 
-                    if (_waitTimeBetweenEndOfFightAndLowerDoorsCounter < _waitTimeBetweenEndOfFightAndLowerDoors)
-                    {
-                        _waitTimeBetweenEndOfFightAndLowerDoorsCounter++;
-                        break;
-                    }
-                    _waitTimeBetweenEndOfFightAndLowerDoorsCounter = 0;
+                    //if (_waitTimeBetweenEndOfFightAndLowerDoorsCounter < _waitTimeBetweenEndOfFightAndLowerDoors)
+                    //{
+                    //    _waitTimeBetweenEndOfFightAndLowerDoorsCounter++;
+                    //    break;
+                    //}
+                    //_waitTimeBetweenEndOfFightAndLowerDoorsCounter = 0;
 
                     encounterRoom.Cleared = true;
                     encounterRoom.OpenAllUnlockedRoomDoors();
