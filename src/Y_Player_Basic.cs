@@ -32,7 +32,7 @@ namespace YGR
         public Y_Level Level { get; set; }
         public IWalkable Room { get; set; }
         public string Name { get; set; }
-        public int ElementLevel { get { return 1; } set { } }
+        public int ElementLevel { get; set; }
         public bool Confused { get; set; }
 
         // IPLayer fields
@@ -100,6 +100,7 @@ namespace YGR
             Level = level;
             PlayerIndex = playerIndex;
             Position = initialPosition;
+            ElementLevel = 1;
 
             // Set Name
             Name = "Basic Dude";
@@ -188,6 +189,18 @@ namespace YGR
             Stats = new Statistics();
 
             Room = Level.GetRoom(this, Room);
+        }
+
+        public virtual bool LevelUp()
+        {
+            if (ElementLevel == 3) return false;
+
+            ElementLevel = ElementLevel + 1;
+
+            LifePointsMax += 15;
+            LifePoints += 15;
+
+            return true;
         }
 
         public virtual void TeleportTo(Point target)

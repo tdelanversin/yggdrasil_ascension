@@ -19,7 +19,7 @@ namespace YGR
         public IGameElement WhoFiredMe { get; set; }
         public float Damage { get; set; }
         public Color Color { get; set; }
-        public int ElementLevel { get { return 1; } set { } }
+        public int ElementLevel { get; set; }
 
 
         public float LocalScale { get; }
@@ -103,6 +103,12 @@ namespace YGR
                 var p = (IPlayer)WhoFiredMe;
                 p.Stats.ProjectilesFired++;
             }
+        }
+
+        public virtual float LeveledDamage()
+        {
+            // double the damage on level 3 compared to level 1
+            return this.Damage + (WhoFiredMe.ElementLevel - 1) * this.Damage / 2.0f;
         }
 
         public virtual void UpdateCollisionAndVelocity(GameTime gameTime)

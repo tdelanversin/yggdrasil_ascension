@@ -18,7 +18,7 @@ namespace YGR
         public Texture2D Sprite { get; protected set; }
 
         protected double NextShotCooldown = 0.0f;
-        protected int ShotDelay = 240;
+        protected int ShotDelay = 5000;
 
         public Ability_Confusion()
         {
@@ -35,11 +35,8 @@ namespace YGR
 
             NextShotCooldown = ShotDelay;
 
-            var duration = 0;
-            if (who.ElementLevel == 1) duration = 3000;
-            else if (who.ElementLevel == 2) duration = 5000;
-            else duration = 8000;
-            Manager_Projectile.AddProjectile_Confusion(origin, direction, duration, level, who);
+            // decide on the duration of the confusion in the Hit() method of the respective enemy!!!
+            Manager_Projectile.AddProjectile_Confusion(origin, direction, 0, level, who);
             return true;
         }
 
@@ -257,7 +254,9 @@ namespace YGR
 
         public void Hit(float damage)
         {
-            _strength -= damage;
+            // make damage less if the owner has higher level
+            var realDamage = damage / Owner.ElementLevel;
+            _strength -= realDamage;
             if (_strength <= 0)
             {
                 _reloading = true;

@@ -16,7 +16,7 @@ namespace YGR
 
         public Rectangle Rect { get; set; }
 
-        public int ElementLevel { get { return 1; } set { } }
+        public int ElementLevel { get; set; }
 
         AnimatedSprite _sprite;
         int _durationMS;

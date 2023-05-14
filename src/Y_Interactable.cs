@@ -14,7 +14,7 @@ namespace YGR
     {
         // IGameElement fields
         public Rectangle Rect { get; set; }
-        public int ElementLevel { get { return 1; } set { } }
+        public int ElementLevel { get; set; }
 
         // private fields
         public Y_CMRoom Room;

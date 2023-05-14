@@ -54,7 +54,7 @@ namespace YGR
         public Color Color;
 
         public Func<IPlayer, PickUp, bool> Action { get; }
-        public int ElementLevel { get { return 1; } set { } }
+        public int ElementLevel { get; set; }
 
         private AnimatedSprite _sprite;
         private AnimatedSprite _carriedSprite;
@@ -293,12 +293,11 @@ namespace YGR
                                 return false;
                             if (!(player is Player_NerdyGirl))
                                 return false;
-                            if (player.ElementLevel > 3)
+                            if (!player.LevelUp())
                                 return false;
 
                             player.Room.PickUps.Remove(self);
                             Manager_Sound.Sound_CashIn.Play();
-                            player.ElementLevel = player.ElementLevel + 1;
                             return true;
                         });
                 case Y_PowerUps.LevelUpMailman:
@@ -313,12 +312,11 @@ namespace YGR
                                 return false;
                             if (!(player is Player_Mailman))
                                 return false;
-                            if (player.ElementLevel > 3)
+                            if (!player.LevelUp())
                                 return false;
 
                             player.Room.PickUps.Remove(self);
                             Manager_Sound.Sound_CashIn.Play();
-                            player.ElementLevel = player.ElementLevel + 1;
                             return true;
                         });
                 case Y_PowerUps.LevelUpProfessor:
@@ -333,12 +331,11 @@ namespace YGR
                                 return false;
                             if (!(player is Player_Ninja))
                                 return false;
-                            if (player.ElementLevel > 3)
+                            if (!player.LevelUp())
                                 return false;
 
                             player.Room.PickUps.Remove(self);
                             Manager_Sound.Sound_CashIn.Play();
-                            player.ElementLevel = player.ElementLevel + 1;
                             return true;
                         });
                 case Y_PowerUps.Gravestone:

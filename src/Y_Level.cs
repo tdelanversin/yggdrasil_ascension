@@ -73,7 +73,7 @@ namespace YGR
         public int TileHeight { get; }
         public IList<IVictim> Victims { get; }
         public Color OutsideColor { get; set; }
-        public int ElementLevel { get { return 1; } set { } }
+        public int ElementLevel { get; set; }
 
         private string _name;
         private string _levelResourceFolder;
