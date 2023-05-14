@@ -590,9 +590,9 @@ namespace YGR
             }
         }
 
-        public void ShowTutorialSkipText(int duration)
+        public void ShowTutorialControls(int duration)
         {
-            Notifications.New("Press A/X/Spacebar to continue, press Start/Esc to skip the tutorial", Color.Wheat, duration, Fonts.Small);
+            Notifications.New("Press any button to continue through the tutorial, [Start] / [Esc] to skip and start playing", Color.Wheat, duration, Fonts.Small);
         }
 
         public void UpdateTutorial(GameTime gameTime)
@@ -619,7 +619,7 @@ namespace YGR
                     if (TutorialStageDurationCounterMS == 0)
                     {
                         int duration = MaxTutorialStageDurationMS;
-                        ShowTutorialSkipText(duration);
+                        ShowTutorialControls(duration);
                         Notifications.New("\n\n\n\n", colorLightRoom, duration);
                         Notifications.New("Welcome, dear Mortals, ", colorLightRoom, duration, Fonts.Large);
                         Notifications.New("You have accepted the challenge of the Gods", colorLightRoom, duration, Fonts.Large);
@@ -632,7 +632,7 @@ namespace YGR
                         Camera.SetFocusManual(_startRoom.Rect.Center.ToVector2() + new Vector2(0, Rooms[0].Rect.Height * 0.25f), 1.0f);
 
                         int duration = MaxTutorialStageDurationMS;
-                        ShowTutorialSkipText(duration);
+                        ShowTutorialControls(duration);
                         Notifications.New("\n\n\n\n", colorLightRoom, duration);
                         Notifications.New("You can choose between 4 distinct Characters.", colorLightRoom, duration, Fonts.Large);
                         Notifications.New("All Characters have one Gun and an Ability.", colorLightRoom, duration, Fonts.Large);
@@ -644,7 +644,7 @@ namespace YGR
                         Camera.SetFocusManual(Tutorial_PlayerSlot_Ninja, zoomCharacter);
 
                         int duration = MaxTutorialStageDurationMS;
-                        ShowTutorialSkipText(duration);
+                        ShowTutorialControls(duration);
                         Notifications.New("\n\n\n\n", colorLightRoom, duration);
                         Notifications.New("This is Ninja", colorLightRoom, duration, Fonts.Large);
                     }
@@ -655,7 +655,7 @@ namespace YGR
                         Camera.SetFocusManual(Tutorial_PlayerSlot_Nerd, zoomCharacter);
 
                         int duration = MaxTutorialStageDurationMS;
-                        ShowTutorialSkipText(duration);
+                        ShowTutorialControls(duration);
                         Notifications.New("\n\n\n\n", colorLightRoom, duration);
                         Notifications.New("This is the Nerd,", colorLightRoom, duration, Fonts.Large);
                         Notifications.New("if she hits a confused target she does much more damage.", colorLightRoom, duration, Fonts.Large);
@@ -667,7 +667,7 @@ namespace YGR
                         Camera.SetFocusManual(Tutorial_PlayerSlot_Mailman, zoomCharacter);
 
                         int duration = MaxTutorialStageDurationMS;
-                        ShowTutorialSkipText(duration);
+                        ShowTutorialControls(duration);
                         Notifications.New("\n\n\n\n", colorLightRoom, duration);
                         Notifications.New("This is the Mailman,", colorLightRoom, duration, Fonts.Large);
                         Notifications.New("he can activate a shield and protect himself and others", colorLightRoom, duration, Fonts.Large);
@@ -680,7 +680,7 @@ namespace YGR
                         Camera.SetFocusManual(Tutorial_PlayerSlot_Professor, zoomCharacter);
 
                         int duration = MaxTutorialStageDurationMS;
-                        ShowTutorialSkipText(duration);
+                        ShowTutorialControls(duration);
                         Notifications.New("\n\n\n\n", colorLightRoom, duration);
                         Notifications.New("This is the Professor,", colorLightRoom, duration, Fonts.Large);
                         Notifications.New("he can confuse enemies for a while.", colorLightRoom, duration, Fonts.Large);
@@ -692,7 +692,7 @@ namespace YGR
                         Camera.SetFocusManual(Tutorial_GhostSlot, zoomCharacter);
 
                         int duration = MaxTutorialStageDurationMS;
-                        ShowTutorialSkipText(duration);
+                        ShowTutorialControls(duration);
                         Notifications.New("\n\n\n\n", colorLightRoom, duration);
                         Notifications.New("Initially, every potential player is assigned a Ghost.", colorLightRoom, duration, Fonts.Large);
                         Notifications.New("Move your Ghost into a Character", colorLightRoom, duration, Fonts.Large);
@@ -709,7 +709,7 @@ namespace YGR
                         Camera.SetFocusManual(avgPos, zoomPowerUps);
 
                         int duration = MaxTutorialStageDurationMS;
-                        ShowTutorialSkipText(duration);
+                        ShowTutorialControls(duration);
                         Notifications.New("\n\n\n\n", colorLightRoom, duration);
                         Notifications.New("If you are low on life, you can try to find a Heart.", colorLightRoom, duration, Fonts.Large);
                         Notifications.New("Only alive players can pick up Hearts!", colorLightRoom, duration, Fonts.Large);
@@ -724,7 +724,7 @@ namespace YGR
                         Camera.SetFocusManual(_goldRoom.Rect.Center.ToVector2(), zoomBigBoss, animate: false);
 
                         int duration = MaxTutorialStageDurationMS;
-                        ShowTutorialSkipText(duration);
+                        ShowTutorialControls(duration);
                         Notifications.New("\n\n\n\n", colorGoldRoom, duration);
                         Notifications.New("Your Mission is to get to the top of Yggdrasil where you will find", colorGoldRoom, duration, Fonts.Large);
                         Notifications.New("the Final Boss.", colorGoldRoom, duration, Fonts.Large);
@@ -735,7 +735,6 @@ namespace YGR
                 case GameTutorialState.IntroduceSampleRoomWSpikySlime:
                     if (TutorialStageDurationCounterMS == 0)
                     {
-                        ((Y_CMRoom)_goldRoom).SetVisible(false);
                         ((Y_CMRoom)Tutorial_SpikyRoom).SetVisible(true);
 
                         foreach (var enemy in ((Y_CMRoom)Tutorial_SpikyRoom).GetEnemiesInside())
@@ -744,7 +743,7 @@ namespace YGR
                         Camera.SetFocusRoom(Tutorial_SpikyRoom, animate: false);
 
                         int duration = MaxTutorialStageDurationMS;
-                        ShowTutorialSkipText(duration);
+                        ShowTutorialControls(duration);
                         Notifications.New("\n\n\n\n", colorLeafRoom, duration);
                         Notifications.New("On your way you will fight trough various encounters.", colorLeafRoom, duration, Fonts.Large);
                         Notifications.New("An Encounter starts when all alive players are inside the same room!", colorLeafRoom, duration, Fonts.Large);
@@ -756,7 +755,7 @@ namespace YGR
                         Camera.SetFocusManual(Tutorial_Spiky.Rect.Center.ToVector2(), zoomCharacter);
 
                         int duration = MaxTutorialStageDurationMS;
-                        ShowTutorialSkipText(duration);
+                        ShowTutorialControls(duration);
                         Notifications.New("\n\n\n\n", colorLeafRoom, duration);
                         Notifications.New("Some enemies contain Level-Ups or better weapons ", colorLeafRoom, duration, Fonts.Large);
                         Notifications.New("or may just drop a Heart when they die!", colorLeafRoom, duration, Fonts.Large);
@@ -765,18 +764,24 @@ namespace YGR
                 case GameTutorialState.IntroduceStartButton:
                     if (TutorialStageDurationCounterMS == 0)
                     {
-                        ((Y_CMRoom)Tutorial_SpikyRoom).SetVisible(false);
-                        ((Y_CMRoom)Tutorial_SpikyRoom).InGameReset();
                         Camera.SetFocusRoom(_startRoom, animate: false);
 
                         int duration = MaxTutorialStageDurationMS;
-                        ShowTutorialSkipText(duration);
+                        ShowTutorialControls(duration);
                         Notifications.New("\n\n\n\n", colorLeafRoom, duration);
-                        Notifications.New("When you are ready, you should all stand", colorLeafRoom, duration, Fonts.Large);
-                        Notifications.New("on the big button to begin the challenge!", colorLeafRoom, duration, Fonts.Large);
+                        Notifications.New("When you are ready, all stand on the", colorLeafRoom, duration, Fonts.Large);
+                        Notifications.New("big button to begin the challenge!", colorLeafRoom, duration, Fonts.Large);
                     }
                     break;
                 case GameTutorialState.EndTutorial:
+                    /* Reset things here because we might be sent here directly
+                        from the main game if tutorial is skipped */
+                    Camera.SetFocusRoom(_startRoom, animate: false);
+                    /* Reset camera and all the rooms used during the tutorial */
+                    ((Y_CMRoom)_goldRoom).SetVisible(false);
+                    ((Y_CMRoom)Tutorial_SpikyRoom).SetVisible(false);
+                    ((Y_CMRoom)Tutorial_SpikyRoom).InGameReset();
+                    Notifications.Clear();
                     /* Start the real game loop */
                     State = GamePlayState.Start;
                     break;
