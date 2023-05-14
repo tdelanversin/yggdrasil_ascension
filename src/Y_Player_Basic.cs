@@ -584,6 +584,12 @@ namespace YGR
             if (IsAlive()) { CharacterSprite.Update(gameTime, input); }
             else { GhostSprite.Update(gameTime, input); }
 
+            if (Y_Level.State == Y_Level.GamePlayState.Tutorial)
+            {
+                /* During the tutorial we don't want the players to do anything yet */
+                return;
+            }
+
             UpdateVelocity(input, gameTime);
             UpdateDash(gameTime);
             UpdateCollision(gameTime);
