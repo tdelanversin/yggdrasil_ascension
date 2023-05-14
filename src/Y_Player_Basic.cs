@@ -633,7 +633,10 @@ namespace YGR
 
             UpdateColor(gameTime);
             Gun.Update(gameTime);
-            Ability.Update(gameTime);
+            if(Ability != null)
+            {
+                Ability.Update(gameTime);
+            }
         }
 
         // Render ghosty 👻
@@ -729,7 +732,10 @@ namespace YGR
                 DrawCharacterSprite(gameTime, globalOffset, spriteBatch);
                 DrawAimIndicator(gameTime, globalOffset, spriteBatch);
                 DrawHealthbar(gameTime, globalOffset, spriteBatch);
-                Ability.Draw(gameTime, globalOffset, spriteBatch);
+                if(Ability != null)
+                {
+                    Ability.Draw(gameTime, globalOffset, spriteBatch);
+                }
                 // DrawOverheadString(gameTime, globalOffset, spriteBatch);
             }
             else

@@ -45,7 +45,10 @@ namespace YGR
         {
             Factory_Debug.DrawRectangle(_rect.X, _rect.Y, _rect.Width, _rect.Height, 1, Color.OrangeRed, spriteBatch);
             Collision.DrawOutline(gameTime, globalOffset, spriteBatch);
-            ((Ability_Shield)Ability).DrawOutline(gameTime, globalOffset, spriteBatch);
+            if(Ability != null)
+            {
+                ((Ability_Shield)Ability).DrawOutline(gameTime, globalOffset, spriteBatch);
+            }
         }
     }
 }

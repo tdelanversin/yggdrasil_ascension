@@ -67,7 +67,7 @@ namespace YGR
                     if (victim.Room != me.Room) continue;
 
                     // first check all the shields
-                    if (victim.Ability is Ability_Shield)
+                    if (victim.Ability != null && victim.Ability is Ability_Shield)
                     {
                         var shield = (Ability_Shield)victim.Ability;
                         if (shield.HitByProjectile(me, timeStepMS))
