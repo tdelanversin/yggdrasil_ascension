@@ -25,7 +25,7 @@ namespace YGR
         Vector2 _savedTargetDirection = new Vector2(1, 0);
         bool _alreadyShot = false;
 
-        Color bossColor;
+        public Color bossColor;
 
 
 

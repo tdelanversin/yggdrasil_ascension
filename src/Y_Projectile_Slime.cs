@@ -33,9 +33,13 @@ namespace YGR
             {
                 Color = ((Enemy_Slime)who).Color;
             }
+            else if (who is Enemy_Slime_Spiky)
+            {
+                Color = ((Enemy_Slime_Spiky)who).Color;
+            }
             else if (who is Enemy_Boss)
             {
-                Color = ((Enemy_Boss)who).Color;
+                Color = ((Enemy_Boss)who).bossColor;
             }
         }
 
