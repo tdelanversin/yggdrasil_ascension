@@ -77,22 +77,28 @@ namespace YGR
         float _scale;
         float _angle;
         bool _triggered;
-        float _strength;
-        float _maxStrength;
-        bool _reloading;
-        int _reloadingTimeMS;
-        int _reloadingTimeCounter;
+
+        //bool _reloading;
+        int _maxDuration;
+        int _maxReloadTime;
+        int _currentDuration = 0;
+
+        int _level_1_duration = 2000;
+        int _level_2_duration = 4000;
+        int _level_3_duration = 6000;
+
+        int _shortestWaitTimeMS = 1000;
+        int _shortestWaitTimeCounter = 0;
 
         Vector2[] _collisionModel;
         int _outerCollisionModelPrecision = 20;
         int _innerCollisionModelPrecision = 10;
         int _middleCollisionModelPrecision = 5;
 
-        int _triggerCountDown;
-        int _triggerCountDownMax;
+        bool _everySecondFrame;
 
-        Color _good;
-        Color _crap;
+        Color[] _goodLevelColors = new Color[] { Color.Orange, Color.Green, Color.Blue };
+        Color _crap = Color.Red;
 
         public Ability_Shield(Player_Basic owner)
         {
@@ -110,38 +116,25 @@ namespace YGR
             _hOffset = 16.0f * Y_Level.GlobalScale; // must be the same as h_offset from the Python script
 
             _triggered = false;
-            _reloading = false;
-            _reloadingTimeCounter = 0;
-            _reloadingTimeMS = 10000;
-
             _collisionModel = new Vector2[_outerCollisionModelPrecision + _innerCollisionModelPrecision + _middleCollisionModelPrecision];
-             
-            _triggerCountDown = 0;
-            _triggerCountDownMax = 10;
+            _everySecondFrame = true;
+        }
 
-            _good = Color.Blue;
-            _crap = Color.Red;
-            _strength = Owner.LifePointsMax;
-            _maxStrength = _strength;
+        private void setShieldDuration()
+        {
+            if (Owner.ElementLevel == 1) _maxDuration = _level_1_duration;
+            else if (Owner.ElementLevel == 2) _maxDuration = _level_2_duration;
+            else _maxDuration = _level_3_duration;
         }
 
         public bool Trigger(GameTime gametime, Vector2 origin, Vector2 direction, Y_Level level, IGameElement who)
         {
-            if(_triggerCountDown > 0)
-            {
-                return false;
-            }
-            _triggerCountDown = _triggerCountDownMax;
-            if (!_triggered && !_reloading)
-            {
-                _triggered = true;
-                return true;
-            }
-            else
-            {
-                _triggered = false;
-                return false;
-            }
+            if (_shortestWaitTimeCounter > 0) return false;
+            if (_triggered) return false;
+            setShieldDuration();
+            _triggered = true;
+
+            return true;
         }
 
         public void Draw(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)
@@ -149,11 +142,12 @@ namespace YGR
             // Draw an indicator only if a) the player is actively aiming on the gamepad or b) is using mouse to aim
             if(_triggered)
             {
-                float p = 1.0f / _maxStrength * _strength;
+                Color good = _goodLevelColors[Math.Max(_goodLevelColors.Length - 1, Owner.ElementLevel - 1)];
+                float p = 1.0f / _level_3_duration * _currentDuration;
                 Color gradient = new Color(
-                    (byte)(_crap.R * (1.0f-p) + _good.R * p),
-                    (byte)(_crap.G * (1.0f-p) + _good.G * p),
-                    (byte)(_crap.B * (1.0f-p) + _good.B * p)
+                    (byte)(_crap.R * (1.0f-p) + good.R * p),
+                    (byte)(_crap.G * (1.0f-p) + good.G * p),
+                    (byte)(_crap.B * (1.0f-p) + good.B * p)
                 );
                 float angle = (float)(Math.Atan2(Owner.AimDirection.Y, Owner.AimDirection.X) + Math.PI / 2);
                 spriteBatch.Draw(
@@ -242,26 +236,10 @@ namespace YGR
             return false;
         }
 
-        public float Strength()
-        {
-            return _strength;
-        }
-
-        public void SetReloadingTime(int reloadingTimeMS)
-        {
-            _reloadingTimeMS = reloadingTimeMS;
-        }
-
         public void Hit(float damage)
         {
-            // make damage less if the owner has higher level
-            var realDamage = damage / Owner.ElementLevel;
-            _strength -= realDamage;
-            if (_strength <= 0)
-            {
-                _reloading = true;
-                _triggered = false;
-            }
+            // no damage to the shield is possible
+            // could register impacts for the statistics though
         }
 
         public void DrawOutline(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)
@@ -276,65 +254,88 @@ namespace YGR
 
         public void Update(GameTime gameTime)
         {
-            if (_triggerCountDown > 0) _triggerCountDown--;
+            _everySecondFrame = !_everySecondFrame;
 
-            if (_reloading)
+            // do some cooldown to prevent flickering
+            if(_shortestWaitTimeCounter > 0)
             {
-                _reloadingTimeCounter += gameTime.ElapsedGameTime.Milliseconds;
-                if(_reloadingTimeCounter >= _reloadingTimeMS)
+                // wait but reload at the same time... otherwise it's unfair
+                _shortestWaitTimeCounter -= gameTime.ElapsedGameTime.Milliseconds;
+                if (_currentDuration < _maxDuration && _everySecondFrame)
                 {
-                    _reloadingTimeCounter = 0;
-                    _strength = _maxStrength;
-                    _reloading = false;
+                    _currentDuration += gameTime.ElapsedGameTime.Milliseconds;
                 }
+                return;
             }
-            else
+            _shortestWaitTimeCounter = 0;
+
+
+            // as long as the user keeps the button pressed... if not => stop
+            if (!(Input.IsKeyDown(Keybinds.KeyboardAbility) || Input.IsButtonDown(Owner.PlayerIndex, Keybinds.GamePadAbility)) || _currentDuration <= 0)
             {
-                var p = Owner.Rect.Center;
-                float baseAngle = (float)(Math.Atan2(Owner.AimDirection.Y, Owner.AimDirection.X));
+                // If we were running the shield... set the shortest wait time to 1s
+                if (_triggered) _shortestWaitTimeCounter = _shortestWaitTimeMS;
 
-                float minAngle = (float)(-Math.PI / 2 + Math.PI / 16);
-                float maxAngle = (float)(Math.PI / 2 - Math.PI / 16);
-                float dAngle = (maxAngle - minAngle) / _outerCollisionModelPrecision;
+                // set trigger to false
+                _triggered = false;
 
-                float angle = minAngle;
-                for(int i=0; i<_outerCollisionModelPrecision; ++i)
+                // make sure we are up to speed
+                setShieldDuration();
+
+                if(_currentDuration < _maxDuration && _everySecondFrame)
                 {
-                    float xp = (float)(_b * Math.Cos(angle));
-                    float yp = (float)(_a * Math.Sin(angle));
-                    float x = (float)(xp * Math.Cos(baseAngle) - yp * Math.Sin(baseAngle) + Math.Cos(baseAngle) * _hOffset);
-                    float y = (float)(xp * Math.Sin(baseAngle) + yp * Math.Cos(baseAngle) + Math.Sin(baseAngle) * _hOffset);
-                    _collisionModel[i] = new Vector2(x + p.X, y + p.Y);
-                    angle += dAngle;
+                    _currentDuration += gameTime.ElapsedGameTime.Milliseconds;
                 }
+                return;
+            }
 
-                dAngle = (maxAngle - minAngle) / _innerCollisionModelPrecision;
-                angle = minAngle;
-                int len = _outerCollisionModelPrecision + _innerCollisionModelPrecision;
-                for(int i=_outerCollisionModelPrecision; i<len; ++i)
-                {
-                    float xp = (float)(0.5f * _b * Math.Cos(angle));
-                    float yp = (float)(0.5f * _a * Math.Sin(angle));
-                    float x = (float)(xp * Math.Cos(baseAngle) - yp * Math.Sin(baseAngle) + Math.Cos(baseAngle) * _hOffset);
-                    float y = (float)(xp * Math.Sin(baseAngle) + yp * Math.Cos(baseAngle) + Math.Sin(baseAngle) * _hOffset);
-                    _collisionModel[i] = new Vector2(x + p.X, y + p.Y);
-                    angle += dAngle;
-                }
+            _currentDuration -= gameTime.ElapsedGameTime.Milliseconds;
 
-                dAngle = (maxAngle - minAngle) / _middleCollisionModelPrecision;
-                angle = minAngle;
-                int len2 = _outerCollisionModelPrecision + _innerCollisionModelPrecision + _middleCollisionModelPrecision;
-                for (int i = len; i < len2; ++i)
-                {
-                    float xp = (float)(0.75f * _b * Math.Cos(angle));
-                    float yp = (float)(0.75f * _a * Math.Sin(angle));
-                    float x = (float)(xp * Math.Cos(baseAngle) - yp * Math.Sin(baseAngle) + Math.Cos(baseAngle) * _hOffset);
-                    float y = (float)(xp * Math.Sin(baseAngle) + yp * Math.Cos(baseAngle) + Math.Sin(baseAngle) * _hOffset);
-                    _collisionModel[i] = new Vector2(x + p.X, y + p.Y);
-                    angle += dAngle;
-                }
+            // set owner's velocity to half
+            Owner.Velocity = Owner.Velocity * 0.5f;
 
-                _sprite.Update(gameTime, AnimationState.Idle);
+            var p = Owner.Rect.Center;
+            float baseAngle = (float)(Math.Atan2(Owner.AimDirection.Y, Owner.AimDirection.X));
+
+            float minAngle = (float)(-Math.PI / 2 + Math.PI / 16);
+            float maxAngle = (float)(Math.PI / 2 - Math.PI / 16);
+            float dAngle = (maxAngle - minAngle) / _outerCollisionModelPrecision;
+
+            float angle = minAngle;
+            for(int i=0; i<_outerCollisionModelPrecision; ++i)
+            {
+                float xp = (float)(_b * Math.Cos(angle));
+                float yp = (float)(_a * Math.Sin(angle));
+                float x = (float)(xp * Math.Cos(baseAngle) - yp * Math.Sin(baseAngle) + Math.Cos(baseAngle) * _hOffset);
+                float y = (float)(xp * Math.Sin(baseAngle) + yp * Math.Cos(baseAngle) + Math.Sin(baseAngle) * _hOffset);
+                _collisionModel[i] = new Vector2(x + p.X, y + p.Y);
+                angle += dAngle;
+            }
+
+            dAngle = (maxAngle - minAngle) / _innerCollisionModelPrecision;
+            angle = minAngle;
+            int len = _outerCollisionModelPrecision + _innerCollisionModelPrecision;
+            for(int i=_outerCollisionModelPrecision; i<len; ++i)
+            {
+                float xp = (float)(0.5f * _b * Math.Cos(angle));
+                float yp = (float)(0.5f * _a * Math.Sin(angle));
+                float x = (float)(xp * Math.Cos(baseAngle) - yp * Math.Sin(baseAngle) + Math.Cos(baseAngle) * _hOffset);
+                float y = (float)(xp * Math.Sin(baseAngle) + yp * Math.Cos(baseAngle) + Math.Sin(baseAngle) * _hOffset);
+                _collisionModel[i] = new Vector2(x + p.X, y + p.Y);
+                angle += dAngle;
+            }
+
+            dAngle = (maxAngle - minAngle) / _middleCollisionModelPrecision;
+            angle = minAngle;
+            int len2 = _outerCollisionModelPrecision + _innerCollisionModelPrecision + _middleCollisionModelPrecision;
+            for (int i = len; i < len2; ++i)
+            {
+                float xp = (float)(0.75f * _b * Math.Cos(angle));
+                float yp = (float)(0.75f * _a * Math.Sin(angle));
+                float x = (float)(xp * Math.Cos(baseAngle) - yp * Math.Sin(baseAngle) + Math.Cos(baseAngle) * _hOffset);
+                float y = (float)(xp * Math.Sin(baseAngle) + yp * Math.Cos(baseAngle) + Math.Sin(baseAngle) * _hOffset);
+                _collisionModel[i] = new Vector2(x + p.X, y + p.Y);
+                angle += dAngle;
             }
         }
 

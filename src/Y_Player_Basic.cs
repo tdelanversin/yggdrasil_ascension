@@ -510,7 +510,7 @@ namespace YGR
                     bool shot = Gun.Shoot(gameTime, playerCenter, AimDirection, Level, this);
                     if (shot) { Stats.TimesFired++; }
                 }
-                if (Input.IsRightMousePressed() && IsAlive())
+                if (Input.IsKeyDown(Keybinds.KeyboardAbility) && IsAlive())
                 {
                     bool triggered = Ability.Trigger(gameTime, playerCenter, AimDirection, Level, this);
                     if (triggered) { Stats.TimesAbilitated++; }
