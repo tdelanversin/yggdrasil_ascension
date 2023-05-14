@@ -11,7 +11,7 @@ namespace YGR
         public Gravestone(
             Vector2 position,
             Y_Level level
-        ) : base(position, null, level)
+        ) : base(position, Manager_Sprites.NewAnimatedSprite_Ghost(), level)
         {
             Name = "Gravestone";
             LifePointsMax = 50;
