@@ -18,7 +18,7 @@ namespace YGR
         public Texture2D Sprite { get; protected set; }
 
         protected double NextShotCooldown = 0.0f;
-        protected int ShotDelay = 240;
+        protected int ShotDelay = 5000;
 
         public Ability_Confusion()
         {
@@ -254,7 +254,9 @@ namespace YGR
 
         public void Hit(float damage)
         {
-            _strength -= damage;
+            // make damage less if the owner has higher level
+            var realDamage = damage / Owner.ElementLevel;
+            _strength -= realDamage;
             if (_strength <= 0)
             {
                 _reloading = true;
