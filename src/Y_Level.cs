@@ -607,8 +607,8 @@ namespace YGR
 
         public void UpdateTutorial(GameTime gameTime)
         {
-            // find some random fat spiky slimy slime room to display
-            if (TutorialState == GameTutorialState.Welcome)
+            // find some random fat spiky slimy slime room to display (also do this while InGame for the Restart)
+            if (TutorialState == GameTutorialState.Welcome || TutorialState == GameTutorialState.EndTutorial)
             {
                 var spiky = Manager_Enemies.GetEnemies().Where(x => x is Enemy_Slime_Spiky).OrderBy(x => Util.random.Next()).First();
                 Tutorial_SpikyRoom = GetRoom(spiky, null);
