@@ -366,7 +366,7 @@ namespace YGR
                             return false;
                         });
                 default: // case Y_PowerUps.Revive:
-                    return new PickUp(type, location, width, height, 1.5f, 
+                    return new PickUp(Y_PowerUps.Revive, location, width, height, 1.5f, 
                         Manager_Sprites.NewAnimatedSprite_SpinningPlus(),
                         null, 
                         lastOwner,
