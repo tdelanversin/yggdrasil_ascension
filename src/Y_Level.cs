@@ -454,6 +454,12 @@ namespace YGR
                 // Make the last one controllable by keyboard
             }
 
+            // iterate trough every enemy and give them the room they are in
+            foreach(var enemy in Manager_Enemies.GetEnemies())
+            {
+                enemy.Room = GetRoom(enemy, null);
+            }
+
             _startRoom.SetVisible(true);
             Manager_Sound.PlayFreeRoamMusic();
 
@@ -813,6 +819,17 @@ namespace YGR
                     Notifications.Clear();
                     /* Start the real game loop */
                     State = GamePlayState.Start;
+
+                    // remove unwanted references
+                    Tutorial_SpikyRoom = null;
+                    Tutorial_Spiky = null;
+
+                    // make absolutely sure that every stupid enemy has it's room set
+                    foreach (var enemy in Manager_Enemies.GetEnemies())
+                    {
+                        enemy.Room = GetRoom(enemy, null);
+                    }
+
                     break;
                 default:
                     break;
