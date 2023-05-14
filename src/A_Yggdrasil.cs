@@ -22,7 +22,7 @@ namespace YGR
         public GraphicsDeviceManager _graphics;
         public SpriteBatch _spriteBatch;
         private FrameCounter _frameCounter = new FrameCounter();
-        private Background _background;
+        public static Background Background_;
 
         public static GraphicsDevice GraphicsDevice_;
 
@@ -59,7 +59,7 @@ namespace YGR
 
             GraphicsDevice_ = GraphicsDevice;
             _level = new Y_Level(level, 32, 32, "./Levels/", "./Doors", Content);
-            _background = new Background(this, _level);
+            Background_ = new Background(this, _level);
 
             base.Initialize();
         }
@@ -74,7 +74,7 @@ namespace YGR
 
             Manager_Video.Play();
 
-            _background.LoadContent();
+            Background_.LoadContent();
             _level.Preprocess(GraphicsDevice);
         }
 
@@ -123,7 +123,7 @@ namespace YGR
                 }
                 if (DesiredState == GameState.Menu)
                 {
-                    Camera.SetFocusMenu(_background.Rect, animate: true, animationDuration: 750);
+                    Camera.SetFocusMenu(Background_.Rect, animate: true, animationDuration: 750);
                 }
             }
 
@@ -221,14 +221,14 @@ namespace YGR
                     // Handled entirely in Draw()
                     break;
                 case GameState.PreGame:
-                    _background.Update(gameTime);
+                    Background_.Update(gameTime);
                     Menu.Update();
                     break;
                 case GameState.InGame:
                     //var watch = new Stopwatch();
                     //var times = new List<long>();
                     //watch.Start();
-                    _background.Update(gameTime);
+                    Background_.Update(gameTime);
                     //times.Add(watch.ElapsedMilliseconds);
                     //watch.Reset();
                     Manager_Players.Update(gameTime);
@@ -258,7 +258,7 @@ namespace YGR
                     //if (times.Any(x => x > 1)) Logger.Info("Update: " + string.Join(",\t", times.Select(x => x.ToString())));
                     break;
                 case GameState.Menu:
-                    _background.Update(gameTime);
+                    Background_.Update(gameTime);
                     Menu.Update();
                     break;
             }
@@ -282,8 +282,8 @@ namespace YGR
             switch (State)
             {
                 case GameState.PreGame:
-                    _background.Draw(gameTime, zero, _spriteBatch);
-                    _background.DrawTitleText(gameTime, Vector2.Zero, _spriteBatch);
+                    Background_.Draw(gameTime, zero, _spriteBatch);
+                    Background_.DrawTitleText(gameTime, Vector2.Zero, _spriteBatch);
                     break;
 
                 case GameState.InGame:
@@ -291,7 +291,7 @@ namespace YGR
                     //var times = new List<long>();
                     //watch.Start();
 
-                    _background.Draw(gameTime, zero, _spriteBatch);
+                    Background_.Draw(gameTime, zero, _spriteBatch);
                     //times.Add(watch.ElapsedMilliseconds);
                     //watch.Restart();
 
@@ -299,7 +299,7 @@ namespace YGR
                     //times.Add(watch.ElapsedMilliseconds);
                     //watch.Restart();
 
-                    _background.DrawTitleText(gameTime, Vector2.Zero, _spriteBatch);
+                    Background_.DrawTitleText(gameTime, Vector2.Zero, _spriteBatch);
                     //times.Add(watch.ElapsedMilliseconds);
                     //watch.Restart();
 
@@ -326,7 +326,7 @@ namespace YGR
                     if (Settings.DebugOutlinesLevel)
                     {
                         _level.DrawOutline(gameTime, Vector2.Zero, _spriteBatch);
-                        _background.DrawOutline(gameTime, Vector2.Zero, _spriteBatch);
+                        Background_.DrawOutline(gameTime, Vector2.Zero, _spriteBatch);
                     }
                     if (Settings.DebugOutlinesEntities)
                     {
@@ -340,13 +340,13 @@ namespace YGR
                     break;
 
                 case GameState.Menu:
-                    _background.Draw(gameTime, zero, _spriteBatch);
+                    Background_.Draw(gameTime, zero, _spriteBatch);
                     _level.Draw(gameTime, Vector2.Zero, _spriteBatch);
-                    _background.DrawTitleText(gameTime, Vector2.Zero, _spriteBatch);
+                    Background_.DrawTitleText(gameTime, Vector2.Zero, _spriteBatch);
                     if (Settings.DebugOutlinesLevel)
                     {
                         // _level.DrawOutline(gameTime, Vector2.Zero, _spriteBatch); // Makes even the settings menu lag
-                        _background.DrawOutline(gameTime, Vector2.Zero, _spriteBatch);
+                        Background_.DrawOutline(gameTime, Vector2.Zero, _spriteBatch);
                     }
                     break;
             }
