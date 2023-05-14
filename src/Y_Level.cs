@@ -10,6 +10,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.IO.Pipes;
 using System.Linq;
 
 namespace YGR
@@ -350,6 +351,21 @@ namespace YGR
             Camera.InTransitionFromMenu = true;
 
             Manager_Enemies.ClearEnemies();
+
+            // Select 8 rooms out of all rooms minus the Gold and the Start room
+            // and mark them for containing a spiky semi boss slime
+            var spikeRooms = Rooms.Values
+                .Where(x => x.WhatAreYou() == X_LevelElements.Room && 
+                          !(x.Category == "Start") &&
+                          !(x.Category == "Gold"))
+                .ToList();
+
+            var selected = spikeRooms.OrderBy(x => Util.random.Next()).Take(8);
+            foreach(var sel in selected)
+            {
+                ((Y_CMRoom)sel).HasSpikeEnemy = true;
+            }
+
             foreach (var room in Rooms)
             {
                 if (room.Value.WhatAreYou() != X_LevelElements.Room) continue;
@@ -494,6 +510,43 @@ namespace YGR
                         State = GamePlayState.FreeRoam;
                         _startRoom.OpenAllUnlockedRoomDoors();
                         Camera.SetFocusPlayers();
+
+                        /**
+                         * Spawn the spiky slime dudes level ups and weapons
+                         */
+                        // spawn the powerups inside the spiky dudes
+                        // we made sure that there are at least 8 of them
+                        var arr = Manager_Enemies.GetEnemies().Where(x => x is Enemy_Slime_Spiky).ToArray();
+
+                        // give each player two power ups somewhere inside a big fat spiky slime
+                        var pws = new List<Y_PowerUps>();
+                        foreach(var p in Manager_Players.Players)
+                        {
+                            if (p is Player_Mailman) pws.AddRange(new List<Y_PowerUps> { Y_PowerUps.LevelUpMailman, Y_PowerUps.LevelUpMailman });
+                            else if (p is Player_NerdyGirl) pws.AddRange(new List<Y_PowerUps> { Y_PowerUps.LevelUpNerd, Y_PowerUps.LevelUpNerd });
+                            else if (p is Player_Ninja) pws.AddRange(new List<Y_PowerUps> { Y_PowerUps.LevelUpProfessor, Y_PowerUps.LevelUpProfessor });
+                        }
+
+                        // make sure these are somewhere to be found, because, let's face it, it's the pinky hammer :-D
+                        pws.Add(Y_PowerUps.WeaponPinkHammer);
+
+                        // fill up the rest of the slots with some random stuff
+                        var pwsWeapons = new List<Y_PowerUps> {
+                            Y_PowerUps.WeaponFunky
+                            //Y_PowerUps.WeaponWide,
+                            //Y_PowerUps.WeaponGiga
+                        };
+                        while (pws.Count() < arr.Length)
+                        {
+                            pws.Add(pwsWeapons[Util.random.Next(0, pwsWeapons.Count())]);
+                        }
+
+                        // mix everything thouroughly
+                        var randpws = pws.OrderBy(x => Util.random.Next()).ToArray();
+                        for(int i=0; i<arr.Length; ++i)
+                        {
+                            ((Enemy_Slime_Spiky)arr[i]).SetPowerUp(randpws[i]);
+                        }
                     }
                     break;
 

@@ -151,6 +151,7 @@ namespace YGR
         int _height;
         bool _visited;
         Y_Level _level;
+        public bool HasSpikeEnemy { get; set; }
 
         public Texture2D[] ShadeTexture { get; set; }
         public int ShadeIndex { get; set; }
@@ -297,6 +298,7 @@ namespace YGR
             Y_Level level
         )
         {
+            HasSpikeEnemy = false;
             Name = initiator.Name;
             Category = initiator.Category;
             ResourceFolder = Util.PathOsNormalization(initiator.ResourceFolder);
@@ -637,16 +639,55 @@ namespace YGR
         {
             Manager_Enemies.ClearEnemies(this);
             var enemies = GetEnemySpawningPoints();
-            foreach (var spr in enemies)
+            if (!HasSpikeEnemy)
             {
-                Vector2 pos = new Vector2(spr.x, spr.y);
+                foreach (var spr in enemies)
+                {
+                    Vector2 pos = new Vector2(spr.x, spr.y);
 
-                if (EnemyEntity.GetType(spr) == Manager_Enemies.EnemyType.SimpleEnemy)
-                    Manager_Enemies.AddEnemy_SimpleEnemy(pos, _level);
-                else if (EnemyEntity.GetType(spr) == Manager_Enemies.EnemyType.SlimeEnemy)
-                    Manager_Enemies.AddEnemy_Slime(pos, _level);
-                else if (EnemyEntity.GetType(spr) == Manager_Enemies.EnemyType.BossEnemy)
-                    Manager_Enemies.AddEnemy_Boss(pos, _level);
+                    if (EnemyEntity.GetType(spr) == Manager_Enemies.EnemyType.SimpleEnemy)
+                        Manager_Enemies.AddEnemy_SimpleEnemy(pos, _level);
+                    else if (EnemyEntity.GetType(spr) == Manager_Enemies.EnemyType.SlimeEnemy)
+                        Manager_Enemies.AddEnemy_Slime(pos, _level);
+                    else if (EnemyEntity.GetType(spr) == Manager_Enemies.EnemyType.BossEnemy)
+                        Manager_Enemies.AddEnemy_Boss(pos, _level);
+                }
+            }
+            else
+            {
+                // if we have a spiky room, place at most 6 regular slimy bastards
+                var randenems = enemies
+                    .Where(x => EnemyEntity.GetType(x) != Manager_Enemies.EnemyType.SpikyEnemy)
+                    .OrderBy(x => Util.random.Next())
+                    .Take(6)
+                    .ToList();
+
+                foreach (var spr in randenems)
+                {
+                    Vector2 pos = new Vector2(spr.x, spr.y);
+
+                    if (EnemyEntity.GetType(spr) == Manager_Enemies.EnemyType.SimpleEnemy)
+                        Manager_Enemies.AddEnemy_SimpleEnemy(pos, _level);
+                    else if (EnemyEntity.GetType(spr) == Manager_Enemies.EnemyType.SlimeEnemy)
+                        Manager_Enemies.AddEnemy_Slime(pos, _level);
+                }
+
+                // aaaaand place one giant spiky mega bastard
+                var spiky = enemies
+                    .Where(x => EnemyEntity.GetType(x) == Manager_Enemies.EnemyType.SpikyEnemy)
+                    .OrderBy(x => Util.random.Next())
+                    .Take(1)
+                    .FirstOrDefault();
+
+                if (spiky == null) {
+                    Logger.Info("Missing spiky on selected room... Don't crash the game, because it may happen during the jury evaluation and it really doesn't matter that much ^^");
+                }
+                else
+                {
+                    Vector2 pos = new Vector2(spiky.x, spiky.y);
+                    Manager_Enemies.AddEnemy_SlimeSpiky(pos, _level);
+                }
+
             }
         }
 

@@ -13,6 +13,7 @@ namespace YGR
             SimpleEnemy = 0,
             SlimeEnemy,
             BossEnemy,
+            SpikyEnemy
         };
 
         private static List<IEnemy> _enemies = new List<IEnemy>();
@@ -50,6 +51,11 @@ namespace YGR
         public static void AddEnemy_SimpleEnemy(Vector2 position, Y_Level level)
         {
             _enemies.Add(new Enemy_Basic(position, Manager_Sprites.NewAnimatedSprite_TestCharacter(), level));
+        }
+
+        public static void AddEnemy_SlimeSpiky(Vector2 position, Y_Level level)
+        {
+            _enemies.Add(new Enemy_Slime_Spiky(position, Manager_Sprites.NewAnimatedSprite_EnemySlimeSpiky(), level));
         }
 
         public static void AddEnemy_Slime(Vector2 position, Y_Level level)
