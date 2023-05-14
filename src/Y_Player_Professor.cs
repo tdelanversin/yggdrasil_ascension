@@ -13,18 +13,16 @@ namespace YGR
             ControlLayout controlLayout = ControlLayout.ControllerOnly
             ) : base(playerIndex, initialPosition, level, gun, type, controlLayout)
         {
-            // TODO: No sprite yet :(
             CharacterSprite = Manager_Sprites.NewAnimatedSprite_Professor();
 
             Ability = new Ability_Confusion();
             Type = PlayerType.Professor;
             Name = "Professor";
 
-            // Leave him the hammer for now (inherited from Player_Basic)
-            // if (gun != null)
-            //     Gun = gun;
-            // else
-            //     Gun = Util.getRandomGun(this);
+            if (gun != null)
+                Gun = gun;
+            else
+                Gun = Util.getRandomGun(this);
 
             SetupPlayerRect(IPlayer.PlayerBaseHeight);
 
