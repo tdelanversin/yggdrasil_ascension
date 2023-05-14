@@ -10,7 +10,6 @@ namespace YGR
         public BossAttack Attack { get; set; } = BossAttack.Spawn;
         int _attackTimer = 0;
         Dictionary<BossAttack, IShooter> _attacks = new Dictionary<BossAttack, IShooter>();
-        Dictionary<BossAttack, int> _attackLength = new Dictionary<BossAttack, int>();
 
         int Phase = 1;
         float Phase1HP;
@@ -19,6 +18,9 @@ namespace YGR
         Dictionary<BossAttack, float> _attackWeights = new Dictionary<BossAttack, float>();
         Dictionary<BossAttack, float> _attackWeightsPhase1 = new Dictionary<BossAttack, float>();
         Dictionary<BossAttack, float> _attackWeightsPhase3 = new Dictionary<BossAttack, float>();
+        Dictionary<BossAttack, int> _attackLength = new Dictionary<BossAttack, int>();
+        Dictionary<BossAttack, int> _attackLengthPhase1 = new Dictionary<BossAttack, int>();
+        Dictionary<BossAttack, int> _attackLengthPhase3 = new Dictionary<BossAttack, int>();
         IList<IEnemy> _minions = new List<IEnemy>();
 
         // Vairables for AOE pattern avoiding attack
@@ -46,7 +48,7 @@ namespace YGR
                 { BossAttack.Wait, new Gun_BasicEnemy(this) },
                 { BossAttack.Spawn, new Gun_BasicEnemy(this) },
             };
-            _attackLength = new Dictionary<BossAttack, int>() {
+            _attackLengthPhase1 = new Dictionary<BossAttack, int>() {
                 { BossAttack.Scatter, 5000 },
                 { BossAttack.Precise, 5000 },
                 { BossAttack.AOE, 10000 },
@@ -54,6 +56,16 @@ namespace YGR
                 { BossAttack.Wait, 3000 },
                 { BossAttack.Spawn, 3000 },
             };
+            _attackLengthPhase3 = new Dictionary<BossAttack, int>() {
+                { BossAttack.Scatter, 3000 },
+                { BossAttack.Precise, 3000 },
+                { BossAttack.AOE, 6000 },
+                { BossAttack.AvoidPattern, 10000 },
+                { BossAttack.Wait, 1500 },
+                { BossAttack.Spawn, 3000 },
+            };
+
+            _attackLength = _attackLengthPhase1;
 
             _attackWeightsPhase1 = new Dictionary<BossAttack, float>() {
                 { BossAttack.Scatter, 0.35f },
@@ -102,18 +114,23 @@ namespace YGR
             CharacterOffset = Vector2.Zero;
 
             // Create the minions
-            for (int i = 0; i < 22; i++)
+            for (int i = 0; i < 15; i++)
             {
                 _minions.Add(Manager_Enemies.MakeEnemy_BossMinion(Level, bossColor));
             }
 
-            Phase1HP = 200;
+            for (int i = 0; i < 5; i++)
+            {
+                _minions.Add(Manager_Enemies.MakeEnemy_BossMinionSpiky(Level, bossColor));
+            }
+
+            Phase1HP = 310;
             Phase2HP = 0;
             foreach (var minion in _minions)
             {
                 Phase2HP += Math.Max(0, minion.LifePoints);
             }
-            Phase3HP = 200;
+            Phase3HP = 310;
 
             LifePointsMax = Phase1HP + Phase2HP + Phase3HP;
 
@@ -186,6 +203,7 @@ namespace YGR
                 {
                     Attack = BossAttack.Spawn;
                     Phase = 3;
+                    _attackLength = _attackLengthPhase3;
                     _attackWeights = _attackWeightsPhase3;
                     CharacterSprite.Update(gameTime, AnimationState.Spawn);
                 }
