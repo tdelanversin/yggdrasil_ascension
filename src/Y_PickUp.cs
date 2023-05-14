@@ -19,7 +19,7 @@ namespace YGR
         WeaponPistol,
         WeaponShotgun,
         WeaponKeyboard,
-        WeaponFunky,
+        WeaponHelix,
         WeaponEnemySlowPistol,
         WeaponWide,
         WeaponGiga,
@@ -246,7 +246,7 @@ namespace YGR
 
                             return switchGun(new Gun_ShotGun(player), player, self);
                         });
-                case Y_PowerUps.WeaponFunky:
+                case Y_PowerUps.WeaponHelix:
                     return new PickUp(type, location, width, height, _gunScale, Manager_Sprites.Weapon_RedGun, lastOwner, true,
                         (player, self) =>
                         {

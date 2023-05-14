@@ -83,7 +83,7 @@ namespace YGR
             );
         }
 
-        /// Fast and strong projectiles for the funky gun
+        /// Fast and strong projectiles for the helix gun
         public static void AddProjectile_Helix(
             Vector2 startPosition, 
             Vector2 direction, 
@@ -191,7 +191,7 @@ namespace YGR
                     level: level,
                     who: who,
                     scale: .5f,
-                    damage: 1,
+                    damage: 3,
                     maxAge: 10000,
                     speed: 0.4f,
                     mass: 16.0f,

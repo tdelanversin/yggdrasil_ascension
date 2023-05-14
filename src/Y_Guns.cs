@@ -225,7 +225,7 @@ namespace YGR
              */
 
             room.PickUps.Add(PickUp.Factory(
-                Y_PowerUps.WeaponFunky,
+                Y_PowerUps.WeaponHelix,
                 location,
                 Y_Level.TextureTileSize, Y_Level.TextureTileSize, Y_Level.GlobalScale, lastOwner));
         }
