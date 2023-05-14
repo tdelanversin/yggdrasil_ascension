@@ -92,10 +92,7 @@ namespace YGR
                         Rectangle otherRect = victim.Rect;
                         if (Manager_Collision.FastRectVsRect(ref myRect, newVelocity, timeStepMS, ref otherRect, out point, out normal))
                         {
-                            lock (this)
-                            {
-                                p.Stats.TrackDodgedProjectile(me);
-                            }
+                            p.Stats.TrackDodgedProjectile(me);
                         }
 
                         continue;
