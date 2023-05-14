@@ -485,7 +485,7 @@ namespace YGR
                     scale *= 0.9f;
                     var offset = new Vector2(
                         0,
-                        Rect.Height - target.Height * scale
+                        Rect.Height - (target.Height * scale / 2)
                     );
 
                     spriteBatch.Draw(
