@@ -197,6 +197,9 @@ namespace YGR
 
             ElementLevel = ElementLevel + 1;
 
+            LifePointsMax += 15;
+            LifePoints += 15;
+
             return true;
         }
 
