@@ -431,6 +431,9 @@ namespace YGR
 
         public void Draw(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)
         {
+            // add some culling to the power ups
+            if (Rectangle.Intersect(Camera.VisibleArea, Rect) == Rectangle.Empty) return;
+
             if (_sprite != null)
             { // We have an AnimatedSprite, yay!
                 spriteBatch.Draw(
@@ -467,6 +470,9 @@ namespace YGR
 
         public void Update(GameTime gameTime)
         {
+            // no need to update stuff that isn't inside the camera view either
+            if (Rectangle.Intersect(Camera.VisibleArea, Rect) == Rectangle.Empty) return;
+
             if (_sprite != null)
             {
                 _sprite.Update(gameTime, AnimationState.Idle);

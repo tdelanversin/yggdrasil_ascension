@@ -852,6 +852,8 @@ namespace YGR
 
             foreach (var room in Rooms.Values)
             {
+                // no need to update rooms not in visual range either
+                if (Rectangle.Intersect(Camera.VisibleArea, room.Rect) == Rectangle.Empty) continue;
                 room.Update(gameTime);
             }
 

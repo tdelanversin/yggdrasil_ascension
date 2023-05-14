@@ -115,6 +115,9 @@ namespace YGR
             float deltaTime = (float)gameTime.ElapsedGameTime.TotalSeconds;
             foreach (IEnemy enemy in _enemies)
             {
+                // no need to update stuff that isn't inside the camera view either
+                if (Rectangle.Intersect(Camera.VisibleArea, enemy.Rect) == Rectangle.Empty) continue;
+
                 enemy.Update(gameTime);
                 if (enemy.LifePoints <= 0)
                 {
