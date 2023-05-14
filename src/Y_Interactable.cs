@@ -353,6 +353,14 @@ namespace YGR
         {
             if (InteractionComplete) { return; }
 
+            // If the game is already over, no need to use this button
+            if (Y_Level.State == Y_Level.GamePlayState.End)
+            {
+                state = ButtonState.In;
+                InteractionComplete = true;
+                return;
+            }
+
             bool tryTrigger = false;
             bool ready = true;
 
@@ -368,7 +376,7 @@ namespace YGR
             {
                 if (Rect.Contains(p.Rect.Center + new Point(0, p.Rect.Height / 2)))
                 {
-                    if(_countDownCounter == 0)
+                    if (_countDownCounter == 0)
                     {
                         tryTrigger = true;
                     }
@@ -378,7 +386,7 @@ namespace YGR
                         Notifications.New("\n\n\n\n", Color.Wheat, 2000);
                         Notifications.New("Escape in: " + _countDownCounter.ToString(), Color.Wheat, 2000, Fonts.Large);
                         _countDown -= gameTime.ElapsedGameTime.Milliseconds;
-                        if(_countDown <= 0)
+                        if (_countDown <= 0)
                         {
                             _countDown = 1000;
                             _countDownCounter--;
