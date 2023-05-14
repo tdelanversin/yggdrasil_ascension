@@ -1125,7 +1125,7 @@ namespace YGR
                     }
 
                     // Make sure all players are inside
-                    if (cmroom.GetPlayersInside().Count != alivePlayers.Count())
+                    if (cmroom.GetPlayersInside().Where(p => p.WhatAreYou() != X_LevelElements.Ghost).ToList().Count != alivePlayers.Count())
                     {
                         break;
                     }
