@@ -184,7 +184,7 @@ namespace YGR
                         });
                 case Y_PowerUps.ChooserProfessor:
                     return new PickUp(type, location, width, IPlayer.PlayerBaseHeight, scale * 1.0f, 
-                        Manager_Sprites.NewAnimatedSprite_TestCharacter(), 
+                        Manager_Sprites.NewAnimatedSprite_Professor(), 
                         null, 
                         lastOwner,
                         (player, self) =>
