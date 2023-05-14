@@ -147,14 +147,14 @@ namespace YGR
             // drop a grave stone with absolute certainty
             if (Room.WhatAreYou() == X_LevelElements.Room)
             {
-                var p = new Point(Rect.Location.X + Rect.Width / 2, Rect.Location.Y + Rect.Height / 2);
-                ((Y_CMRoom)Room).PickUps.Add(PickUp.Factory(Y_PowerUps.Gravestone, p, Y_Level.TextureTileSize, Y_Level.TextureTileSize, Y_Level.GlobalScale));
-            }
+                var pos = new Point(Rect.Location.X + Rect.Width / 2, Rect.Location.Y + Rect.Height / 2);
+                ((Y_CMRoom)Room).PickUps.Add(PickUp.Factory(Y_PowerUps.Gravestone, pos, Y_Level.TextureTileSize, Y_Level.TextureTileSize, Y_Level.GlobalScale));
 
-            // drop something jucy in any case
-            var room = (Y_CMRoom)Room;
-            var p = new Point(Rect.Location.X + Rect.Width / 2, Rect.Location.Y + Rect.Height / 2);
-            room.PickUps.Add(PickUp.Factory(_carriedPowerUp, p, Y_Level.TextureTileSize, Y_Level.TextureTileSize, Y_Level.GlobalScale));
+                // drop something jucy in any case
+                var room = (Y_CMRoom)Room;
+                var p = new Point(Rect.Location.X + Rect.Width / 2, Rect.Location.Y + Rect.Height / 2);
+                room.PickUps.Add(PickUp.Factory(_carriedPowerUp, p, Y_Level.TextureTileSize, Y_Level.TextureTileSize, Y_Level.GlobalScale));
+            }
         }
     }
 }
