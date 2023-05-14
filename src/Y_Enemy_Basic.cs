@@ -13,7 +13,7 @@ namespace YGR
         public float LifePointsMax { get; set; }
         public Color Color { get; set; }
         public IGameElement WhoKilledMe { get; set; }
-        public int ElementLevel { get { return 1; } set { } }
+        public int ElementLevel { get; set; }
 
         public EnemyState State { get; set; } = EnemyState.Inactive;
         protected float fleeingHPTreshold; // Flee if at this treshold or lower
@@ -193,6 +193,19 @@ namespace YGR
             return true;
         }
 
+        public virtual float ConfusedLeveledDamageMultiplier(IProjectile projectile) 
+        {
+            if (projectile.WhoFiredMe is Player_NerdyGirl || projectile.WhoFiredMe is Player_Ninja)
+            {
+                if (this.Confused)
+                {
+                    // hit the slime hard
+                    return projectile.LeveledDamage() * 2.0f;
+                }
+            }
+            return projectile.LeveledDamage();
+        }
+
         /* Deal with being hit by projectile, basically physical therapy */
         public virtual void Hit(IProjectile projectile)
         {
@@ -203,12 +216,25 @@ namespace YGR
                 // Return if alread dead, otherwise player kill stats are inaccurate
                 if (LifePoints <= 0) { return; }
 
-                if (projectile.WhatAreYou() == X_LevelElements.ConfusionProjectile)
+                if (projectile.WhatAreYou() == X_LevelElements.ConfusionProjectile && !Confused)
                 {
-                    Manager_Confusion.AddConfusion(this, ((Projectile_Confusion)projectile).ConfusionDuration);
+                    if(
+                        (this is Enemy_Slime && projectile.WhoFiredMe.ElementLevel >= 1) || 
+                        (this is Enemy_Slime_Spiky && projectile.WhoFiredMe.ElementLevel >= 2)
+                    )
+                    {
+                        // allow confusing regular slimes from level 1
+                        // allow confusing spiky fat slimy slimes from level 2
+                        // (Note: this one sets the confused flag)
+                        int durationMS = 2000;
+                        if (projectile.WhoFiredMe.ElementLevel == 2) durationMS = 4000;
+                        else if (projectile.WhoFiredMe.ElementLevel == 3) durationMS = 6000;
+                        Manager_Confusion.AddConfusion(this, durationMS);
+                    }
                 }
 
-                LifePoints -= projectile.Damage;
+                // add damage points according to the level of players and if they are confused
+                LifePoints -= ConfusedLeveledDamageMultiplier(projectile);
                 _hitFramesCounter = 1;
                 _currentColor = Color.Lerp(_hitColor, Color, 0.1f);
 

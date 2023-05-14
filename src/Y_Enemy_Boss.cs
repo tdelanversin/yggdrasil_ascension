@@ -409,9 +409,14 @@ namespace YGR
                 // Return if alread dead, otherwise player kill stats are inaccurate
                 if (LifePoints <= 0) { return; }
 
-                if (projectile.WhatAreYou() == X_LevelElements.ConfusionProjectile)
+                if (projectile.WhatAreYou() == X_LevelElements.ConfusionProjectile && !Confused)
                 {
-                    Manager_Confusion.AddConfusion(this, ((Projectile_Confusion)projectile).ConfusionDuration);
+                    if(projectile.WhoFiredMe.ElementLevel >= 3)
+                    {
+                        // only allow to confuse the boss if the level is high enough
+                        int durationMS = 3000;
+                        Manager_Confusion.AddConfusion(this, durationMS);
+                    }
                 }
 
                 var DamageDealt = 0.0f;
@@ -427,7 +432,7 @@ namespace YGR
                 }
                 else {
                     DamageDealt = projectile.Damage;
-                    LifePoints -= projectile.Damage;
+                    LifePoints -= ConfusedLeveledDamageMultiplier(projectile);
                 }
 
                 _hitFramesCounter = 1;
