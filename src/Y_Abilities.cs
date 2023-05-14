@@ -88,9 +88,9 @@ namespace YGR
         int _maxReloadTime;
         int _currentDuration = 0;
 
-        int _level_1_duration = 2000;
-        int _level_2_duration = 4000;
-        int _level_3_duration = 6000;
+        int _level_1_duration = 3000;
+        int _level_2_duration = 6000;
+        int _level_3_duration = 8000;
 
         int _shortestWaitTimeMS = 1000;
         int _shortestWaitTimeCounter = 0;
