@@ -750,7 +750,7 @@ namespace YGR
 
                             ShowTutorialControls(duration);
                             Notifications.New("\n\n\n\n", colorLightRoom, duration);
-                            Notifications.New("You can change your gun by walking trough pick ups", colorLightRoom, duration, Fonts.Large);
+                            Notifications.New("You can change your gun by walking through pick ups", colorLightRoom, duration, Fonts.Large);
                         }
                     }
                     break;
