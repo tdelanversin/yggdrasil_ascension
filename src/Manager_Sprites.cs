@@ -72,6 +72,7 @@ namespace YGR
         // Effects
         public static Texture2D Effect_Confusion { get; private set; }
         public static Texture2D Effect_Shield { get; private set; }
+        public static Texture2D Effect_Gunslinger { get; private set; }
 
         // Level Ups
         public static Texture2D LevelUp_DarkFlash { get; private set; }
@@ -136,6 +137,7 @@ namespace YGR
 
             Effect_Confusion = contentManager.Load<Texture2D>("SpritesEffects/noise");
             Effect_Shield = contentManager.Load<Texture2D>("SpritesEffects/shield");
+            Effect_Gunslinger = contentManager.Load<Texture2D>("SpritesEffects/noise"); //TODO: Add gunslinger effect
 
             LevelUp_DarkFlash = contentManager.Load<Texture2D>("SpritesOther/thunder_up_sheet_2");
             LevelUp_LightFlash = contentManager.Load<Texture2D>("SpritesOther/tunder_up_sheet");

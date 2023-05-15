@@ -346,5 +346,54 @@ namespace YGR
             return X_LevelElements.Shield;
         }
     }
+
+    public class Ability_Gunslinger : IAbility
+    {
+        public string Name { get; protected set; }
+        public Texture2D Sprite { get; }
+        protected double NextShotCooldown = 0.0f;
+        protected int ShotDelay = 10000;
+        protected int Duration = 5000;
+        public bool Triggered { get; private set; }
+        protected IPlayer owner;
+        protected IShooter GunShot;
+        protected double oldShotDelay;
+
+        public Ability_Gunslinger(IPlayer owner)
+        {
+            Name = "Gunslinger";
+            Sprite = Manager_Sprites.Effect_Gunslinger;
+            this.owner = owner;
+            Triggered = false;
+        }
+
+        public bool Trigger(GameTime gameTime, Vector2 origin, Vector2 direction, Y_Level level, IGameElement who)
+        {
+            if (NextShotCooldown > 0.0f)
+                return false;
+
+            Manager_Sound.Sound_Gunslinger.Play(0.5f, 0, 0);
+
+            NextShotCooldown = ShotDelay;
+
+            GunShot = owner.Gun;
+            oldShotDelay = GunShot.ShotDelay;
+            GunShot.ShotDelay = oldShotDelay / 2.5;
+            return true;
+        }
+        
+
+        public virtual void Update(GameTime gameTime)
+        {
+            NextShotCooldown = Math.Max(0, NextShotCooldown - gameTime.ElapsedGameTime.TotalMilliseconds);
+            if (NextShotCooldown <= ShotDelay - Duration && GunShot != null)
+            {
+                GunShot.ShotDelay = oldShotDelay;
+                GunShot = null;
+            }
+        }
+
+        public void Draw(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch) { }
+    }
 }
 

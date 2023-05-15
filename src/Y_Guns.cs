@@ -16,7 +16,7 @@ namespace YGR
         public IVictim Owner { get; set; }
 
         public double NextShotCooldown { get; set; } = 0.0f;
-        protected int ShotDelay = 240;
+        public double ShotDelay { get; set; } = 240;
 
         public Gun_Basic(IVictim owner)
         {
@@ -322,6 +322,7 @@ namespace YGR
 
         // Why are we not using subclassing...
         public double NextShotCooldown { get; set; } = 0.0f;
+        public double ShotDelay { get; set; } = 1000.0f;
 
         double timeSinceShot = 1001;
         Vector2 _origin = new Vector2(0, 0);
@@ -336,8 +337,6 @@ namespace YGR
             Sprite = Manager_Sprites.Weapon_RedDevil;
             Owner = owner;
         }
-
-        static int shotDelay = 1000;
         static bool[,] bulletArray = {{ false, false, true, false, false },
                                     { true, true, false, true, true },
                                     { false, true, false, true, false },
@@ -354,7 +353,7 @@ namespace YGR
         public bool Shoot(GameTime gameTime, Vector2 origin, Vector2 direction, Y_Level level, IGameElement who)
         {
 
-            if (timeSinceShot < shotDelay)
+            if (timeSinceShot < ShotDelay)
                 return false;
 
             timeSinceShot = 0.0f;
@@ -367,7 +366,7 @@ namespace YGR
 
         public void Update(GameTime gameTime)
         {
-            if (timeSinceShot >= shotDelay || _who == null || _level == null)
+            if (timeSinceShot >= ShotDelay || _who == null || _level == null)
                 return;
 
             var lastUpdate = timeSinceShot;
@@ -487,6 +486,7 @@ namespace YGR
         }
 
         public double NextShotCooldown { get; set; } = 0.0f;
+        public double ShotDelay { get; set; } = 0.0f;
 
         public string Name { get { return ""; } }
 

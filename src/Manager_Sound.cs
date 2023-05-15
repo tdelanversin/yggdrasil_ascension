@@ -34,6 +34,7 @@ namespace YGR
         public static SoundEffect Sound_CashIn; // https://freesound.org/people/kiddpark/sounds/201159/
         public static SoundEffect Sound_StoneWall;
         public static SoundEffect Sound_Confusion;
+        public static SoundEffect Sound_Gunslinger;
         public static SoundEffect Sound_Blaster;
         public static SoundEffect Sound_PlasmaPistol;
         public static SoundEffect Sound_OmniShotGun;
@@ -77,6 +78,7 @@ namespace YGR
             Sound_CashIn = contentManager.Load<SoundEffect>("Sounds/cash-in");
             Sound_StoneWall = contentManager.Load<SoundEffect>("Sounds/stonewall");
             Sound_Confusion = contentManager.Load<SoundEffect>("Sounds/confusion");
+            Sound_Gunslinger = contentManager.Load<SoundEffect>("Sounds/cash-in"); //TODO: replace with gunslinger sound
             Sound_Blaster = contentManager.Load<SoundEffect>("Sounds/blaster");
             Sound_PlasmaPistol = contentManager.Load<SoundEffect>("Sounds/plasmapistol");
             Sound_OmniShotGun = contentManager.Load<SoundEffect>("Sounds/omni_shotgun");

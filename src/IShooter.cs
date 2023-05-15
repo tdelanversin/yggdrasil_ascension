@@ -13,6 +13,7 @@ namespace YGR
 
         public void Update(GameTime gameTime);
 
+        public double ShotDelay { get; set; }
         public double NextShotCooldown { get; set; }
 
         public string Name { get; }
