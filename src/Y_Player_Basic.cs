@@ -460,7 +460,7 @@ namespace YGR
 
                     // only allow shooting if ability is not triggered
                     // (this is for the mailman)
-                    if(Ability == null || (Ability != null && !Ability.Triggered))
+                    if (Ability == null || (Ability != null && !Ability.Triggered))
                     {
                         bool shot = Gun.Shoot(gameTime, Rect.Center.ToVector2(), AimDirection, Level, this);
                         if (shot) { Stats.TimesFired++; }
@@ -471,7 +471,7 @@ namespace YGR
                 {
                     _isAiming = true; // Show the aim indicator when firing
                     CurrentAimInput = InputType.Controller;
-                    if(Ability != null)
+                    if (Ability != null)
                     {
                         bool triggered = Ability.Trigger(gameTime, Rect.Center.ToVector2(), AimDirection, Level, this);
                         if (triggered) { Stats.TimesAbilitated++; }
@@ -524,7 +524,7 @@ namespace YGR
                 }
                 if (Input.IsKeyDown(Keybinds.KeyboardAbility) && IsAlive())
                 {
-                    if(Ability != null)
+                    if (Ability != null)
                     {
                         bool triggered = Ability.Trigger(gameTime, playerCenter, AimDirection, Level, this);
                         if (triggered) { Stats.TimesAbilitated++; }
@@ -574,7 +574,6 @@ namespace YGR
         {
             if (ImpactVelocity.X > 0 || ImpactVelocity.Y > 0)
             {
-                Logger.Info("lol A:" + ImpactVelocity.ToString());
                 Velocity = ImpactVelocity;
 
                 Velocity = Util.ClampMagnitude(Velocity, MathHelper.Max(Math.Abs(ImpactVelocity.X), Math.Abs(ImpactVelocity.Y)));
@@ -621,9 +620,11 @@ namespace YGR
             if (IsAlive()) { CharacterSprite.Update(gameTime, input); }
             else { GhostSprite.Update(gameTime, input); }
 
-            if (Y_Level.State == Y_Level.GamePlayState.Tutorial)
+            if (Y_Level.State == Y_Level.GamePlayState.Tutorial ||
+                Y_Level.State == Y_Level.GamePlayState.EndScreen)
             {
-                /* During the tutorial we don't want the players to do anything yet */
+                /* During the tutorial or ending screen we don't want the
+                    players to do anything yet */
                 return;
             }
 
@@ -633,7 +634,7 @@ namespace YGR
 
             UpdateColor(gameTime);
             Gun.Update(gameTime);
-            if(Ability != null)
+            if (Ability != null)
             {
                 Ability.Update(gameTime);
             }
@@ -732,7 +733,7 @@ namespace YGR
                 DrawCharacterSprite(gameTime, globalOffset, spriteBatch);
                 DrawAimIndicator(gameTime, globalOffset, spriteBatch);
                 DrawHealthbar(gameTime, globalOffset, spriteBatch);
-                if(Ability != null)
+                if (Ability != null)
                 {
                     Ability.Draw(gameTime, globalOffset, spriteBatch);
                 }
