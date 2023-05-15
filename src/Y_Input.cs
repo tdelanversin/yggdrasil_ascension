@@ -75,7 +75,7 @@ namespace YGR
 
         public static bool AnythingPressed()
         {
-            return currentKeyState.GetPressedKeyCount() > 0 || AnyGamePadButtonPressed();
+            return (currentKeyState.GetPressedKeyCount() > 0 || AnyGamePadButtonPressed()) && !IsKeyDown(Keybinds.ToggleFullscreen);
         }
 
         public static bool IsKeyDown(Keys key)
