@@ -39,6 +39,7 @@ namespace YGR
         public ControlLayout ControlLayout { get; set; }
         public IShooter Gun { get; set; }
         public IAbility Ability { get; set; }
+        public IAbility DeadAbility { get; set; }
 
         public PlayerIndex PlayerIndex { get; protected set; }
         public bool IsActive { get; protected set; }
@@ -111,6 +112,7 @@ namespace YGR
             // He deserves the best weapon in the game
             Gun = new Weapon_PinkHammer(this);
             Ability = new Ability_Ghost();
+            DeadAbility = new Ability_Blank(this);
             Type = type;
             ControlLayout = controlLayout;
             LocalScale = Y_Level.GlobalScale;
@@ -467,13 +469,18 @@ namespace YGR
                     }
                 }
 
-                if (Input.IsButtonDown(PlayerIndex, Keybinds.GamePadAbility) && IsAlive())
+                if (Input.IsButtonDown(PlayerIndex, Keybinds.GamePadAbility))
                 {
                     _isAiming = true; // Show the aim indicator when firing
                     CurrentAimInput = InputType.Controller;
-                    if (Ability != null)
+                    if (Ability != null && IsAlive())
                     {
                         bool triggered = Ability.Trigger(gameTime, Rect.Center.ToVector2(), AimDirection, Level, this);
+                        if (triggered) { Stats.TimesAbilitated++; }
+                    }
+                    else if (DeadAbility != null && !IsAlive())
+                    {
+                        bool triggered = DeadAbility.Trigger(gameTime, Rect.Center.ToVector2(), AimDirection, Level, this);
                         if (triggered) { Stats.TimesAbilitated++; }
                     }
                 }
@@ -522,11 +529,16 @@ namespace YGR
                         if (shot) { Stats.TimesFired++; }
                     }
                 }
-                if (Input.IsKeyDown(Keybinds.KeyboardAbility) && IsAlive())
+                if (Input.IsKeyDown(Keybinds.KeyboardAbility))
                 {
-                    if (Ability != null)
+                    if (Ability != null  && IsAlive())
                     {
                         bool triggered = Ability.Trigger(gameTime, playerCenter, AimDirection, Level, this);
+                        if (triggered) { Stats.TimesAbilitated++; }
+                    }
+                    else if (DeadAbility != null && !IsAlive())
+                    {
+                        bool triggered = DeadAbility.Trigger(gameTime, playerCenter, AimDirection, Level, this);
                         if (triggered) { Stats.TimesAbilitated++; }
                     }
                 }
@@ -638,6 +650,10 @@ namespace YGR
             {
                 Ability.Update(gameTime);
             }
+            if (DeadAbility != null)
+            {
+                DeadAbility.Update(gameTime);
+            }
         }
 
         // Render ghosty 👻
@@ -742,6 +758,10 @@ namespace YGR
             else
             {
                 DrawGhost(gameTime, globalOffset, spriteBatch);
+                if (DeadAbility != null)
+                {
+                    DeadAbility.Draw(gameTime, globalOffset, spriteBatch);
+                }
             }
         }
 

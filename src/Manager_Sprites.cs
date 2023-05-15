@@ -71,6 +71,7 @@ namespace YGR
 
         // Effects
         public static Texture2D Effect_Confusion { get; private set; }
+        public static Texture2D Effect_Blank { get; private set; }
         public static Texture2D Effect_Shield { get; private set; }
         public static Texture2D Effect_Gunslinger { get; private set; }
 
@@ -136,6 +137,7 @@ namespace YGR
             SpinningPlus = contentManager.Load<Texture2D>("SpritesOther/SpinningPlus");
 
             Effect_Confusion = contentManager.Load<Texture2D>("SpritesEffects/noise");
+            Effect_Blank = contentManager.Load<Texture2D>("SpritesEffects/noise"); //TODO: Add blank effect
             Effect_Shield = contentManager.Load<Texture2D>("SpritesEffects/shield");
             Effect_Gunslinger = contentManager.Load<Texture2D>("SpritesEffects/noise"); //TODO: Add gunslinger effect
 
@@ -223,6 +225,18 @@ namespace YGR
         }
 
         public static AnimatedSprite NewAnimatedSprite_Confusion()
+        {
+            return new AnimatedSprite(
+                texture: Effect_Confusion,
+                spriteDimension: new Vector2(128, 128),
+                animations: new Dictionary<AnimationState, int[]> {
+                    { AnimationState.Idle, new int[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14 } },
+                },
+                animationDuration: 500
+            );
+        }
+
+        public static AnimatedSprite NewAnimatedSprite_Blank() //TODO: add blank effect
         {
             return new AnimatedSprite(
                 texture: Effect_Confusion,

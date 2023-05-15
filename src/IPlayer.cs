@@ -26,6 +26,8 @@ namespace YGR
         public ControlLayout ControlLayout { get; set; }
         public IShooter Gun { get; set; }
         public IAbility Ability { get; set; }
+        public IAbility DeadAbility { get; set; }
+
         public PlayerIndex PlayerIndex { get; }
         public bool IsActive { get; }
         public bool IsInvincible { get; }

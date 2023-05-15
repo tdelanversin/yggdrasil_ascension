@@ -14,7 +14,7 @@ namespace YGR
             ) : base(playerIndex, initialPosition, level, null, PlayerType.Ghost, controlLayout)
         {
             Name = "Ghost";
-            Ability = new Ability_Ghost();
+            Ability = new Ability_Blank(this);
             VelocityMax = IPlayer.PlayerBaseVelocity * 2; // Compensate for not being able to dash
             IsActive = false;
             LifePoints = LifePointsMax = 0;
