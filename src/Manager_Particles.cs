@@ -263,7 +263,7 @@ namespace YGR
                 Position = pos,
                 Emitters = new List<ParticleEmitter>
                 {
-                    new ParticleEmitter(textureRegion, 100, TimeSpan.FromSeconds(1f),
+                    new ParticleEmitter(textureRegion, 100, TimeSpan.FromSeconds(0.5f),
                         //Profile.Point())
                         Profile.BoxFill(15,15))
                         //Profile.Line(new Vector2(1,1), 5f))
