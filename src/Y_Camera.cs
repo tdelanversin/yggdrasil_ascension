@@ -290,15 +290,47 @@ namespace YGR
             {
                 return;
             }
-            InTransitionFromMenu = true;
 
             if (animate)
             {
                 ResetAnimation(animationDuration);
+                InTransitionFromMenu = true;
             }
             var tmp = Mode;
             Mode = ModePrev;
             ModePrev = tmp;
+        }
+
+        public static void BackToGame(bool animate = true, float animationDuration = 1000)
+        {
+            if (Mode != CameraMode.Menu)
+            {
+                return;
+            }
+
+            if (animate)
+            {
+                ResetAnimation(animationDuration);
+                InTransitionFromMenu = true;
+            }
+
+            // Figure out what camera mode we want based on the current game state
+            if (Y_Level.State == Y_Level.GamePlayState.Start)
+            {
+                SetFocusRoom(Y_Level.ActiveRoom, animate, animationDuration);
+            }
+            else if (Y_Level.State == Y_Level.GamePlayState.FreeRoam)
+            {
+                SetFocusPlayers(animate, animationDuration);
+            }
+            else if (Y_Level.State == Y_Level.GamePlayState.Encounter)
+            {
+                SetFocusRoom(Y_Level.ActiveRoom, animate, animationDuration);
+            }
+            else
+            {   // Last resort
+                Mode = ModePrev;
+            }
         }
 
         public static void SetFocusManual()
@@ -340,11 +372,12 @@ namespace YGR
 
         public static void SetFocusMenu(bool animate = true, float animationDuration = 1000)
         {
+            if (Mode == CameraMode.Menu) { return; }
             if (animate)
             {
                 ResetAnimation(animationDuration);
+                InTransitionToMenu = true;
             }
-            InTransitionToMenu = true;
             Rect = A_Yggdrasil.Background_.Rect;
             Mode = CameraMode.Menu;
         }
@@ -354,8 +387,8 @@ namespace YGR
             if (animate)
             {
                 ResetAnimation(animationDuration);
+                InTransitionToMenu = true;
             }
-            InTransitionToMenu = true;
             Rect = rect;
             Mode = CameraMode.Menu;
         }

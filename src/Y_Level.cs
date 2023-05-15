@@ -106,7 +106,7 @@ namespace YGR
         public static float GlobalScale { get; set; }
 
         // Gameplay state objects
-        public IWalkable ActiveRoom;
+        public static IWalkable ActiveRoom;
 
         public static GamePlayState State;
         public static GameTutorialState TutorialState;

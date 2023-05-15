@@ -112,18 +112,12 @@ namespace YGR
                     }
                     else
                     {
-                        Camera.RestorePreviousMode();
+                        Camera.BackToGame();
                     }
-                    // if (_level.State == Y_Level.GamePlayState.FreeRoam)
-                    //     Camera.SetFocusPlayers(animate: true);
-                    // else if (_level.State == Y_Level.GamePlayState.Encounter)
-                    //     Camera.SetFocusRoom(_level.ActiveRoom, animate: true);
-                    // else if (_level.State == Y_Level.GamePlayState.Start && Camera.Mode == CameraMode.Menu)
-                    //     Camera.SetFocusRoom(_level.ActiveRoom, animate: true);
                 }
                 if (DesiredState == GameState.Menu)
                 {
-                    Camera.SetFocusMenu(Background_.Rect, animate: true, animationDuration: 750);
+                    Camera.SetFocusMenu(animate: true, animationDuration: 750);
                 }
             }
 
