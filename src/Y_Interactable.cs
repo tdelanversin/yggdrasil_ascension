@@ -376,27 +376,12 @@ namespace YGR
             {
                 if (Rect.Contains(p.Rect.Center + new Point(0, p.Rect.Height / 2)))
                 {
-                    if (_countDownCounter == 0)
-                    {
-                        tryTrigger = true;
-                    }
-                    else
-                    {
-                        Notifications.Clear();
-                        Notifications.New("\n\n\n\n", Color.Wheat, 2000);
-                        Notifications.New("Escape in: " + _countDownCounter.ToString(), Color.Wheat, 2000, Fonts.Large);
-                        _countDown -= gameTime.ElapsedGameTime.Milliseconds;
-                        if (_countDown <= 0)
-                        {
-                            _countDown = 1000;
-                            _countDownCounter--;
-                        }
-                    }
+                    tryTrigger = true;
                 }
                 else
                     ready = false;
 
-                if (p is Player_Ghost)
+                if (p.WhatAreYou() == X_LevelElements.Ghost)
                     ready = false;
             }
 
@@ -411,8 +396,26 @@ namespace YGR
                 }
                 else
                 {
-                    state = ButtonState.In;
-                    TriggerInteraction(gameTime);
+                    if(_countDownCounter <= 0)
+                    {
+                        state = ButtonState.In;
+                        TriggerInteraction(gameTime);
+                    }
+                    else
+                    {
+                        state = ButtonState.Half;
+                        Color = Color.OrangeRed;
+
+                        Notifications.Clear();
+                        Notifications.New("\n\n\n\n", Color.Wheat, 2000);
+                        Notifications.New("Escape in: " + _countDownCounter.ToString(), Color.Wheat, 2000, Fonts.Large);
+                        _countDown -= gameTime.ElapsedGameTime.Milliseconds;
+                        if (_countDown <= 0)
+                        {
+                            _countDown = 1000;
+                            _countDownCounter--;
+                        }
+                    }
                 }
             }
             else
