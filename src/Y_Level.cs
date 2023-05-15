@@ -798,7 +798,7 @@ namespace YGR
                         Notifications.New("This is Ninja,", colorLightRoom, duration, Fonts.Large);
                         Notifications.New("he has been here for a long time", colorLightRoom, duration, Fonts.Large);
                         Notifications.New("which is why he is still here!", colorLightRoom, duration, Fonts.Large);
-                        Notifications.New("If ninja shoots a confused enemy, he does more damage!", colorLightRoom, duration, Fonts.Large);
+                        Notifications.New("If Ninja shoots a confused enemy, he does more damage!", colorLightRoom, duration, Fonts.Large);
                     }
                     break;
                 case GameTutorialState.IntroduceCharactersNerd:
