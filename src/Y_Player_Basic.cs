@@ -457,16 +457,25 @@ namespace YGR
                 {
                     _isAiming = true; // Show the aim indicator when firing
                     CurrentAimInput = InputType.Controller;
-                    bool shot = Gun.Shoot(gameTime, Rect.Center.ToVector2(), AimDirection, Level, this);
-                    if (shot) { Stats.TimesFired++; }
+
+                    // only allow shooting if ability is not triggered
+                    // (this is for the mailman)
+                    if(Ability == null || (Ability != null && !Ability.Triggered))
+                    {
+                        bool shot = Gun.Shoot(gameTime, Rect.Center.ToVector2(), AimDirection, Level, this);
+                        if (shot) { Stats.TimesFired++; }
+                    }
                 }
 
                 if (Input.IsButtonDown(PlayerIndex, Keybinds.GamePadAbility) && IsAlive())
                 {
                     _isAiming = true; // Show the aim indicator when firing
                     CurrentAimInput = InputType.Controller;
-                    bool triggered = Ability.Trigger(gameTime, Rect.Center.ToVector2(), AimDirection, Level, this);
-                    if (triggered) { Stats.TimesAbilitated++; }
+                    if(Ability != null)
+                    {
+                        bool triggered = Ability.Trigger(gameTime, Rect.Center.ToVector2(), AimDirection, Level, this);
+                        if (triggered) { Stats.TimesAbilitated++; }
+                    }
                 }
             }
         }
@@ -507,13 +516,19 @@ namespace YGR
                 }
                 if (Input.IsLeftMousePressed() && IsAlive())
                 {
-                    bool shot = Gun.Shoot(gameTime, playerCenter, AimDirection, Level, this);
-                    if (shot) { Stats.TimesFired++; }
+                    if (Ability == null || (Ability != null && !Ability.Triggered))
+                    {
+                        bool shot = Gun.Shoot(gameTime, playerCenter, AimDirection, Level, this);
+                        if (shot) { Stats.TimesFired++; }
+                    }
                 }
                 if (Input.IsKeyDown(Keybinds.KeyboardAbility) && IsAlive())
                 {
-                    bool triggered = Ability.Trigger(gameTime, playerCenter, AimDirection, Level, this);
-                    if (triggered) { Stats.TimesAbilitated++; }
+                    if(Ability != null)
+                    {
+                        bool triggered = Ability.Trigger(gameTime, playerCenter, AimDirection, Level, this);
+                        if (triggered) { Stats.TimesAbilitated++; }
+                    }
                 }
 
                 if (Input.HasMouseStateChanged())
@@ -618,7 +633,10 @@ namespace YGR
 
             UpdateColor(gameTime);
             Gun.Update(gameTime);
-            Ability.Update(gameTime);
+            if(Ability != null)
+            {
+                Ability.Update(gameTime);
+            }
         }
 
         // Render ghosty 👻
@@ -714,7 +732,10 @@ namespace YGR
                 DrawCharacterSprite(gameTime, globalOffset, spriteBatch);
                 DrawAimIndicator(gameTime, globalOffset, spriteBatch);
                 DrawHealthbar(gameTime, globalOffset, spriteBatch);
-                Ability.Draw(gameTime, globalOffset, spriteBatch);
+                if(Ability != null)
+                {
+                    Ability.Draw(gameTime, globalOffset, spriteBatch);
+                }
                 // DrawOverheadString(gameTime, globalOffset, spriteBatch);
             }
             else

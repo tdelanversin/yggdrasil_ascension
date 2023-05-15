@@ -354,7 +354,7 @@ namespace YGR
             bool ready = true;
 
             /* All active players need to be inside and have picked a character */
-            var activePlayers = Manager_Players.Players.FindAll(p => p.IsActive);
+            var activePlayers = Manager_Players.Players.FindAll(p => p.IsActive && (p.WhatAreYou() != X_LevelElements.Ghost));
 
             if (activePlayers.Count < 1)
             {

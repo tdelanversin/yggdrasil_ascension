@@ -77,7 +77,7 @@ namespace YGR
             if (self._lastOwner == player)
                 return false;
 
-            if (player is Player_Ghost)
+            if (player.WhatAreYou() == X_LevelElements.Ghost)
                 return false;
 
             var oldGun = player.Gun;
@@ -482,10 +482,10 @@ namespace YGR
                 {
                     var target = _carriedSprite.AnimationSourceRects[AnimationState.WalkRight][0];
                     var scale = (float)Rect.Height / (float)target.Height;
-                    scale *= 0.5f;
+                    scale *= 0.9f;
                     var offset = new Vector2(
                         0,
-                        Rect.Height - target.Height * scale
+                        Rect.Height - (target.Height * scale / 2)
                     );
 
                     spriteBatch.Draw(
