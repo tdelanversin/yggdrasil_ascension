@@ -680,7 +680,7 @@ namespace YGR
                         ShowTutorialControls(duration);
                         Notifications.New("\n\n\n\n\n\n\n\n", colorLightRoom, duration);
                         Notifications.New("Press any button to skip FOLLOWING steps of the tutorial,", colorLightRoom, duration, Fonts.Large);
-                        Notifications.New("Press [Start] / [Esc] to skip all and directly start playing!", colorLightRoom, duration, Fonts.Large);
+                        Notifications.New("Press [Start] / [Esc] to quit tutorial!", colorLightRoom, duration, Fonts.Large);
                     }
                     break;
                 case GameTutorialState.Welcome:
@@ -980,11 +980,11 @@ namespace YGR
                 // in the first stage: add comment non-skippable
                 if(TutorialState == GameTutorialState.Warning && TutorialStageDurationCounterS < TutorialStageDurationCounterS_InitialSkipAfter)
                 {
-                    Notifications.New("[Skippable in: " + (TutorialStageDurationCounterS_InitialSkipAfter - TutorialStageDurationCounterS) + "]", Color.DarkRed, duration, Fonts.Medium);
+                    Notifications.New("[Continue in: " + (TutorialStageDurationCounterS_InitialSkipAfter - TutorialStageDurationCounterS) + "]", colorLightRoom, duration, Fonts.Medium);
                 }
                 else
                 {
-                    Notifications.New("[Remaining: " + (MaxTutorialStageDurationS - TutorialStageDurationCounterS) + "]", colorLightRoom, duration, Fonts.Medium);
+                    Notifications.New("[Press to continue - Remaining: " + (MaxTutorialStageDurationS - TutorialStageDurationCounterS) + "]", colorLightRoom, duration, Fonts.Medium);
                 }
             }
 
