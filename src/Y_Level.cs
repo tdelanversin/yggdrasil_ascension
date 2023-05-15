@@ -55,6 +55,7 @@ namespace YGR
             Warning,
             Welcome,
             IntroduceAllCharacters,
+            IntroduceControls,
             IntroduceMoving,
             IntroduceAiming,
             IntroduceShooting,
@@ -584,24 +585,10 @@ namespace YGR
                     TutorialState = GameTutorialState.IntroduceAllCharacters;
                     break;
                 case GameTutorialState.IntroduceAllCharacters:
-                    TutorialState = GameTutorialState.IntroduceMoving;
+                    TutorialState = GameTutorialState.IntroduceControls;
                     break;
-                case GameTutorialState.IntroduceMoving:
-                    TutorialState = GameTutorialState.IntroduceAiming;
-                    break;
-                case GameTutorialState.IntroduceAiming:
-                    TutorialState = GameTutorialState.IntroduceShooting;
-                    break;
-                case GameTutorialState.IntroduceShooting:
-                    TutorialState = GameTutorialState.IntroduceChangeGun;
-                    break;
-                case GameTutorialState.IntroduceChangeGun:
-                    TutorialState = GameTutorialState.IntroduceDodging;
-                    break;
-                case GameTutorialState.IntroduceDodging:
-                    TutorialState = GameTutorialState.IntroduceAbilities;
-                    break;
-                case GameTutorialState.IntroduceAbilities:
+                case GameTutorialState.IntroduceControls:
+                    ;
                     TutorialState = GameTutorialState.IntroduceCharactersProfessor;
                     break;
                 case GameTutorialState.IntroduceCharactersProfessor:
@@ -1285,6 +1272,16 @@ namespace YGR
                 if (Rectangle.Intersect(Camera.VisibleArea, room.Value.Rect) == Rectangle.Empty) continue;
                 room.Value.Draw(gameTime, globalOffset, spriteBatch);
             }
+
+            // Draw the controls inside the starting room pillar
+            Rectangle ControlsRect = new Rectangle(
+                _startRoom.Rect.X + 16 * InGameTileSize,
+                _startRoom.Rect.Y + 16 * InGameTileSize + 10, // CSS style fixes by hand
+                12 * InGameTileSize,
+                7 * InGameTileSize
+            );
+
+            spriteBatch.Draw(Manager_Sprites.Controls, ControlsRect, null, Color.White, 0, Vector2.Zero, SpriteEffects.None, 0);
         }
 
         public X_LevelElements WhatAreYou()

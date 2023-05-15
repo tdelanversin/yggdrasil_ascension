@@ -25,7 +25,7 @@ namespace YGR
             float spacing = 1.5f;
             string longest_str = "P1: [JOINED] Pick character"; // Used to center the text
             Vector2 size = font.MeasureString(longest_str);
-            Vector2 pos = new Vector2((Camera.Bounds.Width - size.X) / 2, (Camera.Bounds.Height - size.Y * (1f + 3f * spacing)) / 2);
+            Vector2 pos = new Vector2(Camera.Bounds.Width * 3 / 4 - size.X / 2, Camera.Bounds.Height / 8 - (size.Y * (1f + 3f * spacing)) / 2);
             pos.Y += Y_Level.InGameTileSize * 2.5f; // Feels like CSS...
 
             foreach (IPlayer p in Manager_Players.Players)
@@ -193,6 +193,15 @@ namespace YGR
                 Util.DrawString(font, infoString, pos, Color.Wheat, spriteBatch);
                 pos.Y += totalSize.Y * spacing;
             }
+        }
+
+        public static void DrawControls(GameTime gameTime, SpriteBatch spriteBatch)
+        {
+            Texture2D sprite = Manager_Sprites.Controls;
+            int w = sprite.Width / 5;
+            int h = sprite.Height / 5;
+            Vector2 pos = new Vector2((Camera.Bounds.Width - w) / 2, (Camera.Bounds.Height - h) / 2);
+            spriteBatch.Draw(sprite, pos, null, Color.White, 0, Vector2.Zero, 0.2f, SpriteEffects.None, 0);
         }
 
         /// <summary>

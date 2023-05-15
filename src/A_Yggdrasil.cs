@@ -385,6 +385,11 @@ namespace YGR
                     {
                         UI.DrawPlayerSelection(gameTime, _spriteBatch);
                     }
+                    else if (Y_Level.State == Y_Level.GamePlayState.Tutorial)
+                    {
+                        // For now let's draw the UI as part of the level world
+                        // UI.DrawControls(gameTime, _spriteBatch);
+                    }
                     else if (Y_Level.State == Y_Level.GamePlayState.EndScreen)
                     {
                         UI.DrawEndScreen(gameTime, _spriteBatch);
