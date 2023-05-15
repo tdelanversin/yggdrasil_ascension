@@ -7,6 +7,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using Microsoft.Xna.Framework.Media;
 
 namespace YGR
 {
@@ -210,6 +211,9 @@ namespace YGR
             else if (last.Age > last.AgeMax - fadeTime)
             {
                 fadeAlpha = (last.AgeMax - last.Age) / fadeTime;
+
+                // Use the opportunity here to also fade out the song
+                MediaPlayer.Volume = fadeAlpha;
             }
             if (Y_Level.EndState == Y_Level.GameEndState.Won)
             {

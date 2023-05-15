@@ -124,6 +124,8 @@ namespace YGR
         internal static void PlayMainMenuMusic()
         {
             MediaPlayer.Play(Manager_Sound.Song_TheWhiteLion);
+            // (Re)set the volume, since we fade out the song on the ending screen
+            MediaPlayer.Volume = 1.0f;
         }
 
         internal static void PlayFreeRoamMusic()
