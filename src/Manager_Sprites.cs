@@ -11,6 +11,7 @@ namespace YGR
         // Players
         public static Texture2D Player_Ninja { get; private set; }
         public static Texture2D Player_Simple { get; private set; }
+        public static Texture2D Player_NerdyGirl2 { get; private set; }
         public static Texture2D Player_NerdyGirl { get; private set; }
         public static Texture2D Player_Mailman { get; private set; }
         public static Texture2D Player_Professor { get; private set; }
@@ -84,6 +85,7 @@ namespace YGR
             Player_Simple = contentManager.Load<Texture2D>("SpritesCharacters/tester_60");
             Player_Ghost = contentManager.Load<Texture2D>("SpritesCharacters/ghosty");
             Player_NerdyGirl = contentManager.Load<Texture2D>("SpritesCharacters/NerdyGirl");
+            Player_NerdyGirl2 = contentManager.Load<Texture2D>("SpritesCharacters/NerdyGirl2");
             Player_Mailman = contentManager.Load<Texture2D>("SpritesCharacters/Mailman");
             Player_Professor = contentManager.Load<Texture2D>("SpritesCharacters/Prof");
 
@@ -390,6 +392,21 @@ namespace YGR
                     { AnimationState.WalkLeft, new int[] { 7, 6, 5, 4, 5, 6 } },
                     { AnimationState.IdleLeft, new int[] { 7, 6, 5, 4, 5, 6 } },
                 }
+            );
+        }
+
+        public static AnimatedSprite NewAnimatedSprite_NerdyGirl2()
+        {
+            return new AnimatedSprite(
+                texture: Player_NerdyGirl2,
+                spriteDimension: new Vector2(609, 451),
+                animations: new Dictionary<AnimationState, int[,]> {
+                    { AnimationState.WalkLeft, new int[,] { {0,0}, {0,1} } },
+                    { AnimationState.IdleLeft, new int[,] { {0,2}, {0,3}, {0,4} } },
+                    { AnimationState.IdleRight, new int[,] { {1,0}, {1,1}, {1,2} } },
+                    { AnimationState.WalkRight, new int[,] { {1,3}, {1,4} } },
+                },
+                animationDuration: 1000
             );
         }
 
