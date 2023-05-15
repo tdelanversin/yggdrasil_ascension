@@ -892,7 +892,7 @@ namespace YGR
                         var avgPos = new Vector2(allPos.Select(x => x.X).Average(), allPos.Select(x => x.Y).Average());
 
                         if (TutorialStageDurationCounterS == 0)
-                            Camera.SetFocusMenu(A_Yggdrasil.Background_.Rect, animationDuration: 3000);
+                            Camera.SetFocusMenu(animationDuration: 3000);
 
                         ShowTutorialControls(duration);
                         Notifications.New("\n\n\n\n", colorLightRoom, duration);
@@ -1195,16 +1195,20 @@ namespace YGR
                     var encounterRoom = (Y_CMRoom)ActiveRoom;
 
                     // Duration for Win/Lose message to be shown
-                    int gameEndNotificationLength = 15000;
+                    int gameEndNotificationLength = 35000;
 
                     // Check if players died
                     if (encounterRoom.GetPlayersInside().FindAll(p => p.LifePoints > 0).Count < 1 && encounterRoom.PickUps.FindAll(x => x.Type == Y_PowerUps.Revive).Count < 1)
                     {
                         Notifications.New("\n\n\n\n", Color.Wheat, gameEndNotificationLength);
-                        Notifications.New("Humans. You have tried to prove yourself to be worthy in a fight. But alas, there was a greater evil that slayed you.", Color.Wheat, gameEndNotificationLength, Fonts.Large);
-                        Notifications.New("Will you train, every day, to earn that honor? Will you commit to fighting and failing, until victory is the only outcome?", Color.Wheat, gameEndNotificationLength, Fonts.Large);
-                        Notifications.New("If so, we will eagerly watch your every try, and one day, invite you to fight with us, at the great battle of Ragnarok.", Color.Wheat, gameEndNotificationLength, Fonts.Large);
+                        Notifications.New("Humans. You have tried to prove yourself to be worthy in a fight.", Color.Wheat, gameEndNotificationLength, Fonts.Large);
+                        Notifications.New("But alas, there was a greater evil that slayed you.", Color.Wheat, gameEndNotificationLength, Fonts.Large);
+                        Notifications.New("\nWill you train, every day, to earn that honor?", Color.Wheat, gameEndNotificationLength, Fonts.Large);
+                        Notifications.New("Will you commit to fighting and failing, until victory is the only outcome?", Color.Wheat, gameEndNotificationLength, Fonts.Large);
+                        Notifications.New("\nIf so, we will eagerly watch your every try, and one day,", Color.Wheat, gameEndNotificationLength, Fonts.Large);
+                        Notifications.New("invite you to fight with us, at the great battle of Ragnarok.", Color.Wheat, gameEndNotificationLength, Fonts.Large);
                         Manager_Sound.PlaySongEndingLose();
+                        Camera.SetFocusMenu(animationDuration: gameEndNotificationLength / 5);
                         EndState = GameEndState.Lost;
                         State = GamePlayState.EndScreen;
                         break;
@@ -1234,11 +1238,16 @@ namespace YGR
                     if (encounterRoom.Category == "Gold")
                     {
                         Notifications.New("\n\n\n\n", Color.Wheat, gameEndNotificationLength);
-                        Notifications.New("Our heroes. You have managed to climb Yggdrasil and prove yourselves. We applaud you for that.", Color.Wheat, gameEndNotificationLength, Fonts.Large);
-                        Notifications.New("Now, it will be our honor, to have you fight along side of us in the upcoming battle of Ragnarok. Are you ready?", Color.Wheat, gameEndNotificationLength, Fonts.Large);
+                        Notifications.New("Our heroes.", Color.Wheat, gameEndNotificationLength, Fonts.Large);
+                        Notifications.New("\nYou have managed to climb Yggdrasil and prove yourselves.", Color.Wheat, gameEndNotificationLength, Fonts.Large);
+                        Notifications.New("We applaud you for that.", Color.Wheat, gameEndNotificationLength, Fonts.Large);
+                        Notifications.New("\nNow, it will be our honor, to have you fight along side of us", Color.Wheat, gameEndNotificationLength, Fonts.Large);
+                        Notifications.New("in the upcoming battle of Ragnarok.", Color.Wheat, gameEndNotificationLength, Fonts.Large);
+                        Notifications.New("\nAre you ready?", Color.Wheat, gameEndNotificationLength, Fonts.Large);
                         Manager_Sound.PlaySongEndingWin();
                         encounterRoom.OpenAllUnlockedRoomDoors();
-                        Camera.SetFocusPlayers();
+                        Camera.SetFocusPlayers(); // First to player focus for the camera to remember
+                        Camera.SetFocusMenu(animationDuration: gameEndNotificationLength / 5);
                         EndState = GameEndState.Won;
                         State = GamePlayState.EndScreen; // no end screen for now
                     }

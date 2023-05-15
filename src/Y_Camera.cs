@@ -338,9 +338,19 @@ namespace YGR
             Mode = CameraMode.Room;
         }
 
+        public static void SetFocusMenu(bool animate = true, float animationDuration = 1000)
+        {
+            if (animate)
+            {
+                ResetAnimation(animationDuration);
+            }
+            InTransitionToMenu = true;
+            Rect = A_Yggdrasil.Background_.Rect;
+            Mode = CameraMode.Menu;
+        }
+
         public static void SetFocusMenu(Rectangle rect, bool animate = true, float animationDuration = 1000)
         {
-            ModePrev = Mode;
             if (animate)
             {
                 ResetAnimation(animationDuration);
