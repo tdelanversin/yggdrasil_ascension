@@ -81,11 +81,11 @@ namespace YGR
         float _hOffset;
 
         float _scale;
-        float _angle;
+        // float _angle;
 
         //bool _reloading;
         int _maxDuration;
-        int _maxReloadTime;
+        // int _maxReloadTime;
         int _currentDuration = 0;
 
         int _level_1_duration = 3000;

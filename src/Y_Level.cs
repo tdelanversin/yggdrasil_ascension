@@ -98,8 +98,8 @@ namespace YGR
         private Y_CMRoom _startRoom;
         private Y_CMRoom _goldRoom;
 
-        private int _waitTimeBetweenEndOfFightAndLowerDoors = 125;
-        private int _waitTimeBetweenEndOfFightAndLowerDoorsCounter = 0;
+        // private int _waitTimeBetweenEndOfFightAndLowerDoors = 125;
+        // private int _waitTimeBetweenEndOfFightAndLowerDoorsCounter = 0;
 
         public static int TextureTileSize { get; set; }
         public static int InGameTileSize { get; set; }
