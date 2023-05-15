@@ -56,13 +56,16 @@ class Program
             "].log");
 
         // delete all but the newest 5 logs (keep things sustainable)
-        var alllogs = Directory.GetFiles("./logs").ToList().Where(x => x.EndsWith(".log")).ToList();
-        if(alllogs.Count() > 0)
+        if(Directory.Exists("./logs"))
         {
-            var files = alllogs.OrderByDescending(d => new FileInfo(d).CreationTime).Skip(5).ToList();
-            foreach (var file in files)
+            var alllogs = Directory.GetFiles("./logs").Where(x => x.EndsWith(".log")).ToList();
+            if (alllogs.Count() > 0)
             {
-                File.Delete(file);
+                var files = alllogs.OrderByDescending(d => new FileInfo(d).CreationTime).Skip(5).ToList();
+                foreach (var file in files)
+                {
+                    File.Delete(file);
+                }
             }
         }
 #if DEBUG
