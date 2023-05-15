@@ -680,7 +680,7 @@ namespace YGR
                     if (TutorialStageDurationCounterMS == 0)
                     {
                         ShowTutorialControls(duration);
-                        Notifications.New("\n\n\n\n\n\n\n\n", colorLightRoom, duration);
+                        Notifications.New("\n\n\n\n", colorLightRoom, duration);
                         Notifications.New("Press any button to skip steps of the tutorial,", colorLightRoom, duration, Fonts.Large);
                         Notifications.New("Press [Start] / [Esc] to quit tutorial!", colorLightRoom, duration, Fonts.Large);
                     }
@@ -702,7 +702,7 @@ namespace YGR
                         Camera.SetFocusManual(_startRoom.Rect.Center.ToVector2() + new Vector2(0, Rooms[0].Rect.Height * 0.25f), 1.0f);
 
                         ShowTutorialControls(duration);
-                        Notifications.New("\n\n\n\n", colorLightRoom, duration);
+                        Notifications.New("\n\n", colorLightRoom, duration);
                         Notifications.New("You can choose between 4 distinct Characters.", colorLightRoom, duration, Fonts.Large);
                         Notifications.New("All Characters have one Gun and an Ability and can Dodge.", colorLightRoom, duration, Fonts.Large);
                     }
@@ -713,7 +713,7 @@ namespace YGR
                         Camera.SetFocusManual(ControlsRect.Center.ToVector2(), 2.0f);
 
                         ShowTutorialControls(duration);
-                        Notifications.New("\n\n\n\n", colorLightRoom, duration);
+                        Notifications.New("\n\n", colorLightRoom, duration);
                         Notifications.New("The controls are always shown here in the starting room.", colorLightRoom, duration, Fonts.Large);
                     }
                     break;
