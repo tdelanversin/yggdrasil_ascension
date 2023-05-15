@@ -1,6 +1,7 @@
 ﻿using Microsoft.VisualBasic;
 using System;
 using System.IO;
+using System.Linq;
 
 /// <summary>
 /// This class instanciates a Logger and makes it available everywhere
@@ -53,6 +54,17 @@ class Program
             time.Millisecond.ToString() +
             random.Next().ToString() +
             "].log");
+
+        // delete all but the newest 5 logs (keep things sustainable)
+        var alllogs = Directory.GetFiles("./logs").ToList().Where(x => x.EndsWith(".log")).ToList();
+        if(alllogs.Count() > 0)
+        {
+            var files = alllogs.OrderByDescending(d => new FileInfo(d).CreationTime).Skip(5).ToList();
+            foreach (var file in files)
+            {
+                File.Delete(file);
+            }
+        }
 #if DEBUG
         Clearcove.Logging.Logger.BatchInterval = 1000;
         Clearcove.Logging.Logger.LogToConsole = true;  // Print log entries to console (optional).
