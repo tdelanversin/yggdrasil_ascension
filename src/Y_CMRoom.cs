@@ -177,7 +177,7 @@ namespace YGR
             bool preprocessed = false;
             foreach (var c in categories)
             {
-                var srcPath = Util.GetAbsResourceFolderPath(resourceFolder);
+                var srcPath = resourceFolder; // Util.GetAbsResourceFolderPath(resourceFolder);
                 if (File.Exists(srcPath + c + "_Floor.Color") && File.Exists(srcPath + c + "_Roof.Color"))
                 {
                     continue;
