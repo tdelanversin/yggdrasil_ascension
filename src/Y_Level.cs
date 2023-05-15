@@ -126,6 +126,7 @@ namespace YGR
         Vector2 Tutorial_PlayerSlot_Professor;
         Vector2 Tutorial_PlayerSlot_Mailman;
         Vector2 Tutorial_GhostSlot;
+        Rectangle ControlsRect;
         IWalkable Tutorial_SpikyRoom;
         Vector2 Tutorial_ChangeGun;
         Enemy_Slime_Spiky Tutorial_Spiky;
@@ -302,6 +303,12 @@ namespace YGR
                 if (node.Value.Type == "Start")
                 {
                     _startRoom = room;
+                    ControlsRect = new Rectangle(
+                        _startRoom.Rect.X + 16 * InGameTileSize,
+                        _startRoom.Rect.Y + 16 * InGameTileSize + 10, // CSS style fixes by hand
+                        12 * InGameTileSize,
+                        7 * InGameTileSize
+                    );
                 }
                 else if (node.Value.Type == "Gold")
                 {
@@ -588,7 +595,6 @@ namespace YGR
                     TutorialState = GameTutorialState.IntroduceControls;
                     break;
                 case GameTutorialState.IntroduceControls:
-                    ;
                     TutorialState = GameTutorialState.IntroduceCharactersProfessor;
                     break;
                 case GameTutorialState.IntroduceCharactersProfessor:
@@ -699,6 +705,16 @@ namespace YGR
                         Notifications.New("\n\n\n\n", colorLightRoom, duration);
                         Notifications.New("You can choose between 4 distinct Characters.", colorLightRoom, duration, Fonts.Large);
                         Notifications.New("All Characters have one Gun and an Ability and can Dodge.", colorLightRoom, duration, Fonts.Large);
+                    }
+                    break;
+                case GameTutorialState.IntroduceControls:
+                    if (TutorialStageDurationCounterMS == 0)
+                    {
+                        Camera.SetFocusManual(ControlsRect.Center.ToVector2(), 2.0f);
+
+                        ShowTutorialControls(duration);
+                        Notifications.New("\n\n\n\n", colorLightRoom, duration);
+                        Notifications.New("The controls are always shown here in the starting room.", colorLightRoom, duration, Fonts.Large);
                     }
                     break;
                 case GameTutorialState.IntroduceMoving:
@@ -1274,13 +1290,6 @@ namespace YGR
             }
 
             // Draw the controls inside the starting room pillar
-            Rectangle ControlsRect = new Rectangle(
-                _startRoom.Rect.X + 16 * InGameTileSize,
-                _startRoom.Rect.Y + 16 * InGameTileSize + 10, // CSS style fixes by hand
-                12 * InGameTileSize,
-                7 * InGameTileSize
-            );
-
             spriteBatch.Draw(Manager_Sprites.Controls, ControlsRect, null, Color.White, 0, Vector2.Zero, SpriteEffects.None, 0);
         }
 
