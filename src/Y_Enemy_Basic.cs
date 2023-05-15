@@ -41,6 +41,7 @@ namespace YGR
         public IShooter Gun { get; set; }
         protected IVictim Target = null;
         public bool Confused { get; set; }
+        public IPlayer Confuser { get; set; }
 
         protected Vector2 _position;
         protected Color _hitColor;
@@ -230,6 +231,7 @@ namespace YGR
                         if (projectile.WhoFiredMe.ElementLevel == 2) durationMS = 4000;
                         else if (projectile.WhoFiredMe.ElementLevel == 3) durationMS = 6000;
                         Manager_Confusion.AddConfusion(this, durationMS);
+                        if (projectile.WhoFiredMe is IPlayer) Confuser = (IPlayer)projectile.WhoFiredMe;
                     }
                 }
 
@@ -477,7 +479,11 @@ namespace YGR
         {
             if (Target != null)
             {
-                if (LifePoints > fleeingHPTreshold)
+                if (Confused)
+                {
+                    State = EnemyState.Flee;
+                }
+                else if (LifePoints > fleeingHPTreshold)
                 {
                     State = EnemyState.Chase;
                 }
@@ -547,9 +553,18 @@ namespace YGR
             Gun.Update(gameTime);
             if (Target != null)
             {
-                Vector2 targetDirection = Target.Rect.Center.ToVector2() - _rect.Center.ToVector2();
-                targetDirection.Normalize();
-                Gun.Shoot(gameTime, _rect.Center.ToVector2(), targetDirection, Level, this);
+                if (Confused)
+                {
+                    if (Confuser != null)
+                        Gun.Shoot(gameTime, _rect.Center.ToVector2(), -FacingDirection, Level, Confuser);
+                }
+                else
+                {
+                    // Shoot at target (if in range
+                    Vector2 targetDirection = Target.Rect.Center.ToVector2() - _rect.Center.ToVector2();
+                    targetDirection.Normalize();
+                    Gun.Shoot(gameTime, _rect.Center.ToVector2(), targetDirection, Level, this);
+                }
             }
         }
 
