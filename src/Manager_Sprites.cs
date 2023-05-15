@@ -107,9 +107,9 @@ namespace YGR
             HealthbarSeperatorBoss = contentManager.Load<Texture2D>("SpritesOther/Boss_Healthbar_Separator");
             White = contentManager.Load<Texture2D>("SpritesOther/white");
 
-            BackgroundYggdrasil = contentManager.Load<Texture2D>("SpritesOther/background_yggdrasil");
-            BackgroundSky = contentManager.Load<Texture2D>("SpritesOther/background_sky");
-            BackgroundTitleText = contentManager.Load<Texture2D>("SpritesOther/background_text");
+            BackgroundYggdrasil = contentManager.Load<Texture2D>("Images/title_tree");
+            BackgroundSky = contentManager.Load<Texture2D>("Images/title_sky");
+            BackgroundTitleText = contentManager.Load<Texture2D>("Images/title_text");
 
             ButtonOut = contentManager.Load<Texture2D>("SpritesOther/Button_Out_2");
             ButtonHalf = contentManager.Load<Texture2D>("SpritesOther/Button_Half_2");
