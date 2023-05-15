@@ -115,23 +115,23 @@ namespace YGR
             CharacterOffset = Vector2.Zero;
 
             // Create the minions
-            for (int i = 0; i < 15; i++)
+            for (int i = 0; i < 18; i++)
             {
                 _minions.Add(Manager_Enemies.MakeEnemy_BossMinion(Level, bossColor));
             }
 
-            for (int i = 0; i < 5; i++)
+            for (int i = 0; i < 7; i++)
             {
                 _minions.Add(Manager_Enemies.MakeEnemy_BossMinionSpiky(Level, bossColor));
             }
 
-            Phase1HP = 310;
             Phase2HP = 0;
             foreach (var minion in _minions)
             {
                 Phase2HP += Math.Max(0, minion.LifePoints);
             }
-            Phase3HP = 310;
+            Phase1HP = Phase2HP;
+            Phase3HP = Phase2HP;
 
             LifePointsMax = Phase1HP + Phase2HP + Phase3HP;
 
