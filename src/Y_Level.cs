@@ -1088,17 +1088,6 @@ namespace YGR
                         pws.Add(Y_PowerUps.WeaponBlunderbuss);
                         pws.Add(Y_PowerUps.WeaponRedDevil);
 
-                        // fill up the rest of the slots with some random stuff
-                        // var pwsWeapons = new List<Y_PowerUps> {
-                        //     Y_PowerUps.WeaponHelix
-                        //     //Y_PowerUps.WeaponWide,
-                        //     //Y_PowerUps.WeaponGiga
-                        // };
-                        // while (pws.Count() < arr.Length)
-                        // {
-                        //     pws.Add(pwsWeapons[Util.random.Next(0, pwsWeapons.Count())]);
-                        // }
-
                         // mix everything thouroughly
                         var randpws = pws.OrderBy(x => Util.random.Next()).ToArray();
                         var randarr = arr.OrderBy(x => Util.random.Next()).ToArray();
