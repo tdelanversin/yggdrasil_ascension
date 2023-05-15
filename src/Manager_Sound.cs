@@ -41,6 +41,9 @@ namespace YGR
         public static SoundEffect Sound_PlasmaPistol;
         public static SoundEffect Sound_OmniShotGun;
         public static SoundEffect Sound_Wush;
+        public static SoundEffect Sound_PosititveRandomPowerup;
+        public static SoundEffect Sound_NegativeRandomPowerup;
+
 
         public static List<Song> SongsEncounter;
 
@@ -87,6 +90,8 @@ namespace YGR
             Sound_PlasmaPistol = contentManager.Load<SoundEffect>("Sounds/plasmapistol");
             Sound_OmniShotGun = contentManager.Load<SoundEffect>("Sounds/omni_shotgun");
             Sound_Wush = contentManager.Load<SoundEffect>("Sounds/wush");
+            Sound_PosititveRandomPowerup = contentManager.Load<SoundEffect>("Sounds/short-success-sound-glockenspiel-treasure-video-game-6346");
+            Sound_NegativeRandomPowerup = contentManager.Load<SoundEffect>("Sounds/negative_beeps-6008");
 
             // Set up media player
             MediaPlayer.IsRepeating = true;

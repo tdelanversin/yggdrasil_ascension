@@ -55,8 +55,8 @@ namespace YGR
         protected int _stateTimerMax = 5000; // How long do we idle / wander at most
 
         public string Identifier;
-
-        protected float _dropProbabilityPercent = 5;
+        //put this back to 5 isntead of 101
+        protected float _dropProbabilityPercent = 101;
         protected float _dropProbabilityPercentLifeSaving = 30;
 
         public Enemy_Basic(
@@ -697,15 +697,15 @@ namespace YGR
                 // drop a life saving goodie
                 var room = (Y_CMRoom)Room;
                 var p = new Point(Rect.Location.X + Rect.Width / 2, Rect.Location.Y + Rect.Height / 2);
-                room.PickUps.Add(PickUp.Factory(Y_PowerUps.Life, p, Y_Level.TextureTileSize, Y_Level.TextureTileSize, Y_Level.GlobalScale));
+                room.PickUps.Add(PickUp.Factory(Y_PowerUps.Random, p, Y_Level.TextureTileSize, Y_Level.TextureTileSize, Y_Level.GlobalScale));
             }
             else
             {
                 // otherwise maybe drop something that may or may not be usefull
                 var next = Util.random.Next(0, 100);
                 if (next >= _dropProbabilityPercent) return;
-
-                var droppables = new Y_PowerUps[] { Y_PowerUps.Life, Y_PowerUps.Revive };
+                //change that back to all possible powerups
+                var droppables = new Y_PowerUps[] { Y_PowerUps.Random };
                 var ind = Util.random.Next(0, droppables.Length);
                 var room = (Y_CMRoom)Room;
                 var p = new Point(Rect.Location.X + Rect.Width / 2, Rect.Location.Y + Rect.Height / 2);

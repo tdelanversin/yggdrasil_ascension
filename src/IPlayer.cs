@@ -34,6 +34,8 @@ namespace YGR
         public bool IsDashing { get; }
         public PlayerType Type { get; }
         public Statistics Stats { get; set; }
+        public float VelocityMax { get; set; }
+
         public void TeleportTo(Point target);
 
         public bool LevelUp();

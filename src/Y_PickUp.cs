@@ -3,6 +3,7 @@ using Microsoft.Xna.Framework.Graphics;
 using System;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Timers;
 
 namespace YGR
 {
@@ -14,6 +15,7 @@ namespace YGR
         // Powerups
         Revive,
         Life,
+        Random,
 
         // Weapons
         WeaponPistol,
@@ -41,6 +43,7 @@ namespace YGR
 
         // Dead Enemy
         Gravestone
+        
     }
 
     public class PickUp : IGameElement
@@ -69,6 +72,9 @@ namespace YGR
 
         private IVictim _lastOwner;
 
+        private static float RandomnessDuration=1000;
+        private static float RandomnessTimer=RandomnessDuration;
+        private static bool isRandomned = true;
         private static bool switchGun(IShooter gun, IPlayer player, PickUp self)
         {
             // This one has to be set at switching time
@@ -395,6 +401,19 @@ namespace YGR
                             // un-pick-up-able
                             return false;
                         });
+                case Y_PowerUps.Random:
+                    return new PickUp(type, location, width, height, 1.5f,
+                        Manager_Sprites.NewAnimatedSprite_SpinningQuestionMark(),
+                        null,
+                        lastOwner,
+                        false,
+                        (player, self) =>
+                        {
+                            RandomPowerup(player, self);
+                            player.Room.PickUps.Remove(self);
+                            Manager_Sound.Sound_CashIn.Play();
+                            return true;
+                        });
                 default: // case Y_PowerUps.Revive:
                     return new PickUp(Y_PowerUps.Revive, location, width, height, 1.5f, 
                         Manager_Sprites.NewAnimatedSprite_SpinningPlus(),
@@ -414,7 +433,47 @@ namespace YGR
                         });
             }
         }
+      
 
+        private static void RandomPowerup(IPlayer player, PickUp self)
+        {
+                var inds = new int[] { 0, 1 };
+                var ind = Util.random.Next(0, inds.Length);
+                switch (ind)
+                {
+                    case 0:
+                        player.VelocityMax = 2 * player.VelocityMax;
+                        break;
+
+                    case 1:
+                        player.VelocityMax = 0.5f * player.VelocityMax;
+                        break;
+
+                    default: return;
+                }
+                isRandomned = true;
+                RandomnessTimer = 0;
+        }
+
+        private void RandomnessUpdate(GameTime gameTime)
+        {
+            if (isRandomned)
+            {
+                if (RandomnessTimer > RandomnessDuration)
+                {
+                    isRandomned = false;
+                }
+                else
+                {
+                    RandomnessTimer += gameTime.ElapsedGameTime.Milliseconds;
+                }
+            }
+            else
+            {
+                isRandomned = true;
+                RandomnessTimer = 0;
+            }
+        }
         public void DrawSpinningTexture(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)
         {
             // We only got a texture, so let's make our own "highly advanced" rotating animation
@@ -532,6 +591,7 @@ namespace YGR
                     _lastOwner = null;
                 }
             }
+            RandomnessUpdate(gameTime);
         }
 
         public void MoveBy(Point offset)

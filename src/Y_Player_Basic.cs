@@ -47,9 +47,11 @@ namespace YGR
         public bool IsDashing { get; protected set; }
         public PlayerType Type { get; protected set; }
         public Statistics Stats { get; set; }
+        public float VelocityMax { get; set; }
+        //float IVictim.VelocityMax { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
 
         // Class fields
-        public float VelocityMax;
+        //public float VelocityMax;
         protected Rectangle _rect;
         protected AnimatedSprite GhostSprite;
         protected AnimatedSprite CharacterSprite;
@@ -307,7 +309,7 @@ namespace YGR
         public virtual void Hit(IProjectile projectile)
         {
             if (IsInvincible || !IsAlive()) { return; }
-
+            if (VelocityMax != 0.35f) { VelocityMax = 0.35f; }
             LifePoints -= projectile.Damage;
             IsInvincible = true;
             _invincibleTimer = 0;
