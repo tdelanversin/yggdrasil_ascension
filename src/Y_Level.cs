@@ -679,7 +679,7 @@ namespace YGR
                     {
                         ShowTutorialControls(duration);
                         Notifications.New("\n\n\n\n\n\n\n\n", colorLightRoom, duration);
-                        Notifications.New("Press any button to skip FOLLOWING steps of the tutorial,", colorLightRoom, duration, Fonts.Large);
+                        Notifications.New("Press any button to skip steps of the tutorial,", colorLightRoom, duration, Fonts.Large);
                         Notifications.New("Press [Start] / [Esc] to quit tutorial!", colorLightRoom, duration, Fonts.Large);
                     }
                     break;
