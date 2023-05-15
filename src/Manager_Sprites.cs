@@ -39,10 +39,12 @@ namespace YGR
         public static Texture2D HealthbarSeperatorBoss { get; private set; }
         public static Texture2D White { get; private set; }
 
-        // Background
+        // Images
         public static Texture2D BackgroundYggdrasil { get; private set; }
         public static Texture2D BackgroundSky { get; private set; }
         public static Texture2D BackgroundTitleText { get; private set; }
+        public static Texture2D ImageDefeat { get; private set; }
+        public static Texture2D ImageVictory { get; private set; }
 
         // Level elements
         public static Texture2D ButtonOut { get; private set; }
@@ -105,9 +107,9 @@ namespace YGR
             HealthbarSeperatorBoss = contentManager.Load<Texture2D>("SpritesOther/Boss_Healthbar_Separator");
             White = contentManager.Load<Texture2D>("SpritesOther/white");
 
-            BackgroundYggdrasil = contentManager.Load<Texture2D>("SpritesOther/background_yggdrasil");
-            BackgroundSky = contentManager.Load<Texture2D>("SpritesOther/background_sky");
-            BackgroundTitleText = contentManager.Load<Texture2D>("SpritesOther/background_text");
+            BackgroundYggdrasil = contentManager.Load<Texture2D>("Images/title_tree");
+            BackgroundSky = contentManager.Load<Texture2D>("Images/title_sky");
+            BackgroundTitleText = contentManager.Load<Texture2D>("Images/title_text");
 
             ButtonOut = contentManager.Load<Texture2D>("SpritesOther/Button_Out_2");
             ButtonHalf = contentManager.Load<Texture2D>("SpritesOther/Button_Half_2");
@@ -136,6 +138,9 @@ namespace YGR
             LevelUp_DarkFlash_NoShade = contentManager.Load<Texture2D>("SpritesOther/thunder_up_sheet_2_no_shade");
             LevelUp_LightFlash_NoShade = contentManager.Load<Texture2D>("SpritesOther/tunder_up_sheet_no_shade");
             LevelUp_Bullet_NoShade = contentManager.Load<Texture2D>("SpritesOther/bullet_sheet_no_shade");
+
+            ImageDefeat = contentManager.Load<Texture2D>("Images/defeat");
+            ImageVictory = contentManager.Load<Texture2D>("Images/victory");
         }
 
         public static AnimatedSprite NewAnimatedSprite_LevelUp_DarkFlash_NoShade()

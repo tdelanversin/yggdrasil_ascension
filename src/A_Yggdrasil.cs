@@ -112,18 +112,12 @@ namespace YGR
                     }
                     else
                     {
-                        Camera.RestorePreviousMode();
+                        Camera.BackToGame();
                     }
-                    // if (_level.State == Y_Level.GamePlayState.FreeRoam)
-                    //     Camera.SetFocusPlayers(animate: true);
-                    // else if (_level.State == Y_Level.GamePlayState.Encounter)
-                    //     Camera.SetFocusRoom(_level.ActiveRoom, animate: true);
-                    // else if (_level.State == Y_Level.GamePlayState.Start && Camera.Mode == CameraMode.Menu)
-                    //     Camera.SetFocusRoom(_level.ActiveRoom, animate: true);
                 }
                 if (DesiredState == GameState.Menu)
                 {
-                    Camera.SetFocusMenu(Background_.Rect, animate: true, animationDuration: 750);
+                    Camera.SetFocusMenu(animate: true, animationDuration: 750);
                 }
             }
 
@@ -151,6 +145,13 @@ namespace YGR
                     if (Y_Level.State == Y_Level.GamePlayState.Tutorial)
                     {
                         Y_Level.TutorialState = Y_Level.GameTutorialState.EndTutorial;
+                    }
+                    else if (Y_Level.State == Y_Level.GamePlayState.EndScreen)
+                    {
+                        // We're not touching things directly here, but we can
+                        // speed up the process of "ending the ending screen" by
+                        // clearing the notifications showing the ending text:
+                        Notifications.Clear();
                     }
                     else
                     {
@@ -383,6 +384,11 @@ namespace YGR
                     if (Y_Level.State == Y_Level.GamePlayState.Start)
                     {
                         UI.DrawPlayerSelection(gameTime, _spriteBatch);
+                    }
+                    else if (Y_Level.State == Y_Level.GamePlayState.EndScreen)
+                    {
+                        UI.DrawEndScreen(gameTime, _spriteBatch);
+                        break;
                     }
                     UI.DrawPlayerStatus(gameTime, _spriteBatch);
                     UI.DrawBossHealthBar(gameTime, _spriteBatch);

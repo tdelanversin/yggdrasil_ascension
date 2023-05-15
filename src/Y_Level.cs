@@ -46,7 +46,8 @@ namespace YGR
             FreeRoam, // Not in an encounter, players can freely roam
             Encounter, // Players are in an encounter, room locked
             Escaped,
-            End,
+            EndScreen,
+            GameOver,
         }
 
         public enum GameTutorialState
@@ -76,6 +77,12 @@ namespace YGR
             EndTutorial
         }
 
+        public enum GameEndState
+        {
+            Lost,
+            Won,
+        }
+
         public Rectangle Rect { get; set; }
         public static IDictionary<int, IWalkable> Rooms { get; private set; }
         public int TileWidth { get; }
@@ -91,18 +98,20 @@ namespace YGR
         private Y_CMRoom _startRoom;
         private Y_CMRoom _goldRoom;
 
-        private int _waitTimeBetweenEndOfFightAndLowerDoors = 125;
-        private int _waitTimeBetweenEndOfFightAndLowerDoorsCounter = 0;
+        // private int _waitTimeBetweenEndOfFightAndLowerDoors = 125;
+        // private int _waitTimeBetweenEndOfFightAndLowerDoorsCounter = 0;
 
         public static int TextureTileSize { get; set; }
         public static int InGameTileSize { get; set; }
         public static float GlobalScale { get; set; }
 
         // Gameplay state objects
-        public IWalkable ActiveRoom;
-        public static GamePlayState State;
+        public static IWalkable ActiveRoom;
 
+        public static GamePlayState State;
         public static GameTutorialState TutorialState;
+        public static GameEndState EndState;
+
         private int MaxTutorialStageDurationMS = 1000;
         private int MaxTutorialStageDurationS = 30;
         private int TutorialStageDurationCounterMS = 0;
@@ -468,7 +477,7 @@ namespace YGR
             }
 
             // iterate trough every enemy and give them the room they are in
-            foreach(var enemy in Manager_Enemies.GetEnemies())
+            foreach (var enemy in Manager_Enemies.GetEnemies())
             {
                 enemy.Room = GetRoom(enemy, null);
             }
@@ -666,7 +675,7 @@ namespace YGR
             Color colorLightRoom = Color.Wheat;
             Color colorLeafRoom = Color.Wheat;
 
-            if(TutorialStageDurationCounterMS == 0)
+            if (TutorialStageDurationCounterMS == 0)
             {
                 Notifications.Clear();
             }
@@ -882,8 +891,8 @@ namespace YGR
                         var allPos = pups.Select(x => x.Rect.Center.ToVector2()).ToArray();
                         var avgPos = new Vector2(allPos.Select(x => x.X).Average(), allPos.Select(x => x.Y).Average());
 
-                        if(TutorialStageDurationCounterS == 0)
-                            Camera.SetFocusMenu(A_Yggdrasil.Background_.Rect, animationDuration: 3000);
+                        if (TutorialStageDurationCounterS == 0)
+                            Camera.SetFocusMenu(animationDuration: 3000);
 
                         ShowTutorialControls(duration);
                         Notifications.New("\n\n\n\n", colorLightRoom, duration);
@@ -922,7 +931,7 @@ namespace YGR
                     }
                     break;
                 case GameTutorialState.IntroduceSpikySlime:
-                    if(TutorialStageDurationCounterMS > 0)
+                    if (TutorialStageDurationCounterMS > 0)
                     {
                         Camera.Position = Tutorial_Spiky.Rect.Center.ToVector2();
                     }
@@ -978,7 +987,7 @@ namespace YGR
             if (TutorialStageDurationCounterMS == 0)
             {
                 // in the first stage: add comment non-skippable
-                if(TutorialState == GameTutorialState.Warning && TutorialStageDurationCounterS < TutorialStageDurationCounterS_InitialSkipAfter)
+                if (TutorialState == GameTutorialState.Warning && TutorialStageDurationCounterS < TutorialStageDurationCounterS_InitialSkipAfter)
                 {
                     Notifications.New("[Continue in: " + (TutorialStageDurationCounterS_InitialSkipAfter - TutorialStageDurationCounterS) + "]", colorLightRoom, duration, Fonts.Medium);
                 }
@@ -989,8 +998,8 @@ namespace YGR
             }
 
             TutorialStageDurationCounterMS += gameTime.ElapsedGameTime.Milliseconds;
-            bool anything = Input.AnythingPressed() && 
-                            TutorialButtonPressCoolDownCounter == 0 && 
+            bool anything = Input.AnythingPressed() &&
+                            TutorialButtonPressCoolDownCounter == 0 &&
                             !(TutorialState == GameTutorialState.Warning && TutorialStageDurationCounterS < TutorialStageDurationCounterS_InitialSkipAfter);
             if (TutorialButtonPressCoolDownCounter > TutorialButtonPressCoolDownFC)
             {
@@ -1011,7 +1020,7 @@ namespace YGR
 
                 TutorialStageDurationCounterMS = 0;
                 TutorialStageDurationCounterS++;
-                if(TutorialStageDurationCounterS > MaxTutorialStageDurationS)
+                if (TutorialStageDurationCounterS > MaxTutorialStageDurationS)
                 {
                     TutorialStageDurationCounterS = 0;
                     TutorialNext();
@@ -1053,7 +1062,7 @@ namespace YGR
 
                         // give each player two power ups somewhere inside a big fat spiky slime
                         var pws = new List<Y_PowerUps>();
-                        
+
                         foreach (var p in Manager_Players.Players)
                         {
                             if (p is Player_Mailman) pws.Add(Y_PowerUps.LevelUpMailman);
@@ -1186,16 +1195,26 @@ namespace YGR
                     var encounterRoom = (Y_CMRoom)ActiveRoom;
 
                     // Duration for Win/Lose message to be shown
-                    int gameEndNotificationLength = 15000;
+                    int gameEndNotificationLength = 35000;
 
                     // Check if players died
                     if (encounterRoom.GetPlayersInside().FindAll(p => p.LifePoints > 0).Count < 1 && encounterRoom.PickUps.FindAll(x => x.Type == Y_PowerUps.Revive).Count < 1)
                     {
+                        // kill all remaining enemies to make sure they don't keep shooting during the nice outro
+                        // will have to restart the game anyways, so no problems there...
+                        Manager_Enemies.ClearEnemies();
+
                         Notifications.New("\n\n\n\n", Color.Wheat, gameEndNotificationLength);
-                        Notifications.New("Fighting to the bitter end, our heroes couldn't prove", Color.Wheat, gameEndNotificationLength, Fonts.Large);
-                        Notifications.New("themselves worthy of fighting alongside the gods...", Color.Wheat, gameEndNotificationLength, Fonts.Large);
-                        Manager_Sound.PlayFreeRoamMusic();
-                        State = GamePlayState.End;
+                        Notifications.New("Humans. You have tried to prove yourself to be worthy in a fight.", Color.Wheat, gameEndNotificationLength, Fonts.Large);
+                        Notifications.New("But alas, there was a greater evil that slayed you.", Color.Wheat, gameEndNotificationLength, Fonts.Large);
+                        Notifications.New("\nWill you train, every day, to earn that honor?", Color.Wheat, gameEndNotificationLength, Fonts.Large);
+                        Notifications.New("Will you commit to fighting and failing, until victory is the only outcome?", Color.Wheat, gameEndNotificationLength, Fonts.Large);
+                        Notifications.New("\nIf so, we will eagerly watch your every try, and one day,", Color.Wheat, gameEndNotificationLength, Fonts.Large);
+                        Notifications.New("invite you to fight with us, at the great battle of Ragnarok.", Color.Wheat, gameEndNotificationLength, Fonts.Large);
+                        Manager_Sound.PlaySongEndingLose();
+                        Camera.SetFocusMenu(animationDuration: gameEndNotificationLength / 5);
+                        EndState = GameEndState.Lost;
+                        State = GamePlayState.EndScreen;
                         break;
                     }
 
@@ -1223,12 +1242,18 @@ namespace YGR
                     if (encounterRoom.Category == "Gold")
                     {
                         Notifications.New("\n\n\n\n", Color.Wheat, gameEndNotificationLength);
-                        Notifications.New("Overcoming the final challenge, glory awaits our heroes", Color.Wheat, gameEndNotificationLength, Fonts.Large);
-                        Notifications.New("when they fight alongside the gods in Ragnarok...", Color.Wheat, gameEndNotificationLength, Fonts.Large);
-                        Manager_Sound.PlayFreeRoamMusic();
+                        Notifications.New("Our heroes.", Color.Wheat, gameEndNotificationLength, Fonts.Large);
+                        Notifications.New("\nYou have managed to climb Yggdrasil and prove yourselves.", Color.Wheat, gameEndNotificationLength, Fonts.Large);
+                        Notifications.New("We applaud you for that.", Color.Wheat, gameEndNotificationLength, Fonts.Large);
+                        Notifications.New("\nNow, it will be our honor, to have you fight along side of us", Color.Wheat, gameEndNotificationLength, Fonts.Large);
+                        Notifications.New("in the upcoming battle of Ragnarok.", Color.Wheat, gameEndNotificationLength, Fonts.Large);
+                        Notifications.New("\nAre you ready?", Color.Wheat, gameEndNotificationLength, Fonts.Large);
+                        Manager_Sound.PlaySongEndingWin();
                         encounterRoom.OpenAllUnlockedRoomDoors();
-                        Camera.SetFocusPlayers();
-                        State = GamePlayState.FreeRoam; // no end screen for now
+                        Camera.SetFocusPlayers(); // First to player focus for the camera to remember
+                        Camera.SetFocusMenu(animationDuration: gameEndNotificationLength / 5);
+                        EndState = GameEndState.Won;
+                        State = GamePlayState.EndScreen; // no end screen for now
                     }
                     else
                     {
@@ -1246,10 +1271,28 @@ namespace YGR
                     Manager_Sound.PlayFreeRoamMusic();
                     State = GamePlayState.FreeRoam;
                     break;
-                case GamePlayState.End:
-                    // Nothing yet
+                case GamePlayState.EndScreen:
+                    // Wait for the ending screen and notifications to fade out
+                    if (Notifications.GetNotifications().Count < 1)
+                    {
+                        // If the players won, then they can continue playing
+                        if (EndState == GameEndState.Won)
+                        {
+                            State = GamePlayState.FreeRoam;
+                            Menu.GameWon();
+                            Manager_Sound.PlayMainMenuMusic();
+                        }
+                        else
+                        {
+                            State = GamePlayState.GameOver;
+                            Menu.GameOver();
+                            Manager_Sound.PlayMainMenuMusic();
+                        }
+                    }
                     break;
-
+                case GamePlayState.GameOver:
+                    // Needs to be handled in the main game class
+                    break;
                 default:
                     break;
             }
