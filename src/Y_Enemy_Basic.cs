@@ -310,7 +310,7 @@ namespace YGR
         {
             if (ImpactVelocity.X > 0 || ImpactVelocity.Y > 0)
             {
-                Logger.Info("lol A:" + ImpactVelocity.ToString());
+                // Logger.Info("lol A:" + ImpactVelocity.ToString());
                 Velocity = ImpactVelocity;
 
                 Velocity = Util.ClampMagnitude(Velocity, MathHelper.Max(Math.Abs(ImpactVelocity.X), Math.Abs(ImpactVelocity.Y)));
