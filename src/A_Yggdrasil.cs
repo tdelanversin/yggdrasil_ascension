@@ -146,6 +146,13 @@ namespace YGR
                     {
                         Y_Level.TutorialState = Y_Level.GameTutorialState.EndTutorial;
                     }
+                    else if (Y_Level.State == Y_Level.GamePlayState.EndScreen)
+                    {
+                        // We're not touching things directly here, but we can
+                        // speed up the process of "ending the ending screen" by
+                        // clearing the notifications showing the ending text:
+                        Notifications.Clear();
+                    }
                     else
                     {
                         DesiredState = GameState.Menu;
