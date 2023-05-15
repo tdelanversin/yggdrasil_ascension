@@ -22,8 +22,7 @@ namespace YGR
             if (gun != null)
                 Gun = gun;
             else
-                Gun = new Weapon_PinkHammer(this);
-                // Gun = Util.getRandomGun(this);
+                Gun = Util.getRandomGun(this);
 
             SetupPlayerRect(IPlayer.PlayerBaseHeight);
 
