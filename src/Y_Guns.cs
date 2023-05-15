@@ -277,7 +277,7 @@ namespace YGR
             Name = "Red Devil";
             Sprite = Manager_Sprites.Weapon_RedDevil;
             ShotCount = 48;
-            ShotDelay = 1000;
+            ShotDelay = 1500;
             ShotSpread = 2 * Math.PI / ShotCount;
         }
 
@@ -597,8 +597,8 @@ namespace YGR
             ShotSpread = (2 * Math.PI) / ShotCount;
             RotationSpeed = 0.0025f;
             Rotation = 0.0f;
-            Holes = 2;
-            HoleSize = 5;
+            Holes = 3;
+            HoleSize = 6;
         }
 
         public override bool Shoot(GameTime gameTime, Vector2 origin, Vector2 direction, Y_Level level, IGameElement who)
