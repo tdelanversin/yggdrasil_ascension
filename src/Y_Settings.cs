@@ -53,17 +53,18 @@ namespace YGR
 
             // Defaults
             Fullscreen = true;
-            DrawFPS = true; // Always on for now, shouldn't really bother anyone
+            DrawFPS = false; // Always on for now, shouldn't really bother anyone
             DynamicShades = false; // Off by default, not because they are slow (they are in fact very quick) but because Monogame sucks so much!!!
             DebugOutlinesLevel = false;
             Sound = true;
             Music = true;
-            DebugMode = true; // For now
+            DebugMode = false; // Disable debug mode by default
             ParticleEffects = true; // TODO: disable if not fixed by jury release
 #if DEBUG
             Fullscreen = false;
             DebugOutlinesLevel = false;
             DebugMode = true;
+            DrawFPS = true;
 #endif
 
             /*
