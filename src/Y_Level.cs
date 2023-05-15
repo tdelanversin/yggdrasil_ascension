@@ -1200,6 +1200,10 @@ namespace YGR
                     // Check if players died
                     if (encounterRoom.GetPlayersInside().FindAll(p => p.LifePoints > 0).Count < 1 && encounterRoom.PickUps.FindAll(x => x.Type == Y_PowerUps.Revive).Count < 1)
                     {
+                        // kill all remaining enemies to make sure they don't keep shooting during the nice outro
+                        // will have to restart the game anyways, so no problems there...
+                        Manager_Enemies.ClearEnemies();
+
                         Notifications.New("\n\n\n\n", Color.Wheat, gameEndNotificationLength);
                         Notifications.New("Humans. You have tried to prove yourself to be worthy in a fight.", Color.Wheat, gameEndNotificationLength, Fonts.Large);
                         Notifications.New("But alas, there was a greater evil that slayed you.", Color.Wheat, gameEndNotificationLength, Fonts.Large);
