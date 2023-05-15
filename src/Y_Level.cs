@@ -1081,41 +1081,12 @@ namespace YGR
                                 else if (p is Player_Professor) pws.Add(Y_PowerUps.LevelUpProfessor);
                             }
                         }
-                        else
-                        {
-                            var tmppws = new List<Y_PowerUps>();
-                            foreach (var p in Manager_Players.Players)
-                            {
-                                if (p is Player_Mailman) pws.Add(Y_PowerUps.LevelUpMailman);
-                                else if (p is Player_NerdyGirl) pws.Add(Y_PowerUps.LevelUpNerd);
-                                else if (p is Player_Ninja) pws.Add(Y_PowerUps.LevelUpNinja);
-                                else if (p is Player_Professor) pws.Add(Y_PowerUps.LevelUpProfessor);
-                            }
-                            // randomly select .5 * the number of players powerups
-                            var randtmppws = pws.OrderBy(x => Util.random.Next()).ToArray();
-                            for (int i = 0; i < randtmppws.Count() / 2; i++)
-                            {
-                                tmppws.Add(randtmppws[i]);
-                            }
-                        }
-
 
                         // make sure these are somewhere to be found, because, let's face it, it's the pinky hammer :-D
                         pws.Add(Y_PowerUps.WeaponPinkHammer);
                         pws.Add(Y_PowerUps.WeaponHelix);
                         pws.Add(Y_PowerUps.WeaponBlunderbuss);
                         pws.Add(Y_PowerUps.WeaponRedDevil);
-
-                        // fill up the rest of the slots with some random stuff
-                        // var pwsWeapons = new List<Y_PowerUps> {
-                        //     Y_PowerUps.WeaponHelix
-                        //     //Y_PowerUps.WeaponWide,
-                        //     //Y_PowerUps.WeaponGiga
-                        // };
-                        // while (pws.Count() < arr.Length)
-                        // {
-                        //     pws.Add(pwsWeapons[Util.random.Next(0, pwsWeapons.Count())]);
-                        // }
 
                         // mix everything thouroughly
                         var randpws = pws.OrderBy(x => Util.random.Next()).ToArray();

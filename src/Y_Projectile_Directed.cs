@@ -81,7 +81,7 @@ namespace YGR
                             if (obj is IEnemyBoss)
                             {
                                 var tmp = Damage;
-                                Damage *= 0.05f;
+                                Damage *= 0.1f;
                                 ((IEnemyBoss)obj).Hit(this);
                                 Damage = tmp;
                             }
