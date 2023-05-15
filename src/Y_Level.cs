@@ -246,6 +246,8 @@ namespace YGR
                 }
             }
 
+            TutorialState = GameTutorialState.Warning;
+
             Rooms = new Dictionary<int, IWalkable>();
 
             //Rooms.Add(0, _availableRooms["Start"].First());
