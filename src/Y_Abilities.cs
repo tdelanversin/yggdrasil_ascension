@@ -353,7 +353,7 @@ namespace YGR
         public Texture2D Sprite { get; }
         protected double NextShotCooldown = 0.0f;
         protected int ShotDelay = 10000;
-        protected int Duration = 5000;
+        protected int Duration = 3000;
         public bool Triggered { get; private set; }
         protected IPlayer owner;
         protected IShooter GunShot;
