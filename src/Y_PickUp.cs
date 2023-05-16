@@ -25,6 +25,7 @@ namespace YGR
         WeaponEnemySlowPistol,
         WeaponWide,
         WeaponGiga,
+        WeaponGodmode,
 
         // CharacterChoosers
         ChooserNerd,
@@ -283,6 +284,15 @@ namespace YGR
                                 return false;
 
                             return switchGun(new Weapon_PinkHammer(player), player, self);
+                        });
+                case Y_PowerUps.WeaponGodmode:
+                    return new PickUp(type, location, width, height, _gunScale, Manager_Sprites.Weapon_Keyboard, lastOwner, true,
+                        (player, self) =>
+                        {
+                            if (player.Gun.GetType() == typeof(Gun_Godmode))
+                                return false;
+
+                            return switchGun(new Gun_Godmode(player), player, self);
                         });
                 case Y_PowerUps.Life:
                     return new PickUp(type, location, width, height, 1.5f, 
