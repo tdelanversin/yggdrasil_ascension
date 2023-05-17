@@ -297,6 +297,12 @@ namespace YGR
             VelocityMax = 0.6f;
         }
 
+        public virtual void SetInvincible(bool invincible)
+        {
+            IsInvincible = invincible;
+            _invincibleTimer = 0;
+        }
+
         /* Deal with being hit by projectile, basically physical therapy */
         public virtual void Hit(IProjectile projectile)
         {

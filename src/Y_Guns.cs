@@ -74,8 +74,8 @@ namespace YGR
     {
         protected int ShotCount { get; set; }
         protected double ShotSpread { get; set; }
-
-        public Gun_ShotGun(IVictim owner, int shotCount = 5) : base(owner)
+        public Gun_ShotGun(IVictim owner) : this(owner, 5) { }
+        public Gun_ShotGun(IVictim owner, int shotCount) : base(owner)
         {
             ShotDelay = 800;
             ShotCount = shotCount;
@@ -84,7 +84,6 @@ namespace YGR
             Sprite = Manager_Sprites.Weapon_Shotgun;
             PowerUpType = Y_PowerUps.WeaponShotgun;
         }
-
         protected IEnumerable<Vector2> IterateDirections(Vector2 direction)
         {
             double spread = -ShotCount / 2 * ShotSpread;

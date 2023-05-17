@@ -37,7 +37,6 @@ namespace YGR
         public void TeleportTo(Point target);
 
         public bool LevelUp();
-
         public AnimatedSprite GetSprite();
         public bool IsAlive();
         public void Heal();
@@ -45,5 +44,6 @@ namespace YGR
         public void Revive();
         public void Revive(float healAmount);
         public void Godmode();
+        public void SetInvincible(bool invincible);
     }
 }

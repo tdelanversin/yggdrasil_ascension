@@ -34,7 +34,9 @@ namespace YGR
         public static SoundEffect Sound_CashIn; // https://freesound.org/people/kiddpark/sounds/201159/
         public static SoundEffect Sound_StoneWall;
         public static SoundEffect Sound_Confusion;
+        public static SoundEffect Sound_Blank;
         public static SoundEffect Sound_Gunslinger;
+        public static SoundEffect Sound_Invincibility;
         public static SoundEffect Sound_Blaster;
         public static SoundEffect Sound_PlasmaPistol;
         public static SoundEffect Sound_OmniShotGun;
@@ -64,7 +66,7 @@ namespace YGR
 
             Sound_Bonus = contentManager.Load<SoundEffect>("Sounds/bonus_sound");
             Sound_Dash = contentManager.Load<SoundEffect>("Sounds/dash");
-            Sound_EnemyDeath = contentManager.Load<SoundEffect>("Sounds/enemy_death_cry");
+            Sound_EnemyDeath = contentManager.Load<SoundEffect>("Sounds/enemy_death_cry"); //TODO: change to slime change
             Sound_Explosion = contentManager.Load<SoundEffect>("Sounds/explosion");
             Sound_Fireball = contentManager.Load<SoundEffect>("Sounds/short_fireball");
             Sound_Fireball2 = contentManager.Load<SoundEffect>("Sounds/fireball");
@@ -78,7 +80,9 @@ namespace YGR
             Sound_CashIn = contentManager.Load<SoundEffect>("Sounds/cash-in");
             Sound_StoneWall = contentManager.Load<SoundEffect>("Sounds/stonewall");
             Sound_Confusion = contentManager.Load<SoundEffect>("Sounds/confusion");
+            Sound_Blank = contentManager.Load<SoundEffect>("Sounds/cash-in"); //TODO: replace with blank sound
             Sound_Gunslinger = contentManager.Load<SoundEffect>("Sounds/cash-in"); //TODO: replace with gunslinger sound
+            Sound_Invincibility = contentManager.Load<SoundEffect>("Sounds/cash-in"); //TODO: replace with invincibility sound
             Sound_Blaster = contentManager.Load<SoundEffect>("Sounds/blaster");
             Sound_PlasmaPistol = contentManager.Load<SoundEffect>("Sounds/plasmapistol");
             Sound_OmniShotGun = contentManager.Load<SoundEffect>("Sounds/omni_shotgun");

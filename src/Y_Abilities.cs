@@ -70,7 +70,7 @@ namespace YGR
     public class Ability_Blank : IAbility
     {
         public string Name { get; }
-
+        public bool Triggered { get; private set; }
         public Texture2D Sprite { get; }
         protected double NextShotCooldown = 0.0f;
         protected int ShotDelay = 10000;
@@ -104,8 +104,9 @@ namespace YGR
         }
         public bool Trigger(GameTime gametime, Vector2 origin, Vector2 direction, Y_Level level, IGameElement who) { 
             if (NextShotCooldown > 0.0f) return false;
-
             NextShotCooldown = ShotDelay;
+
+            Manager_Sound.Sound_Blank.Play(0.5f, 0, 0);
             Triggered = true;
             return true;
         }
@@ -153,10 +154,45 @@ namespace YGR
                     Color.White
                 );
             }
+        }
+    }
 
+    public class Ability_Invicible : IAbility
+    {
+
+        public string Name { get; protected set; }
+        public Texture2D Sprite { get; }
+        protected double NextShotCooldown = 0.0f;
+        protected int EffectDelay = 10000;
+        public bool Triggered { get; private set; }
+        protected IPlayer owner;
+
+        public Ability_Invicible(IPlayer owner)
+        {
+            Name = "Gunslinger";
+            Sprite = Manager_Sprites.Effect_Invincibility;
+            this.owner = owner;
+            Triggered = false;
         }
 
-        public bool Triggered { get; private set; }
+        public bool Trigger(GameTime gameTime, Vector2 origin, Vector2 direction, Y_Level level, IGameElement who)
+        {
+            if (NextShotCooldown > 0.0f)
+                return false;
+            NextShotCooldown = EffectDelay;
+
+            Manager_Sound.Sound_Invincibility.Play(0.5f, 0, 0);
+            owner.SetInvincible(true);
+            return true;
+        }
+        
+
+        public virtual void Update(GameTime gameTime)
+        {
+            NextShotCooldown = Math.Max(0, NextShotCooldown - gameTime.ElapsedGameTime.TotalMilliseconds);
+        }
+
+        public void Draw(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch) { }
     }
 
     public class Ability_Shield : IAbility
@@ -444,7 +480,7 @@ namespace YGR
         public string Name { get; protected set; }
         public Texture2D Sprite { get; }
         protected double NextShotCooldown = 0.0f;
-        protected int ShotDelay = 10000;
+        protected int EffectDelay = 10000;
         protected int Duration = 3000;
         public bool Triggered { get; private set; }
         protected IPlayer owner;
@@ -466,7 +502,7 @@ namespace YGR
 
             Manager_Sound.Sound_Gunslinger.Play(0.5f, 0, 0);
 
-            NextShotCooldown = ShotDelay;
+            NextShotCooldown = EffectDelay;
 
             GunShot = owner.Gun;
             oldShotDelay = GunShot.ShotDelay;
@@ -478,7 +514,7 @@ namespace YGR
         public virtual void Update(GameTime gameTime)
         {
             NextShotCooldown = Math.Max(0, NextShotCooldown - gameTime.ElapsedGameTime.TotalMilliseconds);
-            if (NextShotCooldown <= ShotDelay - Duration && GunShot != null)
+            if (NextShotCooldown <= EffectDelay - Duration && GunShot != null)
             {
                 GunShot.ShotDelay = oldShotDelay;
                 GunShot = null;
