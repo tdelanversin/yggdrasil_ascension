@@ -279,9 +279,9 @@ namespace YGR
         {
             return new AnimatedSprite(
                 texture: SpinningQuestionMark,
-                spriteDimension: new Vector2(638, 987),
+                spriteDimension: new Vector2(1272, 2349),
                 animations: new Dictionary<AnimationState, int[]> {
-                    { AnimationState.Idle, new int[]  { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11 } },
+                    { AnimationState.Idle, new int[]  { 0, 1, 2, 3, 4, 5, 6, 7 } },
                 },
                 animationDuration: 1000
             );
