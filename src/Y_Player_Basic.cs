@@ -800,6 +800,24 @@ namespace YGR
             }
         }
 
+        protected Rectangle GetCircleIndicatorRect(float dur)
+        {
+            int width = 60;
+            int height = 60;
+
+            int i = (int)Math.Ceiling((1 - dur) * 36);
+            int x = i % 9;
+            int y = (int)i / 9;
+
+            if (y == 4)
+            {
+                return new Rectangle(0, 0, 0, 0); // empty rectangle
+            }
+
+            return new Rectangle(x * width, y * height, width, height);
+
+        }
+
         protected virtual void DrawAimIndicator(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)
         {
             // Draw an indicator only if a) the player is actively aiming on the gamepad or b) is using mouse to aim

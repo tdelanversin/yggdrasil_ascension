@@ -50,6 +50,7 @@ namespace YGR
         public static Texture2D HealthbarSeperatorBoss { get; private set; }
         public static Texture2D Controls { get; private set; }
         public static Texture2D White { get; private set; }
+        public static Texture2D CircleTimer {get; private set; }
 
         // Images
         public static Texture2D BackgroundYggdrasil { get; private set; }
@@ -134,6 +135,7 @@ namespace YGR
             HealthbarSeperatorBoss = contentManager.Load<Texture2D>("SpritesOther/Boss_Healthbar_Separator");
             Controls = contentManager.Load<Texture2D>("SpritesOther/Controls");
             White = contentManager.Load<Texture2D>("SpritesOther/white");
+            CircleTimer = contentManager.Load<Texture2D>("SpritesOther/timer");
 
             BackgroundYggdrasil = contentManager.Load<Texture2D>("Images/title_tree");
             BackgroundSky = contentManager.Load<Texture2D>("Images/title_sky");
