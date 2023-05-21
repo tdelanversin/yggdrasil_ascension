@@ -499,7 +499,11 @@ namespace YGR
                     if (CanIShoot())
                     {
                         bool shot = Gun.Shoot(gameTime, Rect.Center.ToVector2(), AimDirection, Level, this);
-                        if (shot) { Stats.TimesFired++; }
+                        if (shot)
+                        {
+                            Stats.TimesFired++;
+                            Camera.Shake();
+                        }
                     }
                 }
 
@@ -561,7 +565,11 @@ namespace YGR
                 if (Input.IsLeftMousePressed() && CanIShoot())
                 {
                     bool shot = Gun.Shoot(gameTime, playerCenter, AimDirection, Level, this);
-                    if (shot) { Stats.TimesFired++; }
+                    if (shot)
+                    {
+                        Stats.TimesFired++;
+                        Camera.Shake();
+                    }
                 }
                 if (Input.IsKeyDown(Keybinds.KeyboardAbility))
                 {
