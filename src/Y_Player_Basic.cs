@@ -626,6 +626,19 @@ namespace YGR
                 }
             }
 
+            // Handle speed changes caused by abilities
+            if (Ability is Ability_Shield && Ability.Triggered)
+            {
+                // While holding shield, we ignore any speed ups and just go straight for 0.5 * normal velocity
+                // Gets too confusing if we have a multitude of states affecting the current speed
+                maxVelo = VelocityMax * 0.5f;
+            }
+            else if (Ability is Ability_Gunslinger && Ability.Triggered)
+            {
+                // Gun slinger is OP, so balance it with a nice slow down
+                maxVelo = VelocityMax * 0.25f;
+            }
+
             if (!handleImpact(timeStepMS)) Velocity = Util.ClampMagnitude(Velocity, maxVelo);
         }
 
