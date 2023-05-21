@@ -1228,6 +1228,18 @@
 /processorParam:TextureFormat=Color
 /build:SpritesOther/thunder_up_sheet_2.png
 
+#begin SpritesOther/timer.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:SpritesOther/timer.png
+
 #begin SpritesOther/title_image.png
 /importer:TextureImporter
 /processor:TextureProcessor
