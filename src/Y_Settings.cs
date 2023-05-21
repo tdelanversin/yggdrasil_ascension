@@ -58,7 +58,7 @@ namespace YGR
             DebugOutlinesLevel = false;
             Sound = true;
             Music = true;
-            DebugMode = false; // Disable debug mode by default
+            DebugMode = true;
             ParticleEffects = true; // TODO: disable if not fixed by jury release
 #if DEBUG
             Fullscreen = false;
