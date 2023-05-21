@@ -507,6 +507,7 @@ namespace YGR
             GunShot = owner.Gun;
             oldShotDelay = GunShot.ShotDelay;
             GunShot.ShotDelay = oldShotDelay / 2.5;
+            Triggered = true;
             return true;
         }
         
@@ -518,6 +519,7 @@ namespace YGR
             {
                 GunShot.ShotDelay = oldShotDelay;
                 GunShot = null;
+                Triggered = false;
             }
         }
 
