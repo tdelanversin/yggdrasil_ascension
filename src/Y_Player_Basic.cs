@@ -435,6 +435,24 @@ namespace YGR
             }
         }
 
+        /// <summary>
+        /// Check if the currenty state allows us to be shooting or not
+        /// </summary>
+        protected virtual bool CanIShoot()
+        {
+            if (!IsAlive()) { return false; }
+
+            if (Ability == null) { return true; }
+
+            if (!Ability.Triggered) { return true; }
+
+            if (Ability is Ability_Shield) { return false; }
+
+            if (Ability is Ability_Invicible) { return false; }
+
+            return true;
+        }
+
         /* Handle GamePad movement, aiming and shooting */
         protected virtual void HandleGamepadInput(GameTime gameTime, ref Vector2 input)
         {
@@ -470,9 +488,7 @@ namespace YGR
                     _isAiming = true; // Show the aim indicator when firing
                     CurrentAimInput = InputType.Controller;
 
-                    // only allow shooting if ability is not triggered
-                    // (this is for the mailman)
-                    if (Ability == null || (Ability != null && !Ability.Triggered))
+                    if (CanIShoot())
                     {
                         bool shot = Gun.Shoot(gameTime, Rect.Center.ToVector2(), AimDirection, Level, this);
                         if (shot) { Stats.TimesFired++; }
@@ -531,13 +547,10 @@ namespace YGR
                     newAimDirection.Normalize();
                     AimDirection = newAimDirection;
                 }
-                if (Input.IsLeftMousePressed() && IsAlive())
+                if (Input.IsLeftMousePressed() && CanIShoot())
                 {
-                    if (Ability == null || (Ability != null && !Ability.Triggered))
-                    {
-                        bool shot = Gun.Shoot(gameTime, playerCenter, AimDirection, Level, this);
-                        if (shot) { Stats.TimesFired++; }
-                    }
+                    bool shot = Gun.Shoot(gameTime, playerCenter, AimDirection, Level, this);
+                    if (shot) { Stats.TimesFired++; }
                 }
                 if (Input.IsKeyDown(Keybinds.KeyboardAbility))
                 {
