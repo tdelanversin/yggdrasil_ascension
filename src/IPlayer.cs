@@ -26,6 +26,8 @@ namespace YGR
         public ControlLayout ControlLayout { get; set; }
         public IShooter Gun { get; set; }
         public IAbility Ability { get; set; }
+        public IAbility DeadAbility { get; set; }
+
         public PlayerIndex PlayerIndex { get; }
         public bool IsActive { get; }
         public bool IsInvincible { get; }
@@ -35,7 +37,6 @@ namespace YGR
         public void TeleportTo(Point target);
 
         public bool LevelUp();
-
         public AnimatedSprite GetSprite();
         public bool IsAlive();
         public void Heal();
@@ -43,5 +44,6 @@ namespace YGR
         public void Revive();
         public void Revive(float healAmount);
         public void Godmode();
+        public void SetInvincible(bool invincible);
     }
 }

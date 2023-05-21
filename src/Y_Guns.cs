@@ -2,8 +2,7 @@ using Microsoft.Xna.Framework;
 using System.Linq;
 using System;
 using Microsoft.Xna.Framework.Graphics;
-using Assimp;
-using MonoGame.OpenGL;
+using System.Collections.Generic;
 #nullable enable
 
 namespace YGR
@@ -11,17 +10,15 @@ namespace YGR
     // Basic gun, does nothing special, shoots fast
     public class Gun_Basic : IShooter
     {
-        public string Name { get; protected set; }
-        public Texture2D Sprite { get; protected set; }
+        public string Name { get; protected set; } = "Pistol";
+        public Texture2D Sprite { get; protected set; }  = Manager_Sprites.Weapon_Pistol;
         public IVictim Owner { get; set; }
-
+        public Y_PowerUps PowerUpType { get; set; } = Y_PowerUps.WeaponPistol;
+        public double ShotDelay { get; set; } = 240;
         public double NextShotCooldown { get; set; } = 0.0f;
-        protected int ShotDelay = 240;
 
         public Gun_Basic(IVictim owner)
         {
-            Name = "Pistol";
-            Sprite = Manager_Sprites.Weapon_Pistol;
             Owner = owner;
         }
 
@@ -29,11 +26,9 @@ namespace YGR
         {
             if (NextShotCooldown > 0.0f)
                 return false;
-
-            Manager_Sound.Sound_Fireball.Play(0.2f, 0, 0);
-
             NextShotCooldown = ShotDelay;
 
+            Manager_Sound.Sound_Fireball.Play(0.2f, 0, 0);
             Manager_Projectile.AddProjectile_StarterProjectile(origin, direction, level, who);
             return true;
         }
@@ -46,7 +41,7 @@ namespace YGR
         public virtual void DropAsPickUp(IVictim lastOwner, IWalkable room, Point location)
         {
             room.PickUps.Add(PickUp.Factory(
-                Y_PowerUps.WeaponPistol,
+                PowerUpType,
                 location,
                 Y_Level.TextureTileSize, Y_Level.TextureTileSize, Y_Level.GlobalScale, lastOwner));
         }
@@ -57,8 +52,9 @@ namespace YGR
     {
         public Gun_BasicEnemy(IVictim owner) : base(owner)
         {
-            Name = "Slow Pistol";
+            Name = "Pistol Enemy";
             Sprite = Manager_Sprites.Weapon_Pistol;
+            PowerUpType = Y_PowerUps.WeaponEnemySlowPistol;
             ShotDelay = 1000;
         }
 
@@ -66,57 +62,30 @@ namespace YGR
         {
             if (NextShotCooldown > 0.0f)
                 return false;
-
-            Manager_Sound.Sound_Fireball.Play(0.2f, 0, 0);
-
             NextShotCooldown = ShotDelay;
 
+            Manager_Sound.Sound_Fireball.Play(0.2f, 0, 0);
             Manager_Projectile.AddProjectile_EnemySlimeProjectile(origin, direction, level, who);
             return true;
-        }
-
-        public override void DropAsPickUp(IVictim lastOwner, IWalkable room, Point location)
-        {
-            /*
-             * TODO: add low probability for this one
-             */
-
-            room.PickUps.Add(PickUp.Factory(
-                Y_PowerUps.WeaponEnemySlowPistol,
-                location,
-                Y_Level.TextureTileSize, Y_Level.TextureTileSize, Y_Level.GlobalScale, lastOwner));
         }
     }
 
     public class Gun_ShotGun : Gun_Basic
     {
-        protected int ShotCount;
-        protected double ShotSpread;
-
-        public Gun_ShotGun(IVictim owner) : base(owner)
+        protected int ShotCount { get; set; }
+        protected double ShotSpread { get; set; }
+        public Gun_ShotGun(IVictim owner) : this(owner, 5) { }
+        public Gun_ShotGun(IVictim owner, int shotCount) : base(owner)
         {
             ShotDelay = 800;
-            ShotCount = 5;
-            ShotSpread = .3 / ShotCount;
-            Name = string.Format("Shotgun ({0})", ShotCount);
-            Sprite = Manager_Sprites.Weapon_Shotgun;
-        }
-
-        public Gun_ShotGun(IVictim owner, int shotCount) : this(owner)
-        {
             ShotCount = shotCount;
-            ShotSpread = .3 / ShotCount;
+            ShotSpread = .3 / shotCount;
+            Name = string.Format("Shotgun ({0})", shotCount);
+            Sprite = Manager_Sprites.Weapon_Shotgun;
+            PowerUpType = Y_PowerUps.WeaponShotgun;
         }
-
-        public override bool Shoot(GameTime gameTime, Vector2 origin, Vector2 direction, Y_Level level, IGameElement who)
+        protected IEnumerable<Vector2> IterateDirections(Vector2 direction)
         {
-            if (NextShotCooldown > 0.0f)
-                return true;
-
-            Manager_Sound.Sound_Shotgun.Play(0.3f, 0, 0);
-
-            NextShotCooldown = ShotDelay;
-
             double spread = -ShotCount / 2 * ShotSpread;
             for (int i = 0; i < ShotCount; i++)
             {
@@ -124,73 +93,43 @@ namespace YGR
                     (float)(direction.X * Math.Cos(spread) - direction.Y * Math.Sin(spread)),
                     (float)(direction.X * Math.Sin(spread) + direction.Y * Math.Cos(spread))
                 );
-
-                Manager_Projectile.AddProjectile_ShotGunProjectile(origin, new_dir, level, who);
+                yield return new_dir;
                 spread += ShotSpread;
             }
-            return true;
         }
 
-        public override void DropAsPickUp(IVictim lastOwner, IWalkable room, Point location)
+        public override bool Shoot(GameTime gameTime, Vector2 origin, Vector2 direction, Y_Level level, IGameElement who)
         {
-            room.PickUps.Add(PickUp.Factory(
-                Y_PowerUps.WeaponShotgun,
-                location,
-                Y_Level.TextureTileSize, Y_Level.TextureTileSize, Y_Level.GlobalScale, lastOwner));
+            if (NextShotCooldown > 0.0f)
+                return false;
+            NextShotCooldown = ShotDelay;
+
+            Manager_Sound.Sound_Shotgun.Play(0.3f, 0, 0);
+            foreach (var dir in IterateDirections(direction))
+                Manager_Projectile.AddProjectile_ShotGunProjectile(origin, dir, level, who);
+
+            return true;
         }
     }
 
-    public class Gun_ShotGunEnemy : Gun_Basic
+    public class Gun_ShotGunEnemy : Gun_ShotGun
     {
-        protected int ShotCount;
-        protected double ShotSpread;
-
-        public Gun_ShotGunEnemy(IVictim owner) : base(owner)
+        public Gun_ShotGunEnemy(IVictim owner, int shotCount = 5) : base(owner, shotCount)
         {
-            ShotDelay = 800;
-            ShotCount = 5;
-            ShotSpread = .3 / ShotCount;
-            Name = string.Format("Shotgun ({0})", ShotCount);
-            Sprite = Manager_Sprites.Weapon_Shotgun;
-        }
-
-        public Gun_ShotGunEnemy(IVictim owner, int shotCount) : this(owner)
-        {
-            ShotCount = shotCount;
-            ShotSpread = .3 / ShotCount;
+            Name = string.Format("Shotgun Enemy ({0})", ShotCount);
         }
 
         public override bool Shoot(GameTime gameTime, Vector2 origin, Vector2 direction, Y_Level level, IGameElement who)
         {
             if (NextShotCooldown > 0.0f)
                 return true;
-
-            Manager_Sound.Sound_Shotgun.Play(0.3f, 0, 0);
-
             NextShotCooldown = ShotDelay;
 
-            double spread = -ShotCount / 2 * ShotSpread;
-            for (int i = 0; i < ShotCount; i++)
-            {
-                var new_dir = new Vector2(
-                    (float)(direction.X * Math.Cos(spread) - direction.Y * Math.Sin(spread)),
-                    (float)(direction.X * Math.Sin(spread) + direction.Y * Math.Cos(spread))
-                );
-
-                Manager_Projectile.AddProjectile_EnemySlimeProjectile(origin, new_dir, level, who);
-                spread += ShotSpread;
-            }
+            Manager_Sound.Sound_Shotgun.Play(0.3f, 0, 0);
+            foreach (var dir in IterateDirections(direction))
+                Manager_Projectile.AddProjectile_EnemySlimeProjectile(origin, dir, level, who);
             return true;
         }
-
-        public override void DropAsPickUp(IVictim lastOwner, IWalkable room, Point location)
-        {
-            room.PickUps.Add(PickUp.Factory(
-                Y_PowerUps.WeaponShotgun,
-                location,
-                Y_Level.TextureTileSize, Y_Level.TextureTileSize, Y_Level.GlobalScale, lastOwner));
-        }
-
     }
 
     public class Gun_Helix : Gun_Basic
@@ -199,6 +138,7 @@ namespace YGR
         {
             Name = "Helix Gun";
             Sprite = Manager_Sprites.Weapon_Helix;
+            PowerUpType = Y_PowerUps.WeaponHelix;
             ShotDelay = 100;
         }
 
@@ -215,42 +155,26 @@ namespace YGR
             Manager_Projectile.AddProjectile_Helix(origin, direction, level, who, phase: 0.5f);
             return true;
         }
-
-        public override void DropAsPickUp(IVictim lastOwner, IWalkable room, Point location)
-        {
-            /*
-             * TODO: add low probability for this one
-             */
-
-            room.PickUps.Add(PickUp.Factory(
-                Y_PowerUps.WeaponHelix,
-                location,
-                Y_Level.TextureTileSize, Y_Level.TextureTileSize, Y_Level.GlobalScale, lastOwner));
-        }
     }
 
-    public class Gun_Blunderbuss : Gun_Basic
+    public class Gun_Blunderbuss : Gun_ShotGun
     {
-        float ShotSpread;
-        float ShotCount;
-        public Gun_Blunderbuss(IVictim owner) : base(owner)
+        public Gun_Blunderbuss(IVictim owner, int shotCount = 5) : base(owner, shotCount)
         {
             Name = "Blunderbuss";
             Sprite = Manager_Sprites.Weapon_Blunderbuss;
+            PowerUpType = Y_PowerUps.WeaponBlunderbuss;
             ShotDelay = 1000;
             ShotSpread = 0.002f;
-            ShotCount = 5;
         }
 
         public override bool Shoot(GameTime gameTime, Vector2 origin, Vector2 direction, Y_Level level, IGameElement who)
         {
             if (NextShotCooldown > 0.0f)
                 return false;
-
             NextShotCooldown = ShotDelay;
 
             Manager_Sound.Sound_PlasmaPistol.Play(0.85f, 0, 0);
-
             double spread = -(ShotCount - 1) / 2 * ShotSpread;
             for (int i = 0; i < ShotCount; i++)
             {
@@ -259,85 +183,38 @@ namespace YGR
             }
             return true;
         }
-
-        public override void DropAsPickUp(IVictim lastOwner, IWalkable room, Point location)
-        {
-            room.PickUps.Add(PickUp.Factory(
-                Y_PowerUps.WeaponBlunderbuss,
-                location,
-                Y_Level.TextureTileSize, Y_Level.TextureTileSize, Y_Level.GlobalScale, lastOwner));
-        }
-
     }
 
     public class Gun_RedDevil : Gun_ShotGun
     {
-        public Gun_RedDevil(IVictim owner) : base(owner)
+        public Gun_RedDevil(IVictim owner, int shotCount = 48) : base(owner, shotCount)
         {
             Name = "Red Devil";
             Sprite = Manager_Sprites.Weapon_RedDevil;
-            ShotCount = 48;
-            ShotDelay = 1000;
+            PowerUpType = Y_PowerUps.WeaponRedDevil;
+            ShotDelay = 1500;
             ShotSpread = 2 * Math.PI / ShotCount;
         }
-
 
         public override bool Shoot(GameTime gameTime, Vector2 origin, Vector2 direction, Y_Level level, IGameElement who)
         {
             if (NextShotCooldown > 0.0f)
                 return true;
-
-            Manager_Sound.Sound_OmniShotGun.Play(0.7f, 0, 0);
-
             NextShotCooldown = ShotDelay;
 
-            double spread = -ShotCount / 2 * ShotSpread;
-            for (int i = 0; i < ShotCount; i++)
-            {
-                var new_dir = new Vector2(
-                    (float)(direction.X * Math.Cos(spread) - direction.Y * Math.Sin(spread)),
-                    (float)(direction.X * Math.Sin(spread) + direction.Y * Math.Cos(spread))
-                );
-
-                Manager_Projectile.AddProjectile_RedDevil(origin, new_dir, level, who);
-                spread += ShotSpread;
-            }
+            Manager_Sound.Sound_OmniShotGun.Play(0.7f, 0, 0);
+            foreach (var dir in IterateDirections(direction))
+                Manager_Projectile.AddProjectile_RedDevil(origin, dir, level, who);
             return true;
-        }
-
-        public override void DropAsPickUp(IVictim lastOwner, IWalkable room, Point location)
-        {
-            room.PickUps.Add(PickUp.Factory(
-                Y_PowerUps.WeaponRedDevil,
-                location,
-                Y_Level.TextureTileSize, Y_Level.TextureTileSize, Y_Level.GlobalScale, lastOwner));
         }
     }
 
-    public class Gun_Wide : IShooter
+    public class Gun_Wide : Gun_Basic
     {
-        public string Name { get; protected set; }
-        public Texture2D Sprite { get; protected set; }
-        public IVictim Owner { get; set; }
-
-        // Why are we not using subclassing...
-        public double NextShotCooldown { get; set; } = 0.0f;
-
-        double timeSinceShot = 1001;
         Vector2 _origin = new Vector2(0, 0);
         Vector2 _direction = new Vector2(0, 0);
         Y_Level? _level;
         IGameElement? _who;
-
-        public Gun_Wide(IVictim owner)
-        {
-            // TODO: find name
-            Name = "Cannon";
-            Sprite = Manager_Sprites.Weapon_RedDevil;
-            Owner = owner;
-        }
-
-        static int shotDelay = 1000;
         static bool[,] bulletArray = {{ false, false, true, false, false },
                                     { true, true, false, true, true },
                                     { false, true, false, true, false },
@@ -351,13 +228,22 @@ namespace YGR
         static double[] positionShift = { 50, 20, 0, -20, -50 };
         static double[] shotSpread = { 0, 0, 0, 0, 0 };
 
-        public bool Shoot(GameTime gameTime, Vector2 origin, Vector2 direction, Y_Level level, IGameElement who)
+        public Gun_Wide(IVictim owner) : base(owner)
         {
+            Name = "Canon";
+            Sprite = Manager_Sprites.Weapon_RedDevil;
+            PowerUpType = Y_PowerUps.WeaponWide;
+            ShotDelay = 1000;
+        }
 
-            if (timeSinceShot < shotDelay)
+        public override bool Shoot(GameTime gameTime, Vector2 origin, Vector2 direction, Y_Level level, IGameElement who)
+        {
+            if (NextShotCooldown > 0.0f)
                 return false;
+            NextShotCooldown = ShotDelay;
 
-            timeSinceShot = 0.0f;
+            Manager_Sound.Sound_Explosion.Play(0.85f, 0, 0);
+
             _origin = origin;
             _direction = direction;
             _level = level;
@@ -365,24 +251,21 @@ namespace YGR
             return true;
         }
 
-        public void Update(GameTime gameTime)
+        protected IEnumerable<(Vector2, Vector2)> IterateOriginDirections(double lastUpdate, double currentUpdate)
         {
-            if (timeSinceShot >= shotDelay || _who == null || _level == null)
-                return;
+            if (_who == null || _level == null)
+                yield break;
 
-            var lastUpdate = timeSinceShot;
-            timeSinceShot += gameTime.ElapsedGameTime.TotalMilliseconds;
-
-            shotTimings.Last();
-            if (lastUpdate >= shotTimings.Last())
-                return;
+            var origin = _who.Rect.Center.ToVector2();
 
             for (int i = 0; i < shotTimings.GetLength(0); ++i)
             {
-                if (lastUpdate > shotTimings[i] || timeSinceShot <= shotTimings[i])
+                if (lastUpdate > shotTimings[i])
                     continue;
+                if (currentUpdate <= shotTimings[i])
+                    break;
 
-                double timedelta = timeSinceShot - shotTimings[i];
+                double timedelta = currentUpdate - shotTimings[i];
                 for (int j = 0; j < bulletArray.GetLength(1); j++)
                 {
                     if (!bulletArray[i, j])
@@ -396,35 +279,40 @@ namespace YGR
                         (float)(_direction.X * Math.Sin(spread) + _direction.Y * Math.Cos(spread))
                     );
 
-                    var perp = new Vector2(-new_dir.Y, new_dir.X);
+                    var dir_normal = new Vector2(-new_dir.Y, new_dir.X);
                     var new_origin = new Vector2(
-                        (float)(_who.Rect.Center.X + timedelta * new_dir.X + shift * perp.X),
-                        (float)(_who.Rect.Center.Y + timedelta * new_dir.Y + shift * perp.Y)
+                        (float)(origin.X + timedelta * new_dir.X + shift * dir_normal.X),
+                        (float)(origin.Y + timedelta * new_dir.Y + shift * dir_normal.Y)
                     );
 
-                    Manager_Projectile.AddProjectile_ShotGunProjectile(new_origin, new_dir, _level, _who);
+                    yield return (new_origin, new_dir);
                 }
             }
         }
 
-        public virtual void DropAsPickUp(IVictim lastOwner, IWalkable room, Point location)
+        public override void Update(GameTime gameTime)
         {
-            room.PickUps.Add(PickUp.Factory(
-                Y_PowerUps.WeaponWide,
-                location,
-                Y_Level.TextureTileSize, Y_Level.TextureTileSize, Y_Level.GlobalScale, lastOwner));
+            var lastUpdate = ShotDelay - NextShotCooldown;
+            base.Update(gameTime);
+            var currentUpdate = ShotDelay - NextShotCooldown;
+
+            if (_who == null || _level == null)
+                return;
+
+            foreach (var (origin, direction) in IterateOriginDirections(lastUpdate, currentUpdate))
+                Manager_Projectile.AddProjectile_ShotGunProjectile(origin, direction, _level, _who);
         }
     }
 
     // Gun for Gigachad
     public class Gun_Gigagun : Gun_ShotGun
     {
-        public Gun_Gigagun(IVictim owner) : base(owner)
+        public Gun_Gigagun(IVictim owner, int shotCount = 256) : base(owner, shotCount)
         {
-            ShotCount = 256;
             ShotDelay = 5000;
             ShotSpread = 2 * Math.PI / ShotCount;
             Name = "Giga Gun";
+            PowerUpType = Y_PowerUps.WeaponGiga;
         }
 
         public override bool Shoot(GameTime gameTime, Vector2 origin, Vector2 direction, Y_Level level, IGameElement who)
@@ -432,88 +320,52 @@ namespace YGR
             // Override to make sure the direction is set, since gigachad shoots even without a target
             if (NextShotCooldown > 0.0f)
                 return false;
-
-            if (direction == Vector2.Zero)
-            {
-                direction = Vector2.One;
-            }
-
-            Manager_Sound.Sound_Explosion.Play();
-
             NextShotCooldown = ShotDelay;
 
-            double spread = -ShotCount / 2 * ShotSpread;
-            for (int i = 0; i < ShotCount; i++)
-            {
-                var new_dir = new Vector2(
-                    (float)(direction.X * Math.Cos(spread) - direction.Y * Math.Sin(spread)),
-                    (float)(direction.X * Math.Sin(spread) + direction.Y * Math.Cos(spread))
-                );
+            if (direction == Vector2.Zero)
+                direction = new Vector2(0, 1);
 
-                Manager_Projectile.AddProjectile_ShotGunProjectile(origin, new_dir, level, who);
-                spread += ShotSpread;
-            }
+            Manager_Sound.Sound_Explosion.Play();
+            foreach (var dir in IterateDirections(direction))
+                Manager_Projectile.AddProjectile_ShotGunProjectile(origin, dir, level, who);
             return true;
-        }
-
-        public override void DropAsPickUp(IVictim lastOwner, IWalkable room, Point location)
-        {
-            room.PickUps.Add(PickUp.Factory(
-                Y_PowerUps.WeaponGiga,
-                location,
-                Y_Level.TextureTileSize, Y_Level.TextureTileSize, Y_Level.GlobalScale, lastOwner));
         }
     }
 
     // Become the one
     public class Gun_Godmode : Gun_Gigagun
     {
-        public Gun_Godmode(IVictim owner) : base(owner)
+        public Gun_Godmode(IVictim owner, int shotCount = 128) : base(owner, shotCount)
         {
-            ShotCount = 128;
             ShotDelay = 100;
-            ShotSpread = 2 * Math.PI / ShotCount;
             Sprite = Manager_Sprites.Weapon_Keyboard; // TODO
+            PowerUpType = Y_PowerUps.WeaponGodmode;
             Name = "LoL";
         }
     }
 
     // Gun for ghosts. Does absolutely nothing. Just there to make other code simpler.
-    public class Gun_Ghost : IShooter
+    public class Gun_Ghost : Gun_Basic
     {
-        public Gun_Ghost(IVictim owner)
+        public Gun_Ghost(IVictim owner) : base(owner)
         {
-            Owner = owner;
+            Sprite = Manager_Sprites.White;
+            Name = "Ghost Gun";
         }
 
-        public double NextShotCooldown { get; set; } = 0.0f;
+        public override bool Shoot(GameTime gametime, Vector2 origin, Vector2 direction, Y_Level level, IGameElement who) { return false; }
 
-        public string Name { get { return ""; } }
+        public override void Update(GameTime gameTime) { }
 
-        public Texture2D Sprite { get { return Manager_Sprites.White; } }
-
-        public IVictim Owner { get; set; }
-
-        public bool Shoot(GameTime gametime, Vector2 origin, Vector2 direction, Y_Level level, IGameElement who) { return false; }
-
-        public void Update(GameTime gameTime) { }
-
-        public void DropAsPickUp(IVictim lastOwner, IWalkable room, Point location)
-        {
-            return;
-        }
+        public override void DropAsPickUp(IVictim lastOwner, IWalkable room, Point location) { }
     }
 
-    public class Gun_BossScatter : Gun_Basic
+    public class Gun_BossScatter : Gun_ShotGun
     {
 
-        protected int ShotCount;
-        protected double ShotSpread;
-
-        public Gun_BossScatter(IVictim owner) : base(owner)
+        public Gun_BossScatter(IVictim owner, int shotCount = 10) : base(owner, shotCount)
         {
-            Name = "Scatter";
-            ShotCount = 10;
+            Name = "Boss Scatter";
             ShotSpread = .5 / ShotCount;
             ShotDelay = 1000;
         }
@@ -522,23 +374,11 @@ namespace YGR
         {
             if (NextShotCooldown > 0.0f)
                 return false;
-
-            Manager_Sound.Sound_Shotgun.Play(0.3f, 0, 0);
-
             NextShotCooldown = ShotDelay;
 
-            double spread = -ShotCount / 2 * ShotSpread;
-            for (int i = 0; i < ShotCount; i++)
-            {
-                var new_dir = new Vector2(
-                    (float)(direction.X * Math.Cos(spread) - direction.Y * Math.Sin(spread)),
-                    (float)(direction.X * Math.Sin(spread) + direction.Y * Math.Cos(spread))
-                );
-
-                Manager_Projectile.AddProjectile_BossProjectile(origin, new_dir, level, who, 0.55f);
-                spread += ShotSpread;
-            }
-
+            Manager_Sound.Sound_Shotgun.Play(0.3f, 0, 0);
+            foreach (var dir in IterateDirections(direction))
+                Manager_Projectile.AddProjectile_BossProjectile(origin, dir, level, who, 0.55f);
             return true;
         }
     }
@@ -564,7 +404,6 @@ namespace YGR
         {
             if (NextShotCooldown > 0.0f)
                 return false;
-
             NextShotCooldown = ShotDelay;
 
             ShotSpreadCurrent += gameTime.ElapsedGameTime.TotalMilliseconds / ShotSpreadSpeed;
@@ -597,8 +436,8 @@ namespace YGR
             ShotSpread = (2 * Math.PI) / ShotCount;
             RotationSpeed = 0.0025f;
             Rotation = 0.0f;
-            Holes = 2;
-            HoleSize = 5;
+            Holes = 3;
+            HoleSize = 6;
         }
 
         public override bool Shoot(GameTime gameTime, Vector2 origin, Vector2 direction, Y_Level level, IGameElement who)
@@ -617,19 +456,12 @@ namespace YGR
                 (float)(direction.X * Math.Sin(Rotation) + direction.Y * Math.Cos(Rotation))
             );
 
-            double spread = -ShotCount / 2 * ShotSpread;
-            for (int i = 0; i < ShotCount; i++)
+            int i = 0;
+            foreach (var dir in (IterateDirections(direction)))
             {
-                spread += ShotSpread;
-                if (i % (ShotCount / Holes) < HoleSize) continue;
-
-                var new_dir = new Vector2(
-                    (float)(direction.X * Math.Cos(spread) - direction.Y * Math.Sin(spread)),
-                    (float)(direction.X * Math.Sin(spread) + direction.Y * Math.Cos(spread))
-                );
-                var prosition = origin + new_dir * 50f;
-
-                Manager_Projectile.AddProjectile_BossProjectile(prosition, new_dir, level, who, 0.25f);
+                if (i++ % (ShotCount / Holes) < HoleSize) continue;
+                var position = origin + dir * 50f;
+                Manager_Projectile.AddProjectile_BossProjectile(position, dir, level, who, 0.25f);
             }
 
             return true;
@@ -639,11 +471,10 @@ namespace YGR
 
     public class Gun_BossAOE : Gun_BossScatter
     {
-        public Gun_BossAOE(IVictim owner) : base(owner)
+        public Gun_BossAOE(IVictim owner, int shotCount = 48) : base(owner, shotCount)
         {
             Name = "AOE boss gun";
             ShotDelay = 300; //Boss regulates its own AOE shooting
-            ShotCount = 48;
             ShotSpread = 2 * Math.PI / ShotCount;
         }
 
@@ -651,22 +482,13 @@ namespace YGR
         {
             if (NextShotCooldown > 0.0f)
                 return false;
-
-            Manager_Sound.Sound_Shotgun.Play(0.3f, 0, 0);
-
             NextShotCooldown = ShotDelay;
 
-            double spread = -ShotCount / 2 * ShotSpread;
-            for (int i = 0; i < ShotCount; i++)
+            Manager_Sound.Sound_Shotgun.Play(0.3f, 0, 0);
+            foreach (var dir in IterateDirections(direction))
             {
-                var new_dir = new Vector2(
-                    (float)(direction.X * Math.Cos(spread) - direction.Y * Math.Sin(spread)),
-                    (float)(direction.X * Math.Sin(spread) + direction.Y * Math.Cos(spread))
-                );
-                var prosition = origin + new_dir * 30f;
-
-                Manager_Projectile.AddProjectile_BossProjectile(prosition, new_dir, level, who, 0.30f);
-                spread += ShotSpread;
+                var position = origin + dir * 30f;
+                Manager_Projectile.AddProjectile_BossProjectile(position, dir, level, who, 0.30f);
             }
 
             return true;

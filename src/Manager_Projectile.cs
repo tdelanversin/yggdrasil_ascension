@@ -149,7 +149,7 @@ namespace YGR
                     level: level,
                     who: who,
                     scale: 0.35f,
-                    damage: 1f,
+                    damage: 0.75f,
                     maxAge: 2500,
                     speed: 0.55f,
                     mass: 0.5f,

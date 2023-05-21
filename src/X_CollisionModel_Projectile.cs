@@ -62,7 +62,21 @@ namespace YGR
                     if (victim == me.WhoFiredMe) continue;
 
                     // Can't touch ghost
-                    if (victim.WhatAreYou() == X_LevelElements.Ghost) continue;
+                    if (victim.WhatAreYou() == X_LevelElements.Ghost)
+                    {
+                        // check all the blanks
+                        if (victim.DeadAbility != null && victim.DeadAbility is Ability_Blank)
+                        {
+                            var blank = (Ability_Blank)victim.DeadAbility;
+                            if (blank.HitByProjectile(me, timeStepMS))
+                            {
+                                result = true;
+                                me.DeleteNext = true;
+                                continue;
+                            }
+                        }
+                        continue;
+                    }
 
                     if (victim.Room != me.Room) continue;
 
@@ -78,6 +92,7 @@ namespace YGR
                             continue;
                         }
                     }
+
 
                     // Pass through player if they are currently invincible
                     if (victim.WhatAreYou() == X_LevelElements.Invincible)

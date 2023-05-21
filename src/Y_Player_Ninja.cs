@@ -15,7 +15,7 @@ namespace YGR
         {
             CharacterSprite = Manager_Sprites.NewAnimatedSprite_Ninja();
 
-            Ability = null; // no ability for the ninja
+            Ability = new Ability_Invicible(this); // no ability for the ninja
             Type = PlayerType.Ninja;
             Name = "Ninja";
 

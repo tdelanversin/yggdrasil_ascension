@@ -67,6 +67,134 @@ namespace YGR
         public bool Triggered { get; private set; }
     }
 
+    public class Ability_Blank : IAbility
+    {
+        public string Name { get; }
+        public bool Triggered { get; private set; }
+        public Texture2D Sprite { get; }
+        protected double NextShotCooldown = 0.0f;
+        protected int ShotDelay = 10000;
+        protected int Duration = 1000;
+        protected Rectangle[] _collisionRect;
+        protected Rectangle SpriteRect;
+        protected AnimatedSprite _sprite;
+        protected IPlayer Owner;
+
+        public Ability_Blank(IPlayer owner)
+        {
+            Name = "Blank";
+            Sprite = Manager_Sprites.Effect_Blank;
+            _sprite = Manager_Sprites.NewAnimatedSprite_Blank();
+            Owner = owner;
+
+            var CirclePrecision = 4;
+            var Radius = 100;
+            _collisionRect = new Rectangle[CirclePrecision];
+            SpriteRect = new Rectangle(0, 0, 2 * Radius, 2 * Radius);
+
+            for (int i = 0; i < CirclePrecision; i++)
+            {
+                // pick CirclePrecision points between 0 and pi/2
+                double angle = Math.PI / 2 * (i + 1) / (CirclePrecision + 2);
+                //find height and width of the rectangle contained in the circle with a corner at angle `angle`
+                // var height = (int)(Math.Sin(angle) * Radius * 2);
+                // var width = (int)(Math.Cos(angle) * Radius * 2);
+                // _collisionRect[i] = new Rectangle((int)owner.Rect.Center.X - width / 2, (int)owner.Rect.Center.Y - height / 2, width, height);
+            }
+        }
+        public bool Trigger(GameTime gametime, Vector2 origin, Vector2 direction, Y_Level level, IGameElement who) { 
+            if (NextShotCooldown > 0.0f) return false;
+            NextShotCooldown = ShotDelay;
+
+            Manager_Sound.Sound_Blank.Play(0.5f, 0, 0);
+            Triggered = true;
+            return true;
+        }
+
+        public bool HitByProjectile(IProjectile projectile, int timeStepMS)
+        {
+            if (!Triggered) return false;
+
+            return SpriteRect.Intersects(projectile.Rect);
+
+            // foreach (Rectangle rect in _collisionRect)
+            // {
+            //     if (rect.Intersects(projectile.Rect)) return true;
+            // }
+
+            // return false;
+        }
+        
+        public void Update(GameTime gameTime) { 
+            NextShotCooldown = Math.Max(0, NextShotCooldown - gameTime.ElapsedGameTime.TotalMilliseconds);
+            if (Triggered) 
+            {
+                // for (int i = 0; i < _collisionRect.Length; i++)
+                // {
+                //     var rect = _collisionRect[i];
+                //     rect.X = (int)(Owner.Rect.Center.ToVector2().X - rect.Width / 2);
+                //     rect.Y = (int)(Owner.Rect.Center.ToVector2().Y - rect.Height / 2);
+                // }
+
+                SpriteRect.X = (int)(Owner.Rect.Center.ToVector2().X - SpriteRect.Width / 2);
+                SpriteRect.Y = (int)(Owner.Rect.Center.ToVector2().Y - SpriteRect.Height / 2);
+
+                _sprite.Update(gameTime, AnimationState.Idle);
+            } 
+            if (NextShotCooldown <= ShotDelay - Duration) Triggered = false;
+        }
+
+        public void Draw(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch) { 
+            if (Triggered)
+            {
+                spriteBatch.Draw(
+                    _sprite.Texture, 
+                    SpriteRect,
+                    _sprite.SourceRectangle,
+                    Color.White
+                );
+            }
+        }
+    }
+
+    public class Ability_Invicible : IAbility
+    {
+
+        public string Name { get; protected set; }
+        public Texture2D Sprite { get; }
+        protected double NextShotCooldown = 0.0f;
+        protected int EffectDelay = 10000;
+        public bool Triggered { get; private set; }
+        protected IPlayer owner;
+
+        public Ability_Invicible(IPlayer owner)
+        {
+            Name = "Gunslinger";
+            Sprite = Manager_Sprites.Effect_Invincibility;
+            this.owner = owner;
+            Triggered = false;
+        }
+
+        public bool Trigger(GameTime gameTime, Vector2 origin, Vector2 direction, Y_Level level, IGameElement who)
+        {
+            if (NextShotCooldown > 0.0f)
+                return false;
+            NextShotCooldown = EffectDelay;
+
+            Manager_Sound.Sound_Invincibility.Play(0.5f, 0, 0);
+            owner.SetInvincible(true);
+            return true;
+        }
+        
+
+        public virtual void Update(GameTime gameTime)
+        {
+            NextShotCooldown = Math.Max(0, NextShotCooldown - gameTime.ElapsedGameTime.TotalMilliseconds);
+        }
+
+        public void Draw(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch) { }
+    }
+
     public class Ability_Shield : IAbility
     {
         public string Name { get; protected set; }
@@ -345,6 +473,55 @@ namespace YGR
         {
             return X_LevelElements.Shield;
         }
+    }
+
+    public class Ability_Gunslinger : IAbility
+    {
+        public string Name { get; protected set; }
+        public Texture2D Sprite { get; }
+        protected double NextShotCooldown = 0.0f;
+        protected int EffectDelay = 10000;
+        protected int Duration = 3000;
+        public bool Triggered { get; private set; }
+        protected IPlayer owner;
+        protected IShooter GunShot;
+        protected double oldShotDelay;
+
+        public Ability_Gunslinger(IPlayer owner)
+        {
+            Name = "Gunslinger";
+            Sprite = Manager_Sprites.Effect_Gunslinger;
+            this.owner = owner;
+            Triggered = false;
+        }
+
+        public bool Trigger(GameTime gameTime, Vector2 origin, Vector2 direction, Y_Level level, IGameElement who)
+        {
+            if (NextShotCooldown > 0.0f)
+                return false;
+
+            Manager_Sound.Sound_Gunslinger.Play(0.5f, 0, 0);
+
+            NextShotCooldown = EffectDelay;
+
+            GunShot = owner.Gun;
+            oldShotDelay = GunShot.ShotDelay;
+            GunShot.ShotDelay = oldShotDelay / 2.5;
+            return true;
+        }
+        
+
+        public virtual void Update(GameTime gameTime)
+        {
+            NextShotCooldown = Math.Max(0, NextShotCooldown - gameTime.ElapsedGameTime.TotalMilliseconds);
+            if (NextShotCooldown <= EffectDelay - Duration && GunShot != null)
+            {
+                GunShot.ShotDelay = oldShotDelay;
+                GunShot = null;
+            }
+        }
+
+        public void Draw(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch) { }
     }
 }
 
