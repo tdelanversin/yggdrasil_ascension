@@ -13,6 +13,14 @@ namespace YGR
         Menu,       // Focus on menu
         Manual      // Control pos and zoom with keybinds
     }
+
+    public enum ShakeStrength
+    {
+        Light,
+        Medium,
+        Strong,
+    }
+
     public static class Camera
     {
         public static float Zoom { get; set; }
@@ -30,6 +38,13 @@ namespace YGR
         public static bool InAnimation { get; private set; }
         public static bool InTransitionToMenu { get; private set; }
         public static bool InTransitionFromMenu { get; set; }
+
+        public static bool IsShaking { get { return _shakeTimer < _shakeDuration; } }
+        private static float _shakeDuration = 250;
+        private static float _shakeTimer = _shakeDuration;
+        private static Vector2 _shakeOffset;
+        private static float _shakeRotation;
+        private static ShakeStrength _shakeStrength;
 
         private static float _animationDuration = 1000;
         private static float _animationTimer = _animationDuration;
@@ -78,11 +93,73 @@ namespace YGR
             VisibleArea = new Rectangle((int)min.X, (int)min.Y, (int)(max.X - min.X), (int)(max.Y - min.Y));
         }
 
-        private static void UpdateMatrix()
+        public static float JumpWithBounceBack(float x)
+        {
+            // https://www.wolframalpha.com/input?i=plot+sin%28x+*+%283*pi%29+-+pi%29+*+%282+pi+%2F+%28x+*+%283*pi%29+-+pi%29%29
+            var scaledTranslated = 3 * Math.PI * x - Math.PI;
+            return (float)(Math.Sin(scaledTranslated) * (2 * Math.PI / (scaledTranslated)));
+        }
+
+        public static void Shake(Vector2 direction, float rotation, ShakeStrength strength)
+        {
+            if (IsShaking && strength <= _shakeStrength) { return; }
+            _shakeRotation = rotation;
+            _shakeOffset = direction;
+            _shakeTimer = 0;
+            _shakeStrength = strength;
+            switch (_shakeStrength)
+            {
+                case ShakeStrength.Light:
+                    _shakeDuration = 100;
+                    break;
+                case ShakeStrength.Medium:
+                    _shakeDuration = 150;
+                    break;
+                case ShakeStrength.Strong:
+                    _shakeDuration = 250;
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        public static void Shake(ShakeStrength strength = ShakeStrength.Light)
+        {
+            var randAngleMax = Math.PI / 1024;
+            var randAngle = (Util.random.NextSingle() - 0.5f) * randAngleMax;
+            randAngle *= (int)strength;
+
+            var RandXMax = Bounds.Width / 256;
+            var RandX = Util.random.Next(RandXMax) - RandXMax / 2;
+
+            var RandYMax = Bounds.Height / 256;
+            var RandY = Util.random.Next(RandYMax) - RandYMax / 2;
+
+            Shake(new Vector2(RandX, RandY), (float)randAngle, strength);
+        }
+
+        private static void UpdateMatrix(GameTime gameTime)
         {
             Transform = Matrix.CreateTranslation(new Vector3(-_transitionalPosition.X, -_transitionalPosition.Y, 0)) *
                     Matrix.CreateScale(_transitionalZoom) *
                     Matrix.CreateTranslation(new Vector3(Bounds.Width * 0.5f, Bounds.Height * 0.5f, 0));
+
+            // Camera shake
+            if (IsShaking)
+            {
+                // var transition = (float)Math.Sin(_shakeTimer * Math.PI / _shakeDuration); // Half a Pi
+                // var transition = (float)Math.Sin(_shakeTimer * Math.PI * 2 / _shakeDuration - Math.PI); // Full back and forth
+                var transition = JumpWithBounceBack(_shakeTimer / _shakeDuration);
+                var rota = transition * _shakeRotation;
+                var offset = transition * _shakeOffset;
+                Transform *=
+                    Matrix.CreateTranslation(new Vector3(-Bounds.Width * 0.5f, -Bounds.Height * 0.5f, 0)) *
+                    Matrix.CreateRotationZ(rota) *
+                    Matrix.CreateTranslation(new Vector3(Bounds.Width * 0.5f, Bounds.Height * 0.5f, 0)) *
+                    Matrix.CreateTranslation(_shakeOffset.X, _shakeOffset.Y, 0);
+                _shakeTimer += gameTime.ElapsedGameTime.Milliseconds;
+            }
+
             UpdateVisibleArea();
         }
 
@@ -264,7 +341,7 @@ namespace YGR
                     break;
             }
             UpdateAnimation(gameTime);
-            UpdateMatrix();
+            UpdateMatrix(gameTime);
         }
 
         private static void ResetAnimation(float animationDuration)
