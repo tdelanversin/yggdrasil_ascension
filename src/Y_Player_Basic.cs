@@ -45,13 +45,13 @@ namespace YGR
         public bool IsActive { get; protected set; }
         public bool IsInvincible { get; protected set; }
         public bool IsDashing { get; protected set; }
+        public bool IsSpedUp { get; protected set; }
         public PlayerType Type { get; protected set; }
         public Statistics Stats { get; set; }
-        public float VelocityMax { get; set; }
-        //float IVictim.VelocityMax { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+        public float VelocityMax { get; protected set; }
+        public float VelocitySpeedUp { get; protected set; }
 
         // Class fields
-        //public float VelocityMax;
         protected Rectangle _rect;
         protected AnimatedSprite GhostSprite;
         protected AnimatedSprite CharacterSprite;
@@ -83,6 +83,8 @@ namespace YGR
         protected int _dashTimer;
         protected int _dashCooldown;
         protected int _dashCooldownTimer;
+        private int _speedUpTimer;
+        private int _speedUpDuration;
 
         public enum InputType
         {
@@ -309,7 +311,7 @@ namespace YGR
         public virtual void Hit(IProjectile projectile)
         {
             if (IsInvincible || !IsAlive()) { return; }
-            if (VelocityMax != 0.35f) { VelocityMax = 0.35f; }
+
             LifePoints -= projectile.Damage;
             IsInvincible = true;
             _invincibleTimer = 0;
@@ -539,7 +541,7 @@ namespace YGR
                 }
                 if (Input.IsKeyDown(Keybinds.KeyboardAbility))
                 {
-                    if (Ability != null  && IsAlive())
+                    if (Ability != null && IsAlive())
                     {
                         bool triggered = Ability.Trigger(gameTime, playerCenter, AimDirection, Level, this);
                         if (triggered) { Stats.TimesAbilitated++; }
@@ -556,6 +558,14 @@ namespace YGR
                     CurrentAimInput = InputType.KeyboardMouse;
                 }
             }
+        }
+
+        public void SpeedUp(float factor, int duration)
+        {
+            _speedUpDuration = duration;
+            _speedUpTimer = 0;
+            IsSpedUp = true;
+            VelocitySpeedUp = factor;
         }
 
         protected virtual void UpdateVelocity(Vector2 input, GameTime gameTime)
@@ -587,7 +597,23 @@ namespace YGR
                     Math.Sign(Velocity.Y) * Math.Max(0.0f, Math.Abs(Velocity.Y) - _deceleration * timeStepMS));
             }
 
-            if (!handleImpact(timeStepMS)) Velocity = Util.ClampMagnitude(Velocity, VelocityMax);
+            var maxVelo = VelocityMax;
+
+            // Incorporate the speed up factor and update its timer
+            if (IsSpedUp)
+            {
+                if (_speedUpTimer < _speedUpDuration)
+                {
+                    maxVelo *= VelocitySpeedUp;
+                    _speedUpTimer += gameTime.ElapsedGameTime.Milliseconds;
+                }
+                else
+                {
+                    IsSpedUp = false;
+                }
+            }
+
+            if (!handleImpact(timeStepMS)) Velocity = Util.ClampMagnitude(Velocity, maxVelo);
         }
 
         private bool handleImpact(int timeStepMS)

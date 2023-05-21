@@ -55,8 +55,7 @@ namespace YGR
         protected int _stateTimerMax = 5000; // How long do we idle / wander at most
 
         public string Identifier;
-        //put this back to 5 isntead of 101
-        protected float _dropProbabilityPercent = 101;
+        protected float _dropProbabilityPercent = 8;
         protected float _dropProbabilityPercentLifeSaving = 30;
 
         public Enemy_Basic(

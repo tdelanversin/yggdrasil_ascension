@@ -32,9 +32,11 @@ namespace YGR
         public bool IsActive { get; }
         public bool IsInvincible { get; }
         public bool IsDashing { get; }
+        public bool IsSpedUp { get; }
         public PlayerType Type { get; }
         public Statistics Stats { get; set; }
-        public float VelocityMax { get; set; }
+        public float VelocityMax { get; }
+        public float VelocitySpeedUp { get; }
 
         public void TeleportTo(Point target);
 
@@ -47,5 +49,6 @@ namespace YGR
         public void Revive(float healAmount);
         public void Godmode();
         public void SetInvincible(bool invincible);
+        public void SpeedUp(float factor, int duration);
     }
 }
