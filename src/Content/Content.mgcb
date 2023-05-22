@@ -178,6 +178,12 @@
 /processorParam:Quality=Best
 /build:Sounds/menu-select.wav
 
+#begin Sounds/negative_beeps-6008.wav
+/importer:WavImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:Sounds/negative_beeps-6008.wav
+
 #begin Sounds/omni_shotgun.wav
 /importer:WavImporter
 /processor:SoundEffectProcessor
@@ -207,6 +213,12 @@
 /processor:SoundEffectProcessor
 /processorParam:Quality=Best
 /build:Sounds/short_fireball.wav
+
+#begin Sounds/short-success-sound-glockenspiel-treasure-video-game-6346.wav
+/importer:WavImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:Sounds/short-success-sound-glockenspiel-treasure-video-game-6346.wav
 
 #begin Sounds/shotgun.wav
 /importer:WavImporter
@@ -945,6 +957,18 @@
 /processorParam:MakeSquare=False
 /processorParam:TextureFormat=Color
 /build:SpritesOther/projectiles.png
+
+#begin SpritesOther/random-powerup.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:SpritesOther/random-powerup.png
 
 #begin SpritesOther/smaller_projectile.png
 /importer:TextureImporter

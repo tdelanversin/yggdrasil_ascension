@@ -88,6 +88,8 @@ namespace YGR
     {
         public const string Life = "Life";
         public const string Revive = "Revive";
+        public const string Random = "Random";
+
 
         // Weapons
         public const string WeaponPistol = "WeaponPistol";

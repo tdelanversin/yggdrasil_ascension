@@ -875,6 +875,7 @@ namespace YGR
                 case GameTutorialState.IntroducePowerUps:
                     if (TutorialStageDurationCounterMS == 0)
                     {
+                        // only Y_PowerUps.Life and Y_PowerUps.Revive in the start room
                         var pups = _startRoom.PickUps.Where(x => x.Type == Y_PowerUps.Life || x.Type == Y_PowerUps.Revive).ToList();
                         var allPos = pups.Select(x => x.Rect.Center.ToVector2()).ToArray();
                         var avgPos = new Vector2(allPos.Select(x => x.X).Average(), allPos.Select(x => x.Y).Average());
@@ -892,6 +893,7 @@ namespace YGR
                 case GameTutorialState.IntroduceYggdrasil:
                     if (TutorialStageDurationCounterMS == 0)
                     {
+                        // only Y_PowerUps.Life and Y_PowerUps.Revive in the start room
                         var pups = _startRoom.PickUps.Where(x => x.Type == Y_PowerUps.Life || x.Type == Y_PowerUps.Revive).ToList();
                         var allPos = pups.Select(x => x.Rect.Center.ToVector2()).ToArray();
                         var avgPos = new Vector2(allPos.Select(x => x.X).Average(), allPos.Select(x => x.Y).Average());

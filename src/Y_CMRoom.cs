@@ -526,6 +526,8 @@ namespace YGR
                 Point location = new Point(s.x + Rect.X, s.y + Rect.Y);
                 if (s.customFields["Type"] == PowerUp.Life)
                     PickUps.Add(PickUp.Factory(Y_PowerUps.Life, location, s.width, s.height, Y_Level.GlobalScale));
+                if (s.customFields["Type"] == PowerUp.Random)
+                    PickUps.Add(PickUp.Factory(Y_PowerUps.Random, location, s.width, s.height, Y_Level.GlobalScale));
                 if (s.customFields["Type"] == PowerUp.Revive)
                     PickUps.Add(PickUp.Factory(Y_PowerUps.Revive, location, s.width, s.height, Y_Level.GlobalScale));
 

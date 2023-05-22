@@ -61,6 +61,7 @@ namespace YGR
         // Power Ups
         public static Texture2D SpinningHeart { get; private set; }
         public static Texture2D SpinningPlus { get; private set; }
+        public static Texture2D SpinningQuestionMark { get; private set; }
 
         // Enemies
         public static Texture2D Enemy_Basic { get; private set; }
@@ -136,6 +137,7 @@ namespace YGR
 
             SpinningHeart = contentManager.Load<Texture2D>("SpritesOther/SpinningHeart");
             SpinningPlus = contentManager.Load<Texture2D>("SpritesOther/SpinningPlus");
+            SpinningQuestionMark = contentManager.Load<Texture2D>("SpritesOther/random-powerup");
 
             Effect_Confusion = contentManager.Load<Texture2D>("SpritesEffects/noise");
             Effect_Blank = contentManager.Load<Texture2D>("SpritesEffects/noise"); //TODO: Add blank effect
@@ -269,6 +271,17 @@ namespace YGR
                 spriteDimension: new Vector2(638, 987),
                 animations: new Dictionary<AnimationState, int[]> {
                     { AnimationState.Idle, new int[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11 } },
+                },
+                animationDuration: 1000
+            );
+        }
+        public static AnimatedSprite NewAnimatedSprite_SpinningQuestionMark()
+        {
+            return new AnimatedSprite(
+                texture: SpinningQuestionMark,
+                spriteDimension: new Vector2(1272, 2349),
+                animations: new Dictionary<AnimationState, int[]> {
+                    { AnimationState.Idle, new int[]  { 0, 1, 2, 3, 4, 5, 6, 7 } },
                 },
                 animationDuration: 1000
             );

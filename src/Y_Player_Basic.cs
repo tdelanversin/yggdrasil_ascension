@@ -45,11 +45,13 @@ namespace YGR
         public bool IsActive { get; protected set; }
         public bool IsInvincible { get; protected set; }
         public bool IsDashing { get; protected set; }
+        public bool IsSpedUp { get; protected set; }
         public PlayerType Type { get; protected set; }
         public Statistics Stats { get; set; }
+        public float VelocityMax { get; protected set; }
+        public float VelocitySpeedUp { get; protected set; }
 
         // Class fields
-        public float VelocityMax;
         protected Rectangle _rect;
         protected AnimatedSprite GhostSprite;
         protected AnimatedSprite CharacterSprite;
@@ -81,6 +83,8 @@ namespace YGR
         protected int _dashTimer;
         protected int _dashCooldown;
         protected int _dashCooldownTimer;
+        private int _speedUpTimer;
+        private int _speedUpDuration;
 
         public enum InputType
         {
@@ -431,6 +435,24 @@ namespace YGR
             }
         }
 
+        /// <summary>
+        /// Check if the currenty state allows us to be shooting or not
+        /// </summary>
+        protected virtual bool CanIShoot()
+        {
+            if (!IsAlive()) { return false; }
+
+            if (Ability == null) { return true; }
+
+            if (!Ability.Triggered) { return true; }
+
+            if (Ability is Ability_Shield) { return false; }
+
+            if (Ability is Ability_Invicible) { return false; }
+
+            return true;
+        }
+
         /* Handle GamePad movement, aiming and shooting */
         protected virtual void HandleGamepadInput(GameTime gameTime, ref Vector2 input)
         {
@@ -466,9 +488,7 @@ namespace YGR
                     _isAiming = true; // Show the aim indicator when firing
                     CurrentAimInput = InputType.Controller;
 
-                    // only allow shooting if ability is not triggered
-                    // (this is for the mailman)
-                    if (Ability == null || (Ability != null && !Ability.Triggered))
+                    if (CanIShoot())
                     {
                         bool shot = Gun.Shoot(gameTime, Rect.Center.ToVector2(), AimDirection, Level, this);
                         if (shot) { Stats.TimesFired++; }
@@ -527,17 +547,14 @@ namespace YGR
                     newAimDirection.Normalize();
                     AimDirection = newAimDirection;
                 }
-                if (Input.IsLeftMousePressed() && IsAlive())
+                if (Input.IsLeftMousePressed() && CanIShoot())
                 {
-                    if (Ability == null || (Ability != null && !Ability.Triggered))
-                    {
-                        bool shot = Gun.Shoot(gameTime, playerCenter, AimDirection, Level, this);
-                        if (shot) { Stats.TimesFired++; }
-                    }
+                    bool shot = Gun.Shoot(gameTime, playerCenter, AimDirection, Level, this);
+                    if (shot) { Stats.TimesFired++; }
                 }
                 if (Input.IsKeyDown(Keybinds.KeyboardAbility))
                 {
-                    if (Ability != null  && IsAlive())
+                    if (Ability != null && IsAlive())
                     {
                         bool triggered = Ability.Trigger(gameTime, playerCenter, AimDirection, Level, this);
                         if (triggered) { Stats.TimesAbilitated++; }
@@ -554,6 +571,14 @@ namespace YGR
                     CurrentAimInput = InputType.KeyboardMouse;
                 }
             }
+        }
+
+        public void SpeedUp(float factor, int duration)
+        {
+            _speedUpDuration = duration;
+            _speedUpTimer = 0;
+            IsSpedUp = true;
+            VelocitySpeedUp = factor;
         }
 
         protected virtual void UpdateVelocity(Vector2 input, GameTime gameTime)
@@ -585,7 +610,36 @@ namespace YGR
                     Math.Sign(Velocity.Y) * Math.Max(0.0f, Math.Abs(Velocity.Y) - _deceleration * timeStepMS));
             }
 
-            if (!handleImpact(timeStepMS)) Velocity = Util.ClampMagnitude(Velocity, VelocityMax);
+            var maxVelo = VelocityMax;
+
+            // Incorporate the speed up factor and update its timer
+            if (IsSpedUp)
+            {
+                if (_speedUpTimer < _speedUpDuration)
+                {
+                    maxVelo *= VelocitySpeedUp;
+                    _speedUpTimer += gameTime.ElapsedGameTime.Milliseconds;
+                }
+                else
+                {
+                    IsSpedUp = false;
+                }
+            }
+
+            // Handle speed changes caused by abilities
+            if (Ability is Ability_Shield && Ability.Triggered)
+            {
+                // While holding shield, we ignore any speed ups and just go straight for 0.5 * normal velocity
+                // Gets too confusing if we have a multitude of states affecting the current speed
+                maxVelo = VelocityMax * 0.5f;
+            }
+            else if (Ability is Ability_Gunslinger && Ability.Triggered)
+            {
+                // Gun slinger is OP, so balance it with a nice slow down
+                maxVelo = VelocityMax * 0.25f;
+            }
+
+            if (!handleImpact(timeStepMS)) Velocity = Util.ClampMagnitude(Velocity, maxVelo);
         }
 
         private bool handleImpact(int timeStepMS)

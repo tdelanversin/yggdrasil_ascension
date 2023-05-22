@@ -3,6 +3,7 @@ using Microsoft.Xna.Framework.Graphics;
 using System;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Timers;
 
 namespace YGR
 {
@@ -14,6 +15,7 @@ namespace YGR
         // Powerups
         Revive,
         Life,
+        Random,
 
         // Weapons
         WeaponPistol,
@@ -41,6 +43,7 @@ namespace YGR
 
         // Dead Enemy
         Gravestone
+
     }
 
     public class PickUp : IGameElement
@@ -92,14 +95,14 @@ namespace YGR
         }
 
         public PickUp(
-            Y_PowerUps type, 
-            Point location, 
-            int width, 
-            int height, 
-            float scale, 
-            AnimatedSprite sprite, 
+            Y_PowerUps type,
+            Point location,
+            int width,
+            int height,
+            float scale,
+            AnimatedSprite sprite,
             AnimatedSprite carriedSprite,
-            IVictim lastOwner, 
+            IVictim lastOwner,
             bool floaty,
             Func<IPlayer, PickUp, bool> action)
         {
@@ -153,9 +156,9 @@ namespace YGR
             switch (type)
             {
                 case Y_PowerUps.ChooserNerd:
-                    return new PickUp(type, location, width, IPlayer.PlayerBaseHeight, scale * 1.0f, 
-                        Manager_Sprites.NewAnimatedSprite_NerdyGirl(), 
-                        null, 
+                    return new PickUp(type, location, width, IPlayer.PlayerBaseHeight, scale * 1.0f,
+                        Manager_Sprites.NewAnimatedSprite_NerdyGirl(),
+                        null,
                         lastOwner,
                         false,
                         (player, self) =>
@@ -168,9 +171,9 @@ namespace YGR
                             return false;
                         });
                 case Y_PowerUps.ChooserMailman:
-                    return new PickUp(type, location, width, IPlayer.PlayerBaseHeight, scale * 1.0f, 
-                        Manager_Sprites.NewAnimatedSprite_Mailman(), 
-                        null, 
+                    return new PickUp(type, location, width, IPlayer.PlayerBaseHeight, scale * 1.0f,
+                        Manager_Sprites.NewAnimatedSprite_Mailman(),
+                        null,
                         lastOwner,
                         false,
                         (player, self) =>
@@ -183,9 +186,9 @@ namespace YGR
                             return false;
                         });
                 case Y_PowerUps.ChooserNinja:
-                    return new PickUp(type, location, width, IPlayer.PlayerBaseHeight, scale * 1.0f, 
-                        Manager_Sprites.NewAnimatedSprite_Ninja(), 
-                        null, 
+                    return new PickUp(type, location, width, IPlayer.PlayerBaseHeight, scale * 1.0f,
+                        Manager_Sprites.NewAnimatedSprite_Ninja(),
+                        null,
                         lastOwner,
                         false,
                         (player, self) =>
@@ -198,9 +201,9 @@ namespace YGR
                             return false;
                         });
                 case Y_PowerUps.ChooserProfessor:
-                    return new PickUp(type, location, width, IPlayer.PlayerBaseHeight, scale * 1.0f, 
-                        Manager_Sprites.NewAnimatedSprite_Professor(), 
-                        null, 
+                    return new PickUp(type, location, width, IPlayer.PlayerBaseHeight, scale * 1.0f,
+                        Manager_Sprites.NewAnimatedSprite_Professor(),
+                        null,
                         lastOwner,
                         false,
                         (player, self) =>
@@ -295,9 +298,9 @@ namespace YGR
                             return switchGun(new Gun_Godmode(player), player, self);
                         });
                 case Y_PowerUps.Life:
-                    return new PickUp(type, location, width, height, 1.5f, 
+                    return new PickUp(type, location, width, height, 1.5f,
                         Manager_Sprites.NewAnimatedSprite_SpinningHeart(),
-                        null, 
+                        null,
                         lastOwner,
                         false,
                         (player, self) =>
@@ -313,7 +316,7 @@ namespace YGR
                             return true;
                         });
                 case Y_PowerUps.LevelUpNerd:
-                    return new PickUp(type, location, width, height, 1.5f, 
+                    return new PickUp(type, location, width, height, 1.5f,
                         Manager_Sprites.NewAnimatedSprite_LevelUp_DarkFlash(),
                         Manager_Sprites.NewAnimatedSprite_NerdyGirl(),
                         lastOwner,
@@ -332,9 +335,9 @@ namespace YGR
                             return true;
                         });
                 case Y_PowerUps.LevelUpMailman:
-                    return new PickUp(type, location, width, height, 1.5f, 
+                    return new PickUp(type, location, width, height, 1.5f,
                         Manager_Sprites.NewAnimatedSprite_LevelUp_DarkFlash(),
-                        Manager_Sprites.NewAnimatedSprite_Mailman(), 
+                        Manager_Sprites.NewAnimatedSprite_Mailman(),
                         lastOwner,
                         false,
                         (player, self) =>
@@ -351,9 +354,9 @@ namespace YGR
                             return true;
                         });
                 case Y_PowerUps.LevelUpProfessor:
-                    return new PickUp(type, location, width, height, 1.5f, 
+                    return new PickUp(type, location, width, height, 1.5f,
                         Manager_Sprites.NewAnimatedSprite_LevelUp_DarkFlash(),
-                        Manager_Sprites.NewAnimatedSprite_Professor(), 
+                        Manager_Sprites.NewAnimatedSprite_Professor(),
                         lastOwner,
                         false,
                         (player, self) =>
@@ -395,10 +398,26 @@ namespace YGR
                             // un-pick-up-able
                             return false;
                         });
+                case Y_PowerUps.Random:
+                    return new PickUp(type, location, width, height, 1.5f,
+                        Manager_Sprites.NewAnimatedSprite_SpinningQuestionMark(),
+                        null,
+                        lastOwner,
+                        false,
+                        (player, self) =>
+                        {
+                            bool powerUpApplied = randomPowerup(player);
+                            if (powerUpApplied)
+                            {
+                                player.Room.PickUps.Remove(self);
+                                return true;
+                            }
+                            return false;
+                        });
                 default: // case Y_PowerUps.Revive:
-                    return new PickUp(Y_PowerUps.Revive, location, width, height, 1.5f, 
+                    return new PickUp(Y_PowerUps.Revive, location, width, height, 1.5f,
                         Manager_Sprites.NewAnimatedSprite_SpinningPlus(),
-                        null, 
+                        null,
                         lastOwner,
                         false,
                         (player, self) =>
@@ -413,6 +432,41 @@ namespace YGR
                             return true;
                         });
             }
+        }
+
+
+        // Apply a random PowerUp, for the moment just SpeedUp (no capital letters for private methods)
+        private static bool randomPowerup(IPlayer player)
+        {
+            // Don't stack velocity powerups
+            if (player.IsSpedUp) { return false; }
+
+            var duration = 15000;
+
+            // make sure we most probably get a good power up and not a bad one
+            switch (Util.random.Next(4))
+            {
+                case 0:
+                    player.SpeedUp(1.5f, duration);
+                    Manager_Sound.Sound_PosititveRandomPowerup.Play();
+                    break;
+                case 1:
+                    player.SpeedUp(1.6f, duration);
+                    Manager_Sound.Sound_PosititveRandomPowerup.Play();
+                    break;
+                case 2:
+                    player.SpeedUp(1.7f, duration);
+                    Manager_Sound.Sound_PosititveRandomPowerup.Play();
+                    break;
+                case 3:
+                    player.SpeedUp(0.5f, duration);
+                    Manager_Sound.Sound_NegativeRandomPowerup.Play();
+                    break;
+
+                default:
+                    break;
+            }
+            return true;
         }
 
         public void DrawSpinningTexture(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)
