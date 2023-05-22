@@ -703,8 +703,8 @@ namespace YGR
                 // otherwise maybe drop something that may or may not be usefull
                 var next = Util.random.Next(0, 100);
                 if (next >= _dropProbabilityPercent) return;
-                //change that back to all possible powerups
-                var droppables = new Y_PowerUps[] { Y_PowerUps.Random };
+                //change that back to all possible powerups (just did it...)
+                var droppables = new Y_PowerUps[] { Y_PowerUps.Random, Y_PowerUps.Revive, Y_PowerUps.Life };
                 var ind = Util.random.Next(0, droppables.Length);
                 var room = (Y_CMRoom)Room;
                 var p = new Point(Rect.Location.X + Rect.Width / 2, Rect.Location.Y + Rect.Height / 2);
