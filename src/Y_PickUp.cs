@@ -406,7 +406,7 @@ namespace YGR
                         false,
                         (player, self) =>
                         {
-                            bool powerUpApplied = RandomPowerup(player);
+                            bool powerUpApplied = randomPowerup(player);
                             if (powerUpApplied)
                             {
                                 player.Room.PickUps.Remove(self);
@@ -435,22 +435,30 @@ namespace YGR
         }
 
 
-        // Apply a random PowerUp, for the moment just SpeedUp
-        private static bool RandomPowerup(IPlayer player)
+        // Apply a random PowerUp, for the moment just SpeedUp (no capital letters for private methods)
+        private static bool randomPowerup(IPlayer player)
         {
             // Don't stack velocity powerups
             if (player.IsSpedUp) { return false; }
 
             var duration = 15000;
 
-            switch (Util.random.Next(2))
+            // make sure we most probably get a good power up and not a bad one
+            switch (Util.random.Next(4))
             {
                 case 0:
                     player.SpeedUp(1.5f, duration);
                     Manager_Sound.Sound_PosititveRandomPowerup.Play();
                     break;
-
                 case 1:
+                    player.SpeedUp(1.6f, duration);
+                    Manager_Sound.Sound_PosititveRandomPowerup.Play();
+                    break;
+                case 2:
+                    player.SpeedUp(1.7f, duration);
+                    Manager_Sound.Sound_PosititveRandomPowerup.Play();
+                    break;
+                case 3:
                     player.SpeedUp(0.5f, duration);
                     Manager_Sound.Sound_NegativeRandomPowerup.Play();
                     break;
