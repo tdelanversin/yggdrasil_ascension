@@ -437,7 +437,7 @@ namespace YGR
                 {
                     _pUps = JsonConvert.DeserializeObject<List<PowerUp>>(array.entities.PowerUp.ToString());
                 }
-                setPowerUps();
+                SetPowerUps();
             });
 
             int tileSize = Y_Level.TextureTileSize;
@@ -518,7 +518,7 @@ namespace YGR
             else return null;
         }
 
-        private void setPowerUps()
+        public void SetPowerUps()
         {
             PickUps.Clear();
             foreach (var s in _pUps)
@@ -627,14 +627,14 @@ namespace YGR
             State = X_RoomState.Invisible;
             MoveTo(new Point(0, 0));
             _visited = false;
-            setPowerUps();
+            SetPowerUps();
         }
 
         public void InGameReset()
         {
 
             _visited = false;
-            setPowerUps();
+            SetPowerUps();
             SpawnEnemies();
         }
 
@@ -654,6 +654,8 @@ namespace YGR
                         Manager_Enemies.AddEnemy_Slime(pos, _level);
                     else if (EnemyEntity.GetType(spr) == Manager_Enemies.EnemyType.BossEnemy)
                         Manager_Enemies.AddEnemy_Boss(pos, _level);
+                    else if (EnemyEntity.GetType(spr) == Manager_Enemies.EnemyType.GigaChad)
+                        Manager_Enemies.AddEnemy_Gigachad(pos, _level);
                 }
             }
             else
@@ -834,10 +836,28 @@ namespace YGR
             Illuminate(this);
         }
 
+        public bool OpenBottomDoor(bool lockWhenFinished = false)
+        {
+            // we only plan to use this one for the start room to get to GigaChad
+            if (!DoorRooms.ContainsKey(X_ConnectorSide.Bottom)) return false;
+            var door = (Y_Door)(DoorRooms[X_ConnectorSide.Bottom].First());
+            door.OpenUnlockedDoor();
+            ToggleDoors();
+            var otherRoom = door.GetOtherDoor(this);
+            ((Y_CMRoom)otherRoom.Item2).SetVisible(true);
+            ((Y_CMRoom)otherRoom.Item2).ToggleDoors();
+
+            Illuminate(otherRoom.Item2);
+            return true;
+        }
+
         public void OpenAllUnlockedRoomDoors(bool lockWhenFinished = false)
         {
             foreach (var side in DoorRooms)
             {
+                // if the current room is the start room => don't open the GigaChad door
+                if (Category == "Start" && side.Key == X_ConnectorSide.Bottom) continue;
+
                 foreach (var walkable in side.Value)
                 {
                     if (walkable.WhatAreYou() == X_LevelElements.Door)
