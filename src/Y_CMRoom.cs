@@ -634,7 +634,7 @@ namespace YGR
 
         public void InGameReset()
         {
-            _visited = false;
+            //_visited = false;
             Cleared = false;
             SetPowerUps();
             SpawnEnemies();

@@ -205,7 +205,7 @@ namespace YGR
                     new MenuItem("Restart", NewGame, isActive: false),
                     StatsMenu,
                     SettingsMenu,
-                    new MenuItem("Quit", Util.Quit),
+                    new MenuItem("Quit", Util.Quit)
                 }
             );
 
