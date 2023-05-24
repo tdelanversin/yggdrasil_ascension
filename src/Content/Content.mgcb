@@ -274,6 +274,12 @@
 /processorParam:Quality=Best
 /build:Sounds/stonewall.wav
 
+#begin Sounds/sword.wav
+/importer:WavImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:Sounds/sword.wav
+
 #begin Sounds/viking_horn.wav
 /importer:WavImporter
 /processor:SoundEffectProcessor
@@ -358,6 +364,18 @@
 /processorParam:TextureFormat=Color
 /build:SpritesCharacters/NerdyGirl.png
 
+#begin SpritesCharacters/NerdyGirl2.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:SpritesCharacters/NerdyGirl2.png
+
 #begin SpritesCharacters/Ninja.png
 /importer:TextureImporter
 /processor:TextureProcessor
@@ -381,18 +399,6 @@
 /processorParam:MakeSquare=False
 /processorParam:TextureFormat=Color
 /build:SpritesCharacters/Ninja10x.png
-
-#begin SpritesCharacters/NerdyGirl2.png
-/importer:TextureImporter
-/processor:TextureProcessor
-/processorParam:ColorKeyColor=255,0,255,255
-/processorParam:ColorKeyEnabled=True
-/processorParam:GenerateMipmaps=False
-/processorParam:PremultiplyAlpha=True
-/processorParam:ResizeToPowerOfTwo=False
-/processorParam:MakeSquare=False
-/processorParam:TextureFormat=Color
-/build:SpritesCharacters/NerdyGirl2.png
 
 #begin SpritesCharacters/Prof.png
 /importer:TextureImporter

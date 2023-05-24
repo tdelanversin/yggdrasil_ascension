@@ -1151,10 +1151,14 @@ namespace YGR
                     {
                         _openingTheDoor = true;
                         DoorMoovingCounter++;
-                        Manager_Sound.PlaySoundWhile(() => Y_Door.DoorMoovingCounter > 0, ref Manager_Sound.Sound_StoneWall);
+                        if (!_visited)
+                            Manager_Sound.PlaySoundWhile(() => Y_Door.DoorMoovingCounter > 0, ref Manager_Sound.Sound_StoneWall, 1.0f);
+                            
                     }
                     if (!doorAnimation(dt, true))
                     {
+                        if (_visited)
+                            Manager_Sound.Sound_Sword.Play();
                         openDoor();
                         _openingTheDoor = false;
                         DoorMoovingCounter--;
@@ -1165,10 +1169,13 @@ namespace YGR
                     {
                         _openingTheDoor = true;
                         DoorMoovingCounter++;
-                        Manager_Sound.PlaySoundWhile(() => Y_Door.DoorMoovingCounter > 0, ref Manager_Sound.Sound_StoneWall);
+                        if (!_visited)
+                            Manager_Sound.PlaySoundWhile(() => Y_Door.DoorMoovingCounter > 0, ref Manager_Sound.Sound_StoneWall, 1.0f);
                     }
                     if (!doorAnimation(dt, true))
                     {
+                        if (_visited)
+                            Manager_Sound.Sound_Sword.Play();
                         State = X_DoorState.Open;
                         openDoor();
                         _openingTheDoor = false;
@@ -1183,7 +1190,10 @@ namespace YGR
                         closeDoor();
                         _closingTheDoor = true;
                         DoorMoovingCounter++;
-                        Manager_Sound.PlaySoundWhile(() => Y_Door.DoorMoovingCounter > 0, ref Manager_Sound.Sound_StoneWall);
+                        if (!_visited)
+                            Manager_Sound.PlaySoundWhile(() => Y_Door.DoorMoovingCounter > 0, ref Manager_Sound.Sound_StoneWall);
+                        else
+                            Manager_Sound.Sound_Sword.Play();
                     }
                     if (!doorAnimation(dt, false))
                     {
@@ -1206,7 +1216,10 @@ namespace YGR
                         closeDoor();
                         _closingTheDoor = true;
                         DoorMoovingCounter++;
-                        Manager_Sound.PlaySoundWhile(() => Y_Door.DoorMoovingCounter > 0, ref Manager_Sound.Sound_StoneWall);
+                        if (!_visited)
+                            Manager_Sound.PlaySoundWhile(() => Y_Door.DoorMoovingCounter > 0, ref Manager_Sound.Sound_StoneWall);
+                        else
+                            Manager_Sound.Sound_Sword.Play();
                     }
                     if (!doorAnimation(dt, false))
                     {

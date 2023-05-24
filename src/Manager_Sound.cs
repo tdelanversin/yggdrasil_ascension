@@ -43,6 +43,7 @@ namespace YGR
         public static SoundEffect Sound_Wush;
         public static SoundEffect Sound_PosititveRandomPowerup;
         public static SoundEffect Sound_NegativeRandomPowerup;
+        public static SoundEffect Sound_Sword;
 
 
         public static List<Song> SongsEncounter;
@@ -92,6 +93,7 @@ namespace YGR
             Sound_Wush = contentManager.Load<SoundEffect>("Sounds/wush");
             Sound_PosititveRandomPowerup = contentManager.Load<SoundEffect>("Sounds/short-success-sound-glockenspiel-treasure-video-game-6346");
             Sound_NegativeRandomPowerup = contentManager.Load<SoundEffect>("Sounds/negative_beeps-6008");
+            Sound_Sword = contentManager.Load<SoundEffect>("Sounds/sword");
 
             // Set up media player
             MediaPlayer.IsRepeating = true;
@@ -106,13 +108,13 @@ namespace YGR
             _registry = new Dictionary<Func<bool>, Tuple<Stopwatch, SoundEffect>>();
         }
 
-        public static void PlaySoundWhile(Func<bool> condition, ref SoundEffect effect)
+        public static void PlaySoundWhile(Func<bool> condition, ref SoundEffect effect, float volume=1.0f)
         {
             var watch = new Stopwatch();
             if (_registry.TryAdd(condition, new Tuple<Stopwatch, SoundEffect>(watch, effect)))
             {
                 watch.Start();
-                effect.Play();
+                effect.Play(volume, 0, 0);
             }
         }
 
