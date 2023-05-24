@@ -56,14 +56,11 @@ namespace YGR
 
         public static IShooter getRandomGun(IVictim owner)
         {
-            List<Type> gunTypes = new List<Type> {
-                typeof(Gun_Basic),
-                // typeof(Gun_Wide), // Make game child friendly for now (:-D)
-                // typeof(Gun_Helix),
-                typeof(Gun_ShotGun)
-            };
-            var newGun = (IShooter)(Activator.CreateInstance(gunTypes[random.Next(gunTypes.Count)], owner));
-            return newGun;
+            // give them back their old gun instead of a random one
+            if (owner is Player_Mailman) return (IShooter)(Activator.CreateInstance(typeof(Gun_Letter), owner));
+            else if (owner is Player_NerdyGirl) return (IShooter)(Activator.CreateInstance(typeof(Gun_Keyboard), owner));
+            else if (owner is Player_Professor) return (IShooter)(Activator.CreateInstance(typeof(Gun_Book), owner));
+            else return (IShooter)(Activator.CreateInstance(typeof(Gun_NinjaStar), owner));
         }
 
         public static string PathOsNormalization(string path)
