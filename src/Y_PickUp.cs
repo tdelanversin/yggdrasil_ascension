@@ -28,6 +28,7 @@ namespace YGR
         WeaponHelix,
         WeaponBlunderbuss,
         WeaponRedDevil,
+        WeaponSniper,
         WeaponEnemySlowPistol,
         WeaponWide,
         WeaponGiga,
@@ -318,6 +319,15 @@ namespace YGR
                                 return false;
 
                             return switchGun(new Gun_RedDevil(player), player, self);
+                        });
+                case Y_PowerUps.WeaponSniper:
+                    return new PickUp(type, location, width, height, _gunScale, Manager_Sprites.Weapon_Sniper, lastOwner, true,
+                        (player, self) =>
+                        {
+                            if (player.Gun.GetType() == typeof(Gun_Sniper))
+                                return false;
+
+                            return switchGun(new Gun_Sniper(player), player, self);
                         });
                 case Y_PowerUps.WeaponPinkHammer:
                     return new PickUp(type, location, width, height, _gunScale, Manager_Sprites.Weapon_Hammer, lastOwner, true, Color.LightPink,

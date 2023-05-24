@@ -138,7 +138,7 @@ namespace YGR
         {
             Name = "Keyboard Gun";
             Sprite = Manager_Sprites.Weapon_Keyboard_Pink;
-            PowerUpType = Y_PowerUps.WeaponKeyboard;
+            PowerUpType = Y_PowerUps.WeaponKeyboardPink;
             ShotDelay = 800;
         }
 
@@ -301,6 +301,28 @@ namespace YGR
             Manager_Sound.Sound_OmniShotGun.Play(0.7f, 0, 0);
             foreach (var dir in IterateDirections(direction))
                 Manager_Projectile.AddProjectile_RedDevil(origin, dir, level, who);
+            return true;
+        }
+    }
+
+    public class Gun_Sniper : Gun_Basic
+    {
+        public Gun_Sniper(IVictim owner) : base(owner)
+        {
+            Name = "Sniper";
+            Sprite = Manager_Sprites.Weapon_Sniper;
+            PowerUpType = Y_PowerUps.WeaponSniper;
+            ShotDelay = 1500;
+        }
+
+        public override bool Shoot(GameTime gameTime, Vector2 origin, Vector2 direction, Y_Level level, IGameElement who)
+        {
+            if (NextShotCooldown > 0.0f)
+                return false;
+            NextShotCooldown = ShotDelay;
+
+            Manager_Sound.Sound_PlasmaPistol.Play(0.85f, 0, 0);
+            Manager_Projectile.AddProjectile_Sniper(origin, direction, level, who);
             return true;
         }
     }

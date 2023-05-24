@@ -37,6 +37,7 @@ namespace YGR
         public static Texture2D Weapon_RedDevil { get; private set; }
         public static Texture2D Weapon_Helix { get; private set; }
         public static Texture2D Weapon_Blunderbuss { get; private set; }
+        public static Texture2D Weapon_Sniper { get; private set; }
         public static Texture2D Weapon_Shotgun { get; private set; }
         public static Texture2D Weapon_Hammer { get; private set; }
 
@@ -121,6 +122,7 @@ namespace YGR
             Weapon_RedDevil = contentManager.Load<Texture2D>("SpritesWeapons/Red_Gun");
             Weapon_Helix = contentManager.Load<Texture2D>("SpritesWeapons/Helix");
             Weapon_Blunderbuss = contentManager.Load<Texture2D>("SpritesWeapons/Blunderbuss");
+            Weapon_Sniper = contentManager.Load<Texture2D>("SpritesWeapons/Sniper");
             Weapon_Shotgun = contentManager.Load<Texture2D>("SpritesWeapons/Shotgun");
             Weapon_Hammer = contentManager.Load<Texture2D>("SpritesWeapons/hammer");
 
