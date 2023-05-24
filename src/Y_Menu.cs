@@ -171,6 +171,7 @@ namespace YGR
         private static MenuTree MainMenu;
         private static MenuTree StatsMenu;
         private static MenuTree SettingsMenu;
+        private static MenuTree BabyMenu;
         private static MenuTree CurrentSubmenu;
 
         internal static void Initialize(A_Yggdrasil game)
@@ -195,6 +196,16 @@ namespace YGR
                 }
             );
 
+            BabyMenu = new MenuTree("Advanced Settings", parent: MainMenu);
+            BabyMenu.AddChildren(
+                new List<MenuItem>
+                {
+                    new SettingsItem("Large Corridors: " , Settings.CorridorWidth == 7, toggleFunc: Settings.ToggleCorridorWidth),
+                    new SettingsItem("GigaChad Baby mode: ", Settings.GigaChadBabyMode, toggleFunc: Settings.ToggleGigaChadBabyMode),
+                    new MenuItem("Back", Menu.Ascend),
+                }
+            );
+
             StatsMenu = new MenuTree("Statistics", parent: MainMenu);
             StatsMenu.IsActive = false;
             StatsMenu.AddChild(new MenuItem("Back", Menu.Ascend));
@@ -205,6 +216,7 @@ namespace YGR
                     new MenuItem("Restart", NewGame, isActive: false),
                     StatsMenu,
                     SettingsMenu,
+                    BabyMenu,
                     new MenuItem("Quit", Util.Quit)
                 }
             );
