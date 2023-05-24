@@ -1,6 +1,7 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using MonoGame.Extended;
 using MonoGame.Extended.Particles;
 using System;
 using System.Collections.Generic;
@@ -40,6 +41,7 @@ namespace YGR
         public IShooter Gun { get; set; }
         public IAbility Ability { get; set; }
         public IAbility DeadAbility { get; set; }
+        public bool Immobilized { get; set; }
 
         public PlayerIndex PlayerIndex { get; protected set; }
         public bool IsActive { get; protected set; }
@@ -109,6 +111,9 @@ namespace YGR
 
             // Set Name
             Name = "Basic Dude";
+
+            // set immobilized to false
+            Immobilized = false;
 
             // Yes, bring him back <3
             CharacterSprite = Manager_Sprites.NewAnimatedSprite_TestCharacter();
@@ -456,6 +461,9 @@ namespace YGR
         /* Handle GamePad movement, aiming and shooting */
         protected virtual void HandleGamepadInput(GameTime gameTime, ref Vector2 input)
         {
+            // keep players in place during interrupting camera sequences like introducing gigachad
+            if (Immobilized) return;
+
             GamePadState gpState = GamePad.GetState(PlayerIndex);
             if (gpState.IsConnected)
             {
@@ -516,6 +524,9 @@ namespace YGR
         /* Handle Keyboard & Mouse movement, aiming and shooting */
         protected virtual void HandleMouseKeyboardInput(GameTime gameTime, ref Vector2 input)
         {
+            // keep players in place during interrupting camera sequences like introducing gigachad
+            if (Immobilized) return;
+
             if (ControlLayout > 0)
             {
                 if (Room == null) return;
