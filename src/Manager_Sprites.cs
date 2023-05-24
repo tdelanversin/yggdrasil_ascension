@@ -72,6 +72,10 @@ namespace YGR
         public static Texture2D SpinningHeart { get; private set; }
         public static Texture2D SpinningPlus { get; private set; }
         public static Texture2D SpinningQuestionMark { get; private set; }
+        public static Texture2D LevelUp_Girly { get; private set; }
+        public static Texture2D LevelUp_Mailman { get; private set; }
+        public static Texture2D LevelUp_Ninja { get; private set; }
+        public static Texture2D LevelUp_Prof { get; private set; }
 
         // Enemies
         public static Texture2D Enemy_Basic { get; private set; }
@@ -158,6 +162,10 @@ namespace YGR
             SpinningHeart = contentManager.Load<Texture2D>("SpritesOther/SpinningHeart");
             SpinningPlus = contentManager.Load<Texture2D>("SpritesOther/SpinningPlus");
             SpinningQuestionMark = contentManager.Load<Texture2D>("SpritesOther/random-powerup");
+            LevelUp_Girly = contentManager.Load<Texture2D>("SpritesOther/LevelUp/girly");
+            LevelUp_Mailman = contentManager.Load<Texture2D>("SpritesOther/LevelUp/mailman");
+            LevelUp_Ninja = contentManager.Load<Texture2D>("SpritesOther/LevelUp/ninja");
+            LevelUp_Prof = contentManager.Load<Texture2D>("SpritesOther/LevelUp/prof");
 
             Effect_Confusion = contentManager.Load<Texture2D>("SpritesEffects/noise");
             Effect_Blank = contentManager.Load<Texture2D>("SpritesEffects/noise"); //TODO: Add blank effect
