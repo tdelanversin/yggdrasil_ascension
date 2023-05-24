@@ -274,12 +274,6 @@
 /processorParam:Quality=Best
 /build:Sounds/stonewall.wav
 
-#begin Sounds/sword.wav
-/importer:WavImporter
-/processor:SoundEffectProcessor
-/processorParam:Quality=Best
-/build:Sounds/sword.wav
-
 #begin Sounds/viking_horn.wav
 /importer:WavImporter
 /processor:SoundEffectProcessor
@@ -291,6 +285,54 @@
 /processor:SoundEffectProcessor
 /processorParam:Quality=Best
 /build:Sounds/wush.wav
+
+#begin SpriteProjectiles/Book_Projectile.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:SpriteProjectiles/Book_Projectile.png
+
+#begin SpriteProjectiles/Keyboard_Projectile.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:SpriteProjectiles/Keyboard_Projectile.png
+
+#begin SpriteProjectiles/Letter_Projectile.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:SpriteProjectiles/Letter_Projectile.png
+
+#begin SpriteProjectiles/Ninja_Star_Projectile.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:SpriteProjectiles/Ninja_Star_Projectile.png
 
 #begin SpritesCharacters/charaset.png
 /importer:TextureImporter
@@ -1240,6 +1282,18 @@
 /processorParam:TextureFormat=Color
 /build:SpritesWeapons/Blunderbuss.png
 
+#begin SpritesWeapons/Book.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:SpritesWeapons/Book.png
+
 #begin SpritesWeapons/hammer.png
 /importer:TextureImporter
 /processor:TextureProcessor
@@ -1264,6 +1318,18 @@
 /processorParam:TextureFormat=Color
 /build:SpritesWeapons/Helix.png
 
+#begin SpritesWeapons/Keyboard_pink.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:SpritesWeapons/Keyboard_pink.png
+
 #begin SpritesWeapons/Keyboard.png
 /importer:TextureImporter
 /processor:TextureProcessor
@@ -1275,6 +1341,30 @@
 /processorParam:MakeSquare=False
 /processorParam:TextureFormat=Color
 /build:SpritesWeapons/Keyboard.png
+
+#begin SpritesWeapons/Letter.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:SpritesWeapons/Letter.png
+
+#begin SpritesWeapons/Ninja_star.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:SpritesWeapons/Ninja_star.png
 
 #begin SpritesWeapons/Pistol.png
 /importer:TextureImporter
@@ -1311,4 +1401,16 @@
 /processorParam:MakeSquare=False
 /processorParam:TextureFormat=Color
 /build:SpritesWeapons/Shotgun.png
+
+#begin SpritesWeapons/Sniper.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:SpritesWeapons/Sniper.png
 

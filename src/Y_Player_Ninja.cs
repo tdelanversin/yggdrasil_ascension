@@ -22,7 +22,8 @@ namespace YGR
             if (gun != null)
                 Gun = gun;
             else
-                Gun = Util.getRandomGun(this);
+                // Gun = Util.getRandomGun(this);
+                Gun = new Gun_NinjaStar(this);
 
             SetupPlayerRect(IPlayer.PlayerBaseHeight);
 

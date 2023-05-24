@@ -1113,7 +1113,7 @@ namespace YGR
                         }
 
                         // make sure these are somewhere to be found, because, let's face it, it's the pinky hammer :-D
-                        pws.Add(Y_PowerUps.WeaponPinkHammer);
+                        pws.Add(Y_PowerUps.WeaponSniper);
                         pws.Add(Y_PowerUps.WeaponHelix);
                         pws.Add(Y_PowerUps.WeaponBlunderbuss);
                         pws.Add(Y_PowerUps.WeaponRedDevil);
