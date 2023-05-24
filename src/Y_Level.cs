@@ -9,6 +9,7 @@ using SharpFont.Cache;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.ComponentModel.Design;
 using System.Diagnostics;
 using System.IO;
 using System.IO.Pipes;
@@ -274,7 +275,7 @@ namespace YGR
             var random = new Random();
             // randomly select one level tree
             //var key = _data.Level.Keys.ToArray()[random.Next(0, _data.Level.Keys.Count)];
-            var key = _data.Level.Keys.ToArray()[7];
+            var key = _data.Level.Keys.ToArray()[0];
             var tree = _data.Level[key];
 
             var watch = new Stopwatch();
@@ -531,6 +532,7 @@ namespace YGR
             GigaChadTimerS = 0;
             GigaChadTimerMS = 0;
 
+            // this one is used to create a 3D model of the level to debug the whole thing
             //string model = "";
             //int globalOffset = 0;
             //foreach (var room in Rooms)
@@ -1207,8 +1209,8 @@ namespace YGR
                     // Duration for Win/Lose message to be shown
                     int gameEndNotificationLength = 35000;
 
-                    // Check if players died
-                    if (encounterRoom.GetPlayersInside().FindAll(p => p.LifePoints > 0).Count < 1 && encounterRoom.PickUps.FindAll(x => x.Type == Y_PowerUps.Revive).Count < 1)
+                    // Check if players died (in a more robust, room independent way)
+                    if (Manager_Players.Players.FindAll(p => p.LifePoints > 0).Count < 1 && encounterRoom.PickUps.FindAll(x => x.Type == Y_PowerUps.Revive).Count < 1)
                     {
                         // kill all remaining enemies to make sure they don't keep shooting during the nice outro
                         // will have to restart the game anyways, so no problems there...
@@ -1386,10 +1388,13 @@ namespace YGR
                         foreach (var enemie in enemies)
                             enemie.WakeUp();
 
-                        // here we see GigaChad
-                        Notifications.Clear();
-                        Notifications.New("\n\n\n\n\n\n\n\n", Color.Wheat, GigaChadTimer_ShowTimeS * 1000);
-                        Notifications.New("This is GigaChad!", Color.Wheat, GigaChadTimer_ShowTimeS * 1000, Fonts.Large);
+                        if (Settings.GigaChadBabyMode)
+                        {
+                            // here we see GigaChad
+                            Notifications.Clear();
+                            Notifications.New("\n\n\n\n\n\n\n\n", Color.Wheat, GigaChadTimer_ShowTimeS * 1000);
+                            Notifications.New("This is GigaChad!", Color.Wheat, GigaChadTimer_ShowTimeS * 1000, Fonts.Large);
+                        }
                         showGigaChadTimer(GigaChadTimer_ShowTimeS * 1000);
                     }
                     updateGigaChadState(gameTime);
@@ -1532,8 +1537,17 @@ namespace YGR
 
             if (State == GamePlayState.Encounter)
             {
-                GigaChadTimerS_CountTo = GigaChadTimer_ShowTimeS;
-                State = GamePlayState.GigaChad_Prequel;
+                // skip this one if we are not in baby mode
+                if (Settings.GigaChadBabyMode)
+                {
+                    GigaChadTimerS_CountTo = GigaChadTimer_ShowTimeS;
+                    State = GamePlayState.GigaChad_Prequel;
+                }
+                else
+                {
+                    GigaChadTimerS_CountTo = GigaChadTimer_CameraTransitS;
+                    State = GamePlayState.GigaChad_MoveCamera;
+                }
                 GigaChad_CameraSwitch = true;
                 GigaChadTimerMS = 0;
                 GigaChadTimerS = 0;
@@ -1548,7 +1562,8 @@ namespace YGR
             }
             else if ((State == GamePlayState.GigaChad_MoveCamera && GigaChadTimerS >= GigaChadTimerS_CountTo))
             {
-                GigaChadTimerS_CountTo = GigaChadTimer_ShowTimeS;
+                if(Settings.GigaChadBabyMode) GigaChadTimerS_CountTo = GigaChadTimer_ShowTimeS;
+                else GigaChadTimerS_CountTo = 2;
                 State = GamePlayState.GigaChad_IntroduceGigaChad;
                 GigaChad_CameraSwitch = true;
                 GigaChadTimerMS = 0;
@@ -1557,7 +1572,8 @@ namespace YGR
             else if (State == GamePlayState.GigaChad_IntroduceGigaChad && (GigaChadTimerS >= GigaChadTimerS_CountTo || skipCondition))
             {
                 GigaChadTimerS_CountTo = GigaChadTimer_ShowTimeS;
-                State = GamePlayState.GigaChad_IntroduceHammer;
+                if(Settings.GigaChadBabyMode) State = GamePlayState.GigaChad_IntroduceHammer;
+                else State = GamePlayState.GigaChad_MoveCameraBack;
                 GigaChad_CameraSwitch = true;
                 GigaChadTimerMS = 0;
                 GigaChadTimerS = 0;
