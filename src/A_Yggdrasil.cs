@@ -21,6 +21,7 @@ namespace YGR
 
         public GraphicsDeviceManager _graphics;
         public SpriteBatch _spriteBatch;
+        public SpriteBatch _spriteBatchNN;
         private FrameCounter _frameCounter = new FrameCounter();
         public static Background Background_;
 
@@ -70,6 +71,7 @@ namespace YGR
             Manager_Sound.LoadContent(Content);
             Manager_Sprites.LoadContent(Content);
             _spriteBatch = new SpriteBatch(GraphicsDevice);
+            _spriteBatchNN = new SpriteBatch(GraphicsDevice);
             Manager_Particles.LoadContent(Content, GraphicsDevice);
 
             Manager_Video.Play();
@@ -280,6 +282,10 @@ namespace YGR
                    SpriteSortMode.Immediate, null, null, null, null, null,
                    Camera.Transform);
 
+            _spriteBatchNN.Begin(
+                   SpriteSortMode.Immediate, null, SamplerState.PointClamp, null, null, null,
+                   Camera.Transform);
+
             switch (State)
             {
                 case GameState.PreGame:
@@ -296,7 +302,7 @@ namespace YGR
                     //times.Add(watch.ElapsedMilliseconds);
                     //watch.Restart();
 
-                    _level.Draw(gameTime, Vector2.Zero, _spriteBatch);
+                    _level.Draw(gameTime, Vector2.Zero, _spriteBatchNN);
                     //times.Add(watch.ElapsedMilliseconds);
                     //watch.Restart();
 
@@ -312,11 +318,11 @@ namespace YGR
                     //times.Add(watch.ElapsedMilliseconds);
                     //watch.Restart();
 
-                    Manager_Projectile.Draw(gameTime, zero, _spriteBatch);
+                    Manager_Projectile.Draw(gameTime, zero, _spriteBatchNN);
                     //times.Add(watch.ElapsedMilliseconds);
                     //watch.Restart();
 
-                    Manager_Enemies.Draw(gameTime, zero, _spriteBatch);
+                    Manager_Enemies.Draw(gameTime, zero, _spriteBatchNN);
                     //times.Add(watch.ElapsedMilliseconds);
                     //watch.Restart();
 
@@ -352,6 +358,7 @@ namespace YGR
                     break;
             }
             _spriteBatch.End();
+            _spriteBatchNN.End();
 
 
             /* ### Draw everything that is NOT an in-game level element ### */
