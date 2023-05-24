@@ -538,6 +538,8 @@ namespace YGR
                     PickUps.Add(PickUp.Factory(Y_PowerUps.WeaponShotgun, location, s.width, s.height, Y_Level.GlobalScale));
                 if (s.customFields["Type"] == PowerUp.WeaponHelix)
                     PickUps.Add(PickUp.Factory(Y_PowerUps.WeaponHelix, location, s.width, s.height, Y_Level.GlobalScale));
+                if (s.customFields["Type"] == PowerUp.WeaponHammer)
+                    PickUps.Add(PickUp.Factory(Y_PowerUps.WeaponPinkHammer, location, s.width, s.height, Y_Level.GlobalScale));
             }
         }
 
@@ -632,8 +634,8 @@ namespace YGR
 
         public void InGameReset()
         {
-
             _visited = false;
+            Cleared = false;
             SetPowerUps();
             SpawnEnemies();
         }
