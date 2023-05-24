@@ -94,6 +94,13 @@ namespace YGR
             }
         }
 
+        public void ClearPowerUp()
+        {
+            _carriedPowerUp = Y_PowerUps.None;
+            _carriedPowerUpSprite = null;
+            _carriedImage = null;
+        }
+
         public void ChangeColor(Color color)
         {
             Color = color;

@@ -28,6 +28,9 @@ namespace YGR
         public IAbility Ability { get; set; }
         public IAbility DeadAbility { get; set; }
 
+        // need something to immobilze players during interuption sequeces (for example when introducing gigachad
+        public bool Immobilized { get; set; }
+
         public PlayerIndex PlayerIndex { get; }
         public bool IsActive { get; }
         public bool IsInvincible { get; }

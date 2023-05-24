@@ -116,6 +116,20 @@ namespace YGR
                 Util.DrawString(font, infoString, pos, Color.Wheat, spriteBatch);
                 pos.Y += totalSize.Y * spacing;
             }
+
+            // add some usefull info:
+            string eString = "Countdown: " + Manager_Enemies.GetEnemies().Count();
+            Vector2 eStringSize = font.MeasureString(eString);
+
+            // Draw a semi transparent background box
+            int marg = 5;
+            Vector2 tSize = font.MeasureString(eString);
+            Rectangle rec = new Rectangle((int)pos.X - marg, (int)pos.Y - marg, (int)tSize.X + 2 * marg, (int)tSize.Y + 2 * marg);
+            spriteBatch.Draw(Manager_Sprites.White, destinationRectangle: rec, null, Color.Brown * 0.4f, 0, Vector2.Zero, SpriteEffects.None, 0);
+
+            // Draw text itself
+            Util.DrawString(font, eString, pos, Color.Wheat, spriteBatch);
+            pos.Y += eStringSize.Y * spacing;
         }
 
         public static void DrawBossHealthBar(GameTime gameTime, SpriteBatch spriteBatch)

@@ -33,13 +33,13 @@ namespace YGR
         WeaponWide,
         WeaponGiga,
         WeaponGodmode,
+        WeaponPinkHammer,
 
         // CharacterChoosers
         ChooserNerd,
         ChooserNinja,
         ChooserMailman,
         ChooserProfessor,
-        WeaponPinkHammer,
 
         LevelUpNerd,
         LevelUpProfessor,

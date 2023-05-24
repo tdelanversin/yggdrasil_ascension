@@ -171,6 +171,7 @@ namespace YGR
         private static MenuTree MainMenu;
         private static MenuTree StatsMenu;
         private static MenuTree SettingsMenu;
+        private static MenuTree AdvancedSettings;
         private static MenuTree CurrentSubmenu;
 
         internal static void Initialize(A_Yggdrasil game)
@@ -180,17 +181,29 @@ namespace YGR
             CurrentSubmenu = MainMenu;
 
             SettingsMenu = new MenuTree("Settings", parent: MainMenu);
+            AdvancedSettings = new MenuTree("Advanced", parent: SettingsMenu);
+
             SettingsMenu.AddChildren(
                 new List<MenuItem>{
                     new SettingsItem("Fullscreen: ", Settings.Fullscreen, toggleFunc: Settings.ToggleFullscreen),
-                    new SettingsItem("Show FPS: ", Settings.DrawFPS, toggleFunc: Settings.ToggleDrawFPS),
+                    // new SettingsItem("Show FPS: ", Settings.DrawFPS, toggleFunc: Settings.ToggleDrawFPS),
+                    // new SettingsItem("Particle Effects: ", Settings.ParticleEffects, toggleFunc: Settings.ToggleParticleEffects),
+                    new SettingsItem("Music: ", Settings.Music, toggleFunc: Settings.ToggleMusic),
+                    new SettingsItem("Sounds: ", Settings.Sound, toggleFunc: Settings.ToggleSoundEffects),
+                    AdvancedSettings,
+                    new MenuItem("Back", Menu.Ascend),
+                }
+            );
+
+            AdvancedSettings.AddChildren(
+                new List<MenuItem>
+                {
+                    new SettingsItem("Debug Mode: ", Settings.DebugMode, toggleFunc: Settings.ToggleDebugMode),
                     new SettingsItem("Dynamic Shades: ", Settings.DynamicShades, toggleFunc: Settings.ToggleShades),
-                    new SettingsItem("Particle Effects: ", Settings.ParticleEffects, toggleFunc: Settings.ToggleParticleEffects),
+                    new SettingsItem("Large Corridors: " , Settings.CorridorWidth == 7, toggleFunc: Settings.ToggleCorridorWidth),
                     new SettingsItem("Level Outlines: ", Settings.DebugOutlinesLevel, toggleFunc: Settings.ToggleDebugOutlinesLevel),
                     new SettingsItem("Entity Outlines: ", Settings.DebugOutlinesEntities, toggleFunc: Settings.ToggleDebugOutlinesEntities),
-                    new SettingsItem("Debug Mode: ", Settings.DebugMode, toggleFunc: Settings.ToggleDebugMode),
-                    new SettingsItem("Sound Effects: ", Settings.Sound, toggleFunc: Settings.ToggleSoundEffects),
-                    new SettingsItem("Music: ", Settings.Music, toggleFunc: Settings.ToggleMusic),
+                    // new SettingsItem("GigaChad Baby mode: ", Settings.GigaChadBabyMode, toggleFunc: Settings.ToggleGigaChadBabyMode),
                     new MenuItem("Back", Menu.Ascend),
                 }
             );
@@ -205,7 +218,7 @@ namespace YGR
                     new MenuItem("Restart", NewGame, isActive: false),
                     StatsMenu,
                     SettingsMenu,
-                    new MenuItem("Quit", Util.Quit),
+                    new MenuItem("Quit", Util.Quit)
                 }
             );
 

@@ -77,7 +77,7 @@ namespace YGR
 
         private X_DoorDirection _direction;
         Dictionary<X_DoorTextureLayer, List<X_AutoTiler.X_AutoTileTexture>> _tileTextures;
-        static public int NumTilesDoorWidth { get { return 5; } }
+        static public int NumTilesDoorWidth { get { return Settings.CorridorWidth; } }
 
         private int _halfHeight;
 
@@ -320,8 +320,9 @@ namespace YGR
                 direction = X_DoorDirection.Corner;
                 numTilesLength = toP.X - fromP.X;
                 tileOffset = Math.Abs(fromP.Y - toP.Y); // Math.Sign(toP.Y - fromP.Y) * 8 * tileSize; // toP.Y - fromP.Y;
+                int addendum = Settings.CorridorWidth != 5 ? Math.Sign(tileOffset) * tileSize : 0;
                 numTilesLength += Math.Sign(numTilesLength) * (lOffset + tileSize);
-                tileOffset += Math.Sign(tileOffset) * (lOffset + tileSize);
+                tileOffset += Math.Sign(tileOffset) * (lOffset + tileSize) + addendum;
             }
             else if(
                 (from.ConnectorSide == X_ConnectorSide.Top && to.ConnectorSide == X_ConnectorSide.Left) ||
@@ -331,7 +332,9 @@ namespace YGR
                 direction = X_DoorDirection.Corner;
                 numTilesLength = fromP.X - toP.X;
                 tileOffset = -Math.Abs(toP.Y - fromP.Y); // Math.Sign(toP.Y - fromP.Y) * 8 * tileSize; // toP.Y - fromP.Y;
-                numTilesLength += Math.Sign(numTilesLength) * (lOffset + tileSize);
+                int sign = to.ConnectorSide == X_ConnectorSide.Right ? -1 : 1;
+                int addendum = Settings.CorridorWidth != 5 ? sign*Math.Sign(tileOffset) * tileSize : 0;
+                numTilesLength += Math.Sign(numTilesLength) * (lOffset + tileSize) + addendum;
                 tileOffset += Math.Sign(tileOffset) * (lOffset + tileSize);
             }
             else if(
@@ -342,7 +345,9 @@ namespace YGR
                 direction = X_DoorDirection.Corner;
                 numTilesLength = toP.X - fromP.X;
                 tileOffset = Math.Abs(fromP.Y - toP.Y); // Math.Sign(toP.Y - fromP.Y) * 8 * tileSize; // toP.Y - fromP.Y;
-                numTilesLength += Math.Sign(numTilesLength) * (lOffset + tileSize);
+                int sign = to.ConnectorSide == X_ConnectorSide.Right ? -1 : 1;
+                int addendum = Settings.CorridorWidth != 5 ? sign * Math.Sign(tileOffset) * tileSize : 0;
+                numTilesLength += Math.Sign(numTilesLength) * (lOffset + tileSize) + addendum;
                 tileOffset += Math.Sign(tileOffset) * (lOffset + tileSize);
             }
             else if(
@@ -354,7 +359,8 @@ namespace YGR
                 numTilesLength = toP.X - fromP.X;
                 tileOffset = -Math.Abs(fromP.Y - toP.Y); // Math.Sign(toP.Y - fromP.Y) * 8 * tileSize; // toP.Y - fromP.Y;
                 numTilesLength += Math.Sign(numTilesLength) * (lOffset + tileSize);
-                tileOffset += Math.Sign(tileOffset) * (lOffset + tileSize);
+                int addendum = Settings.CorridorWidth != 5 ? Math.Sign(tileOffset) * tileSize : 0;
+                tileOffset += Math.Sign(tileOffset) * (lOffset + tileSize) + addendum;
             }
 
             if(numTilesLength == 0)
@@ -1151,10 +1157,14 @@ namespace YGR
                     {
                         _openingTheDoor = true;
                         DoorMoovingCounter++;
-                        Manager_Sound.PlaySoundWhile(() => Y_Door.DoorMoovingCounter > 0, ref Manager_Sound.Sound_StoneWall);
+                        if (!_visited)
+                            Manager_Sound.PlaySoundWhile(() => Y_Door.DoorMoovingCounter > 0, ref Manager_Sound.Sound_StoneWall, 1.0f);
+                            
                     }
                     if (!doorAnimation(dt, true))
                     {
+                        if (_visited)
+                            Manager_Sound.Sound_Sword.Play();
                         openDoor();
                         _openingTheDoor = false;
                         DoorMoovingCounter--;
@@ -1165,10 +1175,13 @@ namespace YGR
                     {
                         _openingTheDoor = true;
                         DoorMoovingCounter++;
-                        Manager_Sound.PlaySoundWhile(() => Y_Door.DoorMoovingCounter > 0, ref Manager_Sound.Sound_StoneWall);
+                        if (!_visited)
+                            Manager_Sound.PlaySoundWhile(() => Y_Door.DoorMoovingCounter > 0, ref Manager_Sound.Sound_StoneWall, 1.0f);
                     }
                     if (!doorAnimation(dt, true))
                     {
+                        if (_visited)
+                            Manager_Sound.Sound_Sword.Play();
                         State = X_DoorState.Open;
                         openDoor();
                         _openingTheDoor = false;
@@ -1183,7 +1196,10 @@ namespace YGR
                         closeDoor();
                         _closingTheDoor = true;
                         DoorMoovingCounter++;
-                        Manager_Sound.PlaySoundWhile(() => Y_Door.DoorMoovingCounter > 0, ref Manager_Sound.Sound_StoneWall);
+                        if (!_visited)
+                            Manager_Sound.PlaySoundWhile(() => Y_Door.DoorMoovingCounter > 0, ref Manager_Sound.Sound_StoneWall);
+                        else
+                            Manager_Sound.Sound_Sword.Play();
                     }
                     if (!doorAnimation(dt, false))
                     {
@@ -1206,7 +1222,10 @@ namespace YGR
                         closeDoor();
                         _closingTheDoor = true;
                         DoorMoovingCounter++;
-                        Manager_Sound.PlaySoundWhile(() => Y_Door.DoorMoovingCounter > 0, ref Manager_Sound.Sound_StoneWall);
+                        if (!_visited)
+                            Manager_Sound.PlaySoundWhile(() => Y_Door.DoorMoovingCounter > 0, ref Manager_Sound.Sound_StoneWall);
+                        else
+                            Manager_Sound.Sound_Sword.Play();
                     }
                     if (!doorAnimation(dt, false))
                     {
@@ -1359,27 +1378,28 @@ namespace YGR
             movePosition.Y += _currentDoorOpenOffset;
 
             int tileSize = Y_Level.TextureTileSize;
+            float offset = Settings.CorridorWidth == 5 ? 0 : tileSize; // fuck it ^^
             if (_visited && (State == X_DoorState.Closed || State == X_DoorState.LockedClosed || State == X_DoorState.Opening || State == X_DoorState.Closing))
             {
                 Texture2D fence1, fence2;
                 Vector2 p1, p2;
-                float scale = 1.0f;
-                float temp = (float)(NumTilesDoorWidth / 2 + 1) * tileSize;
+                float scale;
+                float temp = (float)(NumTilesDoorWidth - 2) * tileSize;
                 if (_direction == X_DoorDirection.Vertical)
                 {
                     fence1 = _fenceH;
                     fence2 = _fenceH;
                     scale = temp / fence2.Width;
-                    p1 = Doors[X_ConnectorSide.Top].First().Point.ToVector2() - new Vector2(temp / 2, tileSize / 2.0f);
-                    p2 = Doors[X_ConnectorSide.Bottom].First().Point.ToVector2() - new Vector2(temp / 2, tileSize / 2.0f);
+                    p1 = Doors[X_ConnectorSide.Top].First().Point.ToVector2() - new Vector2(temp / 2, scale * 1.0f * tileSize);
+                    p2 = Doors[X_ConnectorSide.Bottom].First().Point.ToVector2() - new Vector2(temp / 2, scale * 0.5f * tileSize + offset); // only 0.5 because it has to stick into the other room...
                 }
                 else if(_direction == X_DoorDirection.Horizontal)
                 {
                     fence1 = _fenceV;
                     fence2 = _fenceV;
                     scale = temp / fence2.Height;
-                    p1 = Doors[X_ConnectorSide.Left].First().Point.ToVector2() - new Vector2(tileSize / 2.0f, temp / 2);
-                    p2 = Doors[X_ConnectorSide.Right].First().Point.ToVector2() - new Vector2(tileSize / 2.0f, temp / 2);
+                    p1 = Doors[X_ConnectorSide.Left].First().Point.ToVector2() - new Vector2(0, temp / 2.0f);
+                    p2 = Doors[X_ConnectorSide.Right].First().Point.ToVector2() - new Vector2(scale * tileSize, temp / 2.0f);
                 }
                 else
                 {
@@ -1387,14 +1407,14 @@ namespace YGR
                     fence2 = _fenceV;
                     scale = temp / fence2.Height;
                     if (Doors.ContainsKey(X_ConnectorSide.Top))
-                        p1 = Doors[X_ConnectorSide.Top].First().Point.ToVector2() - new Vector2(temp / 2, tileSize / 2.0f);
+                        p1 = Doors[X_ConnectorSide.Top].First().Point.ToVector2() - new Vector2(temp / 2, scale * 1.0f * tileSize);
                     else
-                        p1 = Doors[X_ConnectorSide.Bottom].First().Point.ToVector2() - new Vector2(temp / 2, tileSize / 2.0f);
+                        p1 = Doors[X_ConnectorSide.Bottom].First().Point.ToVector2() - new Vector2(temp / 2, scale * 0.5f * tileSize + offset); // only 0.5 because it has to stick into the other room...
 
                     if (Doors.ContainsKey(X_ConnectorSide.Left))
-                        p2 = Doors[X_ConnectorSide.Left].First().Point.ToVector2() - new Vector2(tileSize / 2.0f, temp / 2);
+                        p2 = Doors[X_ConnectorSide.Left].First().Point.ToVector2() - new Vector2(0, temp / 2);
                     else
-                        p2 = Doors[X_ConnectorSide.Right].First().Point.ToVector2() - new Vector2(tileSize / 2.0f, temp / 2);
+                        p2 = Doors[X_ConnectorSide.Right].First().Point.ToVector2() - new Vector2(scale * tileSize, temp / 2.0f);
                 }
 
                 draw(_tileTextures[X_DoorTextureLayer.Floor], position, spriteBatch, false, true);

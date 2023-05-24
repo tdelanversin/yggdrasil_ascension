@@ -7,7 +7,8 @@ namespace YGR
     {
         public Weapon_PinkHammer(IVictim owner) : base(owner)
         {
-            ShotDelay = 2000;
+            // make it a bit more op because players killed GigaChad ^^
+            ShotDelay = 1000;
             Name = "Pink Hammer";
             Sprite = Manager_Sprites.Weapon_Hammer;
         }

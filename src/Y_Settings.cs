@@ -42,6 +42,8 @@ namespace YGR
         public static bool DrawFPS;
         public static bool Sound;
         public static bool Music;
+        public static int CorridorWidth;
+        public static bool GigaChadBabyMode;
 
         public static string SettingsPath;
 
@@ -60,6 +62,8 @@ namespace YGR
             Music = true;
             DebugMode = true;
             ParticleEffects = true; // TODO: disable if not fixed by jury release
+            CorridorWidth = 7;
+            GigaChadBabyMode = false;
 #if DEBUG
             Fullscreen = false;
             DebugOutlinesLevel = false;
@@ -182,6 +186,25 @@ namespace YGR
             }
             Gdm.ApplyChanges();
             Menu.RepositionMenuItems();
+        }
+
+        public static bool ToggleCorridorWidth()
+        {
+            if (CorridorWidth == 5)
+            {
+                CorridorWidth = 7;
+            }
+            else
+            {
+                CorridorWidth = 5;
+            }
+            return CorridorWidth == 7;
+        }
+
+        public static bool ToggleGigaChadBabyMode()
+        {
+            GigaChadBabyMode = !GigaChadBabyMode;
+            return GigaChadBabyMode;
         }
 
         public static bool ToggleFullscreen()

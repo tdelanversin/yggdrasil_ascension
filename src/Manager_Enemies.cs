@@ -13,17 +13,21 @@ namespace YGR
             SimpleEnemy = 0,
             SlimeEnemy,
             BossEnemy,
-            SpikyEnemy
+            SpikyEnemy,
+            GigaChad
         };
 
         private static List<IEnemy> _enemies = new List<IEnemy>();
         private static List<IEnemy> _enemiesToAdd = new List<IEnemy>();
-        private static List<IEnemyBoss> _bosses = new List<IEnemyBoss>();
+        //private static List<IEnemyBoss> _bosses = new List<IEnemyBoss>();
+
+        //private static List<IEnemyBoss> _gigaChadMain = new List<IEnemyBoss>();
+        //private static List<IEnemyBoss> _gigaChadComplement1 = new List<IEnemyBoss>();
 
         public static void ClearEnemies()
         {
             _enemies.Clear();
-            _bosses.Clear();
+            //_bosses.Clear();
         }
 
         public static void ClearEnemies(IWalkable room)
@@ -35,12 +39,12 @@ namespace YGR
 
             _enemies.RemoveAll(enemy => enemy.LifePoints <= 0);
 
-            foreach (var boss in _bosses)
-            {
-                if (boss.Room == room) boss.Kill();
-            }
+            //foreach (var boss in _bosses)
+            //{
+            //    if (boss.Room == room) boss.Kill();
+            //}
 
-            _bosses.RemoveAll(boss => boss.LifePoints <= 0);
+            //_bosses.RemoveAll(boss => boss.LifePoints <= 0);
         }
 
         public static void KillAllNormalEnemies()
@@ -67,14 +71,14 @@ namespace YGR
         {
             IEnemy enemy = new Enemy_Gigachad(position, Manager_Sprites.NewAnimatedSprite_Gigachad(), level);
             _enemies.Add(enemy);
-            _bosses.Add((IEnemyBoss)enemy);
+            //_bosses.Add((IEnemyBoss)enemy);
         }
 
         internal static void AddEnemy_Boss(Vector2 position, Y_Level level)
         {
             IEnemy enemy = new Enemy_Boss(position, Manager_Sprites.NewAnimatedSprite_EnemyBoss(), level);
             _enemies.Add(enemy);
-            _bosses.Add((IEnemyBoss)enemy);
+            //_bosses.Add((IEnemyBoss)enemy);
         }
 
         internal static IEnemy MakeEnemy_BossMinion(Y_Level level, Color color)
@@ -107,14 +111,26 @@ namespace YGR
             _enemies.Add(new Gravestone(position, level));
         }
 
+        public static int CountRegularEnemies()
+        {
+            return _enemies.Where(e => e is not IEnemyBoss).Count();
+        }
+
         public static ReadOnlyCollection<IEnemy> GetEnemies()
         {
             return _enemies.AsReadOnly();
         }
 
-        public static ReadOnlyCollection<IEnemyBoss> GetBosses()
+        public static ReadOnlyCollection<Enemy_Boss> GetBosses()
         {
-            return _bosses.AsReadOnly();
+            var temp = _enemies.Where(x => x is Enemy_Boss).Cast<Enemy_Boss>().ToList();
+            return temp.AsReadOnly();
+        }
+
+        public static ReadOnlyCollection<Enemy_Gigachad> GetGigaChads()
+        {
+            var temp = _enemies.Where(x => x is Enemy_Gigachad).Cast<Enemy_Gigachad>().ToList();
+            return temp.AsReadOnly();
         }
 
         public static void Update(GameTime gameTime)
@@ -142,9 +158,9 @@ namespace YGR
             _enemies.RemoveAll(enemy => enemy.LifePoints <= 0);
 
             // remove bosses
-            _bosses.RemoveAll(boss => boss.LifePoints <= 0);
+            //_bosses.RemoveAll(boss => boss.LifePoints <= 0);
 
-            // add new enemies
+            // add new enemies (this one only contains stuff if the boss or gigachad is dead)
             if (_enemiesToAdd.Count > 0)
             {
                 _enemies.AddRange(_enemiesToAdd);

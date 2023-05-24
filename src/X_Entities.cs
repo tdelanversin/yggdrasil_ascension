@@ -9,6 +9,7 @@ namespace YGR
         public const string SlimeEnemy = "SlimeEnemy";
         public const string BossEnemy = "BossEnemy";
         public const string SpikyEnemy = "SpikyEnemy";
+        public const string GigaChad = "GigaChad";
 
         public static Manager_Enemies.EnemyType GetType(EnemyEntity enemy)
         {
@@ -16,6 +17,7 @@ namespace YGR
             if (enemy.customFields["Type"] == EnemyEntity.SlimeEnemy) return Manager_Enemies.EnemyType.SlimeEnemy;
             if (enemy.customFields["Type"] == EnemyEntity.BossEnemy) return Manager_Enemies.EnemyType.BossEnemy;
             if (enemy.customFields["Type"] == EnemyEntity.SpikyEnemy) return Manager_Enemies.EnemyType.SpikyEnemy;
+            if (enemy.customFields["Type"] == EnemyEntity.GigaChad) return Manager_Enemies.EnemyType.GigaChad;
 
             return Manager_Enemies.EnemyType.SimpleEnemy;
         }
@@ -96,6 +98,7 @@ namespace YGR
         public const string WeaponShotgun = "WeaponShotgun";
         public const string WeaponKeyboard = "WeaponKeyboard";
         public const string WeaponHelix = "WeaponHelix";
+        public const string WeaponHammer = "WeaponHammer";
 
 #pragma warning disable 0649
         public string id;
