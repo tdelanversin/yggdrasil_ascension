@@ -369,7 +369,7 @@ namespace YGR
                 animations: new Dictionary<AnimationState, int[]> {
                     { AnimationState.Idle, new int[] { 0, 1, 2, 3, 4, 5, 6, 7 } },
                 },
-                animationDuration: 500
+                animationDuration: 2000
             );
         }
 
@@ -381,7 +381,7 @@ namespace YGR
                 animations: new Dictionary<AnimationState, int[]> {
                     { AnimationState.Idle, new int[] { 0, 1, 2, 3, 4, 5, 6, 7 } },
                 },
-                animationDuration: 1000
+                animationDuration: 2000
             );
         }
 
@@ -393,7 +393,7 @@ namespace YGR
                 animations: new Dictionary<AnimationState, int[]> {
                     { AnimationState.Idle, new int[] { 0, 1, 2, 3, 4, 5, 6, 7 } },
                 },
-                animationDuration: 1000
+                animationDuration: 2000
             );
         }
 
