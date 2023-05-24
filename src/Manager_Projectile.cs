@@ -88,10 +88,8 @@ namespace YGR
             Vector2 startPosition, 
             Vector2 direction, 
             Y_Level level, 
-            IGameElement who, 
-            float amplitude = 15f,
-            float frequency = 0.015f,
-            float phase = 0.0f)
+            IGameElement who,
+            float damage = 1.5f)
         {
             if (!BoundsCheckFull(startPosition, ((IVictim)who).Room)) return;
 
@@ -103,7 +101,7 @@ namespace YGR
                     level: level,
                     who: who,
                     scale: 1,
-                    damage: 1.5f,
+                    damage: damage,
                     maxAge: 2500,
                     speed: 0.55f,
                     mass: 0.5f,
@@ -116,10 +114,8 @@ namespace YGR
             Vector2 startPosition, 
             Vector2 direction, 
             Y_Level level, 
-            IGameElement who, 
-            float amplitude = 15f,
-            float frequency = 0.015f,
-            float phase = 0.0f)
+            IGameElement who,
+            float damage = .8f)
         {
             if (!BoundsCheckFull(startPosition, ((IVictim)who).Room)) return;
 
@@ -131,7 +127,7 @@ namespace YGR
                     level: level,
                     who: who,
                     scale: 1,
-                    damage: .8f,
+                    damage: damage,
                     maxAge: 2500,
                     speed: 0.45f,
                     mass: 0.5f,
@@ -144,10 +140,8 @@ namespace YGR
             Vector2 startPosition, 
             Vector2 direction, 
             Y_Level level, 
-            IGameElement who, 
-            float amplitude = 15f,
-            float frequency = 0.015f,
-            float phase = 0.0f)
+            IGameElement who,
+            float damage = 2.5f)
         {
             if (!BoundsCheckFull(startPosition, ((IVictim)who).Room)) return;
 
@@ -159,7 +153,7 @@ namespace YGR
                     level: level,
                     who: who,
                     scale: 1,
-                    damage: 2.5f,
+                    damage: damage,
                     maxAge: 2500,
                     speed: 0.35f,
                     mass: 0.5f,
@@ -172,10 +166,8 @@ namespace YGR
             Vector2 startPosition, 
             Vector2 direction, 
             Y_Level level, 
-            IGameElement who, 
-            float amplitude = 15f,
-            float frequency = 0.015f,
-            float phase = 0.0f)
+            IGameElement who,
+            float damage = .7f)
         {
             if (!BoundsCheckFull(startPosition, ((IVictim)who).Room)) return;
 
@@ -187,7 +179,7 @@ namespace YGR
                     level: level,
                     who: who,
                     scale: 1,
-                    damage: .7f,
+                    damage: damage,
                     maxAge: 2500,
                     speed: 0.55f,
                     mass: 0.5f,
@@ -202,6 +194,7 @@ namespace YGR
             Vector2 direction, 
             Y_Level level, 
             IGameElement who, 
+            float damage = .25f,
             float amplitude = 15f,
             float frequency = 0.015f,
             float phase = 0.0f)
@@ -216,7 +209,7 @@ namespace YGR
                     level: level,
                     who: who,
                     scale: 0.45f,
-                    damage: .25f,
+                    damage: damage,
                     maxAge: 2500,
                     speed: 0.55f,
                     mass: 0.5f,
@@ -228,7 +221,13 @@ namespace YGR
             );
         }
 
-        public static void AddProjectile_Blunderbuss(Vector2 startPosition, Vector2 direction, Y_Level level, IGameElement who, float drift = 0.0f)
+        public static void AddProjectile_Blunderbuss(
+            Vector2 startPosition, 
+            Vector2 direction, 
+            Y_Level level, 
+            IGameElement who, 
+            float damage = 2f,
+            float drift = 0.0f)
         {
             if (!BoundsCheckSimple(startPosition, ((IVictim)who).Room)) return;
 
@@ -240,7 +239,7 @@ namespace YGR
                     level: level,
                     who: who,
                     scale: 0.35f,
-                    damage: 2,
+                    damage: damage,
                     maxAge: 2500,
                     speed: 0.55f,
                     mass: 0.5f,
@@ -250,7 +249,12 @@ namespace YGR
             );
         }
 
-        public static void AddProjectile_RedDevil(Vector2 startPosition, Vector2 direction, Y_Level level, IGameElement who)
+        public static void AddProjectile_RedDevil(
+            Vector2 startPosition, 
+            Vector2 direction, 
+            Y_Level level, 
+            IGameElement who,
+            float damage = .75f)
         {
             if (!BoundsCheckSimple(startPosition, ((IVictim)who).Room)) return;
 
@@ -262,7 +266,7 @@ namespace YGR
                     level: level,
                     who: who,
                     scale: 0.35f,
-                    damage: 0.75f,
+                    damage: damage,
                     maxAge: 2500,
                     speed: 0.55f,
                     mass: 0.5f,
@@ -271,7 +275,12 @@ namespace YGR
             );
         }
 
-        public static void AddProjectile_Sniper(Vector2 startPosition, Vector2 direction, Y_Level level, IGameElement who)
+        public static void AddProjectile_Sniper(
+            Vector2 startPosition, 
+            Vector2 direction, 
+            Y_Level level, 
+            IGameElement who,
+            float damage = 5f)
         {
             if (!BoundsCheckSimple(startPosition, ((IVictim)who).Room)) return;
 
@@ -283,7 +292,7 @@ namespace YGR
                     level: level,
                     who: who,
                     scale: 0.35f,
-                    damage: 5f,
+                    damage: damage,
                     maxAge: 2500,
                     speed: 2f,
                     mass: 2f,

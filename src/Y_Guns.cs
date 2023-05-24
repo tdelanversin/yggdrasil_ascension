@@ -151,7 +151,7 @@ namespace YGR
 
             Manager_Sound.Sound_Blaster.Play(0.15f, 0, 0);
 
-            Manager_Projectile.AddProjectile_Keyboard(origin, direction, level, who);
+            Manager_Projectile.AddProjectile_Keyboard(origin, direction, level, who, damage: 1.5f);
             return true;
         }
     }
@@ -175,7 +175,7 @@ namespace YGR
             Manager_Sound.Sound_Blaster.Play(0.15f, 0, 0);
 
             foreach (var dir in IterateDirections(direction))
-                Manager_Projectile.AddProjectile_Letter(origin, dir, level, who);
+                Manager_Projectile.AddProjectile_Letter(origin, dir, level, who, damage: .8f);
             return true;
         }
     }
@@ -199,7 +199,7 @@ namespace YGR
 
             Manager_Sound.Sound_Blaster.Play(0.15f, 0, 0);
 
-            Manager_Projectile.AddProjectile_Book(origin, direction, level, who);
+            Manager_Projectile.AddProjectile_Book(origin, direction, level, who, damage: 2f);
             return true;
         }
     }
@@ -223,7 +223,7 @@ namespace YGR
 
             Manager_Sound.Sound_Blaster.Play(0.15f, 0, 0);
 
-            Manager_Projectile.AddProjectile_NinjaStar(origin, direction, level, who);
+            Manager_Projectile.AddProjectile_NinjaStar(origin, direction, level, who, damage: .7f);
             return true;
         }
     }
@@ -247,8 +247,8 @@ namespace YGR
 
             Manager_Sound.Sound_Blaster.Play(0.15f, 0, 0);
 
-            Manager_Projectile.AddProjectile_Helix(origin, direction, level, who, phase: 0.0f);
-            Manager_Projectile.AddProjectile_Helix(origin, direction, level, who, phase: 0.5f);
+            Manager_Projectile.AddProjectile_Helix(origin, direction, level, who, damage: .25f, phase: 0.0f);
+            Manager_Projectile.AddProjectile_Helix(origin, direction, level, who, damage: .25f, phase: 0.5f);
             return true;
         }
     }
@@ -274,7 +274,7 @@ namespace YGR
             double spread = -(ShotCount - 1) / 2 * ShotSpread;
             for (int i = 0; i < ShotCount; i++)
             {
-                Manager_Projectile.AddProjectile_Blunderbuss(origin, direction, level, who, drift: (float)spread);
+                Manager_Projectile.AddProjectile_Blunderbuss(origin, direction, level, who, damage: 2, drift: (float)spread);
                 spread += ShotSpread;
             }
             return true;
@@ -300,7 +300,7 @@ namespace YGR
 
             Manager_Sound.Sound_OmniShotGun.Play(0.7f, 0, 0);
             foreach (var dir in IterateDirections(direction))
-                Manager_Projectile.AddProjectile_RedDevil(origin, dir, level, who);
+                Manager_Projectile.AddProjectile_RedDevil(origin, dir, level, who, damage: .75f);
             return true;
         }
     }
@@ -322,7 +322,7 @@ namespace YGR
             NextShotCooldown = ShotDelay;
 
             Manager_Sound.Sound_PlasmaPistol.Play(0.85f, 0, 0);
-            Manager_Projectile.AddProjectile_Sniper(origin, direction, level, who);
+            Manager_Projectile.AddProjectile_Sniper(origin, direction, level, who, damage: 10f);
             return true;
         }
     }
