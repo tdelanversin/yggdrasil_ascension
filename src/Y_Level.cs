@@ -643,7 +643,8 @@ namespace YGR
                     TutorialState = GameTutorialState.IntroduceGhosts2;
                     break;
                 case GameTutorialState.IntroduceGhosts2:
-                    TutorialState = GameTutorialState.IntroducePowerUps;
+                    // Skip the power ups state since we no longer have any in the start room
+                    TutorialState = GameTutorialState.IntroduceYggdrasil;
                     break;
                 case GameTutorialState.IntroducePowerUps:
                     TutorialState = GameTutorialState.IntroduceYggdrasil;
@@ -918,11 +919,6 @@ namespace YGR
                 case GameTutorialState.IntroduceYggdrasil:
                     if (TutorialStageDurationCounterMS == 0)
                     {
-                        // only Y_PowerUps.Life and Y_PowerUps.Revive in the start room
-                        var pups = _startRoom.PickUps.Where(x => x.Type == Y_PowerUps.Life || x.Type == Y_PowerUps.Revive).ToList();
-                        var allPos = pups.Select(x => x.Rect.Center.ToVector2()).ToArray();
-                        var avgPos = new Vector2(allPos.Select(x => x.X).Average(), allPos.Select(x => x.Y).Average());
-
                         if (TutorialStageDurationCounterS == 0)
                             Camera.SetFocusMenu(animationDuration: 3000);
 
