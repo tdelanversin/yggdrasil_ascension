@@ -3,6 +3,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using MonoGame.Extended.Timers;
 using Newtonsoft.Json;
 using SharpFont.Cache;
 using System;
@@ -48,6 +49,15 @@ namespace YGR
             Escaped,
             EndScreen,
             GameOver,
+            GigaChad_Prequel, // Give players a compliment
+            GigaChad_MoveCamera, // Killed everything? Maybe get the hammer
+            GigaChad_IntroduceGigaChad,
+            GigaChad_IntroduceHammer,
+            GigaChad_Power,
+            GigaChad_MoveCameraBack,
+            GigaChad_StartEncounter,
+            GigaChad_Encounter,
+            GigaChad_EncounterComplete // Killed GigaChat? Get some immediate practice
         }
 
         public enum GameTutorialState
@@ -112,6 +122,15 @@ namespace YGR
         public static GamePlayState State;
         public static GameTutorialState TutorialState;
         public static GameEndState EndState;
+
+        private bool GigaChad_CameraSwitch = true;
+        private int GigaChadTimerMS = 0;
+        private int GigaChadTimerS = 0;
+        private int GigaChadTimerS_CountTo = 0;
+        private int GigaChadTimer_CameraTransitS = 4;
+        private int GigaChadTimer_CameraTransitToHammer = 2;
+        private int GigaChadTimer_ShowTimeS = 30;
+        private int GigaChadTimer_WaitToSkip = 2;
 
         private int MaxTutorialStageDurationMS = 1000;
         private int MaxTutorialStageDurationS = 30;
@@ -254,8 +273,8 @@ namespace YGR
 
             var random = new Random();
             // randomly select one level tree
-            var key = _data.Level.Keys.ToArray()[random.Next(0, _data.Level.Keys.Count)];
-            //var key = _data.Level.Keys.ToArray()[7];
+            //var key = _data.Level.Keys.ToArray()[random.Next(0, _data.Level.Keys.Count)];
+            var key = _data.Level.Keys.ToArray()[7];
             var tree = _data.Level[key];
 
             var watch = new Stopwatch();
@@ -417,12 +436,13 @@ namespace YGR
 
             Manager_Enemies.ClearEnemies();
 
-            // Select 8 rooms out of all rooms minus the Gold and the Start room
+            // Select 8 rooms out of all rooms minus the Gold, Bonus and the Start room
             // and mark them for containing a spiky semi boss slime
             var spikeRooms = Rooms.Values
                 .Where(x => x.WhatAreYou() == X_LevelElements.Room &&
                           !(x.Category == "Start") &&
-                          !(x.Category == "Gold"))
+                          !(x.Category == "Gold") && 
+                          !(x.Category == "Bonus"))
                 .ToList();
 
             var selected = spikeRooms.OrderBy(x => Util.random.Next()).Take(9);
@@ -507,6 +527,9 @@ namespace YGR
             {
                 Manager_Light2.IlluminateSync(Rooms.Values.Where(c => c.WhatAreYou() == X_LevelElements.Room).ToList());
             }
+
+            GigaChadTimerS = 0;
+            GigaChadTimerMS = 0;
 
             //string model = "";
             //int globalOffset = 0;
@@ -1128,7 +1151,6 @@ namespace YGR
                         break;
                     }
 
-
                     // If an uncleared room does not contain any enemies, just mark as cleared an move on
                     if (cmroom.GetEnemiesInside().Count < 1 && !cmroom.Cleared)
                     {
@@ -1154,7 +1176,8 @@ namespace YGR
                     {
                         enemy.WakeUp();
                     }
-                    if (cmroom.Category == "Gold")
+
+                    if (cmroom.Category == "Gold" || cmroom.Category == "Bonus")
                     {
                         Manager_Sound.PlayBossMusic();
                     }
@@ -1162,9 +1185,18 @@ namespace YGR
                     {
                         Manager_Sound.PlayEncounterMusic();
                     }
+
                     Notifications.New("Starting encouter");
 
-                    State = GamePlayState.Encounter;
+                    if (cmroom.Category == "Bonus")
+                    {
+                        // if we entered GigaChad's room and GigaChad is still there...
+                        State = GamePlayState.GigaChad_StartEncounter;
+                    }
+                    else
+                    {
+                        State = GamePlayState.Encounter;
+                    }
                     break;
 
                 case GamePlayState.Encounter:
@@ -1201,20 +1233,19 @@ namespace YGR
                         break; // let players fight
                     }
 
-                    //if (_waitTimeBetweenEndOfFightAndLowerDoorsCounter < _waitTimeBetweenEndOfFightAndLowerDoors)
-                    //{
-                    //    _waitTimeBetweenEndOfFightAndLowerDoorsCounter++;
-                    //    break;
-                    //}
-                    //_waitTimeBetweenEndOfFightAndLowerDoorsCounter = 0;
-
                     encounterRoom.Cleared = true;
                     encounterRoom.OpenAllUnlockedRoomDoors();
 
                     if (!encounterRoom.AllDoorsOpen()) break; // wait for all doors to open
 
                     encounterRoom.SetLocked(false);
-                    Camera.SetFocusPlayers();
+                    var count = Manager_Enemies.CountRegularEnemies();
+                    // check if we have regular enemies left or gigachad is already dead
+                    // (we don't want the tiny camera move from room to players if we want to move to gigachad in this instance)
+                    if(count > 0 || Manager_Enemies.GetGigaChads().Count() == 0)
+                    {
+                        Camera.SetFocusPlayers();
+                    }
                     Manager_Sound.PlayFreeRoamMusic();
 
                     if (encounterRoom.Category == "Gold")
@@ -1235,11 +1266,211 @@ namespace YGR
                     }
                     else
                     {
-                        State = GamePlayState.FreeRoam;
                         Notifications.New("Room " + ActiveRoom.Name + " cleared!");
+
+                        if(count == 0 && Manager_Enemies.GetGigaChads().Count() > 0)
+                        {
+                            // we killed all regular enemies and cleared the room => show gigachad
+                            // imobilize all players...
+                            Manager_Players.ImmobilizePlayers(true);
+                            updateGigaChadState(gameTime);
+                        }
+                        else
+                        {
+                            // otherwise go back to regular free roam
+                            State = GamePlayState.FreeRoam;
+                        }
+                        //var clearedRooms = Rooms.Values.Where(x => x.WhatAreYou() == X_LevelElements.Room && ((Y_CMRoom)x).Cleared);
                     }
                     break;
+                case GamePlayState.GigaChad_StartEncounter:
+                    // spawn the life and respawn power ups
+                    var gigachadRoom2 = (Y_CMRoom)ActiveRoom;
+                    gigachadRoom2.SetPowerUps();
+                    var allHammers = gigachadRoom2.PickUps.Where(x => x.Type == Y_PowerUps.WeaponPinkHammer).ToList();
+                    foreach (var weapoin in allHammers)
+                        gigachadRoom2.PickUps.Remove(weapoin);
+                    State = GamePlayState.GigaChad_Encounter;
+                    break;
+                case GamePlayState.GigaChad_Encounter:
+                    if(Manager_Enemies.GetGigaChads().Count() == 0)
+                    {
+                        State = GamePlayState.GigaChad_EncounterComplete;
+                    }
+                    break;
+                case GamePlayState.GigaChad_EncounterComplete:
+                    // killed gigachad => spawn hammmers
+                    var gigachadRoom = (Y_CMRoom)ActiveRoom;
+                    List<PickUp> temp = new List<PickUp>();
+                    foreach (var remaining in gigachadRoom.PickUps)
+                        temp.Add(remaining);
+                    gigachadRoom.SetPowerUps();
+                    // remove everything that is not a hammer
+                    var nonHammers = gigachadRoom.PickUps.Where(x => x.Type != Y_PowerUps.WeaponPinkHammer).ToList();
+                    foreach (var nonHammer in nonHammers)
+                        gigachadRoom.PickUps.Remove(nonHammer);
+                    // add back stuff that wasn't used during the encounter
+                    foreach (var remaining in temp)
+                        gigachadRoom.PickUps.Add(remaining);
 
+                    // reset every single, non-cleared room that is not the bonus room ^^
+                    var allNonGigaChatRooms = Rooms.Values.Where(x => 
+                                                        x.WhatAreYou() == X_LevelElements.Room &&
+                                                        ((Y_CMRoom)x).Cleared == true &&
+                                                        ((Y_CMRoom)x).Category != "Bonus" &&
+                                                        ((Y_CMRoom)x).Category != "Start").Cast<Y_CMRoom>().ToList();
+                    // kill all enemies and then respawn them, except in the gigachad room
+                    Manager_Enemies.ClearEnemies();
+                    foreach(var r in allNonGigaChatRooms)
+                    {
+                        r.InGameReset();
+                        // but remove all the power ups inside the spikey fat slimy slimes that were in already cleared rooms
+                        var spikies = Manager_Enemies.GetEnemies().Where(x => x.Room == r && x is Enemy_Slime_Spiky).Cast<Enemy_Slime_Spiky>().ToList();
+                        foreach (var s in spikies)
+                        {
+                            s.ClearPowerUp();
+                        }
+                    }                    
+
+                    // move back to the regular encounter stuff so that we have a synched game
+                    State = GamePlayState.Encounter;
+                    break;
+                case GamePlayState.GigaChad_Prequel:
+                    if (GigaChadTimerMS == 0)
+                    {
+                        Notifications.Clear();
+                        Notifications.New("\n\n\n\n\n\n\n\n", Color.Wheat, GigaChadTimer_ShowTimeS * 1000);
+                        Notifications.New("Congratulations!", Color.Wheat, GigaChadTimer_ShowTimeS * 1000, Fonts.Large);
+                        Notifications.New("You beat all regular enemies!", Color.Wheat, GigaChadTimer_ShowTimeS * 1000, Fonts.Medium);
+                        Notifications.New("Challenge BigBoss!", Color.Wheat, GigaChadTimer_ShowTimeS * 1000, Fonts.Medium);
+                        Notifications.New("Or...", Color.Wheat, GigaChadTimer_ShowTimeS * 1000, Fonts.Large);
+                        showGigaChadTimer(GigaChadTimer_ShowTimeS * 1000);
+                    }
+                    updateGigaChadState(gameTime);
+                    break;
+                case GamePlayState.GigaChad_MoveCamera: // basically show the players who gigachad is
+                    if (GigaChadTimerMS == 0)
+                    {
+                        Notifications.Clear();
+                        if (GigaChad_CameraSwitch)
+                        {
+                            // get the bonus room
+                            var room = getBonusRoom();
+
+                            // open the door to the bonus room and make it visible
+                            _startRoom.OpenBottomDoor();
+
+                            // remove all power ups because we want to show them effectfully later
+                            room.PickUps.Clear();
+
+                            // initiate the camera movement
+                            var gigachad1 = Manager_Enemies.GetGigaChads().FirstOrDefault();
+                            if (gigachad1 == null) Logger.Error("WE WANT GIGACHAD -.-!!");
+
+                            Camera.SetFocusManual(gigachad1.Rect.Center.ToVector2(), 1.0f, animationDuration: GigaChadTimer_CameraTransitS * 1000);
+                            GigaChad_CameraSwitch = false;
+                        }
+                    }
+                    updateGigaChadState(gameTime);
+                    break;
+                case GamePlayState.GigaChad_IntroduceGigaChad:
+                    var gigachad = Manager_Enemies.GetGigaChads().FirstOrDefault();
+                    if (gigachad == null) Logger.Error("WE WANT GIGACHAD -.-!!");
+                    Camera.SetFocusManual(gigachad.Rect.Center.ToVector2(), 1.0f, animate: false);
+
+                    if (GigaChadTimerMS == 0)
+                    {
+                        // wake up GigaChad to make him move on camera queue
+                        var room = getBonusRoom();
+                        var enemies = room.GetEnemiesInside();
+                        foreach (var enemie in enemies)
+                            enemie.WakeUp();
+
+                        // here we see GigaChad
+                        Notifications.Clear();
+                        Notifications.New("\n\n\n\n\n\n\n\n", Color.Wheat, GigaChadTimer_ShowTimeS * 1000);
+                        Notifications.New("This is GigaChad!", Color.Wheat, GigaChadTimer_ShowTimeS * 1000, Fonts.Large);
+                        showGigaChadTimer(GigaChadTimer_ShowTimeS * 1000);
+                    }
+                    updateGigaChadState(gameTime);
+                    break;
+                case GamePlayState.GigaChad_IntroduceHammer:
+                    if (GigaChadTimerMS == 0)
+                    {
+                        var room = getBonusRoom();
+                        
+                        // spawn the hammers
+                        room.SetPowerUps();
+
+                        // get a random hammer and move the camera to it
+                        var hammer = room.PickUps.Where(x => x.Type == Y_PowerUps.WeaponPinkHammer).FirstOrDefault();
+                        if (hammer == null) Logger.Error("WE WANT A HAMMER -.-!!");
+                        
+                        Notifications.Clear();
+                        Notifications.New("\n\n\n\n\n\n\n\n", Color.Wheat, GigaChadTimer_ShowTimeS * 1000);
+                        Notifications.New("If you kill him", Color.Wheat, GigaChadTimer_ShowTimeS * 1000, Fonts.Large);
+                        Notifications.New("you get Thor's Hammer!", Color.Wheat, GigaChadTimer_ShowTimeS * 1000, Fonts.Large);
+                        Notifications.New("It's very powerful...", Color.Wheat, GigaChadTimer_ShowTimeS * 1000, Fonts.Large);
+                        showGigaChadTimer(GigaChadTimer_ShowTimeS * 1000);
+
+                        if (GigaChad_CameraSwitch)
+                        {
+                            Camera.SetFocusManual(hammer.Rect.Center.ToVector2(), 1.8f, animationDuration: GigaChadTimer_CameraTransitToHammer * 1000);
+                            GigaChad_CameraSwitch = false;
+                        }
+                    }
+                    updateGigaChadState(gameTime);
+                    break;
+                case GamePlayState.GigaChad_Power:
+                    if (GigaChadTimerMS == 0)
+                    {
+                        var room = getBonusRoom();
+
+                        // spawn the hammers
+                        room.SetPowerUps();
+
+                        // get a random hammer and move the camera to it
+                        var life = room.PickUps.Where(x => x.Type == Y_PowerUps.Life).FirstOrDefault();
+                        if (life == null) Logger.Error("WE ARE AFRAID OF GIGACHAD ^^!!");
+
+                        Notifications.Clear();
+                        Notifications.New("\n\n\n\n\n\n\n\n", Color.Wheat, GigaChadTimer_ShowTimeS * 1000);
+                        Notifications.New("...though, so is GigaChad...", Color.Wheat, GigaChadTimer_ShowTimeS * 1000, Fonts.Large);
+                        showGigaChadTimer(GigaChadTimer_ShowTimeS * 1000);
+
+                        if (GigaChad_CameraSwitch)
+                        {
+                            Camera.SetFocusManual(life.Rect.Center.ToVector2(), 1.8f, animationDuration: GigaChadTimer_CameraTransitToHammer * 1000);
+                            GigaChad_CameraSwitch = false;
+                        }
+                    }
+                    updateGigaChadState(gameTime);
+                    break;
+                case GamePlayState.GigaChad_MoveCameraBack:
+                    // maybe wait for a bit so that players can see the hammer
+                    if (GigaChadTimerMS == 0)
+                    {
+                        // get the bonus room
+                        var room = getBonusRoom();
+                        // we are done with the sequence:
+                        // reset the room then remove the hammers again because the players have to kill GigaChad first
+                        // !! don't respawn anything here, this is just the show-off sequence !!
+                        room.InGameReset();
+                        room.PickUps.Clear();
+
+                        if (GigaChad_CameraSwitch)
+                        {
+                            // move back to the players
+                            Camera.SetFocusPlayers();
+                            GigaChad_CameraSwitch = false;
+                            Notifications.Clear();
+
+                            //remobilize players
+                            Manager_Players.ImmobilizePlayers(false);
+                        }
+                    }
+                    updateGigaChadState(gameTime);
+                    break;
                 case GamePlayState.Escaped:
                     // Check if players died
                     int escapeNotificationLength = 6000;
@@ -1274,6 +1505,91 @@ namespace YGR
                 default:
                     break;
             }
+        }
+
+        private void showGigaChadTimer(int duration)
+        {
+            // in the first stage: add comment non-skippable
+            if (GigaChadTimerS >= GigaChadTimer_WaitToSkip)
+            {
+                Notifications.New("[Press to continue - Remaining: " + (GigaChadTimerS_CountTo - GigaChadTimerS) + "]", Color.Wheat, duration, Fonts.Medium);
+            }
+        }
+
+        private void updateGigaChadState(GameTime gameTime)
+        {
+            if (GigaChadTimerMS >= 1000)
+            {
+                GigaChadTimerS++;
+                GigaChadTimerMS = 0;
+            }
+            else
+            {
+                GigaChadTimerMS += gameTime.ElapsedGameTime.Milliseconds;
+            }
+
+            bool skipCondition = ((Input.AnythingPressed() || Input.AnyGamePadButtonPressed()) && GigaChadTimerS > GigaChadTimer_WaitToSkip);
+
+            if (State == GamePlayState.Encounter)
+            {
+                GigaChadTimerS_CountTo = GigaChadTimer_ShowTimeS;
+                State = GamePlayState.GigaChad_Prequel;
+                GigaChad_CameraSwitch = true;
+                GigaChadTimerMS = 0;
+                GigaChadTimerS = 0;
+            }
+            else if (State == GamePlayState.GigaChad_Prequel && (GigaChadTimerS >= GigaChadTimerS_CountTo || skipCondition))
+            {
+                GigaChadTimerS_CountTo = GigaChadTimer_CameraTransitS;
+                State = GamePlayState.GigaChad_MoveCamera;
+                GigaChad_CameraSwitch = true;
+                GigaChadTimerMS = 0;
+                GigaChadTimerS = 0;
+            }
+            else if ((State == GamePlayState.GigaChad_MoveCamera && GigaChadTimerS >= GigaChadTimerS_CountTo))
+            {
+                GigaChadTimerS_CountTo = GigaChadTimer_ShowTimeS;
+                State = GamePlayState.GigaChad_IntroduceGigaChad;
+                GigaChad_CameraSwitch = true;
+                GigaChadTimerMS = 0;
+                GigaChadTimerS = 0;
+            }
+            else if (State == GamePlayState.GigaChad_IntroduceGigaChad && (GigaChadTimerS >= GigaChadTimerS_CountTo || skipCondition))
+            {
+                GigaChadTimerS_CountTo = GigaChadTimer_ShowTimeS;
+                State = GamePlayState.GigaChad_IntroduceHammer;
+                GigaChad_CameraSwitch = true;
+                GigaChadTimerMS = 0;
+                GigaChadTimerS = 0;
+            }
+            else if (State == GamePlayState.GigaChad_IntroduceHammer && (GigaChadTimerS >= GigaChadTimerS_CountTo || skipCondition))
+            {
+                State = GamePlayState.GigaChad_Power;
+                GigaChad_CameraSwitch = true;
+                GigaChadTimerMS = 0;
+                GigaChadTimerS = 0;
+            }
+            else if (State == GamePlayState.GigaChad_Power && (GigaChadTimerS >= GigaChadTimerS_CountTo || skipCondition))
+            {
+                State = GamePlayState.GigaChad_MoveCameraBack;
+                GigaChad_CameraSwitch = true;
+                GigaChadTimerMS = 0;
+                GigaChadTimerS = 0;
+            }
+            else if(State == GamePlayState.GigaChad_MoveCameraBack)
+            {
+                State = GamePlayState.FreeRoam;
+                GigaChadTimerMS = 0;
+                GigaChadTimerS = 0;
+            }
+        }
+
+        private Y_CMRoom getBonusRoom()
+        {
+            var walkable = Rooms.Values.Where(x => x.Category == "Bonus").FirstOrDefault();
+            if (walkable == null) Logger.Error("WE NEED A BONUS ROOM -.-!!");
+            var room = (Y_CMRoom)walkable;
+            return room;
         }
 
         public void DrawOutline(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)
