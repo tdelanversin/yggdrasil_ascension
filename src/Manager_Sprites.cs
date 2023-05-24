@@ -22,10 +22,18 @@ namespace YGR
         // Projectiles
         public static Texture2D Projectile_Simple { get; private set; }
         public static Texture2D Projectile_Helix { get; private set; }
+        public static Texture2D Projectile_Keyboard_Pink { get; private set; }
+        public static Texture2D Projectile_Letter { get; private set; }
+        public static Texture2D Projectile_Book { get; private set; }
+        public static Texture2D Projectile_NinjaStar { get; private set; }
 
         // Weapons
         public static Texture2D Weapon_Pistol { get; private set; }
         public static Texture2D Weapon_Keyboard { get; private set; }
+        public static Texture2D Weapon_Keyboard_Pink { get; private set; }
+        public static Texture2D Weapon_Letter { get; private set; }
+        public static Texture2D Weapon_Book { get; private set; }
+        public static Texture2D Weapon_Ninja_Star { get; private set; }
         public static Texture2D Weapon_RedDevil { get; private set; }
         public static Texture2D Weapon_Helix { get; private set; }
         public static Texture2D Weapon_Blunderbuss { get; private set; }
@@ -99,9 +107,17 @@ namespace YGR
             AimIndicator = contentManager.Load<Texture2D>("SpritesOther/target_indicator");
             Projectile_Simple = contentManager.Load<Texture2D>("SpritesOther/projectiles");
             Projectile_Helix = contentManager.Load<Texture2D>("SpritesOther/Player_Projectile");
+            Projectile_Keyboard_Pink = contentManager.Load<Texture2D>("SpriteProjectiles/Keyboard_Projectile");
+            Projectile_Letter = contentManager.Load<Texture2D>("SpriteProjectiles/Letter_Projectile");
+            Projectile_Book = contentManager.Load<Texture2D>("SpriteProjectiles/Book_Projectile");
+            Projectile_NinjaStar = contentManager.Load<Texture2D>("SpriteProjectiles/Ninja_Star_Projectile");
 
             Weapon_Pistol = contentManager.Load<Texture2D>("SpritesWeapons/Pistol");
             Weapon_Keyboard = contentManager.Load<Texture2D>("SpritesWeapons/Keyboard");
+            Weapon_Keyboard_Pink = contentManager.Load<Texture2D>("SpritesWeapons/Keyboard_pink");
+            Weapon_Letter = contentManager.Load<Texture2D>("SpritesWeapons/Letter");
+            Weapon_Book = contentManager.Load<Texture2D>("SpritesWeapons/Book");
+            Weapon_Ninja_Star = contentManager.Load<Texture2D>("SpritesWeapons/Ninja_star");
             Weapon_RedDevil = contentManager.Load<Texture2D>("SpritesWeapons/Red_Gun");
             Weapon_Helix = contentManager.Load<Texture2D>("SpritesWeapons/Helix");
             Weapon_Blunderbuss = contentManager.Load<Texture2D>("SpritesWeapons/Blunderbuss");
@@ -340,6 +356,54 @@ namespace YGR
                 animations: new Dictionary<AnimationState, int[]> {
                     { AnimationState.Idle, new int[] { 0 } },
                 }
+            );
+        }
+
+        public static AnimatedSprite NewAnimatedSprite_ProjectileKeyboardPink()
+        {
+            return new AnimatedSprite(
+                texture: Projectile_Keyboard_Pink,
+                spriteDimension: new Vector2(32, 32),
+                animations: new Dictionary<AnimationState, int[]> {
+                    { AnimationState.Idle, new int[] { 0, 1, 2, 3, 4, 5, 6, 7 } },
+                },
+                animationDuration: 500
+            );
+        }
+
+        public static AnimatedSprite NewAnimatedSprite_ProjectileLetter()
+        {
+            return new AnimatedSprite(
+                texture: Projectile_Letter,
+                spriteDimension: new Vector2(32, 32),
+                animations: new Dictionary<AnimationState, int[]> {
+                    { AnimationState.Idle, new int[] { 0, 1, 2, 3, 4, 5, 6, 7 } },
+                },
+                animationDuration: 1000
+            );
+        }
+
+        public static AnimatedSprite NewAnimatedSprite_ProjectileBook()
+        {
+            return new AnimatedSprite(
+                texture: Projectile_Book,
+                spriteDimension: new Vector2(32, 32),
+                animations: new Dictionary<AnimationState, int[]> {
+                    { AnimationState.Idle, new int[] { 0, 1, 2, 3, 4, 5, 6, 7 } },
+                },
+                animationDuration: 1000
+            );
+        }
+
+        public static AnimatedSprite NewAnimatedSprite_ProjectileNinjaStar()
+        {
+            return new AnimatedSprite(
+                texture: Projectile_NinjaStar,
+                spriteDimension: new Vector2(32, 32),
+                animations: new Dictionary<AnimationState, int[]> {
+                    { AnimationState.Idle, new int[] { 0, 1, 2, 3} },
+                },
+                animationDuration: 200
             );
         }
 

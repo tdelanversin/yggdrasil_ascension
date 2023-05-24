@@ -83,6 +83,119 @@ namespace YGR
             );
         }
 
+        /// All 4 starter weapons projectiles: Keyboard, Letter, Book and Ninja Star
+        public static void AddProjectile_Keyboard(
+            Vector2 startPosition, 
+            Vector2 direction, 
+            Y_Level level, 
+            IGameElement who, 
+            float amplitude = 15f,
+            float frequency = 0.015f,
+            float phase = 0.0f)
+        {
+            if (!BoundsCheckFull(startPosition, ((IVictim)who).Room)) return;
+
+            _projectiles.Add(
+                new Projectile_Basic(
+                    position: startPosition,
+                    direction: direction,
+                    sprite: Manager_Sprites.NewAnimatedSprite_ProjectileKeyboardPink(),
+                    level: level,
+                    who: who,
+                    scale: 1,
+                    damage: 1.5f,
+                    maxAge: 2500,
+                    speed: 0.55f,
+                    mass: 0.5f,
+                    fakeAcceleration: 0.0f
+                )
+            );
+        }
+
+        public static void AddProjectile_Letter(
+            Vector2 startPosition, 
+            Vector2 direction, 
+            Y_Level level, 
+            IGameElement who, 
+            float amplitude = 15f,
+            float frequency = 0.015f,
+            float phase = 0.0f)
+        {
+            if (!BoundsCheckFull(startPosition, ((IVictim)who).Room)) return;
+
+            _projectiles.Add(
+                new Projectile_Basic(
+                    position: startPosition,
+                    direction: direction,
+                    sprite: Manager_Sprites.NewAnimatedSprite_ProjectileLetter(),
+                    level: level,
+                    who: who,
+                    scale: 1,
+                    damage: .8f,
+                    maxAge: 2500,
+                    speed: 0.25f,
+                    mass: 0.5f,
+                    fakeAcceleration: 0.0f
+                )
+            );
+        }
+
+        public static void AddProjectile_Book(
+            Vector2 startPosition, 
+            Vector2 direction, 
+            Y_Level level, 
+            IGameElement who, 
+            float amplitude = 15f,
+            float frequency = 0.015f,
+            float phase = 0.0f)
+        {
+            if (!BoundsCheckFull(startPosition, ((IVictim)who).Room)) return;
+
+            _projectiles.Add(
+                new Projectile_Basic(
+                    position: startPosition,
+                    direction: direction,
+                    sprite: Manager_Sprites.NewAnimatedSprite_ProjectileBook(),
+                    level: level,
+                    who: who,
+                    scale: 1,
+                    damage: 1.5f,
+                    maxAge: 2500,
+                    speed: 0.35f,
+                    mass: 0.5f,
+                    fakeAcceleration: 0.0f
+                )
+            );
+        }
+
+        public static void AddProjectile_NinjaStar(
+            Vector2 startPosition, 
+            Vector2 direction, 
+            Y_Level level, 
+            IGameElement who, 
+            float amplitude = 15f,
+            float frequency = 0.015f,
+            float phase = 0.0f)
+        {
+            if (!BoundsCheckFull(startPosition, ((IVictim)who).Room)) return;
+
+            _projectiles.Add(
+                new Projectile_Basic(
+                    position: startPosition,
+                    direction: direction,
+                    sprite: Manager_Sprites.NewAnimatedSprite_ProjectileNinjaStar(),
+                    level: level,
+                    who: who,
+                    scale: 1,
+                    damage: .7f,
+                    maxAge: 2500,
+                    speed: 0.55f,
+                    mass: 0.5f,
+                    fakeAcceleration: 0.0f
+                )
+            );
+        }
+
         /// Fast and strong projectiles for the helix gun
         public static void AddProjectile_Helix(
             Vector2 startPosition, 

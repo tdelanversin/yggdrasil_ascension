@@ -23,7 +23,8 @@ namespace YGR
             if (gun != null)
                 Gun = gun;
             else
-                Gun = Util.getRandomGun(this);
+                // Gun = Util.getRandomGun(this);
+                Gun = new Gun_Letter(this);
 
             // Big guy can take a lot
             LifePointsMax = IPlayer.PlayerBaseHealth * 2;

@@ -20,6 +20,10 @@ namespace YGR
         // Weapons
         WeaponPistol,
         WeaponShotgun,
+        WeaponKeyboardPink,
+        WeaponLetter,
+        WeaponBook,
+        WeaponNinjaStar,
         WeaponKeyboard,
         WeaponHelix,
         WeaponBlunderbuss,
@@ -251,6 +255,42 @@ namespace YGR
                                 return false;
 
                             return switchGun(new Gun_ShotGun(player), player, self);
+                        });
+                case Y_PowerUps.WeaponKeyboardPink:
+                    return new PickUp(type, location, width, height, _gunScale, Manager_Sprites.Weapon_Keyboard_Pink, lastOwner, true,
+                        (player, self) =>
+                        {
+                            if (player.Gun.GetType() == typeof(Gun_Keyboard))
+                                return false;
+
+                            return switchGun(new Gun_Keyboard(player), player, self);
+                        });
+                case Y_PowerUps.WeaponLetter:
+                    return new PickUp(type, location, width, height, _gunScale, Manager_Sprites.Weapon_Letter, lastOwner, true,
+                        (player, self) =>
+                        {
+                            if (player.Gun.GetType() == typeof(Gun_Letter))
+                                return false;
+
+                            return switchGun(new Gun_Letter(player), player, self);
+                        });
+                case Y_PowerUps.WeaponBook:
+                    return new PickUp(type, location, width, height, _gunScale, Manager_Sprites.Weapon_Book, lastOwner, true,
+                        (player, self) =>
+                        {
+                            if (player.Gun.GetType() == typeof(Gun_Book))
+                                return false;
+
+                            return switchGun(new Gun_Book(player), player, self);
+                        });
+                case Y_PowerUps.WeaponNinjaStar:
+                    return new PickUp(type, location, width, height, _gunScale, Manager_Sprites.Weapon_Ninja_Star, lastOwner, true,
+                        (player, self) =>
+                        {
+                            if (player.Gun.GetType() == typeof(Gun_NinjaStar))
+                                return false;
+
+                            return switchGun(new Gun_NinjaStar(player), player, self);
                         });
                 case Y_PowerUps.WeaponHelix:
                     return new PickUp(type, location, width, height, _gunScale, Manager_Sprites.Weapon_Helix, lastOwner, true,

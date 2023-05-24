@@ -132,6 +132,102 @@ namespace YGR
         }
     }
 
+    public class Gun_Keyboard : Gun_Basic
+    {
+        public Gun_Keyboard(IVictim owner) : base(owner)
+        {
+            Name = "Keyboard Gun";
+            Sprite = Manager_Sprites.Weapon_Keyboard_Pink;
+            PowerUpType = Y_PowerUps.WeaponKeyboard;
+            ShotDelay = 800;
+        }
+
+        public override bool Shoot(GameTime gameTime, Vector2 origin, Vector2 direction, Y_Level level, IGameElement who)
+        {
+            if (NextShotCooldown > 0.0f)
+                return false;
+
+            NextShotCooldown = ShotDelay;
+
+            Manager_Sound.Sound_Blaster.Play(0.15f, 0, 0);
+
+            Manager_Projectile.AddProjectile_Keyboard(origin, direction, level, who);
+            return true;
+        }
+    }
+
+    public class Gun_Letter : Gun_ShotGun
+    {
+        public Gun_Letter(IVictim owner) : base(owner, 3)
+        {
+            Name = "Letter Gun";
+            Sprite = Manager_Sprites.Weapon_Letter;
+            PowerUpType = Y_PowerUps.WeaponLetter;
+        }
+
+        public override bool Shoot(GameTime gameTime, Vector2 origin, Vector2 direction, Y_Level level, IGameElement who)
+        {
+            if (NextShotCooldown > 0.0f)
+                return false;
+
+            NextShotCooldown = ShotDelay;
+
+            Manager_Sound.Sound_Blaster.Play(0.15f, 0, 0);
+
+            foreach (var dir in IterateDirections(direction))
+                Manager_Projectile.AddProjectile_Letter(origin, dir, level, who);
+            return true;
+        }
+    }
+
+    public class Gun_Book : Gun_Basic
+    {
+        public Gun_Book(IVictim owner) : base(owner)
+        {
+            Name = "Book Gun";
+            Sprite = Manager_Sprites.Weapon_Book;
+            PowerUpType = Y_PowerUps.WeaponBook;
+            ShotDelay = 1000;
+        }
+
+        public override bool Shoot(GameTime gameTime, Vector2 origin, Vector2 direction, Y_Level level, IGameElement who)
+        {
+            if (NextShotCooldown > 0.0f)
+                return false;
+
+            NextShotCooldown = ShotDelay;
+
+            Manager_Sound.Sound_Blaster.Play(0.15f, 0, 0);
+
+            Manager_Projectile.AddProjectile_Book(origin, direction, level, who);
+            return true;
+        }
+    }
+
+    public class Gun_NinjaStar : Gun_Basic
+    {
+        public Gun_NinjaStar(IVictim owner) : base(owner)
+        {
+            Name = "Ninja Star Gun";
+            Sprite = Manager_Sprites.Weapon_Ninja_Star;
+            PowerUpType = Y_PowerUps.WeaponNinjaStar;
+            ShotDelay = 300;
+        }
+
+        public override bool Shoot(GameTime gameTime, Vector2 origin, Vector2 direction, Y_Level level, IGameElement who)
+        {
+            if (NextShotCooldown > 0.0f)
+                return false;
+
+            NextShotCooldown = ShotDelay;
+
+            Manager_Sound.Sound_Blaster.Play(0.15f, 0, 0);
+
+            Manager_Projectile.AddProjectile_NinjaStar(origin, direction, level, who);
+            return true;
+        }
+    }
+
     public class Gun_Helix : Gun_Basic
     {
         public Gun_Helix(IVictim owner) : base(owner)
