@@ -60,6 +60,7 @@ namespace YGR
         public bool Active { get; set; }
 
         public static float _gunScale = 2f;
+        public static float _starterGunScale = 1.5f;
 
         public Y_PowerUps Type { get; }
 
@@ -160,6 +161,7 @@ namespace YGR
         {
             switch (type)
             {
+                // Character selection
                 case Y_PowerUps.ChooserNerd:
                     return new PickUp(type, location, width, IPlayer.PlayerBaseHeight, scale * 1.0f,
                         Manager_Sprites.NewAnimatedSprite_NerdyGirl(),
@@ -221,6 +223,7 @@ namespace YGR
                             return false;
                         });
 
+                // Weapons
                 case Y_PowerUps.WeaponPistol:
                     return new PickUp(type, location, width, height, _gunScale, Manager_Sprites.Weapon_Pistol, lastOwner, true,
                         (player, self) =>
@@ -258,7 +261,7 @@ namespace YGR
                             return switchGun(new Gun_ShotGun(player), player, self);
                         });
                 case Y_PowerUps.WeaponKeyboardPink:
-                    return new PickUp(type, location, width, height, _gunScale, Manager_Sprites.Weapon_Keyboard_Pink, lastOwner, true,
+                    return new PickUp(type, location, width, height, _starterGunScale, Manager_Sprites.Weapon_Keyboard_Pink, lastOwner, true,
                         (player, self) =>
                         {
                             if (player.Gun.GetType() == typeof(Gun_Keyboard))
@@ -267,7 +270,7 @@ namespace YGR
                             return switchGun(new Gun_Keyboard(player), player, self);
                         });
                 case Y_PowerUps.WeaponLetter:
-                    return new PickUp(type, location, width, height, _gunScale, Manager_Sprites.Weapon_Letter, lastOwner, true,
+                    return new PickUp(type, location, width, height, _starterGunScale, Manager_Sprites.Weapon_Letter, lastOwner, true,
                         (player, self) =>
                         {
                             if (player.Gun.GetType() == typeof(Gun_Letter))
@@ -276,7 +279,7 @@ namespace YGR
                             return switchGun(new Gun_Letter(player), player, self);
                         });
                 case Y_PowerUps.WeaponBook:
-                    return new PickUp(type, location, width, height, _gunScale, Manager_Sprites.Weapon_Book, lastOwner, true,
+                    return new PickUp(type, location, width, height, _starterGunScale, Manager_Sprites.Weapon_Book, lastOwner, true,
                         (player, self) =>
                         {
                             if (player.Gun.GetType() == typeof(Gun_Book))
@@ -285,7 +288,7 @@ namespace YGR
                             return switchGun(new Gun_Book(player), player, self);
                         });
                 case Y_PowerUps.WeaponNinjaStar:
-                    return new PickUp(type, location, width, height, _gunScale, Manager_Sprites.Weapon_Ninja_Star, lastOwner, true,
+                    return new PickUp(type, location, width, height, _starterGunScale, Manager_Sprites.Weapon_Ninja_Star, lastOwner, true,
                         (player, self) =>
                         {
                             if (player.Gun.GetType() == typeof(Gun_NinjaStar))
@@ -347,6 +350,8 @@ namespace YGR
 
                             return switchGun(new Gun_Godmode(player), player, self);
                         });
+
+                // Powerups
                 case Y_PowerUps.Life:
                     return new PickUp(type, location, width, height, 1.5f,
                         Manager_Sprites.NewAnimatedSprite_SpinningHeart(),
