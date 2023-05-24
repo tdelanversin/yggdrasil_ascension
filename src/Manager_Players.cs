@@ -21,6 +21,14 @@ namespace YGR
             Players.Clear();
         }
 
+        public static void ImmobilizePlayers(bool yes)
+        {
+            foreach(var player in Manager_Players.Players)
+            {
+                player.Immobilized = yes;
+            }
+        }
+
         public static void SetPlayerType(PlayerIndex idx, PlayerType type)
         {
             for (int i = 0; i < Players.Count; i++)
