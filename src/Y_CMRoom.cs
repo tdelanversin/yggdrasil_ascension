@@ -520,6 +520,9 @@ namespace YGR
 
         public void SetPowerUps()
         {
+            // only spawn powerups if the room is connected
+            if (DoorRooms.Count() == 0) return;
+
             PickUps.Clear();
             foreach (var s in _pUps)
             {
@@ -642,6 +645,9 @@ namespace YGR
 
         public void SpawnEnemies()
         {
+            // only spawn enemies if the door is connected
+            if (DoorRooms.Count() == 0) return;
+
             Manager_Enemies.ClearEnemies(this);
             var enemies = GetEnemySpawningPoints();
             if (!HasSpikeEnemy)
