@@ -189,6 +189,8 @@ namespace YGR
                     {
                         Manager_Enemies.AddEnemy_BossMinion(BossCenter(), minion);
                     }
+
+                    Manager_Particles.MakeSlimeDeathParticle(this);
                 }
                 CharacterSprite.Update(gameTime, AnimationState.Hide);
 
@@ -483,7 +485,10 @@ namespace YGR
                 p.Stats.DamageDealt += DamageDealt;
                 p.Stats.TimesHit++;
                 if (this is IEnemyBoss) { p.Stats.BossDamageDealt += DamageDealt; }
-                if (LifePoints <= 0) { p.Stats.Kills++; }
+                if (LifePoints <= 0) { 
+                    p.Stats.Kills++;
+                    Manager_Particles.MakeSlimeDeathParticle(this);
+                }
             }
         }
     }

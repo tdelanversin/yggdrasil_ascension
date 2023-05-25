@@ -111,6 +111,26 @@ namespace YGR
             return this.Damage + (WhoFiredMe.ElementLevel - 1) * this.Damage / 2.0f;
         }
 
+        protected virtual void ImpactParticles(IVictim obj, Vector2 contactNormal)
+        {
+            if (!Settings.ParticleEffects)
+            {
+                return;
+            }
+
+            if (obj is IEnemy)
+            {
+                Vector2 pos = new Vector2(_rect.Location.X + _rect.Width / 2, _rect.Location.Y + _rect.Height / 2);
+                pos = Vector2.Lerp(pos, obj.Rect.Center.ToVector2(), 0.3f); // move towards center of enemy (looks better)
+                Vector2 nor = contactNormal;
+                Manager_Particles.MakeSlimeImpactParticle((IEnemy)obj, pos, nor);
+            }
+            else
+            {
+                Manager_Particles.GetParticleEffect(Manager_Particles.Effect.Impact).Trigger(new Vector2(_rect.Location.X + _rect.Width / 2, _rect.Location.Y + _rect.Height / 2));
+            }
+        }
+
         public virtual void UpdateCollisionAndVelocity(GameTime gameTime)
         {
             int timeStepMS = (int)gameTime.ElapsedGameTime.TotalMilliseconds;
@@ -138,12 +158,9 @@ namespace YGR
                     // Hit players and enemies
                     if (obj is IVictim)
                     {
-                        lock (this)
+                        lock(this)
                         {
-                            if (Settings.ParticleEffects)
-                            {
-                                Manager_Particles.GetParticleEffect(Manager_Particles.Effect.Impact).Trigger(new Vector2(_rect.Location.X + _rect.Width / 2, _rect.Location.Y + _rect.Height / 2));
-                            }
+                            ImpactParticles((IVictim)obj, contactNormal[0]);
                             ((IVictim)obj).Hit(this);
                         }
                     }

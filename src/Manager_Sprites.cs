@@ -220,7 +220,19 @@ namespace YGR
                 animations: new Dictionary<AnimationState, int[]> {
                     { AnimationState.Idle, new int[] { 0, 1, 2, 3, 4, 5, 6, 7} },
                 },
-                animationDuration: 750
+                animationDuration: 1000
+            );
+        }
+
+        public static AnimatedSprite NewAnimatedSprite_Slime_Impact_Particle()
+        {
+            return new AnimatedSprite(
+                texture: Slime_Death_Particle,
+                spriteDimension: new Vector2(32, 32),
+                animations: new Dictionary<AnimationState, int[]> {
+                    { AnimationState.Idle, new int[] { 5, 6, 7 } },
+                },
+                animationDuration: 375
             );
         }
 
@@ -478,7 +490,8 @@ namespace YGR
         {
             return new AnimatedSprite(
                     texture: Enemy_SlimeSpiky,
-                    spriteDimension: new Vector2(64, 51),
+                    spriteDimension: new Vector2(125, 102),
+                    // spriteDimension: new Vector2(64, 51),
                     animations: new Dictionary<AnimationState, int[]> {
                         { AnimationState.WalkLeft, new int[] { 0, 1, 2, 3, 4, 3, 2, 1 } },
                         { AnimationState.WalkRight, new int[] { 0, 1, 2, 3, 4, 3, 2, 1 } },

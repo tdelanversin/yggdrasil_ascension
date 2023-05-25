@@ -244,7 +244,10 @@ namespace YGR
                 p.Stats.DamageDealt += projectile.Damage;
                 p.Stats.TimesHit++;
                 if (this is IEnemyBoss) { p.Stats.BossDamageDealt += projectile.Damage; }
-                if (LifePoints <= 0) { p.Stats.Kills++; }
+                if (LifePoints <= 0) { 
+                    p.Stats.Kills++; 
+                    Manager_Particles.MakeSlimeDeathParticle(this);
+                }
             }
         }
 
