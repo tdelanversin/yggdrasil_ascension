@@ -482,20 +482,25 @@ namespace YGR
                 return;
 
             // Logger.Info($"MakeWallImpactParticle pos: {pos}, normal: {normal}");
-            int count = Util.random.Next(2, 4);
+            int count = Util.random.Next(1, 3);
             for (int i = 0; i < count; i++)
             {
                 AnimatedSprite particleSprite = Manager_Sprites.NewAnimatedSprite_Bullet_Impact_Particle();
-                // AnimatedSprite particleSprite = Manager_Sprites.NewAnimatedSprite_Big_Slime_Death_Particle();
+                    // AnimatedSprite particleSprite = Manager_Sprites.NewAnimatedSprite_Big_Slime_Death_Particle();
+                float normalRotation = (float)Math.Atan2(normal.Y, normal.X)  + (Util.random.NextSingle() * 2 - 1) * MathHelper.PiOver4;
+                Vector2 normalRotated = new Vector2(
+                    (float)Math.Cos(normalRotation),
+                    (float)Math.Sin(normalRotation)
+                );
+
                 IParticle particle = new Particle_Move(
                     particleSprite,
                     pos,
                     Color.White,
-                    finalPosition: pos + normal * 20f,
+                    finalPosition: pos + normalRotated * 40f,
                     scale: 4f
                 );
-                float normalRotation = (float)Math.Atan2(normal.Y, normal.X);
-                particle.Rotation = normalRotation + (Util.random.NextSingle() * 2 - 1) * MathHelper.PiOver4;
+                particle.Rotation = normalRotation;
                 _spriteParticles.Add(particle);
             }
         }
