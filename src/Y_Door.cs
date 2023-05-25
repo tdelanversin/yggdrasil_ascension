@@ -1141,7 +1141,9 @@ namespace YGR
                     }
                 }
             }
-            
+
+            if (IsDoorOpeningOrClosing()) { Camera.Shake(); }
+
             switch (State)
             {
                 case X_DoorState.Closed:

@@ -129,10 +129,10 @@ namespace YGR
             var randAngle = (Util.random.NextSingle() - 0.5f) * randAngleMax;
             randAngle *= (int)strength;
 
-            var RandXMax = Bounds.Width / 256;
+            var RandXMax = Bounds.Width / 512;
             var RandX = Util.random.Next(RandXMax) - RandXMax / 2;
 
-            var RandYMax = Bounds.Height / 256;
+            var RandYMax = Bounds.Height / 512;
             var RandY = Util.random.Next(RandYMax) - RandYMax / 2;
 
             Shake(new Vector2(RandX, RandY), (float)randAngle, strength);
@@ -151,12 +151,12 @@ namespace YGR
                 // var transition = (float)Math.Sin(_shakeTimer * Math.PI * 2 / _shakeDuration - Math.PI); // Full back and forth
                 var transition = JumpWithBounceBack(_shakeTimer / _shakeDuration);
                 var rota = transition * _shakeRotation;
-                var offset = transition * _shakeOffset;
+                var offset = transition * _shakeOffset / 2;
                 Transform *=
                     Matrix.CreateTranslation(new Vector3(-Bounds.Width * 0.5f, -Bounds.Height * 0.5f, 0)) *
                     Matrix.CreateRotationZ(rota) *
                     Matrix.CreateTranslation(new Vector3(Bounds.Width * 0.5f, Bounds.Height * 0.5f, 0)) *
-                    Matrix.CreateTranslation(_shakeOffset.X, _shakeOffset.Y, 0);
+                    Matrix.CreateTranslation(offset.X, offset.Y, 0);
                 _shakeTimer += gameTime.ElapsedGameTime.Milliseconds;
             }
 
