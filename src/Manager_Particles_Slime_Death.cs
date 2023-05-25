@@ -71,9 +71,20 @@ namespace YGR
             {
                 if (!Settings.ParticleEffects)
                 {
+                    if (!Settings.ParticleEffects)
+
+                    {
                     return;
-                }
+                    }
                 if (_particle_big_slime_death != null)
+                {
+                    _particle_big_slime_death.Update(gt, AnimationState.Idle);
+                }
+            }
+
+
+
+                public void Draw(GameTime gt, SpriteBatch spriteBatch)
                 {
                     _particle_big_slime_death.Update(gt, AnimationState.Idle);
                 }
