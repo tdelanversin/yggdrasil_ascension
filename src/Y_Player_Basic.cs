@@ -288,7 +288,7 @@ namespace YGR
             if (IsAlive()) { return; }
             LifePoints = LifePointsMax;
             Stats.Revives++;
-            Gun = Util.getRandomGun(this);
+            Gun = Util.getCharacterSpecificGun(this);
             heal(LifePointsMax / 3);
         }
 
