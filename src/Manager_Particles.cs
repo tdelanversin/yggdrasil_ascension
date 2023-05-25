@@ -42,6 +42,10 @@ namespace YGR
         private static Texture2D _particleTexture_fire;
         private static Texture2D _particleTexture_dash;
         private static Texture2D _particleTexture_impact;
+        private static AnimatedSprite _particleTexture_big_slime_death;
+        private static ParticleEffect _particleEffect_big_slime_death;
+        private static ParticleEffect _particleEffect_small_slime_death;
+        private static AnimatedSprite _particleTexture_small_slime_death;
 
 
         //public static Dictionary<string,ParticleEffect> _particleEffects { get;  private set; }
@@ -72,6 +76,8 @@ namespace YGR
             _particleTexture_dust = new Texture2D(graphicsDevice, 1, 1);
             _particleTexture_dust.SetData(new[] { Color.Black * 0.5f });
             _particleTexture_dust_cloud_light.SetData(new[] { Color.Black * 0.5f });
+            _particleTexture_big_slime_death = Manager_Sprites.NewAnimatedSprite_Big_Slime_Death_Particle();
+            _particleTexture_small_slime_death = Manager_Sprites.NewAnimatedSprite_Small_Slime_Death_Particle();
 
             Vector2 pos = new Vector2(10333, 22332);
             GenParticleEffectBase(pos);
@@ -80,6 +86,8 @@ namespace YGR
             GenParticleEffectDustCloudLight(pos);
             GenParticleEffectDash(pos);
             GenParticleEffectImpact(pos);
+            GenParticleEffectSmallSlimeDeath(pos);
+            GenParticleEffectBigSlimeDeath(pos);
         }
 
         private static void GenParticleEffectBase(Vector2 pos)
