@@ -70,7 +70,7 @@ namespace YGR
         public int ElementLevel { get; set; }
 
         private AnimatedSprite _sprite;
-        private AnimatedSprite _carriedSprite;
+        private Texture2D _levelUpIndicator;
         private float _spriteDrawScale;
         private bool _floaty;
 
@@ -107,7 +107,7 @@ namespace YGR
             int height,
             float scale,
             AnimatedSprite sprite,
-            AnimatedSprite carriedSprite,
+            Texture2D levelUpIndicator,
             IVictim lastOwner,
             bool floaty,
             Func<IPlayer, PickUp, bool> action)
@@ -119,14 +119,14 @@ namespace YGR
             Action = action;
             Active = true;
             _sprite = sprite;
-            _carriedSprite = carriedSprite;
+            _levelUpIndicator = levelUpIndicator;
             _floaty = floaty;
 
             int heightNew = (int)(height * LocalScale);
             int widthNew = (int)((heightNew * sprite.SpriteDimension.X / sprite.SpriteDimension.Y));
 
             Rect = new Rectangle(location.X - widthNew / 2, location.Y - heightNew / 2, widthNew, heightNew);
-            _spriteDrawScale = LocalScale * Util.GetSpriteScale(Rect, _sprite.SpriteDimension);
+            _spriteDrawScale = Util.GetSpriteScale(Rect, _sprite.SpriteDimension);
 
 
             _lastOwner = lastOwner;
@@ -372,8 +372,8 @@ namespace YGR
                         });
                 case Y_PowerUps.LevelUpNerd:
                     return new PickUp(type, location, width, height, 1.5f,
-                        Manager_Sprites.NewAnimatedSprite_LevelUp_DarkFlash(),
                         Manager_Sprites.NewAnimatedSprite_NerdyGirl(),
+                        Manager_Sprites.LevelUp_Girly,
                         lastOwner,
                         false,
                         (player, self) =>
@@ -391,8 +391,8 @@ namespace YGR
                         });
                 case Y_PowerUps.LevelUpMailman:
                     return new PickUp(type, location, width, height, 1.5f,
-                        Manager_Sprites.NewAnimatedSprite_LevelUp_DarkFlash(),
                         Manager_Sprites.NewAnimatedSprite_Mailman(),
+                        Manager_Sprites.LevelUp_Mailman,
                         lastOwner,
                         false,
                         (player, self) =>
@@ -410,8 +410,8 @@ namespace YGR
                         });
                 case Y_PowerUps.LevelUpProfessor:
                     return new PickUp(type, location, width, height, 1.5f,
-                        Manager_Sprites.NewAnimatedSprite_LevelUp_DarkFlash(),
                         Manager_Sprites.NewAnimatedSprite_Professor(),
+                        Manager_Sprites.LevelUp_Prof,
                         lastOwner,
                         false,
                         (player, self) =>
@@ -429,8 +429,8 @@ namespace YGR
                         });
                 case Y_PowerUps.LevelUpNinja:
                     return new PickUp(type, location, width, height, 1.5f,
-                        Manager_Sprites.NewAnimatedSprite_LevelUp_DarkFlash(),
                         Manager_Sprites.NewAnimatedSprite_Ninja(),
+                        Manager_Sprites.LevelUp_Ninja,
                         lastOwner,
                         false,
                         (player, self) =>
@@ -596,20 +596,19 @@ namespace YGR
                         _sprite.Texture, Rect.Location.ToVector2(),
                         _sprite.SourceRectangle,
                         Color.White, 0, Vector2.Zero, _spriteDrawScale, SpriteEffects.None, 0);
-
-                if (_carriedSprite != null)
+                if (_levelUpIndicator != null)
                 {
-                    var target = _carriedSprite.AnimationSourceRects[AnimationState.WalkRight][0];
+                    var target = _levelUpIndicator.Bounds;
                     var scale = (float)Rect.Height / (float)target.Height;
-                    scale *= 0.9f;
+                    scale *= 0.4f;
                     var offset = new Vector2(
-                        0,
-                        Rect.Height - (target.Height * scale / 2)
+                        (Rect.Width - target.Width * scale) / 2,
+                        -target.Height * scale
                     );
 
                     spriteBatch.Draw(
-                            _carriedSprite.Texture, Rect.Location.ToVector2() + offset,
-                            target,
+                            _levelUpIndicator, Rect.Location.ToVector2() + offset,
+                            null,
                             Color.White, 0, Vector2.Zero, scale, SpriteEffects.None, 0);
                 }
             }
