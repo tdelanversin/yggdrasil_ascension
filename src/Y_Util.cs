@@ -54,7 +54,7 @@ namespace YGR
             return r;
         }
 
-        public static IShooter getRandomGun(IVictim owner)
+        public static IShooter getCharacterSpecificGun(IVictim owner)
         {
             // give them back their old gun instead of a random one
             if (owner is Player_Mailman) return (IShooter)(Activator.CreateInstance(typeof(Gun_Letter), owner));

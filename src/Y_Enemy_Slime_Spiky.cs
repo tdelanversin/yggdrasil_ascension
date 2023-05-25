@@ -10,7 +10,7 @@ namespace YGR
     {
 
         private Y_PowerUps _carriedPowerUp;
-        private AnimatedSprite _carriedPowerUpSprite;
+        private Texture2D _carriedPowerUpSprite;
         private AnimatedSprite _carriedImage;
 
         protected static List<Color> SlimeyColors = new List<Color> {
@@ -29,7 +29,7 @@ namespace YGR
             AnimatedSprite sprite,
             Y_Level level
         ) : base(position, sprite, level)
-            {
+        {
             LifePointsMax = 35;
             LifePoints = LifePointsMax;
             fleeingHPTreshold = LifePointsMax / 2;
@@ -68,29 +68,29 @@ namespace YGR
         public void SetPowerUp(Y_PowerUps carriedPowerUp)
         {
             _carriedPowerUp = carriedPowerUp;
-            if(_carriedPowerUp == Y_PowerUps.LevelUpProfessor)
+            if (_carriedPowerUp == Y_PowerUps.LevelUpProfessor)
             {
-                _carriedPowerUpSprite = Manager_Sprites.NewAnimatedSprite_LevelUp_LightFlash_NoShade();
+                _carriedPowerUpSprite = Manager_Sprites.LevelUp_Prof;
                 _carriedImage = Manager_Sprites.NewAnimatedSprite_Professor();
             }
             else if (_carriedPowerUp == Y_PowerUps.LevelUpNinja)
             {
-                _carriedPowerUpSprite = Manager_Sprites.NewAnimatedSprite_LevelUp_LightFlash_NoShade();
+                _carriedPowerUpSprite = Manager_Sprites.LevelUp_Ninja;
                 _carriedImage = Manager_Sprites.NewAnimatedSprite_Ninja();
             }
             else if (_carriedPowerUp == Y_PowerUps.LevelUpNerd)
             {
-                _carriedPowerUpSprite = Manager_Sprites.NewAnimatedSprite_LevelUp_LightFlash_NoShade();
+                _carriedPowerUpSprite = Manager_Sprites.LevelUp_Girly;
                 _carriedImage = Manager_Sprites.NewAnimatedSprite_NerdyGirl();
             }
             else if (_carriedPowerUp == Y_PowerUps.LevelUpMailman)
             {
-                _carriedPowerUpSprite = Manager_Sprites.NewAnimatedSprite_LevelUp_LightFlash_NoShade();
+                _carriedPowerUpSprite = Manager_Sprites.LevelUp_Mailman;
                 _carriedImage = Manager_Sprites.NewAnimatedSprite_Mailman();
             }
             else
             {
-                _carriedPowerUpSprite = Manager_Sprites.NewAnimatedSprite_LevelUp_Bullet_NoShade();
+                _carriedPowerUpSprite = Manager_Sprites.LevelUp_Prof;
             }
         }
 
@@ -118,27 +118,17 @@ namespace YGR
             // then everything else on top of it
             base.Draw(gameTime, globalOffset, spriteBatch);
 
-            if (_carriedPowerUpSprite != null)
-            {
-                var scale = (float)Rect.Height / (float)_carriedPowerUpSprite.SourceRectangle.Height;
-                scale *= 0.4f;
-                var offset = new Vector2(
-                    scale * _carriedPowerUpSprite.SourceRectangle.Width * 2 / 3, 
-                    scale * _carriedPowerUpSprite.SourceRectangle.Height / 3);
+            var h1 = IPlayer.PlayerBaseHeight;
+            var h2 = IPlayer.PlayerBaseHeight;
 
-                spriteBatch.Draw(
-                        _carriedPowerUpSprite.Texture, Rect.Center.ToVector2() - offset,
-                        _carriedPowerUpSprite.SourceRectangle,
-                        Color.White*0.3f, 0, Vector2.Zero, scale, SpriteEffects.None, 0);
-            }
-            if(_carriedImage != null)
+            if (_carriedImage != null)
             {
                 var target = _carriedImage.AnimationSourceRects[AnimationState.WalkRight][0];
                 var scale = (float)Rect.Height / (float)target.Height;
                 scale *= 0.3f;
                 var offset = new Vector2(
                     Rect.Width * 0.4f,
-                    0.8f * Rect.Height - target.Height*scale
+                    0.8f * Rect.Height - target.Height * scale
                 );
 
                 spriteBatch.Draw(
@@ -146,15 +136,6 @@ namespace YGR
                         target,
                         Color.White * 0.4f, 0, Vector2.Zero, scale, SpriteEffects.None, 0);
             }
-        }
-
-        public override void Update(GameTime gameTime)
-        {
-            if (_carriedPowerUpSprite != null)
-            {
-                _carriedPowerUpSprite.Update(gameTime, AnimationState.Idle);
-            }
-            base.Update(gameTime);
         }
 
         public override void DropSomethingJuicyMaybe()
@@ -165,7 +146,7 @@ namespace YGR
                 return;
             }
 
-            // drop a grave stone with absolute certainty
+            // drop the carried item with absolute certainty
             if (Room.WhatAreYou() == X_LevelElements.Room)
             {
                 // drop something jucy in any case

@@ -288,7 +288,7 @@ namespace YGR
             if (IsAlive()) { return; }
             LifePoints = LifePointsMax;
             Stats.Revives++;
-            Gun = Util.getRandomGun(this);
+            Gun = Util.getCharacterSpecificGun(this);
             heal(LifePointsMax / 3);
         }
 
@@ -798,6 +798,24 @@ namespace YGR
                     effects: SpriteEffects.None,
                     layerDepth: 0);
             }
+        }
+
+        protected Rectangle GetCircleIndicatorRect(float dur)
+        {
+            int width = 60;
+            int height = 60;
+
+            int i = (int)Math.Ceiling((1 - dur) * 36);
+            int x = i % 9;
+            int y = (int)i / 9;
+
+            if (y == 4)
+            {
+                return new Rectangle(0, 0, 0, 0); // empty rectangle
+            }
+
+            return new Rectangle(x * width, y * height, width, height);
+
         }
 
         protected virtual void DrawAimIndicator(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)
