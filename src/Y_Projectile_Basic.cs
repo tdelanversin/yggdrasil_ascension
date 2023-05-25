@@ -161,8 +161,9 @@ namespace YGR
             {
                 return;
             }
-            Manager_Particles.GetParticleEffect(Manager_Particles.Effect.ProjectileTrails).Emitters.ForEach(emitter => { emitter.Parameters.Color = Color.ToHsl(); });//new MonoGame.Extended.Range<HslColor>(Color.ToHsl());
-            Manager_Particles.GetParticleEffect(Manager_Particles.Effect.ProjectileTrails).Trigger(new Vector2(_rect.Location.X + _rect.Width / 2, _rect.Location.Y + _rect.Height / 2));
+            
+            //Manager_Particles.GetParticleEffect(Manager_Particles.Effect.ProjectileTrails).Emitters.ForEach(emitter => { emitter.Parameters.Color = Color.ToHsl(); });//new MonoGame.Extended.Range<HslColor>(Color.ToHsl());
+            //Manager_Particles.GetParticleEffect(Manager_Particles.Effect.ProjectileTrails).Trigger(new Vector2(_rect.Location.X + _rect.Width / 2, _rect.Location.Y + _rect.Height / 2));
         }
 
         /* Sprite animation handling */

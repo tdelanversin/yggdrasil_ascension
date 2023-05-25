@@ -99,6 +99,9 @@ namespace YGR
         public static Texture2D LevelUp_LightFlash_NoShade { get; private set; }
         public static Texture2D LevelUp_Bullet_NoShade { get; private set; }
 
+        // Particles
+        public static Texture2D Slime_Death_Particle { get; private set; }
+
         public static void LoadContent(ContentManager contentManager)
         {
             Player_OldNinja = contentManager.Load<Texture2D>("SpritesCharacters/charaset");
@@ -181,6 +184,8 @@ namespace YGR
             LevelUp_LightFlash_NoShade = contentManager.Load<Texture2D>("SpritesOther/tunder_up_sheet_no_shade");
             LevelUp_Bullet_NoShade = contentManager.Load<Texture2D>("SpritesOther/bullet_sheet_no_shade");
 
+            Slime_Death_Particle = contentManager.Load<Texture2D>("SpritesOther/slime_death");
+
             ImageDefeat = contentManager.Load<Texture2D>("Images/defeat");
             ImageVictory = contentManager.Load<Texture2D>("Images/victory");
         }
@@ -192,6 +197,28 @@ namespace YGR
                 spriteDimension: new Vector2(533, 1035),
                 animations: new Dictionary<AnimationState, int[]> {
                     { AnimationState.Idle, new int[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11 } },
+                },
+                animationDuration: 750
+            );
+        } 
+        public static AnimatedSprite NewAnimatedSprite_Small_Slime_Death_Particle()
+        {
+            return new AnimatedSprite(
+                texture: Slime_Death_Particle,
+                spriteDimension: new Vector2(32, 32),
+                animations: new Dictionary<AnimationState, int[]> {
+                    { AnimationState.Idle, new int[] { 2, 3, 4, 5, 6, 7 } },
+                },
+                animationDuration: 750
+            );
+        } 
+        public static AnimatedSprite NewAnimatedSprite_Big_Slime_Death_Particle()
+        {
+            return new AnimatedSprite(
+                texture: Slime_Death_Particle,
+                spriteDimension: new Vector2(32, 32),
+                animations: new Dictionary<AnimationState, int[]> {
+                    { AnimationState.Idle, new int[] { 0, 1, 2, 3, 4, 5, 6, 7} },
                 },
                 animationDuration: 750
             );

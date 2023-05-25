@@ -605,7 +605,7 @@ namespace YGR
                 if (Settings.ParticleEffects)
                 {
                     //Manager_Particles.GenParticleEffectDustCloudLight(new Vector2(_rect.Location.X + _rect.Width / 2, _rect.Location.Y + _rect.Height));
-                    Manager_Particles.GetParticleEffect(Manager_Particles.Effect.DustCloudLight).Trigger(new Vector2(_rect.Location.X + _rect.Width / 2, _rect.Location.Y + _rect.Height));
+                    //Manager_Particles.GetParticleEffect(Manager_Particles.Effect.DustCloudLight).Trigger(new Vector2(_rect.Location.X + _rect.Width / 2, _rect.Location.Y + _rect.Height));
                 }
 
                 if (input.LengthSquared() > 1)

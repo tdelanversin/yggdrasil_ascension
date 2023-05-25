@@ -27,7 +27,9 @@ namespace YGR
             ProjectileTrails,
             DustCloudLight,
             Dash,
-            Impact
+            Impact,
+            Big_Slime_Death,
+            Small_Slime_Death
         }
 
         private static ParticleEffect _particleEffect_dust;
@@ -109,6 +111,7 @@ namespace YGR
                                 VelocityColor = Microsoft.Xna.Framework.Color.Blue.ToHsl(),
                                 VelocityThreshold = 80f
                             },
+                            new LinearGravityModifier()
 
                         }
                     }
@@ -116,7 +119,6 @@ namespace YGR
             };
             _particleEffects.Add(Effect.Base, _particleEffect_dust);
         }
-
         private static void GenParticleEffectDustCloudLight(Vector2 pos)
         {
 
@@ -263,7 +265,7 @@ namespace YGR
                 Position = pos,
                 Emitters = new List<ParticleEmitter>
                 {
-                    new ParticleEmitter(textureRegion, 100, TimeSpan.FromSeconds(0.5f),
+                    new ParticleEmitter(textureRegion, 100, TimeSpan.FromSeconds(0.30f),
                         //Profile.Point())
                         Profile.BoxFill(15,15))
                         //Profile.Line(new Vector2(1,1), 5f))
@@ -319,7 +321,7 @@ namespace YGR
                             Speed = new Range<float>(10f, 100),
                             Quantity = 10,
                             Rotation = new Range<float>(2f, 8f),
-                            Scale = new Range<float>(1f, 2f),
+                            Scale = new Range<float>(2f, 3f),
                             Opacity = 1f
                         },
                         Modifiers =
@@ -375,9 +377,9 @@ namespace YGR
             {
                 return;
             }
-            foreach (var pE in _particleEffects.Values)
+            foreach (var pE in _particleEffects)
             {
-                spriteBatch.Draw(pE);
+                spriteBatch.Draw(pE.Value);
             }
         }
     }
