@@ -146,7 +146,7 @@ namespace YGR
                 return;
             }
 
-            // drop a grave stone with absolute certainty
+            // drop the carried item with absolute certainty
             if (Room.WhatAreYou() == X_LevelElements.Room)
             {
                 // drop something jucy in any case
