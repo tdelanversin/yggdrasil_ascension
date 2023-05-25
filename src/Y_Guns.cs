@@ -127,7 +127,9 @@ namespace YGR
 
             Manager_Sound.Sound_Shotgun.Play(0.3f, 0, 0);
             foreach (var dir in IterateDirections(direction))
+            {
                 Manager_Projectile.AddProjectile_EnemySlimeProjectile(origin, dir, level, who);
+            }
             return true;
         }
     }

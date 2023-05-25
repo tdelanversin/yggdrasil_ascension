@@ -101,6 +101,7 @@ namespace YGR
 
         // Particles
         public static Texture2D Slime_Death_Particle { get; private set; }
+        public static Texture2D Bullet_Impact_Particle { get; private set; }
 
         public static void LoadContent(ContentManager contentManager)
         {
@@ -185,6 +186,7 @@ namespace YGR
             LevelUp_Bullet_NoShade = contentManager.Load<Texture2D>("SpritesOther/bullet_sheet_no_shade");
 
             Slime_Death_Particle = contentManager.Load<Texture2D>("SpritesOther/slime_death");
+            Bullet_Impact_Particle = contentManager.Load<Texture2D>("SpritesEffects/Wall_Impact_Particle");
 
             ImageDefeat = contentManager.Load<Texture2D>("Images/defeat");
             ImageVictory = contentManager.Load<Texture2D>("Images/victory");
@@ -221,6 +223,18 @@ namespace YGR
                     { AnimationState.Idle, new int[] { 0, 1, 2, 3, 4, 5, 6, 7} },
                 },
                 animationDuration: 1000
+            );
+        }
+
+        public static AnimatedSprite NewAnimatedSprite_Bullet_Impact_Particle()
+        {
+            return new AnimatedSprite(
+                texture: Bullet_Impact_Particle,
+                spriteDimension: new Vector2(27, 12),
+                animations: new Dictionary<AnimationState, int[]> {
+                    { AnimationState.Idle, new int[] { 0, 1, 2, 3} },
+                },
+                animationDuration: 400
             );
         }
 

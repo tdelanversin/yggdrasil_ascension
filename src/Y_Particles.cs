@@ -11,6 +11,7 @@ namespace YGR
     {
         public float TTL { get; set; }
         public bool IsDead { get; set; }
+        public float Rotation { get; set; }
         public void Update(GameTime gt);
         public void Draw(GameTime gt, SpriteBatch spriteBatch);
     }
@@ -19,9 +20,9 @@ namespace YGR
     {
         public float TTL { get; set; }
         public bool IsDead { get; set; }
+        public float Rotation { get; set; }
         protected Vector2 _position;
         protected AnimatedSprite _sprite;
-        protected float _rotation;
         protected Color _color;
         protected float _scale;
         public Particle_Base(AnimatedSprite sprite, Vector2 position)
@@ -31,7 +32,7 @@ namespace YGR
             _color = Color.White;
 
             _scale = 1;
-            _rotation = (float) (Util.random.NextDouble() * MathHelper.TwoPi);
+            Rotation = (float) (Util.random.NextDouble() * MathHelper.TwoPi);
             TTL = _sprite.AnimationDuration;
         }
 
@@ -50,7 +51,7 @@ namespace YGR
                 position: _position,
                 sourceRectangle: _sprite.SourceRectangle, 
                 color: _color,
-                rotation: _rotation,
+                rotation: Rotation,
                 origin: _sprite.SourceRectangle.Size.ToVector2() / 2f,
                 scale: _scale,
                 effects: SpriteEffects.None,
@@ -59,32 +60,10 @@ namespace YGR
         }
     }
 
-    public class Particle_Slime : Particle_Base
-    {
-        protected Vector2 _velocity;
-        public Particle_Slime(
-            AnimatedSprite sprite, 
-            Vector2 position,
-            Color color,
-            Vector2 velocity,
-            float scale = 1f
-        ) : base(sprite, position) 
-        {
-            _color = color;
-            _velocity = velocity;
-        }
-
-        public override void Update(GameTime gt)
-        {
-            base.Update(gt);
-            _position += _velocity * gt.ElapsedGameTime.Milliseconds / 1000f;
-        }
-    }
-
-    public class Particle_Slime_Moving : Particle_Base
+    public class Particle_Move : Particle_Base
     {
         protected Vector2 _finalPosition;
-        public Particle_Slime_Moving(
+        public Particle_Move(
             AnimatedSprite sprite, 
             Vector2 position,
             Color color,
@@ -104,11 +83,11 @@ namespace YGR
 
     }
 
-    public class Particle_Slime_Splatter : Particle_Base
+    public class Particle_Move_Rotate : Particle_Base
     {
         protected Vector2 _finalPosition;
         protected float _finalRotation;
-        public Particle_Slime_Splatter(
+        public Particle_Move_Rotate(
             AnimatedSprite sprite, 
             Vector2 position,
             Color color,
@@ -119,14 +98,15 @@ namespace YGR
         {
             _color = color;
             _finalPosition = finalPosition;
-            _finalRotation = _rotation + finalRotation;
+            _finalRotation = Rotation + finalRotation;
         }
 
         public override void Update(GameTime gt)
         {
             base.Update(gt);
             _position = Vector2.Lerp(_position, _finalPosition, 0.1f);
-            _rotation = MathHelper.Lerp(_rotation, _finalRotation, 0.1f);
+            Rotation = MathHelper.Lerp(Rotation, _finalRotation, 0.1f);
         }
     }
+
 }

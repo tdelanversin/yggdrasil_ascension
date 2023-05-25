@@ -376,7 +376,7 @@ namespace YGR
             for (int i = 0; i < 2; i++)
             {
                 AnimatedSprite slimeParticle = Manager_Sprites.NewAnimatedSprite_Small_Slime_Death_Particle();
-                IParticle particle = new Particle_Slime_Splatter(
+                IParticle particle = new Particle_Move_Rotate(
                     slimeParticle,
                     slime.Rect.Center.ToVector2(),
                     slime.Color,
@@ -393,7 +393,7 @@ namespace YGR
             for (int i = 0; i < 4; i++)
             {
                 AnimatedSprite slimeSpikyParticle = Manager_Sprites.NewAnimatedSprite_Small_Slime_Death_Particle();
-                IParticle particleSpiky = new Particle_Slime_Splatter(
+                IParticle particleSpiky = new Particle_Move_Rotate(
                     slimeSpikyParticle,
                     slime.Rect.Center.ToVector2(),
                     slime.Color,
@@ -410,7 +410,7 @@ namespace YGR
             for (int i = 0; i < 40; i++)
             {
                 AnimatedSprite slimeBossParticle = Manager_Sprites.NewAnimatedSprite_Big_Slime_Death_Particle();
-                IParticle particleSpiky = new Particle_Slime_Splatter(
+                IParticle particleSpiky = new Particle_Move_Rotate(
                     slimeBossParticle,
                     boss.Rect.Center.ToVector2(),
                     boss.bossColor,
@@ -465,7 +465,7 @@ namespace YGR
             }
 
             AnimatedSprite particleSprite = Manager_Sprites.NewAnimatedSprite_Slime_Impact_Particle();
-            IParticle particle = new Particle_Slime_Splatter(
+            IParticle particle = new Particle_Move_Rotate(
                 particleSprite,
                 pos,
                 color,
@@ -474,6 +474,30 @@ namespace YGR
                 scale: 4f
             );
             _spriteParticles.Add(particle);
+        }
+
+        public static void MakeWallImpactParticle(Vector2 pos, Vector2 normal)
+        {
+            if (!Settings.ParticleEffects)
+                return;
+
+            // Logger.Info($"MakeWallImpactParticle pos: {pos}, normal: {normal}");
+            int count = Util.random.Next(2, 4);
+            for (int i = 0; i < count; i++)
+            {
+                AnimatedSprite particleSprite = Manager_Sprites.NewAnimatedSprite_Bullet_Impact_Particle();
+                // AnimatedSprite particleSprite = Manager_Sprites.NewAnimatedSprite_Big_Slime_Death_Particle();
+                IParticle particle = new Particle_Move(
+                    particleSprite,
+                    pos,
+                    Color.White,
+                    finalPosition: pos + normal * 20f,
+                    scale: 4f
+                );
+                float normalRotation = (float)Math.Atan2(normal.Y, normal.X);
+                particle.Rotation = normalRotation + (Util.random.NextSingle() * 2 - 1) * MathHelper.PiOver4;
+                _spriteParticles.Add(particle);
+            }
         }
 
         public static void Update(GameTime gameTime)

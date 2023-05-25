@@ -60,7 +60,7 @@ namespace YGR
         public bool Active { get; set; }
 
         public static float _gunScale = 2f;
-        public static float _starterGunScale = 1.5f;
+        public static float _starterGunScale = 2f;
 
         public Y_PowerUps Type { get; }
 
