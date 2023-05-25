@@ -86,8 +86,7 @@ namespace YGR
             GenParticleEffectDustCloudLight(pos);
             GenParticleEffectDash(pos);
             GenParticleEffectImpact(pos);
-            GenParticleEffectSmallSlimeDeath(pos);
-            GenParticleEffectBigSlimeDeath(pos);
+   
         }
 
         private static void GenParticleEffectBase(Vector2 pos)

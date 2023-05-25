@@ -22,7 +22,7 @@ namespace YGR
     {
         public class Small_Slime
         {
-            public  static AnimatedSprite _particle_small_slime_death { get; private set; }
+            public static AnimatedSprite _particle_small_slime_death { get; private set; }
             public static void LoadContent(ContentManager contentManager, GraphicsDevice graphicsDevice)
             {
                 //_particleTexture_dust = contentManager.Load<Texture2D>("SpritesEffects/dust_particle");
