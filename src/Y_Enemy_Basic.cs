@@ -244,7 +244,10 @@ namespace YGR
                 p.Stats.DamageDealt += projectile.Damage;
                 p.Stats.TimesHit++;
                 if (this is IEnemyBoss) { p.Stats.BossDamageDealt += projectile.Damage; }
-                if (LifePoints <= 0) { p.Stats.Kills++; }
+                if (LifePoints <= 0) { 
+                    p.Stats.Kills++; 
+                    Manager_Particles.MakeSlimeDeathParticle(this);
+                }
             }
         }
 
@@ -283,11 +286,11 @@ namespace YGR
                 {
                     if (this is IEnemyBoss)
                     {
-                        Manager_Particles.GetParticleEffect(Manager_Particles.Effect.GigaChad).Trigger(new Vector2(_rect.Location.X + _rect.Width / 2, _rect.Location.Y + _rect.Height));
+                        //Manager_Particles.GetParticleEffect(Manager_Particles.Effect.GigaChad).Trigger(new Vector2(_rect.Location.X + _rect.Width / 2, _rect.Location.Y + _rect.Height));
                     }
                     else
                     {
-                        Manager_Particles.GetParticleEffect(Manager_Particles.Effect.DustCloudLight).Trigger(new Vector2(_rect.Location.X + _rect.Width / 2, _rect.Location.Y + _rect.Height));
+                        //Manager_Particles.GetParticleEffect(Manager_Particles.Effect.DustCloudLight).Trigger(new Vector2(_rect.Location.X + _rect.Width / 2, _rect.Location.Y + _rect.Height));
                     }
                 }
 
@@ -516,10 +519,18 @@ namespace YGR
                 State = EnemyState.Wander;
             }
         }
+        //public void UpdateParticles(GameTime gt)
+        //{
+        //    if (this.LifePoints <2 )
+        //    {
+        //        Manager_Particles_Slime_Death.Small_Slime._particle_small_slime_death.;
+        //    }
+        //}
 
 
         public virtual void Update(GameTime gameTime)
         {
+
             if (State == EnemyState.Inactive) { return; }
 
             UpdateHitCounters(gameTime);

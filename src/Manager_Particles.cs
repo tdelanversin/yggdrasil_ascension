@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Collections.ObjectModel;
 
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -14,7 +16,6 @@ using MonoGame.Extended.TextureAtlases;
 using Microsoft.Xna.Framework.Content;
 using Vector2 = Microsoft.Xna.Framework.Vector2;
 using MonoGame.Extended.Sprites;
-using System.Collections.ObjectModel;
 
 namespace YGR
 {
@@ -27,7 +28,9 @@ namespace YGR
             ProjectileTrails,
             DustCloudLight,
             Dash,
-            Impact
+            Impact,
+            Big_Slime_Death,
+            Small_Slime_Death
         }
 
         private static ParticleEffect _particleEffect_dust;
@@ -40,11 +43,16 @@ namespace YGR
         private static Texture2D _particleTexture_fire;
         private static Texture2D _particleTexture_dash;
         private static Texture2D _particleTexture_impact;
+        private static AnimatedSprite _particleTexture_big_slime_death;
+        private static ParticleEffect _particleEffect_big_slime_death;
+        private static ParticleEffect _particleEffect_small_slime_death;
+        private static AnimatedSprite _particleTexture_small_slime_death;
 
 
         //public static Dictionary<string,ParticleEffect> _particleEffects { get;  private set; }
         //public static List<ParticleEffect> _particleEffectsTest { get; private set; }
         private static Dictionary<Effect, ParticleEffect> _particleEffects { get; set; }
+        private static IList<IParticle> _spriteParticles { get; set; }
 
         public static ParticleEffect GetParticleEffect(Effect whichOne)
         {
@@ -56,6 +64,8 @@ namespace YGR
             //_particleEffectsTest = new List<ParticleEffect>();
             _particleEffects = new Dictionary<Effect, ParticleEffect>();
             //_particleEffects = new Dictionary<string,ParticleEffect>();
+
+            _spriteParticles = new List<IParticle>();
         }
 
         public static void LoadContent(ContentManager contentManager, GraphicsDevice graphicsDevice)
@@ -70,6 +80,8 @@ namespace YGR
             _particleTexture_dust = new Texture2D(graphicsDevice, 1, 1);
             _particleTexture_dust.SetData(new[] { Color.Black * 0.5f });
             _particleTexture_dust_cloud_light.SetData(new[] { Color.Black * 0.5f });
+            _particleTexture_big_slime_death = Manager_Sprites.NewAnimatedSprite_Big_Slime_Death_Particle();
+            _particleTexture_small_slime_death = Manager_Sprites.NewAnimatedSprite_Small_Slime_Death_Particle();
 
             Vector2 pos = new Vector2(10333, 22332);
             GenParticleEffectBase(pos);
@@ -78,6 +90,7 @@ namespace YGR
             GenParticleEffectDustCloudLight(pos);
             GenParticleEffectDash(pos);
             GenParticleEffectImpact(pos);
+
         }
 
         private static void GenParticleEffectBase(Vector2 pos)
@@ -109,6 +122,7 @@ namespace YGR
                                 VelocityColor = Microsoft.Xna.Framework.Color.Blue.ToHsl(),
                                 VelocityThreshold = 80f
                             },
+                            new LinearGravityModifier()
 
                         }
                     }
@@ -116,7 +130,6 @@ namespace YGR
             };
             _particleEffects.Add(Effect.Base, _particleEffect_dust);
         }
-
         private static void GenParticleEffectDustCloudLight(Vector2 pos)
         {
 
@@ -263,7 +276,7 @@ namespace YGR
                 Position = pos,
                 Emitters = new List<ParticleEmitter>
                 {
-                    new ParticleEmitter(textureRegion, 100, TimeSpan.FromSeconds(0.5f),
+                    new ParticleEmitter(textureRegion, 100, TimeSpan.FromSeconds(0.30f),
                         //Profile.Point())
                         Profile.BoxFill(15,15))
                         //Profile.Line(new Vector2(1,1), 5f))
@@ -319,7 +332,7 @@ namespace YGR
                             Speed = new Range<float>(10f, 100),
                             Quantity = 10,
                             Rotation = new Range<float>(2f, 8f),
-                            Scale = new Range<float>(1f, 2f),
+                            Scale = new Range<float>(2f, 3f),
                             Opacity = 1f
                         },
                         Modifiers =
@@ -343,6 +356,155 @@ namespace YGR
             };
             _particleEffects.Add(Effect.Impact, _particleEffect_impact);
         }
+
+        private static Vector2 GetRandomFinalPosition(Rectangle Rect, float scale = 1f)
+        {
+            return (
+                Rect.Center.ToVector2() 
+                - Util.random.NextSingle() * Rect.Height * scale * Vector2.UnitY
+                + (Util.random.NextSingle() * 2 - 1) * Rect.Width * scale * Vector2.UnitX
+            );
+        }
+
+        private static float GetRandomFinalRotation()
+        {
+            return (Util.random.NextSingle() * 2 - 1) * MathHelper.PiOver2;
+        }
+
+        private static void SlimeDeath(Enemy_Slime slime)
+        {
+            for (int i = 0; i < 2; i++)
+            {
+                AnimatedSprite slimeParticle = Manager_Sprites.NewAnimatedSprite_Small_Slime_Death_Particle();
+                IParticle particle = new Particle_Move_Rotate(
+                    slimeParticle,
+                    slime.Rect.Center.ToVector2(),
+                    slime.Color,
+                    finalPosition: GetRandomFinalPosition(slime.Rect),
+                    finalRotation: GetRandomFinalRotation(),
+                    scale: 3f
+                );
+                _spriteParticles.Add(particle);
+            }
+        }
+
+        private static void SpikySlimeDeath(Enemy_Slime_Spiky slime)
+        {
+            for (int i = 0; i < 4; i++)
+            {
+                AnimatedSprite slimeSpikyParticle = Manager_Sprites.NewAnimatedSprite_Small_Slime_Death_Particle();
+                IParticle particleSpiky = new Particle_Move_Rotate(
+                    slimeSpikyParticle,
+                    slime.Rect.Center.ToVector2(),
+                    slime.Color,
+                    finalPosition: GetRandomFinalPosition(slime.Rect, scale: .5f),
+                    finalRotation: GetRandomFinalRotation(),
+                    scale: 3f
+                );
+                _spriteParticles.Add(particleSpiky);
+            }
+        }
+
+        private static void BossDeath(Enemy_Boss boss)
+        {
+            for (int i = 0; i < 40; i++)
+            {
+                AnimatedSprite slimeBossParticle = Manager_Sprites.NewAnimatedSprite_Big_Slime_Death_Particle();
+                IParticle particleSpiky = new Particle_Move_Rotate(
+                    slimeBossParticle,
+                    boss.Rect.Center.ToVector2(),
+                    boss.bossColor,
+                    finalPosition: GetRandomFinalPosition(boss.Rect, scale: 1.2f),
+                    finalRotation: GetRandomFinalRotation(),
+                    scale: 5f
+                );
+                _spriteParticles.Add(particleSpiky);
+            }
+        }
+
+        public static void MakeSlimeDeathParticle(IEnemy enemy)
+        {
+            if (!Settings.ParticleEffects)
+                return;
+
+            switch (enemy)
+            {
+                case Enemy_Slime slime:
+                    SlimeDeath(slime);
+                    break;
+                case Enemy_Slime_Spiky slimeSpiky:
+                    SpikySlimeDeath(slimeSpiky);
+                    break;
+                case Enemy_Boss slimeBoss:
+                    BossDeath(slimeBoss);
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        public static void MakeSlimeImpactParticle(IEnemy enemy, Vector2 pos, Vector2 normal)
+        {
+            if (!Settings.ParticleEffects)
+                return;
+
+            Color color = Color.White;
+            switch (enemy)
+            {
+                case Enemy_Slime slime:
+                    color = slime.Color;
+                    break;
+                case Enemy_Slime_Spiky slimeSpiky:
+                    color = slimeSpiky.Color;
+                    break;
+                case Enemy_Boss slimeBoss:
+                    color = slimeBoss.bossColor;
+                    break;
+                default:
+                    break;
+            }
+
+            AnimatedSprite particleSprite = Manager_Sprites.NewAnimatedSprite_Slime_Impact_Particle();
+            IParticle particle = new Particle_Move_Rotate(
+                particleSprite,
+                pos,
+                color,
+                finalPosition: pos + normal * 15f,
+                finalRotation: GetRandomFinalRotation(),
+                scale: 4f
+            );
+            _spriteParticles.Add(particle);
+        }
+
+        public static void MakeWallImpactParticle(Vector2 pos, Vector2 normal)
+        {
+            if (!Settings.ParticleEffects)
+                return;
+
+            // Logger.Info($"MakeWallImpactParticle pos: {pos}, normal: {normal}");
+            int count = Util.random.Next(1, 3);
+            for (int i = 0; i < count; i++)
+            {
+                AnimatedSprite particleSprite = Manager_Sprites.NewAnimatedSprite_Bullet_Impact_Particle();
+                    // AnimatedSprite particleSprite = Manager_Sprites.NewAnimatedSprite_Big_Slime_Death_Particle();
+                float normalRotation = (float)Math.Atan2(normal.Y, normal.X)  + (Util.random.NextSingle() * 2 - 1) * MathHelper.PiOver4;
+                Vector2 normalRotated = new Vector2(
+                    (float)Math.Cos(normalRotation),
+                    (float)Math.Sin(normalRotation)
+                );
+
+                IParticle particle = new Particle_Move(
+                    particleSprite,
+                    pos,
+                    Color.White,
+                    finalPosition: pos + normalRotated * 40f,
+                    scale: 4f
+                );
+                particle.Rotation = normalRotation;
+                _spriteParticles.Add(particle);
+            }
+        }
+
         public static void Update(GameTime gameTime)
         {
             if (!Settings.ParticleEffects)
@@ -355,6 +517,14 @@ namespace YGR
                 pE.Update((float)gameTime.ElapsedGameTime.TotalSeconds);
                 pE.Emitters.ForEach(e => { e.AutoTrigger = false; });
             }
+
+            foreach (var p in _spriteParticles)
+            {
+                p.Update(gameTime);
+            }
+
+            _spriteParticles = _spriteParticles.Where(p => !p.IsDead).ToList();
+            // _spriteParticles.RemoveAll(p => p.IsDead);
         }
 
         //public static void Dispose()
@@ -375,9 +545,14 @@ namespace YGR
             {
                 return;
             }
-            foreach (var pE in _particleEffects.Values)
+            foreach (var pE in _particleEffects)
             {
-                spriteBatch.Draw(pE);
+                spriteBatch.Draw(pE.Value);
+            }
+
+            foreach (var p in _spriteParticles)
+            {
+                p.Draw(gameTime, spriteBatch);
             }
         }
     }

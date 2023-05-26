@@ -74,10 +74,7 @@ namespace YGR
                     {
                         lock (this)
                         {
-                            if (Settings.ParticleEffects)
-                            {
-                                Manager_Particles.GetParticleEffect(Manager_Particles.Effect.Impact).Trigger(new Vector2(_rect.Location.X + _rect.Width / 2, _rect.Location.Y + _rect.Height / 2));
-                            }
+                            ImpactParticles((IVictim)obj, contactNormal[0]);
                             if (obj is IEnemyBoss)
                             {
                                 var tmp = Damage;
@@ -105,8 +102,8 @@ namespace YGR
                 return;
             }
             var particlePosition = _rect.Center.ToVector2() - _direction * _sprite.SpriteDimension.X * LocalScale / 2;
-            Manager_Particles.GetParticleEffect(Manager_Particles.Effect.ProjectileTrails).Emitters.ForEach(emitter => { emitter.Parameters.Color = Color.ToHsl(); });//new MonoGame.Extended.Range<HslColor>(Color.ToHsl());
-            Manager_Particles.GetParticleEffect(Manager_Particles.Effect.ProjectileTrails).Trigger(particlePosition);
+            //Manager_Particles.GetParticleEffect(Manager_Particles.Effect.ProjectileTrails).Emitters.ForEach(emitter => { emitter.Parameters.Color = Color.ToHsl(); });//new MonoGame.Extended.Range<HslColor>(Color.ToHsl());
+            //Manager_Particles.GetParticleEffect(Manager_Particles.Effect.ProjectileTrails).Trigger(particlePosition);
         }
 
         public override void Draw(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)

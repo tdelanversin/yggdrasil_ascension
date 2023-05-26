@@ -669,6 +669,12 @@ namespace YGR
                 ref collided
             );
 
+            if (collision)
+            {
+                contactPoint = collided.First().ContactPoint;
+                contactNormal = collided.First().ContactNormal;
+            }
+
             return collision;
         }
 

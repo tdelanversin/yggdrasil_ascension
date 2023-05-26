@@ -111,6 +111,26 @@ namespace YGR
             return this.Damage + (WhoFiredMe.ElementLevel - 1) * this.Damage / 2.0f;
         }
 
+        protected virtual void ImpactParticles(IVictim obj, Vector2 contactNormal)
+        {
+            if (!Settings.ParticleEffects)
+            {
+                return;
+            }
+
+            if (obj is IEnemy)
+            {
+                Vector2 pos = new Vector2(_rect.Location.X + _rect.Width / 2, _rect.Location.Y + _rect.Height / 2);
+                pos = Vector2.Lerp(pos, obj.Rect.Center.ToVector2(), 0.3f); // move towards center of enemy (looks better)
+                Vector2 nor = contactNormal;
+                Manager_Particles.MakeSlimeImpactParticle((IEnemy)obj, pos, nor);
+            }
+            else
+            {
+                Manager_Particles.GetParticleEffect(Manager_Particles.Effect.Impact).Trigger(new Vector2(_rect.Location.X + _rect.Width / 2, _rect.Location.Y + _rect.Height / 2));
+            }
+        }
+
         public virtual void UpdateCollisionAndVelocity(GameTime gameTime)
         {
             int timeStepMS = (int)gameTime.ElapsedGameTime.TotalMilliseconds;
@@ -135,15 +155,18 @@ namespace YGR
                     // Pass through player if they are currently invincible
                     if (obj.WhatAreYou() == X_LevelElements.Invincible) continue;
 
+                    // Generate wall impact particles
+                    if (obj.WhatAreYou() == X_LevelElements.Room && WhoFiredMe is IPlayer)
+                    {
+                        Manager_Particles.MakeWallImpactParticle(contactPoint[0].ToVector2(), contactNormal[0]);
+                    }
+
                     // Hit players and enemies
                     if (obj is IVictim)
                     {
-                        lock (this)
+                        lock(this)
                         {
-                            if (Settings.ParticleEffects)
-                            {
-                                Manager_Particles.GetParticleEffect(Manager_Particles.Effect.Impact).Trigger(new Vector2(_rect.Location.X + _rect.Width / 2, _rect.Location.Y + _rect.Height / 2));
-                            }
+                            ImpactParticles((IVictim)obj, contactNormal[0]);
                             ((IVictim)obj).Hit(this);
                         }
                     }
@@ -161,8 +184,9 @@ namespace YGR
             {
                 return;
             }
-            Manager_Particles.GetParticleEffect(Manager_Particles.Effect.ProjectileTrails).Emitters.ForEach(emitter => { emitter.Parameters.Color = Color.ToHsl(); });//new MonoGame.Extended.Range<HslColor>(Color.ToHsl());
-            Manager_Particles.GetParticleEffect(Manager_Particles.Effect.ProjectileTrails).Trigger(new Vector2(_rect.Location.X + _rect.Width / 2, _rect.Location.Y + _rect.Height / 2));
+            
+            //Manager_Particles.GetParticleEffect(Manager_Particles.Effect.ProjectileTrails).Emitters.ForEach(emitter => { emitter.Parameters.Color = Color.ToHsl(); });//new MonoGame.Extended.Range<HslColor>(Color.ToHsl());
+            //Manager_Particles.GetParticleEffect(Manager_Particles.Effect.ProjectileTrails).Trigger(new Vector2(_rect.Location.X + _rect.Width / 2, _rect.Location.Y + _rect.Height / 2));
         }
 
         /* Sprite animation handling */
