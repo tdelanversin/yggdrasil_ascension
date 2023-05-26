@@ -196,6 +196,7 @@ namespace YGR
                 if (IsActive && SetFunc != null)
                 {
                     Value += Step;
+                    if (Value > Max && Value < Max + Step / 2) {Value = Max;}
                     if (Value > Max) { Value = Min; }
                     SetFunc(Value);
                     UpdateText();
@@ -227,9 +228,9 @@ namespace YGR
                     // new SettingsItem("Show FPS: ", Settings.DrawFPS, toggleFunc: Settings.ToggleDrawFPS),
                     new SettingsItem("Particle Effects: ", Settings.ParticleEffects, toggleFunc: Settings.ToggleParticleEffects),
                     new SettingsItem("Music: ", Settings.Music, toggleFunc: Settings.ToggleMusic),
-                    new SettingItemRange("Music volume: ", 0, 1, .5f, .1f, setFunc: Settings.ChangeMusicVolume),
+                    new SettingItemRange("Music volume: ", 0, 1, 1, .1f, setFunc: Settings.ChangeMusicVolume),
                     new SettingsItem("Sounds: ", Settings.Sound, toggleFunc: Settings.ToggleSoundEffects),
-                    new SettingItemRange("Sound volume: ", 0, 1, .5f, .1f, setFunc: Settings.ChangeSoundVolume),
+                    new SettingItemRange("Sound volume: ", 0, 1, 1, .1f, setFunc: Settings.ChangeSoundVolume),
                     AdvancedSettings,
                     new MenuItem("Back", Menu.Ascend),
                 }
