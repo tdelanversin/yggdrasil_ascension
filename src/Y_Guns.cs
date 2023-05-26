@@ -555,7 +555,7 @@ namespace YGR
         }
     }
 
-    public class Gun_BossAvoidPattern : Gun_BossScatter
+    public class Gun_BossAvoidPattern1 : Gun_BossScatter
     {
 
         protected double RotationSpeed;
@@ -563,10 +563,10 @@ namespace YGR
         protected int Holes;
         protected int HoleSize;
 
-        public Gun_BossAvoidPattern(IVictim owner) : base(owner)
+        public Gun_BossAvoidPattern1(IVictim owner) : base(owner)
         {
             Name = "Pattern boss gun";
-            ShotDelay = 100; //Boss regulates its own AOE shooting
+            ShotDelay = 100;
             ShotCount = 64;
             ShotSpread = (2 * Math.PI) / ShotCount;
             RotationSpeed = 0.0025f;
@@ -586,9 +586,6 @@ namespace YGR
             Rotation += RotationSpeed * gameTime.ElapsedGameTime.Milliseconds;
             Rotation %= 2 * Math.PI;
 
-            var sound = new List<SoundEffect>() { Manager_Sound.Sound_Slime1, Manager_Sound.Sound_Slime2, Manager_Sound.Sound_Slime3, Manager_Sound.Sound_Slime4, Manager_Sound.Sound_Slime5, Manager_Sound.Sound_Slime6 };
-            sound.Shuffle(Util.random).First().Play(Manager_Sound.SoundVolume * 1.0f, 0f, 0f);
-
             direction = new Vector2(
                 (float)(direction.X * Math.Cos(Rotation) - direction.Y * Math.Sin(Rotation)),
                 (float)(direction.X * Math.Sin(Rotation) + direction.Y * Math.Cos(Rotation))
@@ -607,6 +604,22 @@ namespace YGR
 
     }
 
+    public class Gun_BossAvoidPattern2 : Gun_BossAvoidPattern1
+    {
+
+        public Gun_BossAvoidPattern2(IVictim owner) : base(owner)
+        {
+            Name = "Pattern boss gun";
+            ShotDelay = 800;
+            ShotCount = 18;
+            ShotSpread = (2 * Math.PI) / ShotCount;
+            RotationSpeed = 0.01f;
+            Rotation = 0.0f;
+            Holes = 1;
+            HoleSize = -1;
+        }
+    }
+
     public class Gun_BossAOE : Gun_BossScatter
     {
         public Gun_BossAOE(IVictim owner, int shotCount = 48) : base(owner, shotCount)
@@ -621,9 +634,6 @@ namespace YGR
             if (NextShotCooldown > 0.0f)
                 return false;
             NextShotCooldown = ShotDelay;
-
-            var sound = new List<SoundEffect>() { Manager_Sound.Sound_Slime1, Manager_Sound.Sound_Slime3, Manager_Sound.Sound_Slime6 };
-            sound.Shuffle(Util.random).First().Play(Manager_Sound.SoundVolume * 1.0f, 0f, 0f);
 
             foreach (var dir in IterateDirections(direction))
             {

@@ -28,7 +28,7 @@ namespace YGR
         bool _alreadyShot = false;
 
         public Color bossColor;
-
+        private int _previousAnimationIndex = 0;
 
 
         public Enemy_Boss(
@@ -44,7 +44,8 @@ namespace YGR
                 { BossAttack.Scatter, new Gun_BossScatter(this) },
                 { BossAttack.Precise, new Gun_BossPrecise(this) },
                 { BossAttack.AOE, new Gun_BossAOE(this) },
-                { BossAttack.AvoidPattern, new Gun_BossAvoidPattern(this) },
+                { BossAttack.AvoidPattern1, new Gun_BossAvoidPattern1(this) },
+                { BossAttack.AvoidPattern2, new Gun_BossAvoidPattern2(this) },
                 { BossAttack.Wait, new Gun_BasicEnemy(this) },
                 { BossAttack.Spawn, new Gun_BasicEnemy(this) },
             };
@@ -52,7 +53,8 @@ namespace YGR
                 { BossAttack.Scatter, 5000 },
                 { BossAttack.Precise, 5000 },
                 { BossAttack.AOE, 10000 },
-                { BossAttack.AvoidPattern, 10000 },
+                { BossAttack.AvoidPattern1, 10000 },
+                { BossAttack.AvoidPattern2, 10000 },
                 { BossAttack.Wait, 3000 },
                 { BossAttack.Spawn, 3000 },
             };
@@ -60,7 +62,8 @@ namespace YGR
                 { BossAttack.Scatter, 3000 },
                 { BossAttack.Precise, 3000 },
                 { BossAttack.AOE, 6000 },
-                { BossAttack.AvoidPattern, 10000 },
+                { BossAttack.AvoidPattern1, 10000 },
+                { BossAttack.AvoidPattern2, 10000 },
                 { BossAttack.Wait, 1500 },
                 { BossAttack.Spawn, 3000 },
             };
@@ -71,7 +74,8 @@ namespace YGR
                 { BossAttack.Scatter, 0.35f },
                 { BossAttack.Precise, 0.35f },
                 { BossAttack.AOE, 0.30f },
-                { BossAttack.AvoidPattern, 0.0f },
+                { BossAttack.AvoidPattern1, 0.0f },
+                { BossAttack.AvoidPattern2, 0.0f },
                 { BossAttack.Wait, 0.0f },
                 { BossAttack.Spawn, 0.0f}
             };
@@ -79,7 +83,8 @@ namespace YGR
                 { BossAttack.Scatter, 0.25f },
                 { BossAttack.Precise, 0.25f },
                 { BossAttack.AOE, 0.25f },
-                { BossAttack.AvoidPattern, 0.25f },
+                { BossAttack.AvoidPattern1, 0.125f },
+                { BossAttack.AvoidPattern2, 0.125f },
                 { BossAttack.Wait, 0.0f },
                 { BossAttack.Spawn, 0.0f}
             };
@@ -149,7 +154,7 @@ namespace YGR
             return _rect.Center.ToVector2() + new Vector2(0, 80 * Y_Level.GlobalScale);
         }
 
-        private void MakeDustParticles()
+        private void MakeCrashEffect()
         {
             int left = _rect.Left;
             int right = _rect.Right;
@@ -159,6 +164,8 @@ namespace YGR
                 Vector2 pos = new Vector2(posX, _rect.Bottom);
                 Manager_Particles.MakeWalkParticle(pos);
             }
+            Manager_Sound.Sound_Explosion.Play(0.5f, 0.0f, 0.0f);
+            Camera.Shake();
         }
 
         public override void Update(GameTime gameTime)
@@ -177,6 +184,16 @@ namespace YGR
                     return;
                 }
             }
+
+            if (
+                CharacterSprite.Direction == AnimationState.Jump && 
+                CharacterSprite.DirectionalIndex == 10 &&
+                _previousAnimationIndex != 10
+            )
+            {
+                MakeCrashEffect();
+            }
+            _previousAnimationIndex = CharacterSprite.DirectionalIndex;
 
             UpdateHitCounters(gameTime);
 
@@ -260,7 +277,9 @@ namespace YGR
                     break;
                 case BossAttack.AOE:
                     break;
-                case BossAttack.AvoidPattern:
+                case BossAttack.AvoidPattern1:
+                    break;
+                case BossAttack.AvoidPattern2:
                     break;
                 case BossAttack.Wait:
                     movement = ForceChace(gameTime);
@@ -298,7 +317,7 @@ namespace YGR
                             continue;
                         }
                         Attack = attack.Key;
-                        if (Attack == BossAttack.AvoidPattern && Target != null)
+                        if ((Attack == BossAttack.AvoidPattern1 || Attack == BossAttack.AvoidPattern2) && Target != null)
                         {
                             _savedTargetDirection = Target.Rect.Center.ToVector2() - _rect.Center.ToVector2();
                             _savedTargetDirection.Normalize();
@@ -331,14 +350,21 @@ namespace YGR
                     CharacterSprite.Update(gameTime, AnimationState.Jump);
                     if (CharacterSprite.DirectionalIndex != 10) // frame 10 and 11 are the first frames where the boss hits the ground
                         return;
-                    MakeDustParticles();
                     break;
-                case BossAttack.AvoidPattern:
+                case BossAttack.AvoidPattern1:
                     CharacterSprite.Update(gameTime, AnimationState.Jump);
                     if (!_alreadyShot){
                         if (CharacterSprite.DirectionalIndex != 10) // frame 10 and 11 are the first frames where the boss hits the ground
                             return;
-                        MakeDustParticles();
+                        _alreadyShot = true;
+                    }
+                    targetDirection = _savedTargetDirection;
+                    break;
+                case BossAttack.AvoidPattern2:
+                    CharacterSprite.Update(gameTime, AnimationState.Jump);
+                    if (!_alreadyShot){
+                        if (CharacterSprite.DirectionalIndex != 10) // frame 10 and 11 are the first frames where the boss hits the ground
+                            return;
                         _alreadyShot = true;
                     }
                     targetDirection = _savedTargetDirection;
