@@ -502,7 +502,7 @@ namespace YGR
                         if (shot)
                         {
                             Stats.TimesFired++;
-                            Camera.Shake();
+                            //Camera.Shake();
                         }
                     }
                 }
@@ -568,7 +568,7 @@ namespace YGR
                     if (shot)
                     {
                         Stats.TimesFired++;
-                        Camera.Shake();
+                        //Camera.Shake();
                     }
                 }
                 if (Input.IsKeyDown(Keybinds.KeyboardAbility))
