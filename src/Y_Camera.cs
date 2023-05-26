@@ -14,11 +14,19 @@ namespace YGR
         Manual      // Control pos and zoom with keybinds
     }
 
-    public enum ShakeStrength
+    public enum ShakeAngle
     {
         Light,
         Medium,
         Strong,
+    }
+
+    public enum ShakeStrength
+    {
+        Light = 1,
+        Medium,
+        Strong,
+        Extreme
     }
 
     public static class Camera
@@ -44,7 +52,7 @@ namespace YGR
         private static float _shakeTimer = _shakeDuration;
         private static Vector2 _shakeOffset;
         private static float _shakeRotation;
-        private static ShakeStrength _shakeStrength;
+        private static ShakeAngle _shakeStrength;
 
         private static float _animationDuration = 1000;
         private static float _animationTimer = _animationDuration;
@@ -100,7 +108,7 @@ namespace YGR
             return (float)(Math.Sin(scaledTranslated) * (2 * Math.PI / (scaledTranslated)));
         }
 
-        public static void Shake(Vector2 direction, float rotation, ShakeStrength strength)
+        public static void Shake(Vector2 direction, float rotation, ShakeAngle strength)
         {
             if (IsShaking && strength <= _shakeStrength) { return; }
             _shakeRotation = rotation;
@@ -109,13 +117,13 @@ namespace YGR
             _shakeStrength = strength;
             switch (_shakeStrength)
             {
-                case ShakeStrength.Light:
+                case ShakeAngle.Light:
                     _shakeDuration = 100;
                     break;
-                case ShakeStrength.Medium:
+                case ShakeAngle.Medium:
                     _shakeDuration = 150;
                     break;
-                case ShakeStrength.Strong:
+                case ShakeAngle.Strong:
                     _shakeDuration = 250;
                     break;
                 default:
@@ -123,19 +131,19 @@ namespace YGR
             }
         }
 
-        public static void Shake(ShakeStrength strength = ShakeStrength.Light)
+        public static void Shake(ShakeAngle angle = ShakeAngle.Light, ShakeStrength shake = ShakeStrength.Light)
         {
             var randAngleMax = Math.PI / 1024;
             var randAngle = (Util.random.NextSingle() - 0.5f) * randAngleMax;
-            randAngle *= (int)strength;
+            randAngle *= (int)angle;
 
             var RandXMax = Bounds.Width / 512;
-            var RandX = Util.random.Next(RandXMax) - RandXMax / 2;
+            var RandX =  (float)shake * (Util.random.Next(RandXMax) - RandXMax / 2);
 
-            var RandYMax = Bounds.Height / 512;
-            var RandY = Util.random.Next(RandYMax) - RandYMax / 2;
+            var RandYMax = Bounds.Width / 512; // make the shake symmetric
+            var RandY = (float)shake *( Util.random.Next(RandYMax) - RandYMax / 2);
 
-            Shake(new Vector2(RandX, RandY), (float)randAngle, strength);
+            Shake(new Vector2(RandX, RandY), (float)randAngle, angle);
         }
 
         private static void UpdateMatrix(GameTime gameTime)

@@ -92,6 +92,11 @@ namespace YGR
                             }
                         }
                     }
+
+                    if (obj.WhatAreYou() == X_LevelElements.Room || obj.WhatAreYou() == X_LevelElements.Door)
+                    {
+                        Camera.Shake(angle: ShakeAngle.Light, shake: ShakeStrength.Extreme);
+                    }
                 }
             }
             _position += Velocity * timeStepMS;
