@@ -129,7 +129,9 @@ namespace YGR
                 return true;
             NextShotCooldown = ShotDelay;
 
-            Manager_Sound.Sound_Shotgun.Play(0.3f, 0, 0);
+            var sound = new List<SoundEffect>() { Manager_Sound.Sound_Slime2, Manager_Sound.Sound_Slime3, Manager_Sound.Sound_Slime4, Manager_Sound.Sound_Slime5, Manager_Sound.Sound_Slime6 };
+            sound.Shuffle(Util.random).First().Play();
+
             foreach (var dir in IterateDirections(direction))
             {
                 Manager_Projectile.AddProjectile_EnemySlimeProjectile(origin, dir, level, who);
@@ -231,7 +233,7 @@ namespace YGR
             NextShotCooldown = ShotDelay;
 
             var sound = new List<SoundEffect>() { Manager_Sound.Sound_Ninja1, Manager_Sound.Sound_Ninja2, Manager_Sound.Sound_Ninja3 };
-            sound.Shuffle(Util.random).First().Play();
+            sound.Shuffle(Util.random).First().Play(0.5f, 0f, 0f);
 
             Manager_Projectile.AddProjectile_NinjaStar(origin, direction, level, who, damage: .7f);
             return true;
