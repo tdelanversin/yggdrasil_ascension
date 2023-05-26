@@ -316,24 +316,6 @@
 /processorParam:Quality=Best
 /build:Sounds/shotgun.wav
 
-#begin Sounds/slime_1.wav
-/importer:WavImporter
-/processor:SoundEffectProcessor
-/processorParam:Quality=Best
-/build:Sounds/slime_1.wav
-
-#begin Sounds/slime_2.wav
-/importer:WavImporter
-/processor:SoundEffectProcessor
-/processorParam:Quality=Best
-/build:Sounds/slime_2.wav
-
-#begin Sounds/slime_3.wav
-/importer:WavImporter
-/processor:SoundEffectProcessor
-/processorParam:Quality=Best
-/build:Sounds/slime_3.wav
-
 #begin Sounds/slime_4.wav
 /importer:WavImporter
 /processor:SoundEffectProcessor
@@ -363,12 +345,6 @@
 /processor:SoundEffectProcessor
 /processorParam:Quality=Best
 /build:Sounds/slime_8.wav
-
-#begin Sounds/slime_jump.wav
-/importer:WavImporter
-/processor:SoundEffectProcessor
-/processorParam:Quality=Best
-/build:Sounds/slime_jump.wav
 
 #begin Sounds/song_dramatic.mp3
 /importer:Mp3Importer

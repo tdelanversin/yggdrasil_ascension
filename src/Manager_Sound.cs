@@ -59,15 +59,11 @@ namespace YGR
         public static SoundEffect Sound_Letter2;
         public static SoundEffect Sound_Letter3;
         public static SoundEffect Sound_Letter4;
-        public static SoundEffect Sound_Slime1;
-        public static SoundEffect Sound_Slime2;
-        public static SoundEffect Sound_Slime3;
         public static SoundEffect Sound_Slime4;
         public static SoundEffect Sound_Slime5;
         public static SoundEffect Sound_Slime6;
         public static SoundEffect Sound_Slime7;
         public static SoundEffect Sound_Slime8;
-        public static SoundEffect Sound_SlimeJump;
         public static SoundEffect Sound_Splash1;
         public static SoundEffect Sound_Splash2;
         public static SoundEffect Sound_Splash3;
@@ -140,15 +136,11 @@ namespace YGR
             Sound_Letter2 = contentManager.Load<SoundEffect>("Sounds/letter_2");
             Sound_Letter3 = contentManager.Load<SoundEffect>("Sounds/letter_3");
             Sound_Letter4 = contentManager.Load<SoundEffect>("Sounds/letter_4");
-            Sound_Slime1 = contentManager.Load<SoundEffect>("Sounds/slime_1");
-            Sound_Slime2 = contentManager.Load<SoundEffect>("Sounds/slime_2");
-            Sound_Slime3 = contentManager.Load<SoundEffect>("Sounds/slime_3");
             Sound_Slime4 = contentManager.Load<SoundEffect>("Sounds/slime_4");
             Sound_Slime5 = contentManager.Load<SoundEffect>("Sounds/slime_5");
             Sound_Slime6 = contentManager.Load<SoundEffect>("Sounds/slime_6");
             Sound_Slime7 = contentManager.Load<SoundEffect>("Sounds/slime_7");
             Sound_Slime8 = contentManager.Load<SoundEffect>("Sounds/slime_8");
-            Sound_SlimeJump = contentManager.Load<SoundEffect>("Sounds/slime_jump");
             Sound_Splash1 = contentManager.Load<SoundEffect>("Sounds/splash_1");
             Sound_Splash2 = contentManager.Load<SoundEffect>("Sounds/splash_2");
             Sound_Splash3 = contentManager.Load<SoundEffect>("Sounds/splash_3");
@@ -157,6 +149,7 @@ namespace YGR
             // Set up media player
             MediaPlayer.IsRepeating = true;
             MediaPlayer.Volume = 1.0f;
+            SoundEffect.MasterVolume = .5f;
 
             //byte[] buffer= new byte[10];
             //AudioChannels channels= new AudioChannels();
@@ -173,7 +166,7 @@ namespace YGR
             if (_registry.TryAdd(condition, new Tuple<Stopwatch, SoundEffect>(watch, effect)))
             {
                 watch.Start();
-                effect.Play(SoundVolume * volume, 0, 0);
+                effect.Play(volume, 0, 0);
             }
         }
 
@@ -183,7 +176,7 @@ namespace YGR
             {
                 if (eff.Key() && eff.Value.Item1.ElapsedMilliseconds > eff.Value.Item2.Duration.Milliseconds)
                 {
-                    eff.Value.Item2.Play(SoundVolume, 0, 0);
+                    eff.Value.Item2.Play();
                     eff.Value.Item1.Reset();
                 }
                 else if (!eff.Key())
@@ -197,7 +190,7 @@ namespace YGR
         {
             MediaPlayer.Play(Manager_Sound.Song_TheWhiteLion);
             // (Re)set the volume, since we fade out the song on the ending screen
-            MediaPlayer.Volume = MusicVolume;
+            MediaPlayer.Volume = 1.0f;
         }
 
         internal static void PlayFreeRoamMusic()

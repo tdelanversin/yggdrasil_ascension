@@ -147,7 +147,7 @@ namespace YGR
                 if (enemy.LifePoints <= 0)
                 {
                     var sound = new List<SoundEffect>() { Manager_Sound.Sound_EnemyDeath, Manager_Sound.Sound_Splash1, Manager_Sound.Sound_Splash2, Manager_Sound.Sound_Splash3, Manager_Sound.Sound_Splash4 };
-                    sound.Shuffle(Util.random).First().Play(Manager_Sound.SoundVolume * 1.0f, 0f, 0f);
+                    sound.Shuffle(Util.random).First().Play(1.0f, 0f, 0f);
                 }
             }
 

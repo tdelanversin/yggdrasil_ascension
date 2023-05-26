@@ -95,7 +95,7 @@ namespace YGR
             player.Room.PickUps.Remove(self);
             oldGun.DropAsPickUp(player, player.Room, self.Rect.Center);
 
-            Manager_Sound.Sound_GunCocking.Play(Manager_Sound.SoundVolume, 0, 0) ;
+            Manager_Sound.Sound_GunCocking.Play(1, 0, 0) ;
 
             return true;
         }
@@ -173,7 +173,7 @@ namespace YGR
                             if (player is not Player_NerdyGirl)
                             {
                                 Manager_Players.SetPlayerType(player.PlayerIndex, PlayerType.Nerd);
-                                Manager_Sound.Sound_GunCocking.Play(Manager_Sound.SoundVolume, 0, 0) ;
+                                Manager_Sound.Sound_GunCocking.Play(1, 0, 0) ;
                             }
                             return false;
                         });
@@ -188,7 +188,7 @@ namespace YGR
                             if (player is not Player_Mailman)
                             {
                                 Manager_Players.SetPlayerType(player.PlayerIndex, PlayerType.Mailman);
-                                Manager_Sound.Sound_GunCocking.Play(Manager_Sound.SoundVolume, 0, 0) ;
+                                Manager_Sound.Sound_GunCocking.Play(1, 0, 0) ;
                             }
                             return false;
                         });
@@ -203,7 +203,7 @@ namespace YGR
                             if (player is not Player_Ninja)
                             {
                                 Manager_Players.SetPlayerType(player.PlayerIndex, PlayerType.Ninja);
-                                Manager_Sound.Sound_GunCocking.Play(Manager_Sound.SoundVolume, 0, 0) ;
+                                Manager_Sound.Sound_GunCocking.Play(1, 0, 0) ;
                             }
                             return false;
                         });
@@ -218,7 +218,7 @@ namespace YGR
                             if (player is not Player_Professor)
                             {
                                 Manager_Players.SetPlayerType(player.PlayerIndex, PlayerType.Professor);
-                                Manager_Sound.Sound_GunCocking.Play(Manager_Sound.SoundVolume, 0, 0) ;
+                                Manager_Sound.Sound_GunCocking.Play(1, 0, 0) ;
                             }
                             return false;
                         });
@@ -367,7 +367,7 @@ namespace YGR
 
                             player.Heal();
                             player.Room.PickUps.Remove(self);
-                            Manager_Sound.Sound_CashIn.Play(Manager_Sound.SoundVolume, 0, 0) ;
+                            Manager_Sound.Sound_CashIn.Play(1, 0, 0) ;
                             return true;
                         });
                 case Y_PowerUps.LevelUpNerd:
@@ -386,7 +386,7 @@ namespace YGR
                                 return false;
 
                             player.Room.PickUps.Remove(self);
-                            Manager_Sound.Sound_CashIn.Play(Manager_Sound.SoundVolume, 0, 0) ;
+                            Manager_Sound.Sound_CashIn.Play(1, 0, 0) ;
                             return true;
                         });
                 case Y_PowerUps.LevelUpMailman:
@@ -405,7 +405,7 @@ namespace YGR
                                 return false;
 
                             player.Room.PickUps.Remove(self);
-                            Manager_Sound.Sound_CashIn.Play(Manager_Sound.SoundVolume, 0, 0) ;
+                            Manager_Sound.Sound_CashIn.Play(1, 0, 0) ;
                             return true;
                         });
                 case Y_PowerUps.LevelUpProfessor:
@@ -424,7 +424,7 @@ namespace YGR
                                 return false;
 
                             player.Room.PickUps.Remove(self);
-                            Manager_Sound.Sound_CashIn.Play(Manager_Sound.SoundVolume, 0, 0) ;
+                            Manager_Sound.Sound_CashIn.Play(1, 0, 0) ;
                             return true;
                         });
                 case Y_PowerUps.LevelUpNinja:
@@ -443,7 +443,7 @@ namespace YGR
                                 return false;
 
                             player.Room.PickUps.Remove(self);
-                            Manager_Sound.Sound_CashIn.Play(Manager_Sound.SoundVolume, 0, 0) ;
+                            Manager_Sound.Sound_CashIn.Play(1, 0, 0) ;
                             return true;
                         });
                 case Y_PowerUps.Gravestone:
@@ -483,7 +483,7 @@ namespace YGR
 
                             player.Room.PickUps.Remove(self);
                             player.Revive();
-                            Manager_Sound.Sound_CashIn.Play(Manager_Sound.SoundVolume, 0, 0) ;
+                            Manager_Sound.Sound_CashIn.Play(1, 0, 0) ;
                             return true;
                         });
             }
@@ -503,19 +503,19 @@ namespace YGR
             {
                 case 0:
                     player.SpeedUp(1.5f, duration);
-                    Manager_Sound.Sound_PosititveRandomPowerup.Play(Manager_Sound.SoundVolume, 0, 0) ;
+                    Manager_Sound.Sound_PosititveRandomPowerup.Play(1, 0, 0) ;
                     break;
                 case 1:
                     player.SpeedUp(1.6f, duration);
-                    Manager_Sound.Sound_PosititveRandomPowerup.Play(Manager_Sound.SoundVolume, 0, 0) ;
+                    Manager_Sound.Sound_PosititveRandomPowerup.Play(1, 0, 0) ;
                     break;
                 case 2:
                     player.SpeedUp(1.7f, duration);
-                    Manager_Sound.Sound_PosititveRandomPowerup.Play(Manager_Sound.SoundVolume, 0, 0) ;
+                    Manager_Sound.Sound_PosititveRandomPowerup.Play(1, 0, 0) ;
                     break;
                 case 3:
                     player.SpeedUp(0.5f, duration);
-                    Manager_Sound.Sound_NegativeRandomPowerup.Play(Manager_Sound.SoundVolume, 0, 0) ;
+                    Manager_Sound.Sound_NegativeRandomPowerup.Play(1, 0, 0) ;
                     break;
 
                 default:

@@ -242,7 +242,7 @@ namespace YGR
 
         public static bool ChangeSoundVolume(float volume)
         {
-            Manager_Sound.SoundVolume = volume;
+            SoundEffect.MasterVolume = volume;
             return true;
         }
 
@@ -263,7 +263,7 @@ namespace YGR
 
         public static bool ChangeMusicVolume(float volume)
         {
-            Manager_Sound.MusicVolume = volume;
+            MediaPlayer.Volume = volume;
             return true;
         }
     }
