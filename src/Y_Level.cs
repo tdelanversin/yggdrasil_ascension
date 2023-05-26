@@ -80,6 +80,7 @@ namespace YGR
             IntroduceCharactersProfessor,
             IntroduceGhosts,
             IntroduceGhosts2,
+            IntroduceGhosts3,
             IntroducePowerUps,
             IntroduceYggdrasil,
             IntroduceBoss,
@@ -644,6 +645,9 @@ namespace YGR
                     TutorialState = GameTutorialState.IntroduceGhosts2;
                     break;
                 case GameTutorialState.IntroduceGhosts2:
+                    TutorialState = GameTutorialState.IntroduceGhosts3;
+                    break;
+                case GameTutorialState.IntroduceGhosts3:
                     // Skip the power ups state since we no longer have any in the start room
                     //  => sorry, was an unintentional bug ^^
                     TutorialState = GameTutorialState.IntroducePowerUps;
@@ -838,9 +842,9 @@ namespace YGR
                         ShowTutorialControls(duration);
                         Notifications.New("\n\n\n\n\n\n\n\n\n\n\n\n\n", colorLightRoom, duration);
                         Notifications.New("This is Ninja,", colorLightRoom, duration, Fonts.Large);
-                        Notifications.New("he has been here for a long time", colorLightRoom, duration, Fonts.Large);
-                        Notifications.New("which is why he is still here!", colorLightRoom, duration, Fonts.Large);
                         Notifications.New("If Ninja shoots a confused enemy, he does more damage!", colorLightRoom, duration, Fonts.Large);
+                        Notifications.New("His special ability allows him", colorLightRoom, duration, Fonts.Large);
+                        Notifications.New("to become invincible for a short time.", colorLightRoom, duration, Fonts.Large);
                     }
                     break;
                 case GameTutorialState.IntroduceCharactersNerd:
@@ -852,7 +856,8 @@ namespace YGR
                         Notifications.New("\n\n\n\n\n\n\n\n\n\n\n\n\n", colorLightRoom, duration);
                         Notifications.New("This is the Nerd.", colorLightRoom, duration, Fonts.Large);
                         Notifications.New("If she hits a confused target she does much more damage!", colorLightRoom, duration, Fonts.Large);
-                        Notifications.New("In other cases she can use Gunslinger.", colorLightRoom, duration, Fonts.Large);
+                        Notifications.New("Her special ability allows her", colorLightRoom, duration, Fonts.Large);
+                        Notifications.New("to double her firing rate.", colorLightRoom, duration, Fonts.Large);
                     }
                     break;
                 case GameTutorialState.IntroduceCharactersMailman:
@@ -891,6 +896,17 @@ namespace YGR
                     }
                     break;
                 case GameTutorialState.IntroduceGhosts2:
+                    if (TutorialStageDurationCounterMS == 0)
+                    {
+                        Camera.SetFocusManual(Tutorial_GhostSlot, zoomCharacter);
+
+                        ShowTutorialControls(duration);
+                        Notifications.New("\n\n\n\n\n\n\n\n\n\n\n\n\n", colorLightRoom, duration);
+                        Notifications.New("When you die, you can use your special ability", colorLightRoom, duration, Fonts.Large);
+                        Notifications.New("to temporarily protect your friends from bullets!", colorLightRoom, duration, Fonts.Large);
+                    }
+                    break;
+                case GameTutorialState.IntroduceGhosts3:
                     if (TutorialStageDurationCounterMS == 0)
                     {
                         Camera.SetFocusManual(Tutorial_PlayerSlot_Professor, zoomCharacter);
