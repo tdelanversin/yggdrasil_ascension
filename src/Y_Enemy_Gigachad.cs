@@ -21,7 +21,7 @@ namespace YGR
             fleeingHPTreshold = 0; // Gigachad never flees
 
             Name = "Gigachad";
-            Gun = new Gun_ShotGun(this, 13);
+            Gun = new Gun_BossScatter(this, 13);
             Gun2 = new Gun_BossAOE(this);
 
             _hitColor = Color.OrangeRed;

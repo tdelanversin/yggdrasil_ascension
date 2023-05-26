@@ -59,7 +59,15 @@ namespace YGR
         public static SoundEffect Sound_Letter2;
         public static SoundEffect Sound_Letter3;
         public static SoundEffect Sound_Letter4;
-
+        public static SoundEffect Sound_Slime1;
+        public static SoundEffect Sound_Slime2;
+        public static SoundEffect Sound_Slime3;
+        public static SoundEffect Sound_Slime4;
+        public static SoundEffect Sound_Slime5;
+        public static SoundEffect Sound_Slime6;
+        public static SoundEffect Sound_Slime7;
+        public static SoundEffect Sound_Slime8;
+        public static SoundEffect Sound_SlimeJump;
 
 
         public static List<Song> SongsEncounter;
@@ -125,6 +133,15 @@ namespace YGR
             Sound_Letter2 = contentManager.Load<SoundEffect>("Sounds/letter_2");
             Sound_Letter3 = contentManager.Load<SoundEffect>("Sounds/letter_3");
             Sound_Letter4 = contentManager.Load<SoundEffect>("Sounds/letter_4");
+            Sound_Slime1 = contentManager.Load<SoundEffect>("Sounds/slime_1");
+            Sound_Slime2 = contentManager.Load<SoundEffect>("Sounds/slime_2");
+            Sound_Slime3 = contentManager.Load<SoundEffect>("Sounds/slime_3");
+            Sound_Slime4 = contentManager.Load<SoundEffect>("Sounds/slime_4");
+            Sound_Slime5 = contentManager.Load<SoundEffect>("Sounds/slime_5");
+            Sound_Slime6 = contentManager.Load<SoundEffect>("Sounds/slime_6");
+            Sound_Slime7 = contentManager.Load<SoundEffect>("Sounds/slime_7");
+            Sound_Slime8 = contentManager.Load<SoundEffect>("Sounds/slime_8");
+            Sound_SlimeJump = contentManager.Load<SoundEffect>("Sounds/slime_jump");
 
             // Set up media player
             MediaPlayer.IsRepeating = true;
