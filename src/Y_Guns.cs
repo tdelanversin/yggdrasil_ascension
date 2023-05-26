@@ -233,7 +233,7 @@ namespace YGR
             NextShotCooldown = ShotDelay;
 
             var sound = new List<SoundEffect>() { Manager_Sound.Sound_Ninja1, Manager_Sound.Sound_Ninja2, Manager_Sound.Sound_Ninja3 };
-            sound.Shuffle(Util.random).First().Play(Manager_Sound.SoundVolume * 0.05f, 0f, 0f);
+            sound.Shuffle(Util.random).First().Play(Manager_Sound.SoundVolume * 0.1f, 0f, 0f);
 
             Manager_Projectile.AddProjectile_NinjaStar(origin, direction, level, who, damage: .7f);
             return true;
@@ -257,7 +257,7 @@ namespace YGR
 
             NextShotCooldown = ShotDelay;
 
-            Manager_Sound.Sound_Blaster.Play(Manager_Sound.SoundVolume * 0.15f, 0, 0);
+            Manager_Sound.Sound_Blaster.Play(Manager_Sound.SoundVolume * 0.1f, 0, 0);
 
             Manager_Projectile.AddProjectile_Helix(origin, direction, level, who, damage: .25f, phase: 0.0f);
             Manager_Projectile.AddProjectile_Helix(origin, direction, level, who, damage: .25f, phase: 0.5f);
