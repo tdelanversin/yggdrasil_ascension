@@ -22,7 +22,7 @@ namespace YGR
 
             Name = "Gigachad";
             Gun = new Gun_ShotGun(this, 13);
-            Gun2 = new Gun_BossAOE(this);
+            Gun2 = new Gun_BossAOEGigachad(this);
 
             _hitColor = Color.OrangeRed;
             Color = Color.White;

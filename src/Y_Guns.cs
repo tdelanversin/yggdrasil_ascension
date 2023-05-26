@@ -615,4 +615,13 @@ namespace YGR
         }
 
     }
+
+    public class Gun_BossAOEGigachad : Gun_BossAOE
+    {
+        public Gun_BossAOEGigachad(IVictim owner, int shotCount = 48) : base(owner, shotCount)
+        {
+            Name = "AOE Gigahad gun";
+            ShotDelay = 4000;
+        }
+    }
 }
