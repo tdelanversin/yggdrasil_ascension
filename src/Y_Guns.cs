@@ -66,7 +66,7 @@ namespace YGR
                 return false;
             NextShotCooldown = ShotDelay;
 
-            var sound = new List<SoundEffect>() { Manager_Sound.Sound_Slime1, Manager_Sound.Sound_Slime2, Manager_Sound.Sound_Slime3, Manager_Sound.Sound_SlimeJump };
+            var sound = new List<SoundEffect>() { Manager_Sound.Sound_Slime4, Manager_Sound.Sound_Slime5, Manager_Sound.Sound_Slime6, Manager_Sound.Sound_Slime7, Manager_Sound.Sound_Slime8 };
             sound.Shuffle(Util.random).First().Play(Manager_Sound.SoundVolume * .25f, 0f, 0f);
 
             Manager_Projectile.AddProjectile_EnemySlimeProjectile(origin, direction, level, who);
@@ -130,7 +130,7 @@ namespace YGR
             NextShotCooldown = ShotDelay;
 
             var sound = new List<SoundEffect>() { Manager_Sound.Sound_Slime2, Manager_Sound.Sound_Slime3, Manager_Sound.Sound_Slime4, Manager_Sound.Sound_Slime5, Manager_Sound.Sound_Slime6 };
-            sound.Shuffle(Util.random).First().Play(Manager_Sound.SoundVolume * .25f, 0f, 0f);
+            sound.Shuffle(Util.random).First().Play(Manager_Sound.SoundVolume * 1.0f, 0f, 0f);
 
             foreach (var dir in IterateDirections(direction))
             {
@@ -541,7 +541,7 @@ namespace YGR
             ShotSpreadCurrent += gameTime.ElapsedGameTime.TotalMilliseconds / ShotSpreadSpeed;
             ShotSpreadCurrent %= 1;
 
-            var sound = new List<SoundEffect>() { Manager_Sound.Sound_Slime7, Manager_Sound.Sound_Slime8, Manager_Sound.Sound_SlimeJump };
+            var sound = new List<SoundEffect>() { Manager_Sound.Sound_Slime7, Manager_Sound.Sound_Slime8};
             sound.Shuffle(Util.random).First().Play(Manager_Sound.SoundVolume * 1.0f, 0f, 0f);
 
             var new_dir = new Vector2(
@@ -586,7 +586,7 @@ namespace YGR
             Rotation += RotationSpeed * gameTime.ElapsedGameTime.Milliseconds;
             Rotation %= 2 * Math.PI;
 
-            var sound = new List<SoundEffect>() { Manager_Sound.Sound_Slime1, Manager_Sound.Sound_Slime2, Manager_Sound.Sound_Slime3, Manager_Sound.Sound_Slime4, Manager_Sound.Sound_Slime5, Manager_Sound.Sound_Slime6 };
+            var sound = new List<SoundEffect>() { Manager_Sound.Sound_Slime4, Manager_Sound.Sound_Slime5, Manager_Sound.Sound_Slime6 };
             sound.Shuffle(Util.random).First().Play(Manager_Sound.SoundVolume * 1.0f, 0f, 0f);
 
             direction = new Vector2(
@@ -622,7 +622,7 @@ namespace YGR
                 return false;
             NextShotCooldown = ShotDelay;
 
-            var sound = new List<SoundEffect>() { Manager_Sound.Sound_Slime1, Manager_Sound.Sound_Slime3, Manager_Sound.Sound_Slime6 };
+            var sound = new List<SoundEffect>() { Manager_Sound.Sound_Slime6 };
             sound.Shuffle(Util.random).First().Play(Manager_Sound.SoundVolume * 1.0f, 0f, 0f);
 
             foreach (var dir in IterateDirections(direction))
