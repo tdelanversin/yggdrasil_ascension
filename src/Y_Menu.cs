@@ -203,7 +203,7 @@ namespace YGR
                     new SettingsItem("Large Corridors: " , Settings.CorridorWidth == 7, toggleFunc: Settings.ToggleCorridorWidth),
                     new SettingsItem("Level Outlines: ", Settings.DebugOutlinesLevel, toggleFunc: Settings.ToggleDebugOutlinesLevel),
                     new SettingsItem("Entity Outlines: ", Settings.DebugOutlinesEntities, toggleFunc: Settings.ToggleDebugOutlinesEntities),
-                    // new SettingsItem("GigaChad Baby mode: ", Settings.GigaChadBabyMode, toggleFunc: Settings.ToggleGigaChadBabyMode),
+                    new SettingsItem("GigaChad Baby mode: ", Settings.GigaChadBabyMode, toggleFunc: Settings.ToggleGigaChadBabyMode),
                     new MenuItem("Back", Menu.Ascend),
                 }
             );
