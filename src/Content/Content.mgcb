@@ -580,6 +580,18 @@
 /processorParam:TextureFormat=Color
 /build:SpritesEffects/dust_particle.png
 
+#begin SpritesEffects/Dust_Particle.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:SpritesEffects/Dust_Particle.png
+
 #begin SpritesEffects/fire_trail.png
 /importer:TextureImporter
 /processor:TextureProcessor

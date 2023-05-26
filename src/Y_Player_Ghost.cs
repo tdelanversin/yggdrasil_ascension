@@ -15,6 +15,7 @@ namespace YGR
         {
             Name = "Ghost";
             Ability = new Ability_Blank(this);
+            DeadAbility = new Ability_Blank(this);
             VelocityMax = IPlayer.PlayerBaseVelocity * 2; // Compensate for not being able to dash
             IsActive = false;
             LifePoints = LifePointsMax = 0;

@@ -88,7 +88,7 @@ namespace YGR
             Owner = owner;
 
             var CirclePrecision = 4;
-            var Radius = 100;
+            var Radius = 100; // If this is changed, then adjust the particle radius in Manager_Particles.cs
             _collisionRect = new Rectangle[CirclePrecision];
             SpriteRect = new Rectangle(0, 0, 2 * Radius, 2 * Radius);
 
@@ -147,12 +147,14 @@ namespace YGR
         public void Draw(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch) { 
             if (Triggered)
             {
-                spriteBatch.Draw(
-                    _sprite.Texture, 
-                    SpriteRect,
-                    _sprite.SourceRectangle,
-                    Color.White
-                );
+                Manager_Particles.GetParticleEffect(
+                    Manager_Particles.Effect.Blank).Trigger(Owner.Rect.Center.ToVector2());
+                // spriteBatch.Draw(
+                //     _sprite.Texture, 
+                //     SpriteRect,
+                //     _sprite.SourceRectangle,
+                //     Color.White
+                // );
             }
         }
     }
