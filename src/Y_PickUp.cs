@@ -598,12 +598,14 @@ namespace YGR
                         Color.White, 0, Vector2.Zero, _spriteDrawScale, SpriteEffects.None, 0);
                 if (_levelUpIndicator != null)
                 {
+                    // float up and down a bit
+                    int floatyOffset = (int)(Math.Sin(gameTime.TotalGameTime.TotalSeconds * 4) * Y_Level.InGameTileSize * 0.10f) - 1;
                     var target = _levelUpIndicator.Bounds;
                     var scale = (float)Rect.Height / (float)target.Height;
-                    scale *= 0.4f;
+                    scale *= 0.8f;
                     var offset = new Vector2(
                         (Rect.Width - target.Width * scale) / 2,
-                        -target.Height * scale
+                        -target.Height * scale + floatyOffset
                     );
 
                     spriteBatch.Draw(

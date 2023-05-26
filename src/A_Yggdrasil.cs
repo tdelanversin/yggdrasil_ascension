@@ -204,7 +204,7 @@ namespace YGR
                     Manager_Enemies.KillAllNormalEnemies();
                 }
 
-                if (Camera.Mode == CameraMode.Manual && Input.IsLeftMouseClick())
+                if (Input.IsLeftMouseClick() && Camera.Mode == CameraMode.Manual && Y_Level.State != Y_Level.GamePlayState.Tutorial)
                 {
                     var targetPosition = Input.GetMousePositionInGame().ToPoint();
                     foreach (var player in Manager_Players.Players)
