@@ -393,7 +393,8 @@ namespace YGR
         {
             if (IsDashing)
             {
-                Manager_Particles.GetParticleEffect(Manager_Particles.Effect.Dash).Trigger(new Vector2(_rect.Location.X + _rect.Width / 2, _rect.Location.Y + _rect.Height));
+                Manager_Particles.GetParticleEffect(Manager_Particles.Effect.Dash).Trigger(_rect.Center.ToVector2());
+                // Manager_Particles.GetParticleEffect(Manager_Particles.Effect.Dash).Trigger(new Vector2(_rect.Location.X + _rect.Width / 2, _rect.Location.Y + _rect.Height));
                 //Manager_Particles.GenParticleEffectDash(new Vector2(_rect.Location.X+_rect.Width/2, _rect.Location.Y+_rect.Height));
                 if (_dashTimer > _dashDuration)
                 {
@@ -602,10 +603,9 @@ namespace YGR
              * ########################################################################## */
             if (input != Vector2.Zero)
             {
-                if (Settings.ParticleEffects)
+                if (Settings.ParticleEffects && Util.random.NextDouble() < 0.06)
                 {
-                    //Manager_Particles.GenParticleEffectDustCloudLight(new Vector2(_rect.Location.X + _rect.Width / 2, _rect.Location.Y + _rect.Height));
-                    //Manager_Particles.GetParticleEffect(Manager_Particles.Effect.DustCloudLight).Trigger(new Vector2(_rect.Location.X + _rect.Width / 2, _rect.Location.Y + _rect.Height));
+                    Manager_Particles.MakeWalkParticle(new Vector2(_rect.Location.X + _rect.Width / 2, _rect.Location.Y + _rect.Height));
                 }
 
                 if (input.LengthSquared() > 1)
