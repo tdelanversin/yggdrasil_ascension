@@ -44,6 +44,22 @@ namespace YGR
         public static SoundEffect Sound_PosititveRandomPowerup;
         public static SoundEffect Sound_NegativeRandomPowerup;
         public static SoundEffect Sound_Sword;
+        public static SoundEffect Sound_Ninja1;
+        public static SoundEffect Sound_Ninja2;
+        public static SoundEffect Sound_Ninja3;
+        public static SoundEffect Sound_Book1;
+        public static SoundEffect Sound_Book2;
+        public static SoundEffect Sound_Book3;
+        public static SoundEffect Sound_Keyboard1;
+        public static SoundEffect Sound_Keyboard2;
+        public static SoundEffect Sound_Keyboard3;
+        public static SoundEffect Sound_Keyboard4;
+        public static SoundEffect Sound_Keyboard5;
+        public static SoundEffect Sound_Letter1;
+        public static SoundEffect Sound_Letter2;
+        public static SoundEffect Sound_Letter3;
+        public static SoundEffect Sound_Letter4;
+
 
 
         public static List<Song> SongsEncounter;
@@ -94,6 +110,21 @@ namespace YGR
             Sound_PosititveRandomPowerup = contentManager.Load<SoundEffect>("Sounds/short-success-sound-glockenspiel-treasure-video-game-6346");
             Sound_NegativeRandomPowerup = contentManager.Load<SoundEffect>("Sounds/negative_beeps-6008");
             Sound_Sword = contentManager.Load<SoundEffect>("Sounds/sword");
+            Sound_Ninja1 = contentManager.Load<SoundEffect>("Sounds/ninja_1");
+            Sound_Ninja2 = contentManager.Load<SoundEffect>("Sounds/ninja_2");
+            Sound_Ninja3 = contentManager.Load<SoundEffect>("Sounds/ninja_3");
+            Sound_Book1 = contentManager.Load<SoundEffect>("Sounds/book_1");
+            Sound_Book2 = contentManager.Load<SoundEffect>("Sounds/book_2");
+            Sound_Book3 = contentManager.Load<SoundEffect>("Sounds/book_3");
+            Sound_Keyboard1 = contentManager.Load<SoundEffect>("Sounds/keyboard_1");
+            Sound_Keyboard2 = contentManager.Load<SoundEffect>("Sounds/keyboard_2");
+            Sound_Keyboard3 = contentManager.Load<SoundEffect>("Sounds/keyboard_3");
+            Sound_Keyboard4 = contentManager.Load<SoundEffect>("Sounds/keyboard_4");
+            Sound_Keyboard5 = contentManager.Load<SoundEffect>("Sounds/keyboard_5");
+            Sound_Letter1 = contentManager.Load<SoundEffect>("Sounds/letter_1");
+            Sound_Letter2 = contentManager.Load<SoundEffect>("Sounds/letter_2");
+            Sound_Letter3 = contentManager.Load<SoundEffect>("Sounds/letter_3");
+            Sound_Letter4 = contentManager.Load<SoundEffect>("Sounds/letter_4");
 
             // Set up media player
             MediaPlayer.IsRepeating = true;

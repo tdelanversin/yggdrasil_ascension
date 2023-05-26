@@ -3,6 +3,8 @@ using System.Linq;
 using System;
 using Microsoft.Xna.Framework.Graphics;
 using System.Collections.Generic;
+using Microsoft.Xna.Framework.Audio;
+using MonoGame.Extended.Collections;
 #nullable enable
 
 namespace YGR
@@ -151,7 +153,8 @@ namespace YGR
 
             NextShotCooldown = ShotDelay;
 
-            Manager_Sound.Sound_Blaster.Play(0.15f, 0, 0);
+            var sound = new List<SoundEffect>() { Manager_Sound.Sound_Keyboard1, Manager_Sound.Sound_Keyboard2, Manager_Sound.Sound_Keyboard3, Manager_Sound.Sound_Keyboard4, Manager_Sound.Sound_Keyboard5 };
+            sound.Shuffle(Util.random).First().Play();
 
             Manager_Projectile.AddProjectile_Keyboard(origin, direction, level, who, damage: 1.5f);
             return true;
@@ -174,7 +177,8 @@ namespace YGR
 
             NextShotCooldown = ShotDelay;
 
-            Manager_Sound.Sound_Blaster.Play(0.15f, 0, 0);
+            var sound = new List<SoundEffect>() { Manager_Sound.Sound_Letter1, Manager_Sound.Sound_Letter2, Manager_Sound.Sound_Letter3, Manager_Sound.Sound_Letter4 };
+            sound.Shuffle(Util.random).First().Play();
 
             foreach (var dir in IterateDirections(direction))
                 Manager_Projectile.AddProjectile_Letter(origin, dir, level, who, damage: .8f);
@@ -199,7 +203,8 @@ namespace YGR
 
             NextShotCooldown = ShotDelay;
 
-            Manager_Sound.Sound_Blaster.Play(0.15f, 0, 0);
+            var sound = new List<SoundEffect>() { Manager_Sound.Sound_Book1, Manager_Sound.Sound_Book2, Manager_Sound.Sound_Book3 };
+            sound.Shuffle(Util.random).First().Play();
 
             Manager_Projectile.AddProjectile_Book(origin, direction, level, who, damage: 2f);
             return true;
@@ -223,7 +228,8 @@ namespace YGR
 
             NextShotCooldown = ShotDelay;
 
-            Manager_Sound.Sound_Blaster.Play(0.15f, 0, 0);
+            var sound = new List<SoundEffect>() { Manager_Sound.Sound_Ninja1, Manager_Sound.Sound_Ninja2, Manager_Sound.Sound_Ninja3 };
+            sound.Shuffle(Util.random).First().Play();
 
             Manager_Projectile.AddProjectile_NinjaStar(origin, direction, level, who, damage: .7f);
             return true;

@@ -118,6 +118,24 @@
 /processorParam:Quality=Best
 /build:Sounds/bonus_sound.wav
 
+#begin Sounds/book_1.wav
+/importer:WavImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:Sounds/book_1.wav
+
+#begin Sounds/book_2.wav
+/importer:WavImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:Sounds/book_2.wav
+
+#begin Sounds/book_3.wav
+/importer:WavImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:Sounds/book_3.wav
+
 #begin Sounds/cash-in.wav
 /importer:WavImporter
 /processor:SoundEffectProcessor
@@ -166,6 +184,60 @@
 /processorParam:Quality=Best
 /build:Sounds/gun-cocking-sound.wav
 
+#begin Sounds/keyboard_1.wav
+/importer:WavImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:Sounds/keyboard_1.wav
+
+#begin Sounds/keyboard_2.wav
+/importer:WavImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:Sounds/keyboard_2.wav
+
+#begin Sounds/keyboard_3.wav
+/importer:WavImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:Sounds/keyboard_3.wav
+
+#begin Sounds/keyboard_4.wav
+/importer:WavImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:Sounds/keyboard_4.wav
+
+#begin Sounds/keyboard_5.wav
+/importer:WavImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:Sounds/keyboard_5.wav
+
+#begin Sounds/letter_1.wav
+/importer:WavImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:Sounds/letter_1.wav
+
+#begin Sounds/letter_2.wav
+/importer:WavImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:Sounds/letter_2.wav
+
+#begin Sounds/letter_3.wav
+/importer:WavImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:Sounds/letter_3.wav
+
+#begin Sounds/letter_4.wav
+/importer:WavImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:Sounds/letter_4.wav
+
 #begin Sounds/level_completion.wav
 /importer:WavImporter
 /processor:SoundEffectProcessor
@@ -183,6 +255,24 @@
 /processor:SoundEffectProcessor
 /processorParam:Quality=Best
 /build:Sounds/negative_beeps-6008.wav
+
+#begin Sounds/ninja_1.wav
+/importer:WavImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:Sounds/ninja_1.wav
+
+#begin Sounds/ninja_2.wav
+/importer:WavImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:Sounds/ninja_2.wav
+
+#begin Sounds/ninja_3.wav
+/importer:WavImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:Sounds/ninja_3.wav
 
 #begin Sounds/omni_shotgun.wav
 /importer:WavImporter
@@ -567,18 +657,6 @@
 /processorParam:MakeSquare=False
 /processorParam:TextureFormat=Color
 /build:SpritesEffects/dust_particle_red.png
-
-#begin SpritesEffects/dust_particle.png
-/importer:TextureImporter
-/processor:TextureProcessor
-/processorParam:ColorKeyColor=255,0,255,255
-/processorParam:ColorKeyEnabled=True
-/processorParam:GenerateMipmaps=False
-/processorParam:PremultiplyAlpha=True
-/processorParam:ResizeToPowerOfTwo=False
-/processorParam:MakeSquare=False
-/processorParam:TextureFormat=Color
-/build:SpritesEffects/dust_particle.png
 
 #begin SpritesEffects/Dust_Particle.png
 /importer:TextureImporter
