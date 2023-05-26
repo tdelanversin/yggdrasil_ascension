@@ -431,15 +431,21 @@ namespace YGR
 
             PickUps = new List<PickUp>();
             _pUps = new List<PowerUp>();
+            if (Name == "Leaf_2")
+            {
+                Logger.Info("hello");
+            }
             var t5 = Task.Run(() =>
             {
                 if (array.entities.PowerUp != null)
                 {
                     _pUps = JsonConvert.DeserializeObject<List<PowerUp>>(array.entities.PowerUp.ToString());
                 }
-                SetPowerUps();
             });
-
+            if(Name == "Leaf_2")
+            {
+                Logger.Info("hello");
+            }
             int tileSize = Y_Level.TextureTileSize;
             Task.WaitAll(t1);
             foreach (var door in Doors)
@@ -523,7 +529,12 @@ namespace YGR
             // only spawn powerups if the room is connected
             if (DoorRooms.Count() == 0) return;
 
+            if(Name == "Leaf_2")
+            {
+                Logger.Info("hello");
+            }
             PickUps.Clear();
+
             foreach (var s in _pUps)
             {
                 Point location = new Point(s.x + Rect.X, s.y + Rect.Y);
