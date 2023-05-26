@@ -29,6 +29,7 @@ namespace YGR
             DustCloudLight,
             Dash,
             Impact,
+            Blank,
             Big_Slime_Death,
             Small_Slime_Death
         }
@@ -43,9 +44,9 @@ namespace YGR
         private static Texture2D _particleTexture_fire;
         private static Texture2D _particleTexture_dash;
         private static Texture2D _particleTexture_impact;
+        private static ParticleEffect _particleEffect_Blank;
+        private static Texture2D _particleTexture_ghost_ability;
         private static AnimatedSprite _particleTexture_big_slime_death;
-        private static ParticleEffect _particleEffect_big_slime_death;
-        private static ParticleEffect _particleEffect_small_slime_death;
         private static AnimatedSprite _particleTexture_small_slime_death;
 
 
@@ -80,6 +81,9 @@ namespace YGR
             _particleTexture_dust = new Texture2D(graphicsDevice, 1, 1);
             _particleTexture_dust.SetData(new[] { Color.Black * 0.5f });
             _particleTexture_dust_cloud_light.SetData(new[] { Color.Black * 0.5f });
+            _particleTexture_ghost_ability = new Texture2D(graphicsDevice, 1, 1);
+            _particleTexture_ghost_ability.SetData(new[] { Color.White });
+
             _particleTexture_big_slime_death = Manager_Sprites.NewAnimatedSprite_Big_Slime_Death_Particle();
             _particleTexture_small_slime_death = Manager_Sprites.NewAnimatedSprite_Small_Slime_Death_Particle();
 
@@ -90,7 +94,7 @@ namespace YGR
             GenParticleEffectDustCloudLight(pos);
             GenParticleEffectDash(pos);
             GenParticleEffectImpact(pos);
-
+            GenParticleEffectBlank(pos);
         }
 
         private static void GenParticleEffectBase(Vector2 pos)
@@ -311,6 +315,36 @@ namespace YGR
             _particleEffects.Add(Effect.Dash, _particleEffect_dash);
         }
 
+        private static void GenParticleEffectBlank(Vector2 pos)
+        {
+            TextureRegion2D textureRegion = new TextureRegion2D(_particleTexture_ghost_ability);
+
+            _particleEffect_Blank = new ParticleEffect(autoTrigger: false)
+            {
+                Position = pos,
+                Emitters = new List<ParticleEmitter>
+                {
+                    new ParticleEmitter(textureRegion, 100, TimeSpan.FromSeconds(0.50f),
+                        Profile.Circle(100, Profile.CircleRadiation.In))
+                    {
+                        Parameters = new ParticleReleaseParameters
+                        {
+                            Speed = new Range<float>(10f, 50),
+                            Quantity = 25,
+                            Rotation = new Range<float>(2f, 2f),
+                            Scale = new Range<float>(2f, 3f),
+                            Opacity = 1f
+                        },
+                        Modifiers =
+                        {
+                            // new OpacityFastFadeModifier(),
+                        }
+                    }
+                }
+            };
+            _particleEffects.Add(Effect.Blank, _particleEffect_Blank);
+        }
+
         private static void GenParticleEffectImpact(Vector2 pos)
         {
 
@@ -486,7 +520,9 @@ namespace YGR
             for (int i = 0; i < count; i++)
             {
                 AnimatedSprite particleSprite = Manager_Sprites.NewAnimatedSprite_Bullet_Impact_Particle();
-                    // AnimatedSprite particleSprite = Manager_Sprites.NewAnimatedSprite_Big_Slime_Death_Particle();
+                if (Util.random.NextDouble() < .5)
+                    particleSprite = Manager_Sprites.NewAnimatedSprite_Dust_Particle();
+                    
                 float normalRotation = (float)Math.Atan2(normal.Y, normal.X)  + (Util.random.NextSingle() * 2 - 1) * MathHelper.PiOver4;
                 Vector2 normalRotated = new Vector2(
                     (float)Math.Cos(normalRotation),

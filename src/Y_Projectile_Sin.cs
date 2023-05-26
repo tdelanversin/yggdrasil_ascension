@@ -87,6 +87,12 @@ namespace YGR
                     // Pass through player if they are currently invincible
                     if (obj.WhatAreYou() == X_LevelElements.Invincible) continue;
 
+                    // Generate wall impact particles
+                    if (obj.WhatAreYou() == X_LevelElements.Room && WhoFiredMe is IPlayer)
+                    {
+                        Manager_Particles.MakeWallImpactParticle(contactPoint[0].ToVector2(), contactNormal[0]);
+                    }
+
                     // Hit players and enemies
                     if (obj is IVictim)
                     {
