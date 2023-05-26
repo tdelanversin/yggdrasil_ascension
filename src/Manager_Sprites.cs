@@ -26,6 +26,7 @@ namespace YGR
         public static Texture2D Projectile_Letter { get; private set; }
         public static Texture2D Projectile_Book { get; private set; }
         public static Texture2D Projectile_NinjaStar { get; private set; }
+        public static Texture2D Projectile_Confusion { get; private set; }
 
         // Weapons
         public static Texture2D Weapon_Pistol { get; private set; }
@@ -122,6 +123,7 @@ namespace YGR
             Projectile_Letter = contentManager.Load<Texture2D>("SpriteProjectiles/Letter_Projectile");
             Projectile_Book = contentManager.Load<Texture2D>("SpriteProjectiles/Book_Projectile");
             Projectile_NinjaStar = contentManager.Load<Texture2D>("SpriteProjectiles/Ninja_Star_Projectile");
+            Projectile_Confusion = contentManager.Load<Texture2D>("SpriteProjectiles/Confusion_Projectile");
 
             Weapon_Pistol = contentManager.Load<Texture2D>("SpritesWeapons/Pistol");
             Weapon_Keyboard = contentManager.Load<Texture2D>("SpritesWeapons/Keyboard");
@@ -172,7 +174,7 @@ namespace YGR
             LevelUp_Ninja = contentManager.Load<Texture2D>("SpritesOther/LevelUp/ninja");
             LevelUp_Prof = contentManager.Load<Texture2D>("SpritesOther/LevelUp/prof");
 
-            Effect_Confusion = contentManager.Load<Texture2D>("SpritesEffects/noise");
+            Effect_Confusion = contentManager.Load<Texture2D>("SpritesEffects/Confusion_Effect");
             Effect_Blank = contentManager.Load<Texture2D>("SpritesEffects/noise"); //TODO: Add blank effect
             Effect_Invincibility = contentManager.Load<Texture2D>("SpritesEffects/noise"); //TODO: Add invincibility effect
             Effect_Shield = contentManager.Load<Texture2D>("SpritesEffects/shield");
@@ -329,7 +331,7 @@ namespace YGR
                 texture: Effect_Confusion,
                 spriteDimension: new Vector2(128, 128),
                 animations: new Dictionary<AnimationState, int[]> {
-                    { AnimationState.Idle, new int[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14 } },
+                    { AnimationState.Idle, new int[] { 0, 1, 2, 3} },
                 },
                 animationDuration: 500
             );
@@ -432,6 +434,17 @@ namespace YGR
             return new AnimatedSprite(
                 texture: Projectile_Helix,
                 spriteDimension: new Vector2(32, 32),
+                animations: new Dictionary<AnimationState, int[]> {
+                    { AnimationState.Idle, new int[] { 0 } },
+                }
+            );
+        }
+
+        public static AnimatedSprite NewAnimatedSprite_ProjectileConfusion()
+        {
+            return new AnimatedSprite(
+                texture: Projectile_Confusion,
+                spriteDimension: new Vector2(26, 19),
                 animations: new Dictionary<AnimationState, int[]> {
                     { AnimationState.Idle, new int[] { 0 } },
                 }

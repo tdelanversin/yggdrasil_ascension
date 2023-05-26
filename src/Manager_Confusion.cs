@@ -24,10 +24,6 @@ namespace YGR
             _confusionColors.Add(Color.GreenYellow);
         }
 
-        public static Color GetRandomConfusionColor()
-        {
-            return _confusionColors[Util.random.Next(0, _confusionColors.Count())];
-        }
         public static void AddConfusion(IVictim victim, int durationMS)
         {
             _confusion.Add(new Y_Confusion(victim, Manager_Sprites.NewAnimatedSprite_Confusion(), durationMS));
