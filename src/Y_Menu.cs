@@ -4,6 +4,9 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using System.IO;
+using Microsoft.Xna.Framework.Media;
+using Microsoft.Xna.Framework.Audio;
 
 namespace YGR
 {
@@ -228,9 +231,9 @@ namespace YGR
                     // new SettingsItem("Show FPS: ", Settings.DrawFPS, toggleFunc: Settings.ToggleDrawFPS),
                     new SettingsItem("Particle Effects: ", Settings.ParticleEffects, toggleFunc: Settings.ToggleParticleEffects),
                     new SettingsItem("Music: ", Settings.Music, toggleFunc: Settings.ToggleMusic),
-                    new SettingItemRange("Music volume: ", 0, 1, 1, .1f, setFunc: Settings.ChangeMusicVolume),
+                    new SettingItemRange("Music volume: ", 0, 1, MediaPlayer.Volume, .1f, setFunc: Settings.ChangeMusicVolume),
                     new SettingsItem("Sounds: ", Settings.Sound, toggleFunc: Settings.ToggleSoundEffects),
-                    new SettingItemRange("Sound volume: ", 0, 1, .5f, .1f, setFunc: Settings.ChangeSoundVolume),
+                    new SettingItemRange("Sound volume: ", 0, 1, SoundEffect.MasterVolume, .1f, setFunc: Settings.ChangeSoundVolume),
                     AdvancedSettings,
                     new MenuItem("Back", Menu.Ascend),
                 }
@@ -325,7 +328,7 @@ namespace YGR
             CurrentSubmenu.Selected.IsSelected = true;
             if (CurrentSubmenu.Children[CurrentSubmenu.SelectedIndex].IsActive)
             {
-                Manager_Sound.Sound_MenuSelect.Play(Manager_Sound.SoundVolume, 0, 0);
+                Manager_Sound.Sound_MenuSelect.Play(1, 0, 0);
             }
         }
 

@@ -84,7 +84,7 @@ namespace YGR
         {
             // Stop any playing songs and play a viking horn, just because
             // Manager_Sound.StopMusic();
-            Manager_Sound.Sound_VikingHorn.Play(Manager_Sound.MusicVolume, 0, 0);
+            Manager_Sound.Sound_VikingHorn.Play(1, 0, 0);
 
             Notifications.Clear();
 
