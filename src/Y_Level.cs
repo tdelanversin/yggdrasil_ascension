@@ -458,6 +458,7 @@ namespace YGR
 
                 var r = (Y_CMRoom)room.Value;
 
+                r.SetPowerUps();
                 r.SpawnEnemies();
 
                 var players = r.GetPlayerSpawningPoints();
@@ -644,7 +645,8 @@ namespace YGR
                     break;
                 case GameTutorialState.IntroduceGhosts2:
                     // Skip the power ups state since we no longer have any in the start room
-                    TutorialState = GameTutorialState.IntroduceYggdrasil;
+                    //  => sorry, was an unintentional bug ^^
+                    TutorialState = GameTutorialState.IntroducePowerUps;
                     break;
                 case GameTutorialState.IntroducePowerUps:
                     TutorialState = GameTutorialState.IntroduceYggdrasil;
@@ -850,6 +852,7 @@ namespace YGR
                         Notifications.New("\n\n\n\n\n\n\n\n\n\n\n\n\n", colorLightRoom, duration);
                         Notifications.New("This is the Nerd.", colorLightRoom, duration, Fonts.Large);
                         Notifications.New("If she hits a confused target she does much more damage!", colorLightRoom, duration, Fonts.Large);
+                        Notifications.New("In other cases she can use Gunslinger.", colorLightRoom, duration, Fonts.Large);
                     }
                     break;
                 case GameTutorialState.IntroduceCharactersMailman:
@@ -1286,10 +1289,6 @@ namespace YGR
                     var gigachadRoom2 = (Y_CMRoom)ActiveRoom;
                     gigachadRoom2.SetPowerUps();
                     var allHammers = gigachadRoom2.PickUps.Where(x => x.Type == Y_PowerUps.WeaponPinkHammer).ToList();
-                    if(gigachadRoom2.Name == "Leaf_2")
-                    {
-                        Logger.Info("hello");
-                    }
                     foreach (var weapoin in allHammers)
                         gigachadRoom2.PickUps.Remove(weapoin);
                     State = GamePlayState.GigaChad_Encounter;
@@ -1309,10 +1308,6 @@ namespace YGR
                     gigachadRoom.SetPowerUps();
                     // remove everything that is not a hammer
                     var nonHammers = gigachadRoom.PickUps.Where(x => x.Type != Y_PowerUps.WeaponPinkHammer).ToList();
-                    if(gigachadRoom.Name == "Leaf_2")
-                    {
-                        Logger.Info("lkj");
-                    }
                     foreach (var nonHammer in nonHammers)
                         gigachadRoom.PickUps.Remove(nonHammer);
                     // add back stuff that wasn't used during the encounter
@@ -1366,10 +1361,6 @@ namespace YGR
                             // open the door to the bonus room and make it visible
                             _startRoom.OpenBottomDoor();
 
-                            if(room.Name == "Leaf_2")
-                            {
-                                Logger.Info("hello");
-                            }
                             // remove all power ups because we want to show them effectfully later
                             room.PickUps.Clear();
 
@@ -1439,10 +1430,6 @@ namespace YGR
                     {
                         var room = getBonusRoom();
 
-                        if (room.Name == "Leaf_2")
-                        {
-                            Logger.Info("lkj");
-                        }
                         // spawn the hammers
                         room.SetPowerUps();
 
@@ -1473,11 +1460,6 @@ namespace YGR
                         // reset the room then remove the hammers again because the players have to kill GigaChad first
                         // !! don't respawn anything here, this is just the show-off sequence !!
                         room.InGameReset();
-
-                        if(room.Name == "Leaf_2")
-                        {
-                            Logger.Info("hello world");
-                        }
                         room.PickUps.Clear();
 
                         if (GigaChad_CameraSwitch)
