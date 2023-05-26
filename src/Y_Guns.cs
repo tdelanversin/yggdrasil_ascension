@@ -129,8 +129,8 @@ namespace YGR
                 return true;
             NextShotCooldown = ShotDelay;
 
-            var sound = new List<SoundEffect>() { Manager_Sound.Sound_Slime2, Manager_Sound.Sound_Slime3, Manager_Sound.Sound_Slime4, Manager_Sound.Sound_Slime5, Manager_Sound.Sound_Slime6 };
-            sound.Shuffle(Util.random).First().Play(Manager_Sound.SoundVolume * 1.0f, 0f, 0f);
+            var sound = new List<SoundEffect>() { Manager_Sound.Sound_Slime4, Manager_Sound.Sound_Slime5, Manager_Sound.Sound_Slime6 };
+            sound.Shuffle(Util.random).First().Play(Manager_Sound.SoundVolume * .25f, 0f, 0f);
 
             foreach (var dir in IterateDirections(direction))
             {
@@ -673,7 +673,7 @@ namespace YGR
                 return false;
             NextShotCooldown = ShotDelay;
 
-            var sound = new List<SoundEffect>() { Manager_Sound.Sound_Slime1, Manager_Sound.Sound_Slime3, Manager_Sound.Sound_Slime6 };
+            var sound = new List<SoundEffect>() { Manager_Sound.Sound_Slime6 };
             Manager_Sound.Sound_PlasmaPistol.Play(Manager_Sound.SoundVolume * 1.0f, 0f, 0f);
 
             foreach (var dir in IterateDirections(direction))
