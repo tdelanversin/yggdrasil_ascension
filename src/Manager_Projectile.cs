@@ -354,7 +354,7 @@ namespace YGR
                 new Projectile_Confusion(
                     position: startPosition,
                     direction: direction,
-                    Manager_Sprites.NewAnimatedSprite_Confusion(),
+                    Manager_Sprites.NewAnimatedSprite_ProjectileConfusion(),
                     confusionDuration: confusionDuration,
                     level: level,
                     who: who,

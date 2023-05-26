@@ -304,6 +304,18 @@
 /processorParam:TextureFormat=Color
 /build:SpriteProjectiles/Book_Projectile.png
 
+#begin SpriteProjectiles/Confusion_Projectile.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:SpriteProjectiles/Confusion_Projectile.png
+
 #begin SpriteProjectiles/Keyboard_Projectile.png
 /importer:TextureImporter
 /processor:TextureProcessor
@@ -544,6 +556,18 @@
 /processorParam:TextureFormat=Color
 /build:SpritesEffects/big_dust_cloud.png
 
+#begin SpritesEffects/Confusion_Effect.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:SpritesEffects/Confusion_Effect.png
+
 #begin SpritesEffects/dust_cloud.png
 /importer:TextureImporter
 /processor:TextureProcessor
@@ -567,18 +591,6 @@
 /processorParam:MakeSquare=False
 /processorParam:TextureFormat=Color
 /build:SpritesEffects/dust_particle_red.png
-
-#begin SpritesEffects/dust_particle.png
-/importer:TextureImporter
-/processor:TextureProcessor
-/processorParam:ColorKeyColor=255,0,255,255
-/processorParam:ColorKeyEnabled=True
-/processorParam:GenerateMipmaps=False
-/processorParam:PremultiplyAlpha=True
-/processorParam:ResizeToPowerOfTwo=False
-/processorParam:MakeSquare=False
-/processorParam:TextureFormat=Color
-/build:SpritesEffects/dust_particle.png
 
 #begin SpritesEffects/Dust_Particle.png
 /importer:TextureImporter
