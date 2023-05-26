@@ -149,6 +149,18 @@ namespace YGR
             return _rect.Center.ToVector2() + new Vector2(0, 80 * Y_Level.GlobalScale);
         }
 
+        private void MakeDustParticles()
+        {
+            int left = _rect.Left;
+            int right = _rect.Right;
+            for (int i = 0; i < 6; i++)
+            {
+                float posX = Util.random.Next(left, right);
+                Vector2 pos = new Vector2(posX, _rect.Bottom);
+                Manager_Particles.MakeWalkParticle(pos);
+            }
+        }
+
         public override void Update(GameTime gameTime)
         {
             if (State == EnemyState.Inactive) { return; }
@@ -189,6 +201,8 @@ namespace YGR
                     {
                         Manager_Enemies.AddEnemy_BossMinion(BossCenter(), minion);
                     }
+
+                    Manager_Particles.MakeSlimeDeathParticle(this);
                 }
                 CharacterSprite.Update(gameTime, AnimationState.Hide);
 
@@ -317,12 +331,14 @@ namespace YGR
                     CharacterSprite.Update(gameTime, AnimationState.Jump);
                     if (CharacterSprite.DirectionalIndex != 10) // frame 10 and 11 are the first frames where the boss hits the ground
                         return;
+                    MakeDustParticles();
                     break;
                 case BossAttack.AvoidPattern:
                     CharacterSprite.Update(gameTime, AnimationState.Jump);
                     if (!_alreadyShot){
                         if (CharacterSprite.DirectionalIndex != 10) // frame 10 and 11 are the first frames where the boss hits the ground
                             return;
+                        MakeDustParticles();
                         _alreadyShot = true;
                     }
                     targetDirection = _savedTargetDirection;
@@ -483,7 +499,10 @@ namespace YGR
                 p.Stats.DamageDealt += DamageDealt;
                 p.Stats.TimesHit++;
                 if (this is IEnemyBoss) { p.Stats.BossDamageDealt += DamageDealt; }
-                if (LifePoints <= 0) { p.Stats.Kills++; }
+                if (LifePoints <= 0) { 
+                    p.Stats.Kills++;
+                    Manager_Particles.MakeSlimeDeathParticle(this);
+                }
             }
         }
     }

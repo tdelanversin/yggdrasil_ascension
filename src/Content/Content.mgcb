@@ -118,6 +118,24 @@
 /processorParam:Quality=Best
 /build:Sounds/bonus_sound.wav
 
+#begin Sounds/book_1.wav
+/importer:WavImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:Sounds/book_1.wav
+
+#begin Sounds/book_2.wav
+/importer:WavImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:Sounds/book_2.wav
+
+#begin Sounds/book_3.wav
+/importer:WavImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:Sounds/book_3.wav
+
 #begin Sounds/cash-in.wav
 /importer:WavImporter
 /processor:SoundEffectProcessor
@@ -166,6 +184,60 @@
 /processorParam:Quality=Best
 /build:Sounds/gun-cocking-sound.wav
 
+#begin Sounds/keyboard_1.wav
+/importer:WavImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:Sounds/keyboard_1.wav
+
+#begin Sounds/keyboard_2.wav
+/importer:WavImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:Sounds/keyboard_2.wav
+
+#begin Sounds/keyboard_3.wav
+/importer:WavImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:Sounds/keyboard_3.wav
+
+#begin Sounds/keyboard_4.wav
+/importer:WavImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:Sounds/keyboard_4.wav
+
+#begin Sounds/keyboard_5.wav
+/importer:WavImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:Sounds/keyboard_5.wav
+
+#begin Sounds/letter_1.wav
+/importer:WavImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:Sounds/letter_1.wav
+
+#begin Sounds/letter_2.wav
+/importer:WavImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:Sounds/letter_2.wav
+
+#begin Sounds/letter_3.wav
+/importer:WavImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:Sounds/letter_3.wav
+
+#begin Sounds/letter_4.wav
+/importer:WavImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:Sounds/letter_4.wav
+
 #begin Sounds/level_completion.wav
 /importer:WavImporter
 /processor:SoundEffectProcessor
@@ -183,6 +255,24 @@
 /processor:SoundEffectProcessor
 /processorParam:Quality=Best
 /build:Sounds/negative_beeps-6008.wav
+
+#begin Sounds/ninja_1.wav
+/importer:WavImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:Sounds/ninja_1.wav
+
+#begin Sounds/ninja_2.wav
+/importer:WavImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:Sounds/ninja_2.wav
+
+#begin Sounds/ninja_3.wav
+/importer:WavImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:Sounds/ninja_3.wav
 
 #begin Sounds/omni_shotgun.wav
 /importer:WavImporter
@@ -226,6 +316,60 @@
 /processorParam:Quality=Best
 /build:Sounds/shotgun.wav
 
+#begin Sounds/slime_1.wav
+/importer:WavImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:Sounds/slime_1.wav
+
+#begin Sounds/slime_2.wav
+/importer:WavImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:Sounds/slime_2.wav
+
+#begin Sounds/slime_3.wav
+/importer:WavImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:Sounds/slime_3.wav
+
+#begin Sounds/slime_4.wav
+/importer:WavImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:Sounds/slime_4.wav
+
+#begin Sounds/slime_5.wav
+/importer:WavImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:Sounds/slime_5.wav
+
+#begin Sounds/slime_6.wav
+/importer:WavImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:Sounds/slime_6.wav
+
+#begin Sounds/slime_7.wav
+/importer:WavImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:Sounds/slime_7.wav
+
+#begin Sounds/slime_8.wav
+/importer:WavImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:Sounds/slime_8.wav
+
+#begin Sounds/slime_jump.wav
+/importer:WavImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:Sounds/slime_jump.wav
+
 #begin Sounds/song_dramatic.mp3
 /importer:Mp3Importer
 /processor:SongProcessor
@@ -268,6 +412,30 @@
 /processorParam:Quality=Best
 /build:Sounds/song_the-white-lion.mp3
 
+#begin Sounds/splash_1.wav
+/importer:WavImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:Sounds/splash_1.wav
+
+#begin Sounds/splash_2.wav
+/importer:WavImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:Sounds/splash_2.wav
+
+#begin Sounds/splash_3.wav
+/importer:WavImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:Sounds/splash_3.wav
+
+#begin Sounds/splash_4.wav
+/importer:WavImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:Sounds/splash_4.wav
+
 #begin Sounds/stonewall.wav
 /importer:WavImporter
 /processor:SoundEffectProcessor
@@ -303,6 +471,18 @@
 /processorParam:MakeSquare=False
 /processorParam:TextureFormat=Color
 /build:SpriteProjectiles/Book_Projectile.png
+
+#begin SpriteProjectiles/Confusion_Projectile.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:SpriteProjectiles/Confusion_Projectile.png
 
 #begin SpriteProjectiles/Keyboard_Projectile.png
 /importer:TextureImporter
@@ -544,6 +724,18 @@
 /processorParam:TextureFormat=Color
 /build:SpritesEffects/big_dust_cloud.png
 
+#begin SpritesEffects/Confusion_Effect.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:SpritesEffects/Confusion_Effect.png
+
 #begin SpritesEffects/dust_cloud.png
 /importer:TextureImporter
 /processor:TextureProcessor
@@ -568,7 +760,7 @@
 /processorParam:TextureFormat=Color
 /build:SpritesEffects/dust_particle_red.png
 
-#begin SpritesEffects/dust_particle.png
+#begin SpritesEffects/Dust_Particle.png
 /importer:TextureImporter
 /processor:TextureProcessor
 /processorParam:ColorKeyColor=255,0,255,255
@@ -578,7 +770,7 @@
 /processorParam:ResizeToPowerOfTwo=False
 /processorParam:MakeSquare=False
 /processorParam:TextureFormat=Color
-/build:SpritesEffects/dust_particle.png
+/build:SpritesEffects/Dust_Particle.png
 
 #begin SpritesEffects/fire_trail.png
 /importer:TextureImporter
@@ -627,6 +819,18 @@
 /processorParam:MakeSquare=False
 /processorParam:TextureFormat=Color
 /build:SpritesEffects/small_dust_cloud.png
+
+#begin SpritesEffects/Wall_Impact_Particle.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:SpritesEffects/Wall_Impact_Particle.png
 
 #begin SpritesOther/background_sky.png
 /importer:TextureImporter
@@ -1071,6 +1275,18 @@
 /processorParam:MakeSquare=False
 /processorParam:TextureFormat=Color
 /build:SpritesOther/random-powerup.png
+
+#begin SpritesOther/slime_death.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:SpritesOther/slime_death.png
 
 #begin SpritesOther/smaller_projectile.png
 /importer:TextureImporter

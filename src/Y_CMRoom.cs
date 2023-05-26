@@ -437,7 +437,6 @@ namespace YGR
                 {
                     _pUps = JsonConvert.DeserializeObject<List<PowerUp>>(array.entities.PowerUp.ToString());
                 }
-                SetPowerUps();
             });
 
             int tileSize = Y_Level.TextureTileSize;
@@ -524,6 +523,7 @@ namespace YGR
             if (DoorRooms.Count() == 0) return;
 
             PickUps.Clear();
+
             foreach (var s in _pUps)
             {
                 Point location = new Point(s.x + Rect.X, s.y + Rect.Y);

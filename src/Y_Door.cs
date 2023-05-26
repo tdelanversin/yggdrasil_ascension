@@ -1141,7 +1141,9 @@ namespace YGR
                     }
                 }
             }
-            
+
+            if (IsDoorOpeningOrClosing()) { Camera.Shake(); }
+
             switch (State)
             {
                 case X_DoorState.Closed:
@@ -1164,7 +1166,7 @@ namespace YGR
                     if (!doorAnimation(dt, true))
                     {
                         if (_visited)
-                            Manager_Sound.Sound_Sword.Play();
+                            Manager_Sound.Sound_Sword.Play(Manager_Sound.SoundVolume, 0, 0);
                         openDoor();
                         _openingTheDoor = false;
                         DoorMoovingCounter--;
@@ -1181,7 +1183,7 @@ namespace YGR
                     if (!doorAnimation(dt, true))
                     {
                         if (_visited)
-                            Manager_Sound.Sound_Sword.Play();
+                            Manager_Sound.Sound_Sword.Play(Manager_Sound.SoundVolume, 0, 0);
                         State = X_DoorState.Open;
                         openDoor();
                         _openingTheDoor = false;
@@ -1199,7 +1201,7 @@ namespace YGR
                         if (!_visited)
                             Manager_Sound.PlaySoundWhile(() => Y_Door.DoorMoovingCounter > 0, ref Manager_Sound.Sound_StoneWall);
                         else
-                            Manager_Sound.Sound_Sword.Play();
+                            Manager_Sound.Sound_Sword.Play(Manager_Sound.SoundVolume, 0, 0);
                     }
                     if (!doorAnimation(dt, false))
                     {
@@ -1225,7 +1227,7 @@ namespace YGR
                         if (!_visited)
                             Manager_Sound.PlaySoundWhile(() => Y_Door.DoorMoovingCounter > 0, ref Manager_Sound.Sound_StoneWall);
                         else
-                            Manager_Sound.Sound_Sword.Play();
+                            Manager_Sound.Sound_Sword.Play(Manager_Sound.SoundVolume, 0, 0);
                     }
                     if (!doorAnimation(dt, false))
                     {

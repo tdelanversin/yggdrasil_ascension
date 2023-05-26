@@ -18,7 +18,7 @@ namespace YGR
             if (NextShotCooldown > 0.0f)
                 return false;
 
-            Manager_Sound.Sound_Fireball2.Play(1.0f, 0, 0);
+            Manager_Sound.Sound_Fireball2.Play(Manager_Sound.SoundVolume * 1.0f, 0, 0);
 
             NextShotCooldown = ShotDelay;
 

@@ -164,7 +164,7 @@ namespace YGR
 
             Label = "Have fun! :)";
             Color = Color.SpringGreen;
-            Manager_Sound.Sound_PlatformActivate.Play(1, 0, 0);
+            Manager_Sound.Sound_PlatformActivate.Play(Manager_Sound.SoundVolume * 1, 0, 0);
             InteractionComplete = true;
         }
 
@@ -233,7 +233,7 @@ namespace YGR
             }
             if (state != statePrev)
             {
-                Manager_Sound.Sound_PlatformActivate.Play();
+                Manager_Sound.Sound_PlatformActivate.Play(Manager_Sound.SoundVolume, 0, 0) ;
             }
         }
 
@@ -345,7 +345,7 @@ namespace YGR
 
             Label = "Coward!";
             Color = Color.SpringGreen;
-            Manager_Sound.Sound_PlatformActivate.Play(1, 0, 0);
+            Manager_Sound.Sound_PlatformActivate.Play(Manager_Sound.SoundVolume * 1, 0, 0);
             InteractionComplete = true;
         }
 
@@ -430,7 +430,7 @@ namespace YGR
             }
             if (state != statePrev)
             {
-                Manager_Sound.Sound_PlatformActivate.Play();
+                Manager_Sound.Sound_PlatformActivate.Play(Manager_Sound.SoundVolume, 0, 0) ;
             }
         }
 

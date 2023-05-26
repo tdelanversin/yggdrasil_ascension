@@ -140,8 +140,8 @@ namespace YGR
 
         private class SettingsItem : MenuItem
         {
-            string BaseText;
-            Func<bool> ToggleFunc;
+            protected string BaseText;
+            protected Func<bool> ToggleFunc;
             public SettingsItem(string baseText, bool status, Func<bool> toggleFunc) : base(baseText, null)
             {
                 BaseText = baseText;
@@ -161,6 +161,44 @@ namespace YGR
                 {
                     bool status = ToggleFunc();
                     UpdateText(status);
+                }
+            }
+        }
+
+        private class SettingItemRange : MenuItem
+        {
+            protected string BaseText;
+            protected Func<float, bool> SetFunc;
+            public float Min;
+            public float Max;
+            public float Value;
+            public float Step;
+
+            public SettingItemRange(string baseText, float min, float max, float value, float step, Func<float, bool> setFunc) : base(baseText, null)
+            {
+                BaseText = baseText;
+                SetFunc = setFunc;
+
+                Min = min;
+                Max = max;
+                Value = value;
+                Step = step;
+                UpdateText();
+            }
+
+            private void UpdateText()
+            {
+                this.Text = BaseText + (Value * 100).ToString("0") + "%";
+            }
+
+            public override void Dispatch()
+            {
+                if (IsActive && SetFunc != null)
+                {
+                    Value += Step;
+                    if (Value > Max) { Value = Min; }
+                    SetFunc(Value);
+                    UpdateText();
                 }
             }
         }
@@ -187,9 +225,11 @@ namespace YGR
                 new List<MenuItem>{
                     new SettingsItem("Fullscreen: ", Settings.Fullscreen, toggleFunc: Settings.ToggleFullscreen),
                     // new SettingsItem("Show FPS: ", Settings.DrawFPS, toggleFunc: Settings.ToggleDrawFPS),
-                    // new SettingsItem("Particle Effects: ", Settings.ParticleEffects, toggleFunc: Settings.ToggleParticleEffects),
+                    new SettingsItem("Particle Effects: ", Settings.ParticleEffects, toggleFunc: Settings.ToggleParticleEffects),
                     new SettingsItem("Music: ", Settings.Music, toggleFunc: Settings.ToggleMusic),
+                    new SettingItemRange("Music volume: ", 0, 1, .5f, .1f, setFunc: Settings.ChangeMusicVolume),
                     new SettingsItem("Sounds: ", Settings.Sound, toggleFunc: Settings.ToggleSoundEffects),
+                    new SettingItemRange("Sound volume: ", 0, 1, .5f, .1f, setFunc: Settings.ChangeSoundVolume),
                     AdvancedSettings,
                     new MenuItem("Back", Menu.Ascend),
                 }
@@ -203,7 +243,7 @@ namespace YGR
                     new SettingsItem("Large Corridors: " , Settings.CorridorWidth == 7, toggleFunc: Settings.ToggleCorridorWidth),
                     new SettingsItem("Level Outlines: ", Settings.DebugOutlinesLevel, toggleFunc: Settings.ToggleDebugOutlinesLevel),
                     new SettingsItem("Entity Outlines: ", Settings.DebugOutlinesEntities, toggleFunc: Settings.ToggleDebugOutlinesEntities),
-                    // new SettingsItem("GigaChad Baby mode: ", Settings.GigaChadBabyMode, toggleFunc: Settings.ToggleGigaChadBabyMode),
+                    new SettingsItem("GigaChad Baby mode: ", Settings.GigaChadBabyMode, toggleFunc: Settings.ToggleGigaChadBabyMode),
                     new MenuItem("Back", Menu.Ascend),
                 }
             );
@@ -284,7 +324,7 @@ namespace YGR
             CurrentSubmenu.Selected.IsSelected = true;
             if (CurrentSubmenu.Children[CurrentSubmenu.SelectedIndex].IsActive)
             {
-                Manager_Sound.Sound_MenuSelect.Play(1, 0, 0);
+                Manager_Sound.Sound_MenuSelect.Play(Manager_Sound.SoundVolume, 0, 0);
             }
         }
 

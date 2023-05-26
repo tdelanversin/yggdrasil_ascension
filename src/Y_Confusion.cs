@@ -56,7 +56,7 @@ namespace YGR
             spriteBatch.Draw(
                 _sprite.Texture, Rect.Location.ToVector2(),
                 _sprite.SourceRectangle,
-                Manager_Confusion.GetRandomConfusionColor(),
+                Color.White,
                 0, Vector2.Zero, (float)Rect.Width / (float)_sprite.SourceRectangle.Width, SpriteEffects.None, 0); ;
         }
 

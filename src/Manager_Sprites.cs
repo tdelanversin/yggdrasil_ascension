@@ -26,6 +26,7 @@ namespace YGR
         public static Texture2D Projectile_Letter { get; private set; }
         public static Texture2D Projectile_Book { get; private set; }
         public static Texture2D Projectile_NinjaStar { get; private set; }
+        public static Texture2D Projectile_Confusion { get; private set; }
 
         // Weapons
         public static Texture2D Weapon_Pistol { get; private set; }
@@ -99,6 +100,11 @@ namespace YGR
         public static Texture2D LevelUp_LightFlash_NoShade { get; private set; }
         public static Texture2D LevelUp_Bullet_NoShade { get; private set; }
 
+        // Particles
+        public static Texture2D Slime_Death_Particle { get; private set; }
+        public static Texture2D Bullet_Impact_Particle { get; private set; }
+        public static Texture2D Dust_Particle { get; private set; }
+
         public static void LoadContent(ContentManager contentManager)
         {
             Player_OldNinja = contentManager.Load<Texture2D>("SpritesCharacters/charaset");
@@ -117,6 +123,7 @@ namespace YGR
             Projectile_Letter = contentManager.Load<Texture2D>("SpriteProjectiles/Letter_Projectile");
             Projectile_Book = contentManager.Load<Texture2D>("SpriteProjectiles/Book_Projectile");
             Projectile_NinjaStar = contentManager.Load<Texture2D>("SpriteProjectiles/Ninja_Star_Projectile");
+            Projectile_Confusion = contentManager.Load<Texture2D>("SpriteProjectiles/Confusion_Projectile");
 
             Weapon_Pistol = contentManager.Load<Texture2D>("SpritesWeapons/Pistol");
             Weapon_Keyboard = contentManager.Load<Texture2D>("SpritesWeapons/Keyboard");
@@ -167,7 +174,7 @@ namespace YGR
             LevelUp_Ninja = contentManager.Load<Texture2D>("SpritesOther/LevelUp/ninja");
             LevelUp_Prof = contentManager.Load<Texture2D>("SpritesOther/LevelUp/prof");
 
-            Effect_Confusion = contentManager.Load<Texture2D>("SpritesEffects/noise");
+            Effect_Confusion = contentManager.Load<Texture2D>("SpritesEffects/Confusion_Effect");
             Effect_Blank = contentManager.Load<Texture2D>("SpritesEffects/noise"); //TODO: Add blank effect
             Effect_Invincibility = contentManager.Load<Texture2D>("SpritesEffects/noise"); //TODO: Add invincibility effect
             Effect_Shield = contentManager.Load<Texture2D>("SpritesEffects/shield");
@@ -180,6 +187,10 @@ namespace YGR
             LevelUp_DarkFlash_NoShade = contentManager.Load<Texture2D>("SpritesOther/thunder_up_sheet_2_no_shade");
             LevelUp_LightFlash_NoShade = contentManager.Load<Texture2D>("SpritesOther/tunder_up_sheet_no_shade");
             LevelUp_Bullet_NoShade = contentManager.Load<Texture2D>("SpritesOther/bullet_sheet_no_shade");
+
+            Slime_Death_Particle = contentManager.Load<Texture2D>("SpritesOther/slime_death");
+            Bullet_Impact_Particle = contentManager.Load<Texture2D>("SpritesEffects/Wall_Impact_Particle");
+            Dust_Particle = contentManager.Load<Texture2D>("SpritesEffects/Dust_Particle");
 
             ImageDefeat = contentManager.Load<Texture2D>("Images/defeat");
             ImageVictory = contentManager.Load<Texture2D>("Images/victory");
@@ -194,6 +205,64 @@ namespace YGR
                     { AnimationState.Idle, new int[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11 } },
                 },
                 animationDuration: 750
+            );
+        } 
+        public static AnimatedSprite NewAnimatedSprite_Small_Slime_Death_Particle()
+        {
+            return new AnimatedSprite(
+                texture: Slime_Death_Particle,
+                spriteDimension: new Vector2(32, 32),
+                animations: new Dictionary<AnimationState, int[]> {
+                    { AnimationState.Idle, new int[] { 2, 3, 4, 5, 6, 7 } },
+                },
+                animationDuration: 750
+            );
+        } 
+        public static AnimatedSprite NewAnimatedSprite_Big_Slime_Death_Particle()
+        {
+            return new AnimatedSprite(
+                texture: Slime_Death_Particle,
+                spriteDimension: new Vector2(32, 32),
+                animations: new Dictionary<AnimationState, int[]> {
+                    { AnimationState.Idle, new int[] { 0, 1, 2, 3, 4, 5, 6, 7} },
+                },
+                animationDuration: 1000
+            );
+        }
+
+        public static AnimatedSprite NewAnimatedSprite_Bullet_Impact_Particle()
+        {
+            return new AnimatedSprite(
+                texture: Bullet_Impact_Particle,
+                spriteDimension: new Vector2(27, 12),
+                animations: new Dictionary<AnimationState, int[]> {
+                    { AnimationState.Idle, new int[] { 0, 1, 2, 3} },
+                },
+                animationDuration: 400
+            );
+        }
+
+        public static AnimatedSprite NewAnimatedSprite_Dust_Particle()
+        {
+            return new AnimatedSprite(
+                texture: Dust_Particle,
+                spriteDimension: new Vector2(28, 25),
+                animations: new Dictionary<AnimationState, int[]> {
+                    { AnimationState.Idle, new int[] { 0, 1, 2, 3, 4, 5} },
+                },
+                animationDuration: 400
+            );
+        }
+
+        public static AnimatedSprite NewAnimatedSprite_Slime_Impact_Particle()
+        {
+            return new AnimatedSprite(
+                texture: Slime_Death_Particle,
+                spriteDimension: new Vector2(32, 32),
+                animations: new Dictionary<AnimationState, int[]> {
+                    { AnimationState.Idle, new int[] { 5, 6, 7 } },
+                },
+                animationDuration: 375
             );
         }
 
@@ -262,7 +331,7 @@ namespace YGR
                 texture: Effect_Confusion,
                 spriteDimension: new Vector2(128, 128),
                 animations: new Dictionary<AnimationState, int[]> {
-                    { AnimationState.Idle, new int[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14 } },
+                    { AnimationState.Idle, new int[] { 0, 1, 2, 3} },
                 },
                 animationDuration: 500
             );
@@ -371,6 +440,17 @@ namespace YGR
             );
         }
 
+        public static AnimatedSprite NewAnimatedSprite_ProjectileConfusion()
+        {
+            return new AnimatedSprite(
+                texture: Projectile_Confusion,
+                spriteDimension: new Vector2(26, 19),
+                animations: new Dictionary<AnimationState, int[]> {
+                    { AnimationState.Idle, new int[] { 0 } },
+                }
+            );
+        }
+
         public static AnimatedSprite NewAnimatedSprite_ProjectileKeyboardPink()
         {
             return new AnimatedSprite(
@@ -451,7 +531,8 @@ namespace YGR
         {
             return new AnimatedSprite(
                     texture: Enemy_SlimeSpiky,
-                    spriteDimension: new Vector2(64, 51),
+                    spriteDimension: new Vector2(125, 102),
+                    // spriteDimension: new Vector2(64, 51),
                     animations: new Dictionary<AnimationState, int[]> {
                         { AnimationState.WalkLeft, new int[] { 0, 1, 2, 3, 4, 3, 2, 1 } },
                         { AnimationState.WalkRight, new int[] { 0, 1, 2, 3, 4, 3, 2, 1 } },

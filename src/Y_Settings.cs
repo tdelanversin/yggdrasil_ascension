@@ -240,6 +240,12 @@ namespace YGR
             return Sound;
         }
 
+        public static bool ChangeSoundVolume(float volume)
+        {
+            Manager_Sound.SoundVolume = volume;
+            return true;
+        }
+
         public static bool ToggleMusic()
         {
             Music = !Music;
@@ -253,6 +259,12 @@ namespace YGR
             }
             SaveSettings();
             return Music;
+        }
+
+        public static bool ChangeMusicVolume(float volume)
+        {
+            Manager_Sound.MusicVolume = volume;
+            return true;
         }
     }
 }

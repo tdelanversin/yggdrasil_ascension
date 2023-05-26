@@ -34,7 +34,7 @@ namespace YGR
             if (NextShotCooldown > 0.0f)
                 return false;
 
-            Manager_Sound.Sound_Confusion.Play(0.5f, 0, 0);
+            Manager_Sound.Sound_Confusion.Play(Manager_Sound.SoundVolume * 0.5f, 0, 0);
 
             NextShotCooldown = ShotDelay;
 
@@ -88,7 +88,7 @@ namespace YGR
             Owner = owner;
 
             var CirclePrecision = 4;
-            var Radius = 100;
+            var Radius = 100; // If this is changed, then adjust the particle radius in Manager_Particles.cs
             _collisionRect = new Rectangle[CirclePrecision];
             SpriteRect = new Rectangle(0, 0, 2 * Radius, 2 * Radius);
 
@@ -106,7 +106,7 @@ namespace YGR
             if (NextShotCooldown > 0.0f) return false;
             NextShotCooldown = ShotDelay;
 
-            Manager_Sound.Sound_Blank.Play(0.5f, 0, 0);
+            Manager_Sound.Sound_Blank.Play(Manager_Sound.SoundVolume * 0.5f, 0, 0);
             Triggered = true;
             return true;
         }
@@ -147,12 +147,14 @@ namespace YGR
         public void Draw(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch) { 
             if (Triggered)
             {
-                spriteBatch.Draw(
-                    _sprite.Texture, 
-                    SpriteRect,
-                    _sprite.SourceRectangle,
-                    Color.White
-                );
+                Manager_Particles.GetParticleEffect(
+                    Manager_Particles.Effect.Blank).Trigger(Owner.Rect.Center.ToVector2());
+                // spriteBatch.Draw(
+                //     _sprite.Texture, 
+                //     SpriteRect,
+                //     _sprite.SourceRectangle,
+                //     Color.White
+                // );
             }
         }
     }
@@ -181,7 +183,7 @@ namespace YGR
                 return false;
             NextShotCooldown = EffectDelay;
 
-            Manager_Sound.Sound_Invincibility.Play(0.5f, 0, 0);
+            Manager_Sound.Sound_Invincibility.Play(Manager_Sound.SoundVolume * 0.5f, 0, 0);
             owner.SetInvincible(true);
             return true;
         }
@@ -500,7 +502,7 @@ namespace YGR
             if (NextShotCooldown > 0.0f)
                 return false;
 
-            Manager_Sound.Sound_Gunslinger.Play(0.5f, 0, 0);
+            Manager_Sound.Sound_Gunslinger.Play(Manager_Sound.SoundVolume * 0.5f, 0, 0);
 
             NextShotCooldown = EffectDelay;
 

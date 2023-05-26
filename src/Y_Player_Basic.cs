@@ -326,7 +326,7 @@ namespace YGR
             if (projectile.WhoFiredMe is IEnemyBoss) { Stats.BossDamageTaken += projectile.Damage; }
             if (LifePoints <= 0)
             {
-                Manager_Sound.Sound_PlayerDeath.Play();
+                Manager_Sound.Sound_PlayerDeath.Play(Manager_Sound.SoundVolume, 0, 0) ;
                 Stats.Deaths++;
                 LifePoints = 0;
                 // drop a grave stone as a pickup
@@ -393,7 +393,8 @@ namespace YGR
         {
             if (IsDashing)
             {
-                Manager_Particles.GetParticleEffect(Manager_Particles.Effect.Dash).Trigger(new Vector2(_rect.Location.X + _rect.Width / 2, _rect.Location.Y + _rect.Height));
+                Manager_Particles.GetParticleEffect(Manager_Particles.Effect.Dash).Trigger(_rect.Center.ToVector2());
+                // Manager_Particles.GetParticleEffect(Manager_Particles.Effect.Dash).Trigger(new Vector2(_rect.Location.X + _rect.Width / 2, _rect.Location.Y + _rect.Height));
                 //Manager_Particles.GenParticleEffectDash(new Vector2(_rect.Location.X+_rect.Width/2, _rect.Location.Y+_rect.Height));
                 if (_dashTimer > _dashDuration)
                 {
@@ -429,7 +430,7 @@ namespace YGR
 
                 if ((ControlLayout != ControlLayout.ControllerOnly && Input.IsKeyDown(Keybinds.ActionOne)) || Input.IsButtonDown(PlayerIndex, Keybinds.GamePadAction))
                 {
-                    Manager_Sound.Sound_Dash.Play();
+                    Manager_Sound.Sound_Dash.Play(Manager_Sound.SoundVolume, 0, 0) ;
                     IsDashing = true;
                     _dashTimer = 0;
                     _dashCooldownTimer = 0; // Reset timer
@@ -499,7 +500,11 @@ namespace YGR
                     if (CanIShoot())
                     {
                         bool shot = Gun.Shoot(gameTime, Rect.Center.ToVector2(), AimDirection, Level, this);
-                        if (shot) { Stats.TimesFired++; }
+                        if (shot)
+                        {
+                            Stats.TimesFired++;
+                            //Camera.Shake();
+                        }
                     }
                 }
 
@@ -561,7 +566,11 @@ namespace YGR
                 if (Input.IsLeftMousePressed() && CanIShoot())
                 {
                     bool shot = Gun.Shoot(gameTime, playerCenter, AimDirection, Level, this);
-                    if (shot) { Stats.TimesFired++; }
+                    if (shot)
+                    {
+                        Stats.TimesFired++;
+                        //Camera.Shake();
+                    }
                 }
                 if (Input.IsKeyDown(Keybinds.KeyboardAbility))
                 {
@@ -602,10 +611,9 @@ namespace YGR
              * ########################################################################## */
             if (input != Vector2.Zero)
             {
-                if (Settings.ParticleEffects)
+                if (Settings.ParticleEffects && Util.random.NextDouble() < 0.06)
                 {
-                    //Manager_Particles.GenParticleEffectDustCloudLight(new Vector2(_rect.Location.X + _rect.Width / 2, _rect.Location.Y + _rect.Height));
-                    Manager_Particles.GetParticleEffect(Manager_Particles.Effect.DustCloudLight).Trigger(new Vector2(_rect.Location.X + _rect.Width / 2, _rect.Location.Y + _rect.Height));
+                    Manager_Particles.MakeWalkParticle(new Vector2(_rect.Location.X + _rect.Width / 2, _rect.Location.Y + _rect.Height));
                 }
 
                 if (input.LengthSquared() > 1)
