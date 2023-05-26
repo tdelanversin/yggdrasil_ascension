@@ -67,7 +67,7 @@ namespace YGR
             NextShotCooldown = ShotDelay;
 
             var sound = new List<SoundEffect>() { Manager_Sound.Sound_Slime1, Manager_Sound.Sound_Slime2, Manager_Sound.Sound_Slime3, Manager_Sound.Sound_SlimeJump };
-            sound.Shuffle(Util.random).First().Play(Manager_Sound.SoundVolume * 1.0f, 0f, 0f);
+            sound.Shuffle(Util.random).First().Play(Manager_Sound.SoundVolume * .25f, 0f, 0f);
 
             Manager_Projectile.AddProjectile_EnemySlimeProjectile(origin, direction, level, who);
             return true;
@@ -130,7 +130,7 @@ namespace YGR
             NextShotCooldown = ShotDelay;
 
             var sound = new List<SoundEffect>() { Manager_Sound.Sound_Slime2, Manager_Sound.Sound_Slime3, Manager_Sound.Sound_Slime4, Manager_Sound.Sound_Slime5, Manager_Sound.Sound_Slime6 };
-            sound.Shuffle(Util.random).First().Play(Manager_Sound.SoundVolume * 1.0f, 0f, 0f);
+            sound.Shuffle(Util.random).First().Play(Manager_Sound.SoundVolume * .25f, 0f, 0f);
 
             foreach (var dir in IterateDirections(direction))
             {
@@ -636,12 +636,53 @@ namespace YGR
 
     }
 
-    public class Gun_BossAOEGigachad : Gun_BossAOE
+    public class Gun_GigachadScatter : Gun_BossScatter
     {
-        public Gun_BossAOEGigachad(IVictim owner, int shotCount = 48) : base(owner, shotCount)
+        public Gun_GigachadScatter(IVictim owner, int shotCount = 10) : base(owner, shotCount)
         {
-            Name = "AOE Gigahad gun";
+            Name = "Gigachad Scatter";
+            ShotSpread = .5 / ShotCount;
+            ShotDelay = 1000;
+        }
+
+        public override bool Shoot(GameTime gameTime, Vector2 origin, Vector2 direction, Y_Level level, IGameElement who)
+        {
+            if (NextShotCooldown > 0.0f)
+                return false;
+            NextShotCooldown = ShotDelay;
+
+            Manager_Sound.Sound_Fireball.Play(Manager_Sound.SoundVolume * 1.0f, 0f, 0f);
+
+            foreach (var dir in IterateDirections(direction))
+                Manager_Projectile.AddProjectile_BossProjectile(origin, dir, level, who, 0.55f);
+            return true;
+        }
+    }
+
+    public class Gun_GigachadAOE : Gun_BossAOE
+    {
+        public Gun_GigachadAOE(IVictim owner, int shotCount = 48) : base(owner, shotCount)
+        {
+            Name = "Gigachad AOE gun";
             ShotDelay = 4000;
+        }
+
+        public override bool Shoot(GameTime gameTime, Vector2 origin, Vector2 direction, Y_Level level, IGameElement who)
+        {
+            if (NextShotCooldown > 0.0f)
+                return false;
+            NextShotCooldown = ShotDelay;
+
+            var sound = new List<SoundEffect>() { Manager_Sound.Sound_Slime1, Manager_Sound.Sound_Slime3, Manager_Sound.Sound_Slime6 };
+            Manager_Sound.Sound_PlasmaPistol.Play(Manager_Sound.SoundVolume * 1.0f, 0f, 0f);
+
+            foreach (var dir in IterateDirections(direction))
+            {
+                var position = origin + dir * 30f;
+                Manager_Projectile.AddProjectile_BossProjectile(position, dir, level, who, 0.30f);
+            }
+
+            return true;
         }
     }
 }
