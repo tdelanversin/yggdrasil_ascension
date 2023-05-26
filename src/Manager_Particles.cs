@@ -282,7 +282,8 @@ namespace YGR
                 {
                     new ParticleEmitter(textureRegion, 100, TimeSpan.FromSeconds(0.30f),
                         //Profile.Point())
-                        Profile.BoxFill(15,15))
+                        // Profile.BoxFill(15,15))
+                        Profile.Circle(30, Profile.CircleRadiation.In))
                         //Profile.Line(new Vector2(1,1), 5f))
                     {
                         Parameters = new ParticleReleaseParameters
@@ -416,7 +417,7 @@ namespace YGR
                     slime.Color,
                     finalPosition: GetRandomFinalPosition(slime.Rect),
                     finalRotation: GetRandomFinalRotation(),
-                    scale: 3f
+                    scale: 6f
                 );
                 _spriteParticles.Add(particle);
             }
@@ -433,7 +434,7 @@ namespace YGR
                     slime.Color,
                     finalPosition: GetRandomFinalPosition(slime.Rect, scale: .5f),
                     finalRotation: GetRandomFinalRotation(),
-                    scale: 3f
+                    scale: 6f
                 );
                 _spriteParticles.Add(particleSpiky);
             }
@@ -450,7 +451,7 @@ namespace YGR
                     boss.bossColor,
                     finalPosition: GetRandomFinalPosition(boss.Rect, scale: 1.2f),
                     finalRotation: GetRandomFinalRotation(),
-                    scale: 5f
+                    scale: 8f
                 );
                 _spriteParticles.Add(particleSpiky);
             }
@@ -505,7 +506,7 @@ namespace YGR
                 color,
                 finalPosition: pos + normal * 15f,
                 finalRotation: GetRandomFinalRotation(),
-                scale: 4f
+                scale: 8f
             );
             _spriteParticles.Add(particle);
         }
@@ -515,14 +516,13 @@ namespace YGR
             if (!Settings.ParticleEffects)
                 return;
 
-            // Logger.Info($"MakeWallImpactParticle pos: {pos}, normal: {normal}");
             int count = Util.random.Next(1, 3);
             for (int i = 0; i < count; i++)
             {
                 AnimatedSprite particleSprite = Manager_Sprites.NewAnimatedSprite_Bullet_Impact_Particle();
                 if (Util.random.NextDouble() < .5)
                     particleSprite = Manager_Sprites.NewAnimatedSprite_Dust_Particle();
-                    
+
                 float normalRotation = (float)Math.Atan2(normal.Y, normal.X)  + (Util.random.NextSingle() * 2 - 1) * MathHelper.PiOver4;
                 Vector2 normalRotated = new Vector2(
                     (float)Math.Cos(normalRotation),
@@ -539,6 +539,24 @@ namespace YGR
                 particle.Rotation = normalRotation;
                 _spriteParticles.Add(particle);
             }
+        }
+
+        public static void MakeWalkParticle(Vector2 pos)
+        {
+            if (!Settings.ParticleEffects)
+                return;
+
+            AnimatedSprite particleSprite = Manager_Sprites.NewAnimatedSprite_Dust_Particle();
+
+            IParticle particle = new Particle_Move_Rotate(
+                particleSprite,
+                pos,
+                Color.White,
+                finalPosition: pos + new Vector2(0, -15),
+                finalRotation: GetRandomFinalRotation(),
+                scale: 2f
+            );
+            _spriteParticles.Add(particle);
         }
 
         public static void Update(GameTime gameTime)
