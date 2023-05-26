@@ -34,7 +34,7 @@ namespace YGR
             if (NextShotCooldown > 0.0f)
                 return false;
 
-            Manager_Sound.Sound_Confusion.Play(0.5f, 0, 0);
+            Manager_Sound.Sound_Confusion.Play(Manager_Sound.SoundVolume * 0.5f, 0, 0);
 
             NextShotCooldown = ShotDelay;
 
@@ -106,7 +106,7 @@ namespace YGR
             if (NextShotCooldown > 0.0f) return false;
             NextShotCooldown = ShotDelay;
 
-            Manager_Sound.Sound_Blank.Play(0.5f, 0, 0);
+            Manager_Sound.Sound_Blank.Play(Manager_Sound.SoundVolume * 0.5f, 0, 0);
             Triggered = true;
             return true;
         }
@@ -183,7 +183,7 @@ namespace YGR
                 return false;
             NextShotCooldown = EffectDelay;
 
-            Manager_Sound.Sound_Invincibility.Play(0.5f, 0, 0);
+            Manager_Sound.Sound_Invincibility.Play(Manager_Sound.SoundVolume * 0.5f, 0, 0);
             owner.SetInvincible(true);
             return true;
         }
@@ -502,7 +502,7 @@ namespace YGR
             if (NextShotCooldown > 0.0f)
                 return false;
 
-            Manager_Sound.Sound_Gunslinger.Play(0.5f, 0, 0);
+            Manager_Sound.Sound_Gunslinger.Play(Manager_Sound.SoundVolume * 0.5f, 0, 0);
 
             NextShotCooldown = EffectDelay;
 

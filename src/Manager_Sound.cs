@@ -73,6 +73,9 @@ namespace YGR
         public static SoundEffect Sound_Splash3;
         public static SoundEffect Sound_Splash4;
 
+        public static float MusicVolume = 0.5f;
+        public static float SoundVolume = 0.5f;
+
 
         public static List<Song> SongsEncounter;
 
@@ -170,7 +173,7 @@ namespace YGR
             if (_registry.TryAdd(condition, new Tuple<Stopwatch, SoundEffect>(watch, effect)))
             {
                 watch.Start();
-                effect.Play(volume, 0, 0);
+                effect.Play(SoundVolume * volume, 0, 0);
             }
         }
 
@@ -180,7 +183,7 @@ namespace YGR
             {
                 if (eff.Key() && eff.Value.Item1.ElapsedMilliseconds > eff.Value.Item2.Duration.Milliseconds)
                 {
-                    eff.Value.Item2.Play();
+                    eff.Value.Item2.Play(SoundVolume, 0, 0);
                     eff.Value.Item1.Reset();
                 }
                 else if (!eff.Key())
@@ -194,7 +197,7 @@ namespace YGR
         {
             MediaPlayer.Play(Manager_Sound.Song_TheWhiteLion);
             // (Re)set the volume, since we fade out the song on the ending screen
-            MediaPlayer.Volume = 1.0f;
+            MediaPlayer.Volume = MusicVolume;
         }
 
         internal static void PlayFreeRoamMusic()

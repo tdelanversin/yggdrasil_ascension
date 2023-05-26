@@ -326,7 +326,7 @@ namespace YGR
             if (projectile.WhoFiredMe is IEnemyBoss) { Stats.BossDamageTaken += projectile.Damage; }
             if (LifePoints <= 0)
             {
-                Manager_Sound.Sound_PlayerDeath.Play();
+                Manager_Sound.Sound_PlayerDeath.Play(Manager_Sound.SoundVolume, 0, 0) ;
                 Stats.Deaths++;
                 LifePoints = 0;
                 // drop a grave stone as a pickup
@@ -430,7 +430,7 @@ namespace YGR
 
                 if ((ControlLayout != ControlLayout.ControllerOnly && Input.IsKeyDown(Keybinds.ActionOne)) || Input.IsButtonDown(PlayerIndex, Keybinds.GamePadAction))
                 {
-                    Manager_Sound.Sound_Dash.Play();
+                    Manager_Sound.Sound_Dash.Play(Manager_Sound.SoundVolume, 0, 0) ;
                     IsDashing = true;
                     _dashTimer = 0;
                     _dashCooldownTimer = 0; // Reset timer
