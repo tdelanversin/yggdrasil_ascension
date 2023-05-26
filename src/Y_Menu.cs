@@ -230,7 +230,7 @@ namespace YGR
                     new SettingsItem("Music: ", Settings.Music, toggleFunc: Settings.ToggleMusic),
                     new SettingItemRange("Music volume: ", 0, 1, 1, .1f, setFunc: Settings.ChangeMusicVolume),
                     new SettingsItem("Sounds: ", Settings.Sound, toggleFunc: Settings.ToggleSoundEffects),
-                    new SettingItemRange("Sound volume: ", 0, 1, 1, .1f, setFunc: Settings.ChangeSoundVolume),
+                    new SettingItemRange("Sound volume: ", 0, 1, .5f, .1f, setFunc: Settings.ChangeSoundVolume),
                     AdvancedSettings,
                     new MenuItem("Back", Menu.Ascend),
                 }
