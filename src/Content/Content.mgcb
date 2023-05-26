@@ -412,6 +412,30 @@
 /processorParam:Quality=Best
 /build:Sounds/song_the-white-lion.mp3
 
+#begin Sounds/splash_1.wav
+/importer:WavImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:Sounds/splash_1.wav
+
+#begin Sounds/splash_2.wav
+/importer:WavImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:Sounds/splash_2.wav
+
+#begin Sounds/splash_3.wav
+/importer:WavImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:Sounds/splash_3.wav
+
+#begin Sounds/splash_4.wav
+/importer:WavImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:Sounds/splash_4.wav
+
 #begin Sounds/stonewall.wav
 /importer:WavImporter
 /processor:SoundEffectProcessor

@@ -1,5 +1,7 @@
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Graphics;
+using MonoGame.Extended.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
@@ -144,7 +146,8 @@ namespace YGR
                 enemy.Update(gameTime);
                 if (enemy.LifePoints <= 0)
                 {
-                    Manager_Sound.Sound_EnemyDeath.Play(0.8f, -0.5f, 0);
+                    var sound = new List<SoundEffect>() { Manager_Sound.Sound_EnemyDeath, Manager_Sound.Sound_Splash1, Manager_Sound.Sound_Splash2, Manager_Sound.Sound_Splash3, Manager_Sound.Sound_Splash4 };
+                    sound.Shuffle(Util.random).First().Play(1.0f, 0f, 0f);
                 }
             }
 
