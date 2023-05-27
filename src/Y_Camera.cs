@@ -245,15 +245,19 @@ namespace YGR
 
         private static void centerOnPlayers()
         {
-            if (Manager_Players.Players == null || Manager_Players.Players.Count < 1) return;
+            if (Manager_Players.Players == null) return;
+            
+            var alivePlayers = Manager_Players.Players.FindAll(p => p.IsAlive());
 
-            var left = Manager_Players.Players[0].Rect.X;
-            var right = Manager_Players.Players[0].Rect.X;
-            var top = Manager_Players.Players[0].Rect.Y;
-            var bot = Manager_Players.Players[0].Rect.Y;
+            if (alivePlayers.Count < 1) return;
+
+            var left = alivePlayers[0].Rect.X;
+            var right = alivePlayers[0].Rect.X;
+            var top = alivePlayers[0].Rect.Y;
+            var bot = alivePlayers[0].Rect.Y;
 
             Vector2 playerMeanPos = Vector2.Zero;
-            foreach (var player in Manager_Players.Players)
+            foreach (var player in alivePlayers)
             {
                 playerMeanPos += player.Rect.Location.ToVector2();
                 left = Math.Min(player.Rect.X, left);
@@ -263,7 +267,7 @@ namespace YGR
             }
 
             // Update camera position
-            playerMeanPos /= Manager_Players.Players.Count;
+            playerMeanPos /= alivePlayers.Count;
             Position = playerMeanPos;
             // Console.WriteLine(playerMeanPos);
 
