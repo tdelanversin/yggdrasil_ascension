@@ -528,66 +528,86 @@ namespace YGR
     public class Ability_Gunslinger : IAbility
     {
         public string Name { get; protected set; }
-        public Texture2D Sprite { get; }
-        protected double NextShotCooldown = 0.0f;
-        protected int EffectDelay = 10000;
-        protected int Duration = 3000;
         public bool Triggered { get; private set; }
-        protected IPlayer owner;
-        protected IShooter GunShot;
+        public Texture2D Sprite { get; }
+
+        protected int RetriggerTimer = 0;
+        protected int RetriggerCooldown = 500;
+        protected int EnergyMax;
+        protected int Energy;
+
+        protected IPlayer Owner;
+        protected IShooter Gun;
         protected double oldShotDelay;
 
         public Ability_Gunslinger(IPlayer owner)
         {
             Name = "Gunslinger";
             Sprite = Manager_Sprites.Effect_Gunslinger;
-            this.owner = owner;
+            this.Owner = owner;
             Triggered = false;
+            updateAbilityLevel();
+            Energy = EnergyMax;
         }
 
         public bool Trigger(GameTime gameTime, Vector2 origin, Vector2 direction, Y_Level level, IGameElement who)
         {
-            if (NextShotCooldown > 0.0f)
+            if (RetriggerTimer > 0) { return false; }
+
+            // Allow toggling the ability off before it runs out of energy
+            if (Triggered)
+            {
+                Triggered = false;
+                Gun.ShotDelay = oldShotDelay;
+                RetriggerTimer = RetriggerCooldown;
                 return false;
+            }
+            else
+            {
+                Triggered = true;
+                RetriggerTimer = RetriggerCooldown;
+                Manager_Sound.Sound_Gunslinger.Play(0.5f, 0, 0);
+                Gun = Owner.Gun;
+                oldShotDelay = Gun.ShotDelay;
+                Gun.ShotDelay = oldShotDelay / 2.5;
+                Gun.NextShotCooldown = 0.0f;
+                return true;
+            }
+        }
 
-            Manager_Sound.Sound_Gunslinger.Play(0.5f, 0, 0);
-
-            NextShotCooldown = EffectDelay;
-
-            GunShot = owner.Gun;
-            oldShotDelay = GunShot.ShotDelay;
-            GunShot.ShotDelay = oldShotDelay / 2.5;
-            GunShot.NextShotCooldown = 0.0f;
-            Triggered = true;
-            return true;
+        protected virtual void updateAbilityLevel()
+        {
+            EnergyMax = Owner.ElementLevel * 3000;
         }
 
         public virtual void Update(GameTime gameTime)
         {
-            NextShotCooldown = Math.Max(0, NextShotCooldown - gameTime.ElapsedGameTime.TotalMilliseconds);
-            if (NextShotCooldown <= EffectDelay - Duration && GunShot != null)
+            updateAbilityLevel();
+
+            // Recharge at half the speed when not active
+            if (!Triggered)
             {
-                GunShot.ShotDelay = oldShotDelay;
-                GunShot = null;
-                Triggered = false;
+                Energy = Math.Min(EnergyMax, Energy + gameTime.ElapsedGameTime.Milliseconds / 2);
             }
+            else
+            {
+                // Disable once out of energy
+                if (Energy <= 0)
+                {
+                    Gun.ShotDelay = oldShotDelay;
+                    Triggered = false;
+                }
+
+                Energy = Math.Max(0, Energy - gameTime.ElapsedGameTime.Milliseconds);
+            }
+            RetriggerTimer = Math.Max(0, RetriggerTimer - gameTime.ElapsedGameTime.Milliseconds);
         }
 
         public void Draw(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch) { }
 
         public float State()
         {
-            var d = EffectDelay - Duration;
-
-            // When ability is active, return the time left
-            if (Triggered)
-            {
-                return (float)((NextShotCooldown - d) / (Duration));
-            }
-            else // Otherwise show the recharging state
-            {
-                return 1 - (float)(NextShotCooldown / d);
-            }
+            return (float)Energy / EnergyMax;
         }
     }
 }
