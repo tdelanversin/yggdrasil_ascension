@@ -139,13 +139,15 @@ namespace YGR
             _shakeStrength = strength;
             _shakeRotation = rotation;
 
+            var ResolutionScale = Bounds.Width / 1920f;
+
             // Normalize the offset and scale it based on strength
             _shakeOffset = direction;
             if (_shakeOffset.Length() > 0)
             {
                 _shakeOffset.Normalize();
             }
-            _shakeOffset *= 2 * (int)strength;
+            _shakeOffset *= 2 * (int)strength * ResolutionScale;
 
             // Initiate the timer
             _shakeTimer = 0;
@@ -164,17 +166,20 @@ namespace YGR
             var randAngle = (Util.random.NextSingle() - 0.5f) * randAngleMax;
             randAngle *= (int)angle;
 
-            var RandXMax = Bounds.Width / 512;
-            var RandX = (float)strength * (Util.random.Next(RandXMax) - RandXMax / 2);
+            // Pick the offset direction as random point on a circle
+            // Assures that the shake is always non-zero
+            var r = Util.random.NextSingle() * Math.PI * 2;
 
-            var RandYMax = Bounds.Width / 512; // make the shake symmetric
-            var RandY = (float)strength * (Util.random.Next(RandYMax) - RandYMax / 2);
+            // Scale the offset by strength and screen resolution
+            var ResolutionScale = Bounds.Width / 1920f;
+            var x = Math.Cos(r) * 2 * (float)strength * ResolutionScale;
+            var y = Math.Sin(r) * 2 * (float)strength * ResolutionScale;
 
             _shakeStrength = strength;
-            _shakeOffset = new Vector2(RandX, RandY);
+            _shakeOffset = new Vector2((float)x, (float)y);
             _shakeRotation = (float)randAngle;
             _shakeTimer = 0;
-            
+
             setShakeDuration(_shakeStrength);
         }
 
