@@ -412,6 +412,12 @@
 /processorParam:Quality=Best
 /build:Sounds/song_space.mp3
 
+#begin Sounds/song_temple.mp3
+/importer:Mp3Importer
+/processor:SongProcessor
+/processorParam:Quality=Best
+/build:Sounds/song_temple.mp3
+
 #begin Sounds/song_the-white-lion.mp3
 /importer:Mp3Importer
 /processor:SongProcessor

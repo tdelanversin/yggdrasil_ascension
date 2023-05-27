@@ -10,10 +10,14 @@ namespace YGR
 {
     static class Manager_Sound
     {
+        public static List<Song> SongsEncounter = new List<Song>();
+        public static List<Song> SongsFreeRoam = new List<Song>();
+
         public static Song Song_Dramatic;
         public static Song Song_TheWhiteLion; // https://pixabay.com/music/main-title-the-white-lion-10379/
         public static Song Song_Orchestra;
         public static Song Song_Space;
+        public static Song Song_Temple; // https://pixabay.com/music/ambient-the-temple-140782/
         public static Song Song_EndingWon; // https://pixabay.com/music/main-title-winning-elevation-111355/
         public static Song Song_EndingLost; // https://pixabay.com/music/main-title-cinematic-epic-trailer-background-music-123922/
         public static Song Song_Encounter02; // https://pixabay.com/music/main-title-chasing-victory-main-9448/
@@ -89,9 +93,6 @@ namespace YGR
         public static float MusicVolume = 0.5f;
         public static float SoundVolume = 0.5f;
 
-
-        public static List<Song> SongsEncounter;
-
         // private static SoundEffect bogus_sound;
         public static Dictionary<IGameElement, SoundEffectInstance> playing_sound_effects;
 
@@ -99,8 +100,6 @@ namespace YGR
 
         public static void LoadContent(ContentManager contentManager)
         {
-            SongsEncounter = new List<Song>();
-
             Song_Dramatic = contentManager.Load<Song>("Sounds/song_dramatic");
             Song_Orchestra = contentManager.Load<Song>("Sounds/song_orchestra");
             Song_TheWhiteLion = contentManager.Load<Song>("Sounds/song_the-white-lion");
@@ -108,9 +107,13 @@ namespace YGR
             Song_EndingLost = contentManager.Load<Song>("Sounds/song_ending-lost");
             Song_EndingWon = contentManager.Load<Song>("Sounds/song_ending-won");
             Song_Encounter02 = contentManager.Load<Song>("Sounds/song_encounter-02");
+            Song_Temple = contentManager.Load<Song>("Sounds/song_temple");
 
             SongsEncounter.Add(Song_Orchestra);
             SongsEncounter.Add(Song_Encounter02);
+
+            SongsFreeRoam.Add(Song_Space);
+            SongsFreeRoam.Add(Song_Temple);
 
             Sound_Bonus = contentManager.Load<SoundEffect>("Sounds/bonus_sound");
             Sound_Dash = contentManager.Load<SoundEffect>("Sounds/dash");
@@ -220,7 +223,8 @@ namespace YGR
 
         internal static void PlayFreeRoamMusic()
         {
-            MediaPlayer.Play(Manager_Sound.Song_Space);
+            // Play a random free roam song
+            MediaPlayer.Play(SongsFreeRoam[Util.random.Next(SongsEncounter.Count)]);
         }
 
         internal static void PlayBossMusic()
