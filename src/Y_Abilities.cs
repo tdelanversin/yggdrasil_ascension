@@ -49,6 +49,11 @@ namespace YGR
         }
 
         public void Draw(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch) { }
+
+        public float State()
+        {
+            return (float)(NextShotCooldown / ShotDelay);
+        }
     }
 
 
@@ -66,6 +71,8 @@ namespace YGR
         public void Draw(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch) { }
 
         public bool Triggered { get; private set; }
+
+        public float State() { return 0; }
     }
 
 
@@ -162,6 +169,19 @@ namespace YGR
                 // );
             }
         }
+
+        public float State()
+        {
+            if (Triggered)
+            {
+                var d = ShotDelay - Duration;
+                return (float)((NextShotCooldown - d) / Duration);
+            }
+            else
+            {
+                return (float)(NextShotCooldown / ShotDelay);
+            }
+        }
     }
 
 
@@ -201,6 +221,11 @@ namespace YGR
         }
 
         public void Draw(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch) { }
+
+        public float State()
+        {
+            return 1 - (float)(NextShotCooldown / EffectDelay);
+        }
     }
 
 
@@ -481,6 +506,18 @@ namespace YGR
             }
         }
 
+        public float State()
+        {
+            // When shield is on cooldown, show that
+            // if (false && _shortestWaitTimeCounter > 0 && !Triggered)
+            // {
+            //     return (float)_shortestWaitTimeCounter / _shortestWaitTimeMS;
+            // }
+
+            // Otherwise display the energy left
+            return (float)_currentDuration / _maxDuration;
+        }
+
         public X_LevelElements WhatAreYou()
         {
             return X_LevelElements.Shield;
@@ -537,6 +574,21 @@ namespace YGR
         }
 
         public void Draw(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch) { }
+
+        public float State()
+        {
+            var d = EffectDelay - Duration;
+
+            // When ability is active, return the time left
+            if (Triggered)
+            {
+                return (float)((NextShotCooldown - d) / (Duration));
+            }
+            else // Otherwise show the recharging state
+            {
+                return 1 - (float)(NextShotCooldown / d);
+            }
+        }
     }
 }
 
