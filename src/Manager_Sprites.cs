@@ -83,6 +83,7 @@ namespace YGR
         public static Texture2D Enemy_Slime { get; private set; }
         public static Texture2D Enemy_SlimeSpiky { get; private set; }
         public static Texture2D Enemy_Gigachad { get; private set; }
+        public static Texture2D Enemy_GigachadSlime { get; private set; }
         public static Texture2D Enemy_Boss { get; private set; }
 
         // Effects
@@ -164,6 +165,7 @@ namespace YGR
             Enemy_Slime = contentManager.Load<Texture2D>("SpritesCharacters/slime");
             Enemy_SlimeSpiky = contentManager.Load<Texture2D>("SpritesCharacters/spiky_sheet");
             Enemy_Gigachad = contentManager.Load<Texture2D>("SpritesCharacters/gigachad");
+            Enemy_GigachadSlime = contentManager.Load<Texture2D>("SpritesCharacters/GigachadSlime");
             Enemy_Boss = contentManager.Load<Texture2D>("SpritesCharacters/slime_boss_sheet");
 
             SpinningHeart = contentManager.Load<Texture2D>("SpritesOther/SpinningHeart");
@@ -552,6 +554,20 @@ namespace YGR
                         { AnimationState.IdleLeft, new int[] { 1 } },
                         { AnimationState.WalkRight, new int[] { 0 } },
                         { AnimationState.IdleRight, new int[] { 0 } },
+                    }
+                );
+        }
+
+        public static AnimatedSprite NewAnimatedSprite_GigachadSlime()
+        {
+            return new AnimatedSprite(
+                    texture: Enemy_GigachadSlime,
+                    spriteDimension: new Vector2(572, 637),
+                    animations: new Dictionary<AnimationState, int[,]> {
+                        { AnimationState.WalkLeft, new int[,] { {0,0}, {0,1}, {0,2}, {0,1} } },
+                        { AnimationState.IdleLeft, new int[,] { {0,0}, {0,1}, {0,2}, {0,1} } },
+                        { AnimationState.WalkRight, new int[,] { {1,2}, {1,1}, {1,0}, {1,1} } },
+                        { AnimationState.IdleRight, new int[,] { {1,2}, {1,1}, {1,0}, {1,1} } }
                     }
                 );
         }

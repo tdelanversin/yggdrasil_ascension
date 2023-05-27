@@ -71,7 +71,7 @@ namespace YGR
 
         internal static void AddEnemy_Gigachad(Vector2 position, Y_Level level)
         {
-            IEnemy enemy = new Enemy_Gigachad(position, Manager_Sprites.NewAnimatedSprite_Gigachad(), level);
+            IEnemy enemy = new Enemy_Gigachad(position, Manager_Sprites.NewAnimatedSprite_GigachadSlime(), level);
             _enemies.Add(enemy);
             //_bosses.Add((IEnemyBoss)enemy);
         }
