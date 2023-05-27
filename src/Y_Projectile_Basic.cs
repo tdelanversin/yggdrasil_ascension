@@ -121,7 +121,7 @@ namespace YGR
             if (obj is IEnemy)
             {
                 Vector2 pos = new Vector2(_rect.Location.X + _rect.Width / 2, _rect.Location.Y + _rect.Height / 2);
-                pos = Vector2.Lerp(pos, obj.Rect.Center.ToVector2(), 0.3f); // move towards center of enemy (looks better)
+                pos = Vector2.Lerp(pos, obj.Rect.Center.ToVector2(), Util.random.NextSingle()); // move towards center of enemy (looks better)
                 Vector2 nor = contactNormal;
                 Manager_Particles.MakeSlimeImpactParticle((IEnemy)obj, pos, nor);
             }
