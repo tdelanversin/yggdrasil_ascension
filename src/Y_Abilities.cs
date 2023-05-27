@@ -51,6 +51,7 @@ namespace YGR
         public void Draw(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch) { }
     }
 
+
     // Ability for Ghosts. Does as much as absolutely nothing but make lives easier for stupid programmers
     public class Ability_Ghost : IAbility
     {
@@ -66,6 +67,7 @@ namespace YGR
 
         public bool Triggered { get; private set; }
     }
+
 
     public class Ability_Blank : IAbility
     {
@@ -102,7 +104,8 @@ namespace YGR
                 // _collisionRect[i] = new Rectangle((int)owner.Rect.Center.X - width / 2, (int)owner.Rect.Center.Y - height / 2, width, height);
             }
         }
-        public bool Trigger(GameTime gametime, Vector2 origin, Vector2 direction, Y_Level level, IGameElement who) { 
+        public bool Trigger(GameTime gametime, Vector2 origin, Vector2 direction, Y_Level level, IGameElement who)
+        {
             if (NextShotCooldown > 0.0f) return false;
             NextShotCooldown = ShotDelay;
 
@@ -124,10 +127,11 @@ namespace YGR
 
             // return false;
         }
-        
-        public void Update(GameTime gameTime) { 
+
+        public void Update(GameTime gameTime)
+        {
             NextShotCooldown = Math.Max(0, NextShotCooldown - gameTime.ElapsedGameTime.TotalMilliseconds);
-            if (Triggered) 
+            if (Triggered)
             {
                 // for (int i = 0; i < _collisionRect.Length; i++)
                 // {
@@ -140,11 +144,12 @@ namespace YGR
                 SpriteRect.Y = (int)(Owner.Rect.Center.ToVector2().Y - SpriteRect.Height / 2);
 
                 _sprite.Update(gameTime, AnimationState.Idle);
-            } 
+            }
             if (NextShotCooldown <= ShotDelay - Duration) Triggered = false;
         }
 
-        public void Draw(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch) { 
+        public void Draw(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)
+        {
             if (Triggered)
             {
                 Manager_Particles.GetParticleEffect(
@@ -158,6 +163,7 @@ namespace YGR
             }
         }
     }
+
 
     public class Ability_Invicible : IAbility
     {
@@ -187,7 +193,7 @@ namespace YGR
             owner.SetInvincible(true);
             return true;
         }
-        
+
 
         public virtual void Update(GameTime gameTime)
         {
@@ -196,6 +202,7 @@ namespace YGR
 
         public void Draw(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch) { }
     }
+
 
     public class Ability_Shield : IAbility
     {
@@ -275,14 +282,14 @@ namespace YGR
         public void Draw(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)
         {
             // Draw an indicator only if a) the player is actively aiming on the gamepad or b) is using mouse to aim
-            if(Triggered)
+            if (Triggered)
             {
                 Color good = _goodLevelColors[Math.Max(_goodLevelColors.Length - 1, Owner.ElementLevel - 1)];
                 float p = 1.0f / _level_3_duration * _currentDuration;
                 Color gradient = new Color(
-                    (byte)(_crap.R * (1.0f-p) + good.R * p),
-                    (byte)(_crap.G * (1.0f-p) + good.G * p),
-                    (byte)(_crap.B * (1.0f-p) + good.B * p)
+                    (byte)(_crap.R * (1.0f - p) + good.R * p),
+                    (byte)(_crap.G * (1.0f - p) + good.G * p),
+                    (byte)(_crap.B * (1.0f - p) + good.B * p)
                 );
                 float angle = (float)(Math.Atan2(Owner.AimDirection.Y, Owner.AimDirection.X) + Math.PI / 2);
                 spriteBatch.Draw(
@@ -297,7 +304,7 @@ namespace YGR
         {
             if (!Triggered) return false;
 
-            foreach(var p in _collisionModel)
+            foreach (var p in _collisionModel)
             {
                 if (projectile.Rect.Contains(p)) return true;
             }
@@ -392,7 +399,7 @@ namespace YGR
             _everySecondFrame = !_everySecondFrame;
 
             // do some cooldown to prevent flickering
-            if(_shortestWaitTimeCounter > 0)
+            if (_shortestWaitTimeCounter > 0)
             {
                 // wait but reload at the same time... otherwise it's unfair
                 _shortestWaitTimeCounter -= gameTime.ElapsedGameTime.Milliseconds;
@@ -417,7 +424,7 @@ namespace YGR
                 // make sure we are up to speed
                 setShieldDuration();
 
-                if(_currentDuration < _maxDuration && _everySecondFrame)
+                if (_currentDuration < _maxDuration && _everySecondFrame)
                 {
                     _currentDuration += gameTime.ElapsedGameTime.Milliseconds;
                 }
@@ -434,7 +441,7 @@ namespace YGR
             float dAngle = (maxAngle - minAngle) / _outerCollisionModelPrecision;
 
             float angle = minAngle;
-            for(int i=0; i<_outerCollisionModelPrecision; ++i)
+            for (int i = 0; i < _outerCollisionModelPrecision; ++i)
             {
                 float xp = (float)(_b * Math.Cos(angle));
                 float yp = (float)(_a * Math.Sin(angle));
@@ -447,7 +454,7 @@ namespace YGR
             dAngle = (maxAngle - minAngle) / _innerCollisionModelPrecision;
             angle = minAngle;
             int len = _outerCollisionModelPrecision + _innerCollisionModelPrecision;
-            for(int i=_outerCollisionModelPrecision; i<len; ++i)
+            for (int i = _outerCollisionModelPrecision; i < len; ++i)
             {
                 float xp = (float)(0.5f * _b * Math.Cos(angle));
                 float yp = (float)(0.5f * _a * Math.Sin(angle));
@@ -476,6 +483,7 @@ namespace YGR
             return X_LevelElements.Shield;
         }
     }
+
 
     public class Ability_Gunslinger : IAbility
     {
@@ -513,7 +521,6 @@ namespace YGR
             Triggered = true;
             return true;
         }
-        
 
         public virtual void Update(GameTime gameTime)
         {
