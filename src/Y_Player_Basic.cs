@@ -42,6 +42,7 @@ namespace YGR
         public IAbility Ability { get; set; }
         public IAbility DeadAbility { get; set; }
         public bool Immobilized { get; set; }
+        public DateTime LastActive { get; protected set; }
 
         public PlayerIndex PlayerIndex { get; protected set; }
         public bool IsActive { get; protected set; }
@@ -197,6 +198,7 @@ namespace YGR
             AimDirection = new Vector2(1, 0);
             IsInvincible = false;
             IsActive = true;
+            LastActive = DateTime.Now;
             Stats = new Statistics();
 
             Room = Level.GetRoom(this, Room);
@@ -326,7 +328,7 @@ namespace YGR
             if (projectile.WhoFiredMe is IEnemyBoss) { Stats.BossDamageTaken += projectile.Damage; }
             if (LifePoints <= 0)
             {
-                Manager_Sound.Sound_PlayerDeath.Play(1, 0, 0) ;
+                Manager_Sound.Sound_PlayerDeath.Play(1, 0, 0);
                 Stats.Deaths++;
                 LifePoints = 0;
                 // drop a grave stone as a pickup
@@ -430,7 +432,7 @@ namespace YGR
 
                 if ((ControlLayout != ControlLayout.ControllerOnly && Input.IsKeyDown(Keybinds.ActionOne)) || Input.IsButtonDown(PlayerIndex, Keybinds.GamePadAction))
                 {
-                    Manager_Sound.Sound_Dash.Play(1, 0, 0) ;
+                    Manager_Sound.Sound_Dash.Play(1, 0, 0);
                     IsDashing = true;
                     _dashTimer = 0;
                     _dashCooldownTimer = 0; // Reset timer
@@ -708,6 +710,8 @@ namespace YGR
             HandleGamepadInput(gameTime, ref input);
             HandleMouseKeyboardInput(gameTime, ref input);
 
+            if(input != Vector2.Zero) { LastActive = DateTime.Now; }
+
             if (IsAlive()) { CharacterSprite.Update(gameTime, input); }
             else { GhostSprite.Update(gameTime, input); }
 
@@ -823,7 +827,48 @@ namespace YGR
             }
 
             return new Rectangle(x * width, y * height, width, height);
+        }
 
+        protected virtual void DrawAbilityIndicator(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)
+        {
+            if (Ability == null) { return; }
+
+            var state = Ability.State();
+
+            // We don't need to see an indicator if the ability is fully charged and ready
+            if (state <= 0 || state >= 1) { return; }
+
+            var srcRect = GetCircleIndicatorRect(state);
+
+            var scale = 1 / 3f;
+            var width = scale * 60;
+            var offset = new Vector2(
+                (Rect.Width - width) / 2,
+                -Manager_Sprites.HealthbarEmpty.Height - width);
+
+            // In the beginning, there was a shadow...
+            spriteBatch.Draw(
+                    texture: Manager_Sprites.CircleTimer,
+                    position: Rect.Location.ToVector2() + offset + Vector2.One,
+                    sourceRectangle: srcRect,
+                    color: Color.Black,
+                    rotation: 0,
+                    origin: Vector2.Zero,
+                    scale: scale,
+                    effects: SpriteEffects.None,
+                    layerDepth: 0);
+
+            // ...and then came the actual sprite
+            spriteBatch.Draw(
+                    texture: Manager_Sprites.CircleTimer,
+                    position: Rect.Location.ToVector2() + offset,
+                    sourceRectangle: srcRect,
+                    color: Color.Lerp(Color, Color.White, 0.25f),
+                    rotation: 0,
+                    origin: Vector2.Zero,
+                    scale: scale,
+                    effects: SpriteEffects.None,
+                    layerDepth: 0);
         }
 
         protected virtual void DrawAimIndicator(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)
@@ -860,6 +905,7 @@ namespace YGR
                     DeadAbility.Draw(gameTime, globalOffset, spriteBatch);
                 }
             }
+            DrawAbilityIndicator(gameTime, globalOffset, spriteBatch);
         }
 
         public virtual void DrawOutline(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)

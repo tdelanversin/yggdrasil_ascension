@@ -1142,8 +1142,6 @@ namespace YGR
                 }
             }
 
-            if (IsDoorOpeningOrClosing()) { Camera.Shake(); }
-
             switch (State)
             {
                 case X_DoorState.Closed:
@@ -1163,6 +1161,7 @@ namespace YGR
                             Manager_Sound.PlaySoundWhile(() => Y_Door.DoorMoovingCounter > 0, ref Manager_Sound.Sound_StoneWall, 1.0f);
                             
                     }
+                    if (!_visited) Camera.Shake();
                     if (!doorAnimation(dt, true))
                     {
                         if (_visited)
@@ -1180,6 +1179,7 @@ namespace YGR
                         if (!_visited)
                             Manager_Sound.PlaySoundWhile(() => Y_Door.DoorMoovingCounter > 0, ref Manager_Sound.Sound_StoneWall, 1.0f);
                     }
+                    if (!_visited) Camera.Shake();
                     if (!doorAnimation(dt, true))
                     {
                         if (_visited)
@@ -1203,6 +1203,7 @@ namespace YGR
                         else
                             Manager_Sound.Sound_Sword.Play(1, 0, 0);
                     }
+                    if (!_visited) Camera.Shake();
                     if (!doorAnimation(dt, false))
                     {
                         _closingTheDoor = false;
@@ -1229,6 +1230,7 @@ namespace YGR
                         else
                             Manager_Sound.Sound_Sword.Play(1, 0, 0);
                     }
+                    if (!_visited) Camera.Shake();
                     if (!doorAnimation(dt, false))
                     {
                         _closingTheDoor = false;

@@ -49,7 +49,13 @@ namespace YGR
         }
 
         public void Draw(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch) { }
+
+        public float State()
+        {
+            return (float)(NextShotCooldown / ShotDelay);
+        }
     }
+
 
     // Ability for Ghosts. Does as much as absolutely nothing but make lives easier for stupid programmers
     public class Ability_Ghost : IAbility
@@ -65,7 +71,10 @@ namespace YGR
         public void Draw(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch) { }
 
         public bool Triggered { get; private set; }
+
+        public float State() { return 0; }
     }
+
 
     public class Ability_Blank : IAbility
     {
@@ -102,7 +111,8 @@ namespace YGR
                 // _collisionRect[i] = new Rectangle((int)owner.Rect.Center.X - width / 2, (int)owner.Rect.Center.Y - height / 2, width, height);
             }
         }
-        public bool Trigger(GameTime gametime, Vector2 origin, Vector2 direction, Y_Level level, IGameElement who) { 
+        public bool Trigger(GameTime gametime, Vector2 origin, Vector2 direction, Y_Level level, IGameElement who)
+        {
             if (NextShotCooldown > 0.0f) return false;
             NextShotCooldown = ShotDelay;
 
@@ -124,10 +134,11 @@ namespace YGR
 
             // return false;
         }
-        
-        public void Update(GameTime gameTime) { 
+
+        public void Update(GameTime gameTime)
+        {
             NextShotCooldown = Math.Max(0, NextShotCooldown - gameTime.ElapsedGameTime.TotalMilliseconds);
-            if (Triggered) 
+            if (Triggered)
             {
                 // for (int i = 0; i < _collisionRect.Length; i++)
                 // {
@@ -140,11 +151,12 @@ namespace YGR
                 SpriteRect.Y = (int)(Owner.Rect.Center.ToVector2().Y - SpriteRect.Height / 2);
 
                 _sprite.Update(gameTime, AnimationState.Idle);
-            } 
+            }
             if (NextShotCooldown <= ShotDelay - Duration) Triggered = false;
         }
 
-        public void Draw(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch) { 
+        public void Draw(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)
+        {
             if (Triggered)
             {
                 Manager_Particles.GetParticleEffect(
@@ -157,7 +169,21 @@ namespace YGR
                 // );
             }
         }
+
+        public float State()
+        {
+            if (Triggered)
+            {
+                var d = ShotDelay - Duration;
+                return (float)((NextShotCooldown - d) / Duration);
+            }
+            else
+            {
+                return (float)(NextShotCooldown / ShotDelay);
+            }
+        }
     }
+
 
     public class Ability_Invicible : IAbility
     {
@@ -187,7 +213,7 @@ namespace YGR
             owner.SetInvincible(true);
             return true;
         }
-        
+
 
         public virtual void Update(GameTime gameTime)
         {
@@ -195,7 +221,13 @@ namespace YGR
         }
 
         public void Draw(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch) { }
+
+        public float State()
+        {
+            return 1 - (float)(NextShotCooldown / EffectDelay);
+        }
     }
+
 
     public class Ability_Shield : IAbility
     {
@@ -222,7 +254,7 @@ namespace YGR
         int _level_2_duration = 6000;
         int _level_3_duration = 8000;
 
-        int _shortestWaitTimeMS = 1000;
+        int _shortestWaitTimeMS = 400;
         int _shortestWaitTimeCounter = 0;
 
         Vector2[] _collisionModel;
@@ -253,6 +285,9 @@ namespace YGR
             Triggered = false;
             _collisionModel = new Vector2[_outerCollisionModelPrecision + _innerCollisionModelPrecision + _middleCollisionModelPrecision];
             _everySecondFrame = true;
+
+            setShieldDuration();
+            _currentDuration = _maxDuration;
         }
 
         private void setShieldDuration()
@@ -275,14 +310,14 @@ namespace YGR
         public void Draw(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)
         {
             // Draw an indicator only if a) the player is actively aiming on the gamepad or b) is using mouse to aim
-            if(Triggered)
+            if (Triggered)
             {
                 Color good = _goodLevelColors[Math.Max(_goodLevelColors.Length - 1, Owner.ElementLevel - 1)];
-                float p = 1.0f / _level_3_duration * _currentDuration;
+                float p = 1.0f / _maxDuration * _currentDuration;
                 Color gradient = new Color(
-                    (byte)(_crap.R * (1.0f-p) + good.R * p),
-                    (byte)(_crap.G * (1.0f-p) + good.G * p),
-                    (byte)(_crap.B * (1.0f-p) + good.B * p)
+                    (byte)(_crap.R * (1.0f - p) + good.R * p),
+                    (byte)(_crap.G * (1.0f - p) + good.G * p),
+                    (byte)(_crap.B * (1.0f - p) + good.B * p)
                 );
                 float angle = (float)(Math.Atan2(Owner.AimDirection.Y, Owner.AimDirection.X) + Math.PI / 2);
                 spriteBatch.Draw(
@@ -297,7 +332,7 @@ namespace YGR
         {
             if (!Triggered) return false;
 
-            foreach(var p in _collisionModel)
+            foreach (var p in _collisionModel)
             {
                 if (projectile.Rect.Contains(p)) return true;
             }
@@ -392,7 +427,7 @@ namespace YGR
             _everySecondFrame = !_everySecondFrame;
 
             // do some cooldown to prevent flickering
-            if(_shortestWaitTimeCounter > 0)
+            if (_shortestWaitTimeCounter > 0)
             {
                 // wait but reload at the same time... otherwise it's unfair
                 _shortestWaitTimeCounter -= gameTime.ElapsedGameTime.Milliseconds;
@@ -417,7 +452,7 @@ namespace YGR
                 // make sure we are up to speed
                 setShieldDuration();
 
-                if(_currentDuration < _maxDuration && _everySecondFrame)
+                if (_currentDuration < _maxDuration && _everySecondFrame)
                 {
                     _currentDuration += gameTime.ElapsedGameTime.Milliseconds;
                 }
@@ -434,7 +469,7 @@ namespace YGR
             float dAngle = (maxAngle - minAngle) / _outerCollisionModelPrecision;
 
             float angle = minAngle;
-            for(int i=0; i<_outerCollisionModelPrecision; ++i)
+            for (int i = 0; i < _outerCollisionModelPrecision; ++i)
             {
                 float xp = (float)(_b * Math.Cos(angle));
                 float yp = (float)(_a * Math.Sin(angle));
@@ -447,7 +482,7 @@ namespace YGR
             dAngle = (maxAngle - minAngle) / _innerCollisionModelPrecision;
             angle = minAngle;
             int len = _outerCollisionModelPrecision + _innerCollisionModelPrecision;
-            for(int i=_outerCollisionModelPrecision; i<len; ++i)
+            for (int i = _outerCollisionModelPrecision; i < len; ++i)
             {
                 float xp = (float)(0.5f * _b * Math.Cos(angle));
                 float yp = (float)(0.5f * _a * Math.Sin(angle));
@@ -471,62 +506,109 @@ namespace YGR
             }
         }
 
+        public float State()
+        {
+            // When shield is on cooldown, show that
+            // if (false && _shortestWaitTimeCounter > 0 && !Triggered)
+            // {
+            //     return (float)_shortestWaitTimeCounter / _shortestWaitTimeMS;
+            // }
+
+            // Otherwise display the energy left
+            return (float)_currentDuration / _maxDuration;
+        }
+
         public X_LevelElements WhatAreYou()
         {
             return X_LevelElements.Shield;
         }
     }
 
+
     public class Ability_Gunslinger : IAbility
     {
         public string Name { get; protected set; }
-        public Texture2D Sprite { get; }
-        protected double NextShotCooldown = 0.0f;
-        protected int EffectDelay = 10000;
-        protected int Duration = 3000;
         public bool Triggered { get; private set; }
-        protected IPlayer owner;
-        protected IShooter GunShot;
+        public Texture2D Sprite { get; }
+
+        protected int RetriggerTimer = 0;
+        protected int RetriggerCooldown = 500;
+        protected int EnergyMax;
+        protected int Energy;
+
+        protected IPlayer Owner;
+        protected IShooter Gun;
         protected double oldShotDelay;
 
         public Ability_Gunslinger(IPlayer owner)
         {
             Name = "Gunslinger";
             Sprite = Manager_Sprites.Effect_Gunslinger;
-            this.owner = owner;
+            this.Owner = owner;
             Triggered = false;
+            updateAbilityLevel();
+            Energy = EnergyMax;
         }
 
         public bool Trigger(GameTime gameTime, Vector2 origin, Vector2 direction, Y_Level level, IGameElement who)
         {
-            if (NextShotCooldown > 0.0f)
-                return false;
+            if (RetriggerTimer > 0) { return false; }
 
-            Manager_Sound.Sound_Gunslinger.Play(0.5f, 0, 0);
-
-            NextShotCooldown = EffectDelay;
-
-            GunShot = owner.Gun;
-            oldShotDelay = GunShot.ShotDelay;
-            GunShot.ShotDelay = oldShotDelay / 2.5;
-            GunShot.NextShotCooldown = 0.0f;
-            Triggered = true;
-            return true;
-        }
-        
-
-        public virtual void Update(GameTime gameTime)
-        {
-            NextShotCooldown = Math.Max(0, NextShotCooldown - gameTime.ElapsedGameTime.TotalMilliseconds);
-            if (NextShotCooldown <= EffectDelay - Duration && GunShot != null)
+            // Allow toggling the ability off before it runs out of energy
+            if (Triggered)
             {
-                GunShot.ShotDelay = oldShotDelay;
-                GunShot = null;
                 Triggered = false;
+                Gun.ShotDelay = oldShotDelay;
+                RetriggerTimer = RetriggerCooldown;
+                return false;
+            }
+            else
+            {
+                Triggered = true;
+                RetriggerTimer = RetriggerCooldown;
+                Manager_Sound.Sound_Gunslinger.Play(0.5f, 0, 0);
+                Gun = Owner.Gun;
+                oldShotDelay = Gun.ShotDelay;
+                Gun.ShotDelay = oldShotDelay / 2.5;
+                Gun.NextShotCooldown = 0.0f;
+                return true;
             }
         }
 
+        protected virtual void updateAbilityLevel()
+        {
+            EnergyMax = Owner.ElementLevel * 3000;
+        }
+
+        public virtual void Update(GameTime gameTime)
+        {
+            updateAbilityLevel();
+
+            // Recharge at half the speed when not active
+            if (!Triggered)
+            {
+                Energy = Math.Min(EnergyMax, Energy + gameTime.ElapsedGameTime.Milliseconds / 2);
+            }
+            else
+            {
+                // Disable once out of energy
+                if (Energy <= 0)
+                {
+                    Gun.ShotDelay = oldShotDelay;
+                    Triggered = false;
+                }
+
+                Energy = Math.Max(0, Energy - gameTime.ElapsedGameTime.Milliseconds);
+            }
+            RetriggerTimer = Math.Max(0, RetriggerTimer - gameTime.ElapsedGameTime.Milliseconds);
+        }
+
         public void Draw(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch) { }
+
+        public float State()
+        {
+            return (float)Energy / EnergyMax;
+        }
     }
 }
 

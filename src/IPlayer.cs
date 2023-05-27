@@ -1,3 +1,4 @@
+using System;
 using Microsoft.Xna.Framework;
 
 namespace YGR
@@ -40,6 +41,7 @@ namespace YGR
         public Statistics Stats { get; set; }
         public float VelocityMax { get; }
         public float VelocitySpeedUp { get; }
+        public DateTime LastActive { get; }
 
         public void TeleportTo(Point target);
 

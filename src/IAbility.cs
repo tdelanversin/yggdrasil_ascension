@@ -21,5 +21,10 @@ namespace YGR
         public Texture2D Sprite { get; }
 
         public bool Triggered { get; }
+        
+        /// <summary>
+        /// Returns a float in the range [0,1] to indicate ability energy left or cooldown time left
+        /// </summary>
+        public float State();
     }
 }
