@@ -164,8 +164,8 @@ namespace YGR
                 Vector2 pos = new Vector2(posX, _rect.Bottom);
                 Manager_Particles.MakeWalkParticle(pos);
             }
-            Manager_Sound.Sound_Explosion.Play(0.5f, 0.0f, 0.0f);
-            Camera.Shake();
+            Manager_Sound.Sound_BrutalPunch.Play(1f, 0.0f, 0.0f);
+            Camera.Shake(strength: ShakeStrength.Strong);
         }
 
         public override void Update(GameTime gameTime)
