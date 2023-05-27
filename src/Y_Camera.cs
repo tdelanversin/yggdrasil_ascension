@@ -62,6 +62,8 @@ namespace YGR
         private static float _previousZoom;
         private static Vector2 _previousPosition;
 
+        private static int _lastActivePlayerCount;
+
 
         // Zoom levels for...                     { Follow, Room, Rect, Manual }
         private static readonly float[] minZoom = { 0.05f, 0.15f, 0.05f, 0.05f };
@@ -246,18 +248,27 @@ namespace YGR
         private static void centerOnPlayers()
         {
             if (Manager_Players.Players == null) return;
-            
-            var alivePlayers = Manager_Players.Players.FindAll(p => p.IsAlive());
 
-            if (alivePlayers.Count < 1) return;
+            DateTime inactiveTreshold = DateTime.Now.AddSeconds(-10);
+            var activePlayers = Manager_Players.Players.FindAll(
+                p => p.IsAlive() || p.LastActive > inactiveTreshold
+            );
 
-            var left = alivePlayers[0].Rect.X;
-            var right = alivePlayers[0].Rect.X;
-            var top = alivePlayers[0].Rect.Y;
-            var bot = alivePlayers[0].Rect.Y;
+            if (activePlayers.Count < 1) return;
+
+            if (activePlayers.Count != _lastActivePlayerCount)
+            {
+                if (!InAnimation) { ResetAnimation(500); }
+                _lastActivePlayerCount = activePlayers.Count;
+            }
+
+            var left = activePlayers[0].Rect.X;
+            var right = activePlayers[0].Rect.X;
+            var top = activePlayers[0].Rect.Y;
+            var bot = activePlayers[0].Rect.Y;
 
             Vector2 playerMeanPos = Vector2.Zero;
-            foreach (var player in alivePlayers)
+            foreach (var player in activePlayers)
             {
                 playerMeanPos += player.Rect.Location.ToVector2();
                 left = Math.Min(player.Rect.X, left);
@@ -267,7 +278,7 @@ namespace YGR
             }
 
             // Update camera position
-            playerMeanPos /= alivePlayers.Count;
+            playerMeanPos /= activePlayers.Count;
             Position = playerMeanPos;
             // Console.WriteLine(playerMeanPos);
 
