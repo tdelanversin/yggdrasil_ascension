@@ -58,6 +58,7 @@ namespace YGR
         public static SoundEffect Sound_PlatformActivate;
         public static SoundEffect Sound_BrutalPunch; // https://pixabay.com/sound-effects/hit-brutal-puncher-cinematic-trailer-sound-effects-124760/
         public static SoundEffect Sound_LowGravImpact; // https://pixabay.com/sound-effects/hit-low-gravity-absorber-cinematic-trailer-sound-effects-124761/
+        public static SoundEffect Sound_Punch;
 
         // Class weapons
         public static SoundEffect Sound_Ninja1;
@@ -143,6 +144,7 @@ namespace YGR
 
             Sound_BrutalPunch = contentManager.Load<SoundEffect>("Sounds/impact/brutal-punch");
             Sound_LowGravImpact = contentManager.Load<SoundEffect>("Sounds/impact/low-gravity-impact");
+            Sound_Punch = contentManager.Load<SoundEffect>("Sounds/impact/punch");
 
             Sound_Ninja1 = contentManager.Load<SoundEffect>("Sounds/ninja_1");
             Sound_Ninja2 = contentManager.Load<SoundEffect>("Sounds/ninja_2");

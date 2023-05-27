@@ -92,6 +92,7 @@ namespace YGR
                             }
                             else
                             {
+                                Manager_Sound.Sound_Punch.Play();
                                 ((IVictim)obj).Hit(this);
                             }
                         }

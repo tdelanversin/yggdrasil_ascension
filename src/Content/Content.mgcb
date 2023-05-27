@@ -196,6 +196,12 @@
 /processorParam:Quality=Best
 /build:Sounds/impact/low-gravity-impact.wav
 
+#begin Sounds/impact/punch.wav
+/importer:WavImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:Sounds/impact/punch.wav
+
 #begin Sounds/keyboard_1.wav
 /importer:WavImporter
 /processor:SoundEffectProcessor
