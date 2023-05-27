@@ -20,6 +20,7 @@ namespace YGR
             IsActive = false;
             LifePoints = LifePointsMax = 0;
             Gun = new Gun_Ghost(this);
+            LastActive = System.DateTime.Now;
         }
 
         public override X_LevelElements WhatAreYou()

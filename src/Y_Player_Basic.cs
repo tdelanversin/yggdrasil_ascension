@@ -42,6 +42,7 @@ namespace YGR
         public IAbility Ability { get; set; }
         public IAbility DeadAbility { get; set; }
         public bool Immobilized { get; set; }
+        public DateTime LastActive { get; protected set; }
 
         public PlayerIndex PlayerIndex { get; protected set; }
         public bool IsActive { get; protected set; }
@@ -197,6 +198,7 @@ namespace YGR
             AimDirection = new Vector2(1, 0);
             IsInvincible = false;
             IsActive = true;
+            LastActive = DateTime.Now;
             Stats = new Statistics();
 
             Room = Level.GetRoom(this, Room);
@@ -707,6 +709,8 @@ namespace YGR
             Vector2 input = Vector2.Zero;
             HandleGamepadInput(gameTime, ref input);
             HandleMouseKeyboardInput(gameTime, ref input);
+
+            if(input != Vector2.Zero) { LastActive = DateTime.Now; }
 
             if (IsAlive()) { CharacterSprite.Update(gameTime, input); }
             else { GhostSprite.Update(gameTime, input); }
