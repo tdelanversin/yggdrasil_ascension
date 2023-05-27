@@ -184,6 +184,24 @@
 /processorParam:Quality=Best
 /build:Sounds/gun-cocking-sound.wav
 
+#begin Sounds/impact/brutal-punch.wav
+/importer:WavImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:Sounds/impact/brutal-punch.wav
+
+#begin Sounds/impact/low-gravity-impact.wav
+/importer:WavImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:Sounds/impact/low-gravity-impact.wav
+
+#begin Sounds/impact/punch.wav
+/importer:WavImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:Sounds/impact/punch.wav
+
 #begin Sounds/keyboard_1.wav
 /importer:WavImporter
 /processor:SoundEffectProcessor
@@ -298,6 +316,12 @@
 /processorParam:Quality=Best
 /build:Sounds/player_death.wav
 
+#begin Sounds/rising-tension.wav
+/importer:WavImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:Sounds/rising-tension.wav
+
 #begin Sounds/short_fireball.wav
 /importer:WavImporter
 /processor:SoundEffectProcessor
@@ -346,6 +370,12 @@
 /processorParam:Quality=Best
 /build:Sounds/slime_8.wav
 
+#begin Sounds/sniper-rifle-firing.wav
+/importer:WavImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:Sounds/sniper-rifle-firing.wav
+
 #begin Sounds/song_dramatic.mp3
 /importer:Mp3Importer
 /processor:SongProcessor
@@ -381,6 +411,12 @@
 /processor:SongProcessor
 /processorParam:Quality=Best
 /build:Sounds/song_space.mp3
+
+#begin Sounds/song_temple.mp3
+/importer:Mp3Importer
+/processor:SongProcessor
+/processorParam:Quality=Best
+/build:Sounds/song_temple.mp3
 
 #begin Sounds/song_the-white-lion.mp3
 /importer:Mp3Importer

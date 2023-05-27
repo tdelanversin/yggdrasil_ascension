@@ -10,40 +10,61 @@ namespace YGR
 {
     static class Manager_Sound
     {
+        public static List<Song> SongsEncounter = new List<Song>();
+        public static List<Song> SongsFreeRoam = new List<Song>();
+
         public static Song Song_Dramatic;
         public static Song Song_TheWhiteLion; // https://pixabay.com/music/main-title-the-white-lion-10379/
         public static Song Song_Orchestra;
         public static Song Song_Space;
+        public static Song Song_Temple; // https://pixabay.com/music/ambient-the-temple-140782/
         public static Song Song_EndingWon; // https://pixabay.com/music/main-title-winning-elevation-111355/
         public static Song Song_EndingLost; // https://pixabay.com/music/main-title-cinematic-epic-trailer-background-music-123922/
         public static Song Song_Encounter02; // https://pixabay.com/music/main-title-chasing-victory-main-9448/
 
         public static SoundEffect Sound_Bonus;
-        public static SoundEffect Sound_Dash;
         public static SoundEffect Sound_EnemyDeath;
-        public static SoundEffect Sound_Explosion;
-        public static SoundEffect Sound_Fireball;
-        public static SoundEffect Sound_Fireball2;
-        public static SoundEffect Sound_GunCocking;
         public static SoundEffect Sound_LevelCleared;
         public static SoundEffect Sound_MenuSelect;
-        public static SoundEffect Sound_PlatformActivate;
         public static SoundEffect Sound_PlayerDeath;
-        public static SoundEffect Sound_Shotgun;
-        public static SoundEffect Sound_VikingHorn;
-        public static SoundEffect Sound_CashIn; // https://freesound.org/people/kiddpark/sounds/201159/
-        public static SoundEffect Sound_StoneWall;
+        public static SoundEffect Sound_Wush;
+
+        // Abilities
+        public static SoundEffect Sound_Dash;
         public static SoundEffect Sound_Confusion;
         public static SoundEffect Sound_Blank;
         public static SoundEffect Sound_Gunslinger;
         public static SoundEffect Sound_Invincibility;
+
+        // Power Ups
+        public static SoundEffect Sound_CashIn; // https://freesound.org/people/kiddpark/sounds/201159/
+        public static SoundEffect Sound_GunCocking;
+        public static SoundEffect Sound_PosititveRandomPowerup;
+        public static SoundEffect Sound_NegativeRandomPowerup;
+
+        // Level sounds
+        public static SoundEffect Sound_VikingHorn;
+        public static SoundEffect Sound_RisingTension; // https://pixabay.com/sound-effects/riserhit-109796/
+
+        // Other Weapons
+        public static SoundEffect Sound_Fireball;
+        public static SoundEffect Sound_Fireball2;
+        public static SoundEffect Sound_Shotgun;
         public static SoundEffect Sound_Blaster;
         public static SoundEffect Sound_PlasmaPistol;
         public static SoundEffect Sound_OmniShotGun;
-        public static SoundEffect Sound_Wush;
-        public static SoundEffect Sound_PosititveRandomPowerup;
-        public static SoundEffect Sound_NegativeRandomPowerup;
         public static SoundEffect Sound_Sword;
+        public static SoundEffect Sound_SniperShot;
+        public static SoundEffect Sound_Explosion;
+
+        // Environmental
+        public static SoundEffect Sound_StoneWall;
+        public static SoundEffect Sound_PlatformActivate;
+        public static SoundEffect Sound_BrutalPunch; // https://pixabay.com/sound-effects/hit-brutal-puncher-cinematic-trailer-sound-effects-124760/
+        public static SoundEffect Sound_LowGravImpact; // https://pixabay.com/sound-effects/hit-low-gravity-absorber-cinematic-trailer-sound-effects-124761/
+        public static SoundEffect Sound_Punch;
+
+        // Class weapons
         public static SoundEffect Sound_Ninja1;
         public static SoundEffect Sound_Ninja2;
         public static SoundEffect Sound_Ninja3;
@@ -72,9 +93,6 @@ namespace YGR
         public static float MusicVolume = 0.5f;
         public static float SoundVolume = 0.5f;
 
-
-        public static List<Song> SongsEncounter;
-
         // private static SoundEffect bogus_sound;
         public static Dictionary<IGameElement, SoundEffectInstance> playing_sound_effects;
 
@@ -82,8 +100,6 @@ namespace YGR
 
         public static void LoadContent(ContentManager contentManager)
         {
-            SongsEncounter = new List<Song>();
-
             Song_Dramatic = contentManager.Load<Song>("Sounds/song_dramatic");
             Song_Orchestra = contentManager.Load<Song>("Sounds/song_orchestra");
             Song_TheWhiteLion = contentManager.Load<Song>("Sounds/song_the-white-lion");
@@ -91,9 +107,13 @@ namespace YGR
             Song_EndingLost = contentManager.Load<Song>("Sounds/song_ending-lost");
             Song_EndingWon = contentManager.Load<Song>("Sounds/song_ending-won");
             Song_Encounter02 = contentManager.Load<Song>("Sounds/song_encounter-02");
+            Song_Temple = contentManager.Load<Song>("Sounds/song_temple");
 
             SongsEncounter.Add(Song_Orchestra);
             SongsEncounter.Add(Song_Encounter02);
+
+            SongsFreeRoam.Add(Song_Space);
+            SongsFreeRoam.Add(Song_Temple);
 
             Sound_Bonus = contentManager.Load<SoundEffect>("Sounds/bonus_sound");
             Sound_Dash = contentManager.Load<SoundEffect>("Sounds/dash");
@@ -121,6 +141,14 @@ namespace YGR
             Sound_PosititveRandomPowerup = contentManager.Load<SoundEffect>("Sounds/short-success-sound-glockenspiel-treasure-video-game-6346");
             Sound_NegativeRandomPowerup = contentManager.Load<SoundEffect>("Sounds/negative_beeps-6008");
             Sound_Sword = contentManager.Load<SoundEffect>("Sounds/sword");
+            Sound_SniperShot = contentManager.Load<SoundEffect>("Sounds/sniper-rifle-firing");
+
+            Sound_RisingTension = contentManager.Load<SoundEffect>("Sounds/rising-tension");
+
+            Sound_BrutalPunch = contentManager.Load<SoundEffect>("Sounds/impact/brutal-punch");
+            Sound_LowGravImpact = contentManager.Load<SoundEffect>("Sounds/impact/low-gravity-impact");
+            Sound_Punch = contentManager.Load<SoundEffect>("Sounds/impact/punch");
+
             Sound_Ninja1 = contentManager.Load<SoundEffect>("Sounds/ninja_1");
             Sound_Ninja2 = contentManager.Load<SoundEffect>("Sounds/ninja_2");
             Sound_Ninja3 = contentManager.Load<SoundEffect>("Sounds/ninja_3");
@@ -160,7 +188,7 @@ namespace YGR
             _registry = new Dictionary<Func<bool>, Tuple<Stopwatch, SoundEffect>>();
         }
 
-        public static void PlaySoundWhile(Func<bool> condition, ref SoundEffect effect, float volume=1.0f)
+        public static void PlaySoundWhile(Func<bool> condition, ref SoundEffect effect, float volume = 1.0f)
         {
             var watch = new Stopwatch();
             if (_registry.TryAdd(condition, new Tuple<Stopwatch, SoundEffect>(watch, effect)))
@@ -195,7 +223,8 @@ namespace YGR
 
         internal static void PlayFreeRoamMusic()
         {
-            MediaPlayer.Play(Manager_Sound.Song_Space);
+            // Play a random free roam song
+            MediaPlayer.Play(SongsFreeRoam[Util.random.Next(SongsEncounter.Count)]);
         }
 
         internal static void PlayBossMusic()

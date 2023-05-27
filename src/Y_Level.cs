@@ -129,7 +129,7 @@ namespace YGR
         private int GigaChadTimerMS = 0;
         private int GigaChadTimerS = 0;
         private int GigaChadTimerS_CountTo = 0;
-        private int GigaChadTimer_CameraTransitS = 4;
+        private int GigaChadTimer_CameraTransitS = 7;
         private int GigaChadTimer_CameraTransitToHammer = 2;
         private int GigaChadTimer_ShowTimeS = 30;
         private int GigaChadTimer_WaitToSkip = 2;
@@ -1383,6 +1383,10 @@ namespace YGR
                             // initiate the camera movement
                             var gigachad1 = Manager_Enemies.GetGigaChads().FirstOrDefault();
                             if (gigachad1 == null) Logger.Error("WE WANT GIGACHAD -.-!!");
+
+                            // Play some really dramatic tension-y sound
+                            Manager_Sound.StopMusic();
+                            Manager_Sound.Sound_RisingTension.Play(); // Drama is at second 7, so the animation needs to be slow
 
                             Camera.SetFocusManual(gigachad1.Rect.Center.ToVector2(), 1.0f, animationDuration: GigaChadTimer_CameraTransitS * 1000);
                             GigaChad_CameraSwitch = false;
