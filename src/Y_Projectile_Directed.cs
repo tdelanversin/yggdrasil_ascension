@@ -64,6 +64,7 @@ namespace YGR
                     if ((obj.WhatAreYou() == X_LevelElements.Room || obj.WhatAreYou() == X_LevelElements.Door) && WhoFiredMe is IPlayer)
                     {
                         Manager_Particles.MakeWallImpactParticle(contactPoint[0].ToVector2(), contactNormal[0]);
+                        Manager_Sound.Sound_LowGravImpact.Play();
                         Camera.Shake(direction: Velocity, rotation: Math.Sign(Velocity.X) * 0.0002f, strength: ShakeStrength.Strong);
                     }
 
