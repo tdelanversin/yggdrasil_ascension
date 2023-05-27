@@ -1331,9 +1331,12 @@ namespace YGR
                         gigachadRoom.PickUps.Add(remaining);
 
                     // reset every single, non-cleared room that is not the bonus room ^^
+                    // respawn everything not just the regular rooms, the boss one too
+                    // in this place of the code, all enemies but the boss are dead
+                    // we respawn all enemies back and then remove the spikey slime ones power ups
+                    // just for fun, we also respawn the big boss because it just doesn't matter
                     var allNonGigaChatRooms = Rooms.Values.Where(x => 
                                                         x.WhatAreYou() == X_LevelElements.Room &&
-                                                        ((Y_CMRoom)x).Cleared == true &&
                                                         ((Y_CMRoom)x).Category != "Bonus" &&
                                                         ((Y_CMRoom)x).Category != "Start").Cast<Y_CMRoom>().ToList();
                     // kill all enemies and then respawn them, except in the gigachad room
