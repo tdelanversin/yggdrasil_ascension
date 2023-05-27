@@ -229,7 +229,7 @@ namespace YGR
         int _level_2_duration = 6000;
         int _level_3_duration = 8000;
 
-        int _shortestWaitTimeMS = 1000;
+        int _shortestWaitTimeMS = 400;
         int _shortestWaitTimeCounter = 0;
 
         Vector2[] _collisionModel;
@@ -260,6 +260,9 @@ namespace YGR
             Triggered = false;
             _collisionModel = new Vector2[_outerCollisionModelPrecision + _innerCollisionModelPrecision + _middleCollisionModelPrecision];
             _everySecondFrame = true;
+
+            setShieldDuration();
+            _currentDuration = _maxDuration;
         }
 
         private void setShieldDuration()
@@ -285,7 +288,7 @@ namespace YGR
             if (Triggered)
             {
                 Color good = _goodLevelColors[Math.Max(_goodLevelColors.Length - 1, Owner.ElementLevel - 1)];
-                float p = 1.0f / _level_3_duration * _currentDuration;
+                float p = 1.0f / _maxDuration * _currentDuration;
                 Color gradient = new Color(
                     (byte)(_crap.R * (1.0f - p) + good.R * p),
                     (byte)(_crap.G * (1.0f - p) + good.G * p),
