@@ -333,7 +333,8 @@ namespace YGR
                 return false;
             NextShotCooldown = ShotDelay;
 
-            Manager_Sound.Sound_PlasmaPistol.Play(0.85f, 0, 0);
+            Camera.Shake(-direction, 0.0001f, ShakeStrength.Light);
+            Manager_Sound.Sound_SniperShot.Play(0.85f, 0, 0);
             Manager_Projectile.AddProjectile_Sniper(origin, direction, level, who, damage: 10f);
             return true;
         }
