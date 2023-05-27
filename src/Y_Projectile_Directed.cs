@@ -62,7 +62,10 @@ namespace YGR
 
                     // Generate wall impact particles
                     if ((obj.WhatAreYou() == X_LevelElements.Room || obj.WhatAreYou() == X_LevelElements.Door) && WhoFiredMe is IPlayer)
+                    {
                         Manager_Particles.MakeWallImpactParticle(contactPoint[0].ToVector2(), contactNormal[0]);
+                        Camera.Shake(direction: Velocity, rotation: Math.Sign(Velocity.X) * 0.0002f, strength: ShakeStrength.Strong);
+                    }
 
                     else if (obj is IWalkable)
                     {
@@ -91,11 +94,6 @@ namespace YGR
                                 ((IVictim)obj).Hit(this);
                             }
                         }
-                    }
-
-                    if (obj.WhatAreYou() == X_LevelElements.Room || obj.WhatAreYou() == X_LevelElements.Door)
-                    {
-                        Camera.Shake(angle: ShakeAngle.Light, shake: ShakeStrength.Extreme);
                     }
                 }
             }
