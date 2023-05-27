@@ -52,7 +52,7 @@ namespace YGR
         private static float _shakeTimer = _shakeDuration;
         private static Vector2 _shakeOffset;
         private static float _shakeRotation;
-        private static ShakeAngle _shakeStrength;
+        private static ShakeStrength _shakeStrength;
 
         private static float _animationDuration = 1000;
         private static float _animationTimer = _animationDuration;
@@ -108,42 +108,74 @@ namespace YGR
             return (float)(Math.Sin(scaledTranslated) * (2 * Math.PI / (scaledTranslated)));
         }
 
-        public static void Shake(Vector2 direction, float rotation, ShakeAngle strength)
+        private static void setShakeDuration(ShakeStrength strength)
         {
-            if (IsShaking && strength <= _shakeStrength) { return; }
-            _shakeRotation = rotation;
-            _shakeOffset = direction;
-            _shakeTimer = 0;
-            _shakeStrength = strength;
             switch (_shakeStrength)
             {
-                case ShakeAngle.Light:
+                case ShakeStrength.Light:
                     _shakeDuration = 100;
                     break;
-                case ShakeAngle.Medium:
+                case ShakeStrength.Medium:
                     _shakeDuration = 150;
                     break;
-                case ShakeAngle.Strong:
+                case ShakeStrength.Strong:
                     _shakeDuration = 250;
+                    break;
+                case ShakeStrength.Extreme:
+                    _shakeDuration = 300;
                     break;
                 default:
                     break;
             }
         }
 
-        public static void Shake(ShakeAngle angle = ShakeAngle.Light, ShakeStrength shake = ShakeStrength.Light)
+        /// <summary>
+        /// Shake screen with chosen direction, rotation and strength
+        /// </summary>
+        public static void Shake(Vector2 direction, float rotation, ShakeStrength strength)
         {
+            if (IsShaking && strength <= _shakeStrength) { return; }
+
+            _shakeStrength = strength;
+            _shakeRotation = rotation;
+
+            // Normalize the offset and scale it based on strength
+            _shakeOffset = direction;
+            if (_shakeOffset.Length() > 0)
+            {
+                _shakeOffset.Normalize();
+            }
+            _shakeOffset *= 2 * (int)strength;
+
+            // Initiate the timer
+            _shakeTimer = 0;
+
+            setShakeDuration(_shakeStrength);
+        }
+
+        /// <summary>
+        /// Shake screen with a random direction and angle
+        /// </summary>
+        public static void Shake(ShakeAngle angle = ShakeAngle.Light, ShakeStrength strength = ShakeStrength.Light)
+        {
+            if (IsShaking && strength <= _shakeStrength) { return; }
+
             var randAngleMax = Math.PI / 1024;
             var randAngle = (Util.random.NextSingle() - 0.5f) * randAngleMax;
             randAngle *= (int)angle;
 
             var RandXMax = Bounds.Width / 512;
-            var RandX =  (float)shake * (Util.random.Next(RandXMax) - RandXMax / 2);
+            var RandX = (float)strength * (Util.random.Next(RandXMax) - RandXMax / 2);
 
             var RandYMax = Bounds.Width / 512; // make the shake symmetric
-            var RandY = (float)shake *( Util.random.Next(RandYMax) - RandYMax / 2);
+            var RandY = (float)strength * (Util.random.Next(RandYMax) - RandYMax / 2);
 
-            Shake(new Vector2(RandX, RandY), (float)randAngle, angle);
+            _shakeStrength = strength;
+            _shakeOffset = new Vector2(RandX, RandY);
+            _shakeRotation = (float)randAngle;
+            _shakeTimer = 0;
+            
+            setShakeDuration(_shakeStrength);
         }
 
         private static void UpdateMatrix(GameTime gameTime)
