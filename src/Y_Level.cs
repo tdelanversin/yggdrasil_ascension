@@ -14,6 +14,7 @@ using System.Diagnostics;
 using System.IO;
 using System.IO.Pipes;
 using System.Linq;
+using System.Xml;
 
 namespace YGR
 {
@@ -124,6 +125,11 @@ namespace YGR
         public static GamePlayState State;
         public static GameTutorialState TutorialState;
         public static GameEndState EndState;
+
+        private int MoveShitAround_CounterS = 0;
+        private int MoveShitAround_CounterMS = 0;
+        List<Vector2> MoveShitAround_Positions = new List<Vector2>();
+        Vector2 MoveShitAround_ZoomPoint;
 
         private bool GigaChad_CameraSwitch = true;
         private int GigaChadTimerMS = 0;
@@ -267,7 +273,7 @@ namespace YGR
                 }
             }
 
-            TutorialState = GameTutorialState.Warning;
+            TutorialState = GameTutorialState.EndTutorial;
 
             Rooms = new Dictionary<int, IWalkable>();
 
@@ -467,43 +473,42 @@ namespace YGR
                 foreach (var spr in players)
                 {
                     Vector2 pos = new Vector2(spr.x, spr.y);
-                    if (PlayerEntity.GetPointType(spr) == PlayerSpawningPointType.Spawner)
-                    {
-                        if (playerIndex == 4) break;
-                        if (PlayerEntity.GetType(spr) == PlayerType.Nerd)
-                            Manager_Players.AddPlayer(PlayerType.Nerd, (PlayerIndex)playerIndex, position: pos, this);
-                        if (PlayerEntity.GetType(spr) == PlayerType.Ninja)
-                            Manager_Players.AddPlayer(PlayerType.Ninja, (PlayerIndex)playerIndex, position: pos, this);
-                        if (PlayerEntity.GetType(spr) == PlayerType.Ghost)
-                        {
-                            Manager_Players.AddPlayer(PlayerType.Ghost, (PlayerIndex)playerIndex, position: pos, this);
-                            Tutorial_GhostSlot = pos;
-                        }
-                        playerIndex++;
-                    }
-                    else if (PlayerEntity.GetPointType(spr) == PlayerSpawningPointType.Chooser)
-                    {
-                        if (PlayerEntity.GetType(spr) == PlayerType.Nerd)
-                        {
-                            r.PickUps.Add(PickUp.Factory(Y_PowerUps.ChooserNerd, pos.ToPoint(), spr.width, spr.height, GlobalScale));
-                            Tutorial_PlayerSlot_Nerd = pos;
-                        }
-                        if (PlayerEntity.GetType(spr) == PlayerType.Mailman)
-                        {
-                            r.PickUps.Add(PickUp.Factory(Y_PowerUps.ChooserMailman, pos.ToPoint(), spr.width, spr.height, GlobalScale));
-                            Tutorial_PlayerSlot_Mailman = pos;
-                        }
-                        if (PlayerEntity.GetType(spr) == PlayerType.Ninja)
-                        {
-                            r.PickUps.Add(PickUp.Factory(Y_PowerUps.ChooserNinja, pos.ToPoint(), spr.width, spr.height, GlobalScale));
-                            Tutorial_PlayerSlot_Ninja = pos;
-                        }
-                        if (PlayerEntity.GetType(spr) == PlayerType.Professor)
-                        {
-                            r.PickUps.Add(PickUp.Factory(Y_PowerUps.ChooserProfessor, pos.ToPoint(), spr.width, spr.height, GlobalScale));
-                            Tutorial_PlayerSlot_Professor = pos;
-                        }
-                    }
+                    //if(PlayerEntity.GetPointType(spr) == PlayerSpawningPointType.Chooser)
+                    //if (playerIndex == 4) break;
+                    if (PlayerEntity.GetType(spr) == PlayerType.Nerd)
+                        Manager_Players.AddPlayer(PlayerType.Nerd, (PlayerIndex)playerIndex, position: pos, this);
+                    if (PlayerEntity.GetType(spr) == PlayerType.Ninja)
+                        Manager_Players.AddPlayer(PlayerType.Ninja, (PlayerIndex)playerIndex, position: pos, this);
+                    if (PlayerEntity.GetType(spr) == PlayerType.Professor)
+                        Manager_Players.AddPlayer(PlayerType.Professor, (PlayerIndex)playerIndex, position: pos, this);
+                    if (PlayerEntity.GetType(spr) == PlayerType.Mailman)
+                        Manager_Players.AddPlayer(PlayerType.Mailman, (PlayerIndex)playerIndex, position: pos, this);
+                    if (PlayerEntity.GetType(spr) == PlayerType.Ghost)
+                        MoveShitAround_Positions.Add(pos);
+                    playerIndex++;
+                    //else if (PlayerEntity.GetPointType(spr) == PlayerSpawningPointType.Chooser)
+                    //{
+                    //    if (PlayerEntity.GetType(spr) == PlayerType.Nerd)
+                    //    {
+                    //        r.PickUps.Add(PickUp.Factory(Y_PowerUps.ChooserNerd, pos.ToPoint(), spr.width, spr.height, GlobalScale));
+                    //        Tutorial_PlayerSlot_Nerd = pos;
+                    //    }
+                    //    if (PlayerEntity.GetType(spr) == PlayerType.Mailman)
+                    //    {
+                    //        r.PickUps.Add(PickUp.Factory(Y_PowerUps.ChooserMailman, pos.ToPoint(), spr.width, spr.height, GlobalScale));
+                    //        Tutorial_PlayerSlot_Mailman = pos;
+                    //    }
+                    //    if (PlayerEntity.GetType(spr) == PlayerType.Ninja)
+                    //    {
+                    //        r.PickUps.Add(PickUp.Factory(Y_PowerUps.ChooserNinja, pos.ToPoint(), spr.width, spr.height, GlobalScale));
+                    //        Tutorial_PlayerSlot_Ninja = pos;
+                    //    }
+                    //    if (PlayerEntity.GetType(spr) == PlayerType.Professor)
+                    //    {
+                    //        r.PickUps.Add(PickUp.Factory(Y_PowerUps.ChooserProfessor, pos.ToPoint(), spr.width, spr.height, GlobalScale));
+                    //        Tutorial_PlayerSlot_Professor = pos;
+                    //    }
+                    //}
                 }
 
                 // Make the last one controllable by keyboard
@@ -517,6 +522,8 @@ namespace YGR
 
             _startRoom.SetVisible(true);
             Manager_Sound.PlayFreeRoamMusic();
+
+            MoveShitAround_ZoomPoint = _startRoom.TeleporterTarget.ToVector2() + new Vector2(Y_Level.InGameTileSize/2.0f, Y_Level.InGameTileSize / 2.0f);
 
             if (Settings.DynamicShades)
             {
@@ -542,6 +549,8 @@ namespace YGR
             //    Manager_Light2.CreateModel(room.Value, true, ref model, ref globalOffset);
             //}
             //File.WriteAllText("./logs/model.obj", model);
+
+            State = GamePlayState.FreeRoam;
         }
 
 
@@ -1075,6 +1084,42 @@ namespace YGR
             }
         }
 
+        public void UpdateMoveShitAround(GameTime gameTime)
+        {
+            if(MoveShitAround_CounterS == 0)
+            {
+                Camera.SetFocusRoom(Manager_Players.Players[0].Room);
+            }
+            if(MoveShitAround_CounterS == 2)
+            {
+                Camera.SetFocusPlayers(animationDuration: 2000);
+            }
+            else if(MoveShitAround_CounterS >= 4)
+            {
+                for(int i=0; i<4; ++i)
+                {
+                    Vector2 pos = Manager_Players.Players[i].Rect.Location.ToVector2();
+                    Vector2 target = MoveShitAround_Positions[i];
+                    ((Player_Basic)Manager_Players.Players[i]).UpdateVelocity(target - pos, gameTime);
+                    ((Player_Basic)Manager_Players.Players[i]).UpdateCollision(gameTime);
+                }
+                if (MoveShitAround_CounterS == 5)
+                {
+                    Camera.SetFocusManual(MoveShitAround_ZoomPoint, 2.0f, animationDuration: 2000);
+                }
+            }
+
+            if(MoveShitAround_CounterMS >= 1000)
+            {
+                MoveShitAround_CounterMS = 0;
+                MoveShitAround_CounterS++;
+            }
+            else
+            {
+                MoveShitAround_CounterMS += gameTime.ElapsedGameTime.Milliseconds;
+            }
+        }
+
         public void Update(GameTime gameTime)
         {
             // Skeakily insert the tutorial
@@ -1150,6 +1195,8 @@ namespace YGR
                     // to start, will check anyway if everyone is inside.
                     var alivePlayers = Manager_Players.Players.Where(x => x.IsAlive()).ToArray();
                     ActiveRoom = alivePlayers.First().Room;
+                    
+                    UpdateMoveShitAround(gameTime);
 
                     if (ActiveRoom.WhatAreYou() != X_LevelElements.Room)
                     {

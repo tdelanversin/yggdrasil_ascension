@@ -603,7 +603,7 @@ namespace YGR
             VelocitySpeedUp = factor;
         }
 
-        protected virtual void UpdateVelocity(Vector2 input, GameTime gameTime)
+        public virtual void UpdateVelocity(Vector2 input, GameTime gameTime)
         {
             int timeStepMS = gameTime.ElapsedGameTime.Milliseconds;
 
@@ -681,7 +681,7 @@ namespace YGR
             return false;
         }
 
-        protected virtual void UpdateCollision(GameTime gameTime)
+        public virtual void UpdateCollision(GameTime gameTime)
         {
             int timeStepMS = gameTime.ElapsedGameTime.Milliseconds;
             /* ##########################################################################
@@ -705,10 +705,10 @@ namespace YGR
         public virtual void Update(GameTime gameTime)
         {
             UpdateRoom(gameTime);
-            UpdateInvincibility(gameTime);
+            //UpdateInvincibility(gameTime);
             Vector2 input = Vector2.Zero;
-            HandleGamepadInput(gameTime, ref input);
-            HandleMouseKeyboardInput(gameTime, ref input);
+            //HandleGamepadInput(gameTime, ref input);
+            //HandleMouseKeyboardInput(gameTime, ref input);
 
             if(input != Vector2.Zero) { LastActive = DateTime.Now; }
 
@@ -724,19 +724,19 @@ namespace YGR
             }
 
             UpdateVelocity(input, gameTime);
-            UpdateDash(gameTime);
-            UpdateCollision(gameTime);
+            //UpdateDash(gameTime);
+            //UpdateCollision(gameTime);
 
-            UpdateColor(gameTime);
-            Gun.Update(gameTime);
-            if (Ability != null)
-            {
-                Ability.Update(gameTime);
-            }
-            if (DeadAbility != null)
-            {
-                DeadAbility.Update(gameTime);
-            }
+            //UpdateColor(gameTime);
+            //Gun.Update(gameTime);
+            //if (Ability != null)
+            //{
+            //    Ability.Update(gameTime);
+            //}
+            //if (DeadAbility != null)
+            //{
+            //    DeadAbility.Update(gameTime);
+            //}
         }
 
         // Render ghosty 👻
@@ -890,7 +890,7 @@ namespace YGR
             {
                 DrawCharacterSprite(gameTime, globalOffset, spriteBatch);
                 DrawAimIndicator(gameTime, globalOffset, spriteBatch);
-                DrawHealthbar(gameTime, globalOffset, spriteBatch);
+                //DrawHealthbar(gameTime, globalOffset, spriteBatch);
                 if (Ability != null)
                 {
                     Ability.Draw(gameTime, globalOffset, spriteBatch);
