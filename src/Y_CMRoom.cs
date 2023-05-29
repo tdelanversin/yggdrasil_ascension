@@ -1251,10 +1251,10 @@ namespace YGR
                     new Rectangle(0, 0, _floor.Width, _floor.Height),
                     Color.White, 0, Vector2.Zero, Y_Level.GlobalScale, SpriteEffects.None, 0);
 
-                foreach (var interactable in _interactables)
-                {
-                    interactable.Draw(gameTime, globalOffset, spriteBatch);
-                }
+                //foreach (var interactable in _interactables)
+                //{
+                //    interactable.Draw(gameTime, globalOffset, spriteBatch);
+                //}
 
                 //foreach (var powerUp in PickUps)
                 //{
