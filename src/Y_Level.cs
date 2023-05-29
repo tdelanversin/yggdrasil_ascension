@@ -130,6 +130,8 @@ namespace YGR
         private int MoveShitAround_CounterMS = 0;
         List<Vector2> MoveShitAround_Positions = new List<Vector2>();
         Vector2 MoveShitAround_ZoomPoint;
+        Vector2 MoveShitAround_WayPointLeft;
+        Vector2 MoveShitAround_WayPointRight;
 
         private bool GigaChad_CameraSwitch = true;
         private int GigaChadTimerMS = 0;
@@ -478,9 +480,15 @@ namespace YGR
                     if (PlayerEntity.GetType(spr) == PlayerType.Nerd)
                         Manager_Players.AddPlayer(PlayerType.Nerd, (PlayerIndex)playerIndex, position: pos, this);
                     if (PlayerEntity.GetType(spr) == PlayerType.Ninja)
+                    {
                         Manager_Players.AddPlayer(PlayerType.Ninja, (PlayerIndex)playerIndex, position: pos, this);
+                        MoveShitAround_WayPointLeft = pos;
+                    }
                     if (PlayerEntity.GetType(spr) == PlayerType.Professor)
+                    {
                         Manager_Players.AddPlayer(PlayerType.Professor, (PlayerIndex)playerIndex, position: pos, this);
+                        MoveShitAround_WayPointRight = pos;
+                    }
                     if (PlayerEntity.GetType(spr) == PlayerType.Mailman)
                         Manager_Players.AddPlayer(PlayerType.Mailman, (PlayerIndex)playerIndex, position: pos, this);
                     if (PlayerEntity.GetType(spr) == PlayerType.Ghost)
@@ -1098,16 +1106,37 @@ namespace YGR
             {
                 for(int i=0; i<4; ++i)
                 {
-                    Vector2 pos = Manager_Players.Players[i].Rect.Location.ToVector2();
-                    Vector2 target = MoveShitAround_Positions[i];
-                    ((Player_Basic)Manager_Players.Players[i]).UpdateVelocity(target - pos, gameTime);
-                    ((Player_Basic)Manager_Players.Players[i]).UpdateCollision(gameTime);
+                    if(MoveShitAround_CounterS < 8)
+                    {
+                        Vector2 pos = Manager_Players.Players[i].Rect.Location.ToVector2();
+                        Vector2 target = MoveShitAround_Positions[i];
+                        ((Player_Basic)Manager_Players.Players[i]).UpdateVelocity(target - pos, gameTime);
+                        ((Player_Basic)Manager_Players.Players[i]).UpdateCollision(gameTime);
+                    }
+                    else
+                    {
+                        Vector2 pos = Manager_Players.Players[i].Rect.Location.ToVector2();
+                        Vector2 target1 = MoveShitAround_WayPointLeft;
+                        Vector2 target2 = MoveShitAround_WayPointRight;
+                        var player = Manager_Players.Players[i];
+                        if(player is Player_Ninja || player is Player_NerdyGirl)
+                        {
+                            ((Player_Basic)player).UpdateVelocity(target1 - pos, gameTime);
+                            ((Player_Basic)player).UpdateCollision(gameTime);
+                        }
+                        else if(player is Player_Mailman || player is Player_Professor)
+                        {
+                            ((Player_Basic)player).UpdateVelocity(target2 - pos, gameTime);
+                            ((Player_Basic)player).UpdateCollision(gameTime);
+                        }
+                    }
                 }
                 if (MoveShitAround_CounterS == 5)
                 {
-                    Camera.SetFocusManual(MoveShitAround_ZoomPoint, 2.0f, animationDuration: 2000);
+                    Camera.SetFocusManual(MoveShitAround_ZoomPoint, 2.5f, animationDuration: 2000);
                 }
             }
+
 
             if(MoveShitAround_CounterMS >= 1000)
             {
