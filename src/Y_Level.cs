@@ -1106,7 +1106,7 @@ namespace YGR
             {
                 for(int i=0; i<4; ++i)
                 {
-                    if(MoveShitAround_CounterS < 8)
+                    if(MoveShitAround_CounterS < 10)
                     {
                         Vector2 pos = Manager_Players.Players[i].Rect.Location.ToVector2();
                         Vector2 target = MoveShitAround_Positions[i];
