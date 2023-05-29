@@ -402,7 +402,7 @@ namespace YGR
                         UI.DrawEndScreen(gameTime, _spriteBatch);
                         break;
                     }
-                    UI.DrawPlayerStatus(gameTime, _spriteBatch);
+                    //UI.DrawPlayerStatus(gameTime, _spriteBatch);
                     UI.DrawBossHealthBar(gameTime, _spriteBatch);
                     break;
 

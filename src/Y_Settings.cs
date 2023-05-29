@@ -68,7 +68,7 @@ namespace YGR
             Fullscreen = false;
             DebugOutlinesLevel = false;
             DebugMode = true;
-            DrawFPS = true;
+            //DrawFPS = true;
 #endif
 
             /*
