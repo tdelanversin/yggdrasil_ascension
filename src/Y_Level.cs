@@ -1695,7 +1695,7 @@ namespace YGR
             }
 
             // Draw the controls inside the starting room pillar
-            spriteBatch.Draw(Manager_Sprites.Controls, ControlsRect, null, Color.White, 0, Vector2.Zero, SpriteEffects.None, 0);
+            //spriteBatch.Draw(Manager_Sprites.Controls, ControlsRect, null, Color.White, 0, Vector2.Zero, SpriteEffects.None, 0);
         }
 
         public X_LevelElements WhatAreYou()
