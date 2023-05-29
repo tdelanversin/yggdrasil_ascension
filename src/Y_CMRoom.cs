@@ -1256,13 +1256,13 @@ namespace YGR
                     interactable.Draw(gameTime, globalOffset, spriteBatch);
                 }
 
-                foreach (var powerUp in PickUps)
-                {
-                    if (powerUp.Active == true)
-                    {
-                        powerUp.Draw(gameTime, globalOffset, spriteBatch);
-                    }
-                }
+                //foreach (var powerUp in PickUps)
+                //{
+                //    if (powerUp.Active == true)
+                //    {
+                //        powerUp.Draw(gameTime, globalOffset, spriteBatch);
+                //    }
+                //}
             }
         }
 
