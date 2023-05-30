@@ -7,8 +7,10 @@ namespace YGR
 {
     public class Enemy_Gigachad : Enemy_Basic, IEnemyBoss
     {
-        IShooter Gun2; // Gigachad needs moar guns
+        Dictionary<BossAttack, IShooter> Guns; // Gigachad needs moar guns
         public BossAttack Attack { get; set; } = BossAttack.Scatter;
+        protected int _attackTimer = 0;
+        public Color bossColor;
 
         public Enemy_Gigachad(
             Vector2 position,
@@ -16,13 +18,19 @@ namespace YGR
             Y_Level level
         ) : base(position, sprite, level)
         {
-            LifePointsMax = 120;
+            LifePointsMax = 300;
             LifePoints = LifePointsMax;
             fleeingHPTreshold = 0; // Gigachad never flees
 
             Name = "Gigachad";
-            Gun = new Gun_GigachadScatter(this, 13);
-            Gun2 = new Gun_GigachadAOE(this);
+            Guns = new Dictionary<BossAttack, IShooter>(){
+                {BossAttack.Scatter, new Gun_GigachadScatter(this, 13)},
+                {BossAttack.AOE, new Gun_GigachadAOE(this)},
+                {BossAttack.AvoidPattern1, new Gun_GigachadHammer(this)},
+                {BossAttack.Precise, new Gun_GigachadSin(this)}
+            };
+
+            Gun = Guns[Attack];
 
             _hitColor = Color.OrangeRed;
             Color = Color.White;
@@ -50,6 +58,7 @@ namespace YGR
             CharacterScale = Util.GetSpriteScale(_rect, CharacterSprite.SpriteDimension);
             CharacterOffset = Vector2.Zero;
 
+            bossColor = new Color(95, 255, 56);
         }
 
         public override void Update(GameTime gameTime)
@@ -80,24 +89,61 @@ namespace YGR
 
             UpdateVelocity(movement, gameTime);
             UpdateCollision(gameTime);
-            Gun.Update(gameTime);
-            Gun2.Update(gameTime);
-
-            // Gigachad sees players, Gigachad shoots player
-            if (Target != null)
+            foreach (var gun in Guns.Values)
             {
-                Vector2 targetDirection = Target.Rect.Center.ToVector2() - _rect.Center.ToVector2();
-                targetDirection.Normalize();
-                Gun.Shoot(gameTime, _rect.Center.ToVector2(), targetDirection, Level, this);
+                gun.Update(gameTime);
             }
 
-            CharacterSprite.Update(gameTime, movement);
+            // find target
+            Vector2 targetDirection = new Vector2(0, -1);
+            if (Target != null)
+            {
+                targetDirection = Target.Rect.Center.ToVector2() - _rect.Center.ToVector2();
+                targetDirection.Normalize();
+            }
+            
+            switch (Attack)
+            {
+                case BossAttack.Scatter:
+                    if (_attackTimer > 5000)
+                    {
+                        _attackTimer = -1000;
+                        Attack = BossAttack.AOE;
+                        Gun = Guns[Attack];
+                    }
+                    break;
+                case BossAttack.AOE:
+                    if (_attackTimer > 10000)
+                    {
+                        _attackTimer = -1000;
+                        Attack = BossAttack.AvoidPattern1;
+                        Gun = Guns[Attack];
+                    }
+                    break;
+                case BossAttack.AvoidPattern1:
+                    if (_attackTimer > 3000)
+                    {
+                        _attackTimer = -1000;
+                        Attack = BossAttack.Precise;
+                        Gun = Guns[Attack];
+                    }
+                    break;
+                case BossAttack.Precise:
+                    if (_attackTimer > 5000)
+                    {
+                        _attackTimer = -1000;
+                        Attack = BossAttack.Scatter;
+                        Gun = Guns[Attack];
+                    }
+                    break;
+                default:
+                    break;
+            }
 
-            var playersInSameRoom = Manager_Players.Players.FindAll(x => x.LifePoints > 0 && x.Room == Room);
-            if (playersInSameRoom.Count < 1) return;
-
-            // Gigachad shoot Big Gun no matter what (as long as there are players in the same room)
-            Gun2.Shoot(gameTime, _rect.Center.ToVector2(), Vector2.One, Level, this);
+            if (_attackTimer > 0)
+                Gun.Shoot(gameTime, Rect.Center.ToVector2(), targetDirection, Level, this);
+                
+            _attackTimer += gameTime.ElapsedGameTime.Milliseconds;
         }
 
         public void DrawBossHealthBar(GameTime gameTime, SpriteBatch spriteBatch) { }

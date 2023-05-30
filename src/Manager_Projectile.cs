@@ -347,6 +347,30 @@ namespace YGR
             );
         }
 
+        public static void AddProjectile_BossSin(Vector2 startPosition, Vector2 direction, Y_Level level, IGameElement who)
+        {
+            if (!BoundsCheckSimple(startPosition, ((IVictim)who).Room)) return;
+
+            _projectiles.Add(
+                new Projectile_SlimeSin(
+                    position: startPosition,
+                    direction: direction,
+                    spriteOuter: Manager_Sprites.NewAnimatedSprite_ProjectileSlimeOuter(),
+                    spriteInner: Manager_Sprites.NewAnimatedSprite_ProjectileSlimeInner(),
+                    level: level,
+                    who: who,
+                    scale: 1f,
+                    damage: 1,
+                    maxAge: 2500,
+                    speed: 0.55f,
+                    mass: 0.5f,
+                    fakeAcceleration: 0.0f,
+                    sinAmplitude: 15f,
+                    sinFrequency: 0.015f,
+                    sinPhase: 0.0f
+                )
+            );
+        }
 
         public static void AddProjectile_Confusion(Vector2 startPosition, Vector2 direction, int confusionDuration, Y_Level level, IGameElement who)
         {

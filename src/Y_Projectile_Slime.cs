@@ -41,6 +41,10 @@ namespace YGR
             {
                 Color = ((Enemy_Boss)who).bossColor;
             }
+            else if (who is Enemy_Gigachad)
+            {
+                Color = ((Enemy_Gigachad)who).bossColor;
+            }
         }
 
         // Override to update both AnimatedSprites
