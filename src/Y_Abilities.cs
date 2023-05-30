@@ -95,7 +95,8 @@ namespace YGR
             Sprite = Manager_Sprites.Effect_Blank;
             Owner = owner;
 
-            CollisionRect = new Rectangle(0, 0, 2 * Radius, 2 * Radius);
+            var sideLength = (int)(Math.Sqrt(Math.PI) / 2 * Radius);
+            CollisionRect = new Rectangle(0, 0, sideLength, sideLength);
         }
         public bool Trigger(GameTime gametime, Vector2 origin, Vector2 direction, Y_Level level, IGameElement who)
         {
