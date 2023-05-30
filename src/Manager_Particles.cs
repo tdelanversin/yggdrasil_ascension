@@ -325,13 +325,13 @@ namespace YGR
                 Position = pos,
                 Emitters = new List<ParticleEmitter>
                 {
-                    new ParticleEmitter(textureRegion, 100, TimeSpan.FromSeconds(0.50f),
-                        Profile.Circle(100, Profile.CircleRadiation.In))
+                    new ParticleEmitter(textureRegion, 250, TimeSpan.FromSeconds(0.50f),
+                        Profile.Circle(Ability_Blank.Radius, Profile.CircleRadiation.In))
                     {
                         Parameters = new ParticleReleaseParameters
                         {
                             Speed = new Range<float>(10f, 50),
-                            Quantity = 25,
+                            Quantity = 10,
                             Rotation = new Range<float>(2f, 2f),
                             Scale = new Range<float>(2f, 3f),
                             Opacity = 1f
