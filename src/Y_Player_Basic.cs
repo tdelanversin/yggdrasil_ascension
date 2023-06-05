@@ -831,9 +831,16 @@ namespace YGR
 
         protected virtual void DrawAbilityIndicator(GameTime gameTime, Vector2 globalOffset, SpriteBatch spriteBatch)
         {
-            if (Ability == null) { return; }
-
-            var state = Ability.State();
+            var state = 0.0f;
+            if (IsAlive()) { 
+                if (Ability == null) { return; }
+                state = Ability.State();
+            }
+            else
+            {
+                if (DeadAbility == null) { return; }
+                state = DeadAbility.State();
+            }
 
             // We don't need to see an indicator if the ability is fully charged and ready
             if (state <= 0 || state >= 1) { return; }

@@ -675,7 +675,7 @@ namespace YGR
         public Gun_GigachadAOE(IVictim owner, int shotCount = 48) : base(owner, shotCount)
         {
             Name = "Gigachad AOE gun";
-            ShotDelay = 4000;
+            ShotDelay = 2000;
         }
 
         public override bool Shoot(GameTime gameTime, Vector2 origin, Vector2 direction, Y_Level level, IGameElement who)
@@ -691,6 +691,59 @@ namespace YGR
             {
                 var position = origin + dir * 30f;
                 Manager_Projectile.AddProjectile_BossProjectile(position, dir, level, who, 0.30f);
+            }
+
+            return true;
+        }
+    }
+
+    public class Gun_GigachadHammer : Gun_BossAOE
+    {
+        public Gun_GigachadHammer(IVictim owner, int shotCount = 16) : base(owner, shotCount)
+        {
+            Name = "Gigachad Hammer";
+            ShotDelay = 2000;
+        }
+
+        public override bool Shoot(GameTime gameTime, Vector2 origin, Vector2 direction, Y_Level level, IGameElement who)
+        {
+            if (NextShotCooldown > 0.0f)
+                return false;
+            NextShotCooldown = ShotDelay;
+
+            Manager_Sound.Sound_Slime6.Play(1.0f, 0f, 0f);
+
+            foreach (var dir in IterateDirections(direction))
+            {
+                var position = origin + dir * 30f;
+                Manager_Projectile.AddProjectile_PinkHammer(position, dir, level, who);
+            }
+
+            return true;
+        }
+    }
+
+    public class Gun_GigachadSin : Gun_BossScatter
+    {
+        public Gun_GigachadSin(IVictim owner, int shotCount = 5) : base(owner, shotCount)
+        {
+            Name = "Gigachad Sin";
+            ShotDelay = 300;
+            ShotSpread = .5 / ShotCount;
+        }
+
+        public override bool Shoot(GameTime gameTime, Vector2 origin, Vector2 direction, Y_Level level, IGameElement who)
+        {
+            if (NextShotCooldown > 0.0f)
+                return false;
+            NextShotCooldown = ShotDelay;
+
+            Manager_Sound.Sound_Slime6.Play(1.0f, 0f, 0f);
+
+            foreach (var dir in IterateDirections(direction))
+            {
+                var position = origin + dir * 30f;
+                Manager_Projectile.AddProjectile_BossSin(position, dir, level, who);
             }
 
             return true;
