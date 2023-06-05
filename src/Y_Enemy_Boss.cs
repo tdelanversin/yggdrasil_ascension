@@ -216,7 +216,7 @@ namespace YGR
                     // Spawn in enemies
                     foreach (IEnemy minion in _minions)
                     {
-                        Manager_Enemies.AddEnemy_BossMinion(BossCenter(), minion);
+                        Manager_Enemies.AddEnemy_BossMinion(Room.Rect.Center.ToVector2(), minion);
                     }
 
                     Manager_Particles.MakeSlimeDeathParticle(this);
