@@ -5,7 +5,7 @@ Before committing anything, set up gitignore and git LFS correctly for your proj
 # :grey_exclamation: FIRST STEPS
 Please update the [game teaser image](game_teaser.jpg) and the [game teaser text](game_teaser.txt) throughout the semester. Please don't rename, move or delete these files.
 
-![teaser image](game_teaser.jpg){width=200px}
+![teaser image](YggdrasilAscension.jpg){width=200px}
 # ENTER YOUR GAME TITLE HERE
 # :video_game: Game Programming Lab 2023 - House Rapture - Team3
 
